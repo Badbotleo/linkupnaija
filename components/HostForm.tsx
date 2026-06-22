@@ -19,11 +19,20 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
     state: hostState ?? "",
     max_attendees: "",
   });
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function onPickCover(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setCoverFile(f);
+    setCoverPreview(URL.createObjectURL(f));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -40,6 +49,23 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
       return;
     }
 
+    // Upload the cover image first (if one was chosen).
+    let coverImageUrl: string | null = null;
+    if (coverFile) {
+      const ext = coverFile.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${user.id}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("event-covers")
+        .upload(path, coverFile, { upsert: true, cacheControl: "3600" });
+      if (upErr) {
+        setError(`Cover upload failed: ${upErr.message}`);
+        setLoading(false);
+        return;
+      }
+      coverImageUrl = supabase.storage.from("event-covers").getPublicUrl(path)
+        .data.publicUrl;
+    }
+
     const { data, error } = await supabase
       .from("events")
       .insert({
@@ -52,6 +78,7 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
         state: form.state,
         host_id: user.id,
         max_attendees: form.max_attendees ? Number(form.max_attendees) : null,
+        cover_image_url: coverImageUrl,
       })
       .select("id")
       .single();
@@ -68,6 +95,43 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      <div>
+        <span className="label">Cover image</span>
+        <label
+          htmlFor="cover"
+          className="group relative flex h-44 cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 transition hover:border-brand/40"
+        >
+          {coverPreview ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={coverPreview}
+              alt="Cover preview"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="text-center text-gray-400">
+              <p className="text-3xl">🖼️</p>
+              <p className="mt-1 text-sm font-medium">
+                Tap to upload a cover image
+              </p>
+              <p className="text-xs">Optional — JPG or PNG</p>
+            </div>
+          )}
+          {coverPreview && (
+            <span className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white opacity-0 transition group-hover:opacity-100">
+              Change
+            </span>
+          )}
+          <input
+            id="cover"
+            type="file"
+            accept="image/*"
+            onChange={onPickCover}
+            className="hidden"
+          />
+        </label>
+      </div>
+
       <div>
         <label htmlFor="title" className="label">
           Event title

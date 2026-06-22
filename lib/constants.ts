@@ -74,3 +74,19 @@ export function categoryStyle(category: string) {
     }
   );
 }
+
+// Gradient placeholder (Tailwind classes) used when an event has no cover image.
+export const CATEGORY_GRADIENTS: Record<EventCategory, string> = {
+  Clubbing: "from-purple-500 to-indigo-600",
+  Party: "from-pink-500 to-rose-500",
+  Picnic: "from-green-500 to-emerald-600",
+  "Book Club": "from-amber-500 to-orange-600",
+  Dinner: "from-rose-500 to-red-600",
+  "Game Night": "from-blue-500 to-cyan-600",
+};
+
+export function categoryGradient(category: string) {
+  return (
+    CATEGORY_GRADIENTS[category as EventCategory] ?? "from-brand-400 to-brand-700"
+  );
+}

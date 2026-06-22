@@ -1,5 +1,6 @@
 import Link from "next/link";
 import CategoryBadge from "./CategoryBadge";
+import EventCover from "./EventCover";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import type { EventRow } from "@/lib/types";
 
@@ -19,14 +20,22 @@ export default function EventCard({
       href={`/events/${event.id}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card transition hover:-translate-y-0.5 hover:border-brand/30"
     >
-      <div className="flex items-start justify-between gap-2 p-5 pb-0">
-        <CategoryBadge category={event.category} />
-        <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand">
-          {event.state}
-        </span>
+      <div className="relative">
+        <EventCover
+          url={event.cover_image_url}
+          category={event.category}
+          title={event.title}
+          className="h-40 w-full"
+        />
+        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
+          <CategoryBadge category={event.category} className="shadow-sm" />
+          <span className="rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-brand shadow-sm">
+            {event.state}
+          </span>
+        </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-5 pt-3">
+      <div className="flex flex-1 flex-col p-5 pt-4">
         <h3 className="line-clamp-2 text-lg font-bold text-gray-900 group-hover:text-brand">
           {event.title}
         </h3>

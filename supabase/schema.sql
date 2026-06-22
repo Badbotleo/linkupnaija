@@ -36,9 +36,10 @@ create table if not exists public.events (
   time           time not null,
   location       text not null,
   state          text not null,
-  host_id        uuid not null references public.users (id) on delete cascade,
-  max_attendees  integer,
-  created_at     timestamptz not null default now()
+  host_id         uuid not null references public.users (id) on delete cascade,
+  max_attendees   integer,
+  cover_image_url text,
+  created_at      timestamptz not null default now()
 );
 
 create index if not exists events_state_idx on public.events (state);
@@ -256,5 +257,41 @@ create policy "Users can delete their own avatar"
   on storage.objects for delete
   using (
     bucket_id = 'avatars'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- ----------------------------------------------------------------------------
+-- Event cover storage bucket + policies (public read, owner-only write).
+-- ----------------------------------------------------------------------------
+insert into storage.buckets (id, name, public)
+values ('event-covers', 'event-covers', true)
+on conflict (id) do nothing;
+
+drop policy if exists "Event covers are publicly readable" on storage.objects;
+create policy "Event covers are publicly readable"
+  on storage.objects for select
+  using (bucket_id = 'event-covers');
+
+drop policy if exists "Users can upload event covers" on storage.objects;
+create policy "Users can upload event covers"
+  on storage.objects for insert
+  with check (
+    bucket_id = 'event-covers'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+drop policy if exists "Users can update their event covers" on storage.objects;
+create policy "Users can update their event covers"
+  on storage.objects for update
+  using (
+    bucket_id = 'event-covers'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+drop policy if exists "Users can delete their event covers" on storage.objects;
+create policy "Users can delete their event covers"
+  on storage.objects for delete
+  using (
+    bucket_id = 'event-covers'
     and (storage.foldername(name))[1] = auth.uid()::text
   );

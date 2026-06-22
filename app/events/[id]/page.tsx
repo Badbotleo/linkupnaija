@@ -8,6 +8,7 @@ import EventTabs from "@/components/EventTabs";
 import ChatPanel from "@/components/ChatPanel";
 import ManageRequests from "@/components/ManageRequests";
 import Avatar from "@/components/Avatar";
+import EventCover from "@/components/EventCover";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import type {
   ChatMessageUI,
@@ -97,6 +98,15 @@ export default async function EventDetailPage({
       >
         ← Back to events
       </Link>
+
+      <div className="mt-4 overflow-hidden rounded-2xl shadow-card">
+        <EventCover
+          url={event.cover_image_url}
+          category={event.category}
+          title={event.title}
+          className="h-52 w-full sm:h-72"
+        />
+      </div>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-3">
         {/* Main */}

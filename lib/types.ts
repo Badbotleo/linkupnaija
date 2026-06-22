@@ -41,6 +41,7 @@ export interface EventRow {
   state: string;
   host_id: string;
   max_attendees: number | null;
+  cover_image_url: string | null;
   created_at: string;
 }
 

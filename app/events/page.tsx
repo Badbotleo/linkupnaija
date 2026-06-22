@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import EventsFilters from "@/components/EventsFilters";
-import EventCard from "@/components/EventCard";
+import EventsList from "@/components/EventsList";
 import type { EventRow, RsvpStatus } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +33,11 @@ export default async function EventsPage({
   const acceptedCount = (e: FeedEvent) =>
     e.rsvps.filter((r) => r.status === "accepted").length;
 
+  const feedEvents = events.map((e) => ({
+    ...e,
+    attendeeCount: acceptedCount(e),
+  }));
+
   return (
     <div className="container-page py-10">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -49,41 +54,20 @@ export default async function EventsPage({
         </Link>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-8 space-y-4">
         <Suspense fallback={null}>
           <EventsFilters />
         </Suspense>
       </div>
 
-      {error && (
+      {error ? (
         <p className="mt-8 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
           Could not load events: {error.message}. Did you run the SQL schema and
           set your Supabase env vars?
         </p>
-      )}
-
-      {!error && events.length === 0 ? (
-        <div className="mt-12 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-16 text-center">
-          <p className="text-4xl">🗓️</p>
-          <h2 className="mt-3 text-lg font-bold text-gray-900">
-            No events match your filters yet
-          </h2>
-          <p className="mt-1 text-gray-500">
-            Try a different state or category — or be the first to host one!
-          </p>
-          <Link href="/host" className="btn-primary mt-6">
-            Host an event
-          </Link>
-        </div>
       ) : (
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {events.map((event) => (
-            <EventCard
-              key={event.id}
-              event={event}
-              attendeeCount={acceptedCount(event)}
-            />
-          ))}
+        <div className="mt-6">
+          <EventsList events={feedEvents} />
         </div>
       )}
     </div>

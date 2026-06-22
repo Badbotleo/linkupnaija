@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-// Handles the email-confirmation / magic-link redirect from Supabase.
+// Handles the email-confirmation and OAuth (Google) redirects from Supabase.
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
@@ -11,12 +11,28 @@ export async function GET(request: Request) {
     const supabase = createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      // For the email-verification flow we want the user to log in explicitly,
-      // so clear the session created by confirming the link before redirecting.
+      // Email-verification flow: clear the session so the user logs in explicitly.
       if (redirect.startsWith("/login")) {
         await supabase.auth.signOut();
+        return NextResponse.redirect(`${origin}${redirect}`);
       }
-      return NextResponse.redirect(`${origin}${redirect}`);
+
+      // OAuth (Google) sign-in: keep the session and send first-timers to setup.
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      let destination = redirect;
+      if (user) {
+        const { data: profile } = await supabase
+          .from("users")
+          .select("profile_completed")
+          .eq("id", user.id)
+          .single();
+        if (!profile || !profile.profile_completed) {
+          destination = "/profile/setup";
+        }
+      }
+      return NextResponse.redirect(`${origin}${destination}`);
     }
   }
 
