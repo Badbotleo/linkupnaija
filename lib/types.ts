@@ -39,3 +39,20 @@ export interface EventWithCount extends EventRow {
 export interface EventWithHost extends EventRow {
   host: Pick<UserProfile, "id" | "name" | "avatar_url" | "state"> | null;
 }
+
+export interface ChatMessageRow {
+  id: string;
+  event_id: string;
+  user_id: string;
+  message: string;
+  created_at: string;
+}
+
+// A chat message resolved with its sender's display name (for the UI).
+export interface ChatMessageUI {
+  id: string;
+  user_id: string;
+  message: string;
+  created_at: string;
+  senderName: string;
+}

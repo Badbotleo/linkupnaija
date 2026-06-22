@@ -4,13 +4,24 @@ import { createClient } from "@/lib/supabase/server";
 import CategoryBadge from "@/components/CategoryBadge";
 import RsvpButton from "@/components/RsvpButton";
 import ShareButtons from "@/components/ShareButtons";
+import EventTabs from "@/components/EventTabs";
+import ChatPanel from "@/components/ChatPanel";
 import { formatEventDate, formatEventTime } from "@/lib/format";
+import type { ChatMessageUI } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 interface AttendeeRow {
   user_id: string;
   users: { name: string | null; state: string | null } | null;
+}
+
+interface ChatRow {
+  id: string;
+  user_id: string;
+  message: string;
+  created_at: string;
+  users: { name: string | null } | null;
 }
 
 export default async function EventDetailPage({
@@ -46,6 +57,31 @@ export default async function EventDetailPage({
   const isFull =
     !!event.max_attendees && attendeeCount >= event.max_attendees;
 
+  // Group chat is private to attendees + the host.
+  const canChat = isHost || initialJoined;
+
+  let initialMessages: ChatMessageUI[] = [];
+  let currentUserName = "You";
+  if (user && canChat) {
+    const [{ data: chatRows }, { data: me }] = await Promise.all([
+      supabase
+        .from("chat_messages")
+        .select("id, user_id, message, created_at, users(name)")
+        .eq("event_id", params.id)
+        .order("created_at", { ascending: true }),
+      supabase.from("users").select("name").eq("id", user.id).single(),
+    ]);
+
+    initialMessages = ((chatRows ?? []) as unknown as ChatRow[]).map((m) => ({
+      id: m.id,
+      user_id: m.user_id,
+      message: m.message,
+      created_at: m.created_at,
+      senderName: m.users?.name ?? "Member",
+    }));
+    currentUserName = me?.name ?? "You";
+  }
+
   return (
     <div className="container-page py-10">
       <Link
@@ -69,74 +105,100 @@ export default async function EventDetailPage({
             {event.title}
           </h1>
 
-          <div className="mt-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-card">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Detail
-                emoji="📅"
-                label="Date"
-                value={formatEventDate(event.date)}
-              />
-              <Detail
-                emoji="⏰"
-                label="Time"
-                value={formatEventTime(event.time)}
-              />
-              <Detail emoji="📍" label="Location" value={event.location} />
-              <Detail
-                emoji="👥"
-                label="Attendees"
-                value={
-                  event.max_attendees
-                    ? `${attendeeCount} / ${event.max_attendees}`
-                    : `${attendeeCount} going`
-                }
-              />
-            </div>
+          <div className="mt-6">
+            <EventTabs
+              details={
+                <div className="space-y-8">
+                  <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-card">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Detail
+                        emoji="📅"
+                        label="Date"
+                        value={formatEventDate(event.date)}
+                      />
+                      <Detail
+                        emoji="⏰"
+                        label="Time"
+                        value={formatEventTime(event.time)}
+                      />
+                      <Detail
+                        emoji="📍"
+                        label="Location"
+                        value={event.location}
+                      />
+                      <Detail
+                        emoji="👥"
+                        label="Attendees"
+                        value={
+                          event.max_attendees
+                            ? `${attendeeCount} / ${event.max_attendees}`
+                            : `${attendeeCount} going`
+                        }
+                      />
+                    </div>
 
-            <div className="mt-5 border-t border-gray-100 pt-4">
-              <ShareButtons
-                title={event.title}
-                dateLabel={formatEventDate(event.date)}
-                location={event.location}
-              />
-            </div>
-          </div>
+                    <div className="mt-5 border-t border-gray-100 pt-4">
+                      <ShareButtons
+                        title={event.title}
+                        dateLabel={formatEventDate(event.date)}
+                        location={event.location}
+                      />
+                    </div>
+                  </div>
 
-          <div className="mt-8">
-            <h2 className="text-lg font-bold text-gray-900">About this event</h2>
-            <p className="mt-2 whitespace-pre-line leading-relaxed text-gray-600">
-              {event.description || "No description provided."}
-            </p>
-          </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900">
+                      About this event
+                    </h2>
+                    <p className="mt-2 whitespace-pre-line leading-relaxed text-gray-600">
+                      {event.description || "No description provided."}
+                    </p>
+                  </div>
 
-          <div className="mt-8">
-            <h2 className="text-lg font-bold text-gray-900">
-              Who&apos;s going ({attendeeCount})
-            </h2>
-            {attendeeCount === 0 ? (
-              <p className="mt-2 text-gray-500">
-                No one yet — be the first to join! 🎈
-              </p>
-            ) : (
-              <ul className="mt-4 flex flex-wrap gap-3">
-                {attendees.map((a) => {
-                  const name = a.users?.name ?? "Guest";
-                  return (
-                    <li
-                      key={a.user_id}
-                      className="flex items-center gap-2 rounded-full border border-gray-100 bg-white py-1.5 pl-1.5 pr-4 shadow-sm"
-                    >
-                      <span className="grid h-8 w-8 place-items-center rounded-full bg-brand text-sm font-bold text-white">
-                        {name.charAt(0).toUpperCase()}
-                      </span>
-                      <span className="text-sm font-medium text-gray-700">
-                        {name}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900">
+                      Who&apos;s going ({attendeeCount})
+                    </h2>
+                    {attendeeCount === 0 ? (
+                      <p className="mt-2 text-gray-500">
+                        No one yet — be the first to join! 🎈
+                      </p>
+                    ) : (
+                      <ul className="mt-4 flex flex-wrap gap-3">
+                        {attendees.map((a) => {
+                          const name = a.users?.name ?? "Guest";
+                          return (
+                            <li
+                              key={a.user_id}
+                              className="flex items-center gap-2 rounded-full border border-gray-100 bg-white py-1.5 pl-1.5 pr-4 shadow-sm"
+                            >
+                              <span className="grid h-8 w-8 place-items-center rounded-full bg-brand text-sm font-bold text-white">
+                                {name.charAt(0).toUpperCase()}
+                              </span>
+                              <span className="text-sm font-medium text-gray-700">
+                                {name}
+                              </span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              }
+              chat={
+                canChat && user ? (
+                  <ChatPanel
+                    eventId={event.id}
+                    currentUserId={user.id}
+                    currentUserName={currentUserName}
+                    initialMessages={initialMessages}
+                  />
+                ) : (
+                  <LockedChat isLoggedIn={!!user} eventId={event.id} />
+                )
+              }
+            />
           </div>
         </div>
 
@@ -170,6 +232,36 @@ export default async function EventDetailPage({
           </div>
         </aside>
       </div>
+    </div>
+  );
+}
+
+function LockedChat({
+  isLoggedIn,
+  eventId,
+}: {
+  isLoggedIn: boolean;
+  eventId: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-14 text-center">
+      <p className="text-4xl">🔒</p>
+      <h2 className="mt-3 text-lg font-bold text-gray-900">
+        Group chat is for attendees
+      </h2>
+      <p className="mx-auto mt-1 max-w-sm text-gray-500">
+        {isLoggedIn
+          ? "Join this event to unlock the private group chat with everyone going."
+          : "Log in and join this event to chat with everyone going."}
+      </p>
+      {!isLoggedIn && (
+        <Link
+          href={`/login?redirect=/events/${eventId}`}
+          className="btn-primary mt-6"
+        >
+          Log in to join
+        </Link>
+      )}
     </div>
   );
 }

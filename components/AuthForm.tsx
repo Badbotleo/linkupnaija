@@ -18,21 +18,25 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+
+  // Success banner shown on the login page right after email verification.
+  const justVerified = mode === "login" && searchParams.get("verified") === "1";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setMessage(null);
 
     if (mode === "signup") {
+      // After the user clicks the link in their email, send them back to the
+      // login page with a success flag.
+      const verifyRedirect = encodeURIComponent("/login?verified=1");
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: { name, state },
-          emailRedirectTo: `${location.origin}/auth/callback?redirect=${encodeURIComponent(redirect)}`,
+          emailRedirectTo: `${location.origin}/auth/callback?redirect=${verifyRedirect}`,
         },
       });
       if (error) {
@@ -40,15 +44,13 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
         setLoading(false);
         return;
       }
-      // If email confirmation is on there is no active session yet.
+      // If email confirmation is on there is no active session yet — send the
+      // user to the "check your email" page.
       if (data.session) {
         router.push(redirect);
         router.refresh();
       } else {
-        setMessage(
-          "Account created! Check your email to confirm, then log in."
-        );
-        setLoading(false);
+        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({
@@ -69,6 +71,12 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {justVerified && (
+        <p className="rounded-lg bg-green-50 px-3 py-2 text-sm font-medium text-green-700">
+          ✅ Email verified! Please log in.
+        </p>
+      )}
+
       {isSignup && (
         <>
           <div>
@@ -143,11 +151,6 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
       {error && (
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
           {error}
-        </p>
-      )}
-      {message && (
-        <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
-          {message}
         </p>
       )}
 
