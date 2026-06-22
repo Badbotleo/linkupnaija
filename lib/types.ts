@@ -6,8 +6,29 @@ export interface UserProfile {
   email: string;
   state: string | null;
   avatar_url: string | null;
+  bio: string | null;
+  instagram_url: string | null;
+  twitter_url: string | null;
+  facebook_url: string | null;
+  phone: string | null;
+  profile_completed: boolean;
   created_at: string;
 }
+
+// Subset of profile fields shown on profile cards (dashboard, requests).
+export type PublicProfile = Pick<
+  UserProfile,
+  | "id"
+  | "name"
+  | "state"
+  | "avatar_url"
+  | "bio"
+  | "instagram_url"
+  | "twitter_url"
+  | "facebook_url"
+>;
+
+export type RsvpStatus = "pending" | "accepted" | "declined";
 
 export interface EventRow {
   id: string;
@@ -27,7 +48,17 @@ export interface Rsvp {
   id: string;
   event_id: string;
   user_id: string;
+  status: RsvpStatus;
   created_at: string;
+}
+
+// An RSVP row joined with the requester's public profile (host management).
+export interface RsvpWithProfile {
+  id: string;
+  user_id: string;
+  status: RsvpStatus;
+  created_at: string;
+  users: PublicProfile | null;
 }
 
 // Event with a joined attendee count, as returned by the events feed query.

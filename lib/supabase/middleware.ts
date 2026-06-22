@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // Refreshes the Supabase auth session on every request and guards
 // the routes that require a logged-in user.
-const PROTECTED_PREFIXES = ["/host"];
+const PROTECTED_PREFIXES = ["/host", "/dashboard", "/profile"];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });

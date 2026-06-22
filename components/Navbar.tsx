@@ -34,11 +34,19 @@ export default async function Navbar() {
           </Link>
 
           {user ? (
-            <form action="/auth/signout" method="post">
-              <button type="submit" className="btn-outline ml-1 py-2">
-                Sign out
-              </button>
-            </form>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <Link
+                href="/dashboard"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              >
+                Dashboard
+              </Link>
+              <form action="/auth/signout" method="post">
+                <button type="submit" className="btn-outline ml-1 py-2">
+                  Sign out
+                </button>
+              </form>
+            </div>
           ) : (
             <div className="flex items-center gap-2">
               <Link href="/login" className="btn-outline py-2">

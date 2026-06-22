@@ -10,12 +10,18 @@ create extension if not exists "pgcrypto";
 -- users (public profile, 1:1 with auth.users)
 -- ----------------------------------------------------------------------------
 create table if not exists public.users (
-  id          uuid primary key references auth.users (id) on delete cascade,
-  name        text,
-  email       text not null,
-  state       text,
-  avatar_url  text,
-  created_at  timestamptz not null default now()
+  id                uuid primary key references auth.users (id) on delete cascade,
+  name              text,
+  email             text not null,
+  state             text,
+  avatar_url        text,
+  bio               text,
+  instagram_url     text,
+  twitter_url       text,
+  facebook_url      text,
+  phone             text,
+  profile_completed boolean not null default false,
+  created_at        timestamptz not null default now()
 );
 
 -- ----------------------------------------------------------------------------
@@ -46,12 +52,15 @@ create table if not exists public.rsvps (
   id         uuid primary key default gen_random_uuid(),
   event_id   uuid not null references public.events (id) on delete cascade,
   user_id    uuid not null references public.users (id) on delete cascade,
+  status     text not null default 'pending'
+             check (status in ('pending', 'accepted', 'declined')),
   created_at timestamptz not null default now(),
-  unique (event_id, user_id) -- a user can only RSVP once per event
+  unique (event_id, user_id) -- a user can only request once per event
 );
 
 create index if not exists rsvps_event_idx on public.rsvps (event_id);
 create index if not exists rsvps_user_idx on public.rsvps (user_id);
+create index if not exists rsvps_status_idx on public.rsvps (event_id, status);
 
 -- ----------------------------------------------------------------------------
 -- Auto-create a public.users row whenever an auth user signs up.
@@ -124,9 +133,26 @@ drop policy if exists "RSVPs are viewable by everyone" on public.rsvps;
 create policy "RSVPs are viewable by everyone"
   on public.rsvps for select using (true);
 
-drop policy if exists "Users can RSVP for themselves" on public.rsvps;
-create policy "Users can RSVP for themselves"
-  on public.rsvps for insert with check (auth.uid() = user_id);
+drop policy if exists "Users can request to join" on public.rsvps;
+create policy "Users can request to join"
+  on public.rsvps for insert
+  with check (auth.uid() = user_id and status = 'pending');
+
+drop policy if exists "Hosts can manage requests for their events" on public.rsvps;
+create policy "Hosts can manage requests for their events"
+  on public.rsvps for update
+  using (
+    exists (
+      select 1 from public.events e
+      where e.id = rsvps.event_id and e.host_id = auth.uid()
+    )
+  )
+  with check (
+    exists (
+      select 1 from public.events e
+      where e.id = rsvps.event_id and e.host_id = auth.uid()
+    )
+  );
 
 drop policy if exists "Users can cancel their own RSVP" on public.rsvps;
 create policy "Users can cancel their own RSVP"
@@ -160,7 +186,9 @@ as $$
   select
     exists (
       select 1 from public.rsvps r
-      where r.event_id = target_event and r.user_id = auth.uid()
+      where r.event_id = target_event
+        and r.user_id = auth.uid()
+        and r.status = 'accepted'
     )
     or exists (
       select 1 from public.events e
@@ -193,3 +221,40 @@ begin
     alter publication supabase_realtime add table public.chat_messages;
   end if;
 end $$;
+
+-- ----------------------------------------------------------------------------
+-- Avatar storage bucket + policies (public read, owner-only write).
+-- Files live under a folder named after the user's id: "<uid>/...".
+-- ----------------------------------------------------------------------------
+insert into storage.buckets (id, name, public)
+values ('avatars', 'avatars', true)
+on conflict (id) do nothing;
+
+drop policy if exists "Avatar images are publicly readable" on storage.objects;
+create policy "Avatar images are publicly readable"
+  on storage.objects for select
+  using (bucket_id = 'avatars');
+
+drop policy if exists "Users can upload their own avatar" on storage.objects;
+create policy "Users can upload their own avatar"
+  on storage.objects for insert
+  with check (
+    bucket_id = 'avatars'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+drop policy if exists "Users can update their own avatar" on storage.objects;
+create policy "Users can update their own avatar"
+  on storage.objects for update
+  using (
+    bucket_id = 'avatars'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+drop policy if exists "Users can delete their own avatar" on storage.objects;
+create policy "Users can delete their own avatar"
+  on storage.objects for delete
+  using (
+    bucket_id = 'avatars'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );

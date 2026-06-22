@@ -6,15 +6,19 @@ import RsvpButton from "@/components/RsvpButton";
 import ShareButtons from "@/components/ShareButtons";
 import EventTabs from "@/components/EventTabs";
 import ChatPanel from "@/components/ChatPanel";
+import ManageRequests from "@/components/ManageRequests";
+import Avatar from "@/components/Avatar";
 import { formatEventDate, formatEventTime } from "@/lib/format";
-import type { ChatMessageUI } from "@/lib/types";
+import type {
+  ChatMessageUI,
+  RsvpStatus,
+  RsvpWithProfile,
+} from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-interface AttendeeRow {
-  user_id: string;
-  users: { name: string | null; state: string | null } | null;
-}
+const RSVP_PROFILE_SELECT =
+  "id, user_id, status, created_at, users(id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url)";
 
 interface ChatRow {
   id: string;
@@ -39,26 +43,29 @@ export default async function EventDetailPage({
 
   if (!event) notFound();
 
-  const { data: attendeeRows } = await supabase
+  const { data: rsvpRows } = await supabase
     .from("rsvps")
-    .select("user_id, users(name, state)")
+    .select(RSVP_PROFILE_SELECT)
     .eq("event_id", params.id)
     .order("created_at", { ascending: true });
 
-  const attendees = (attendeeRows ?? []) as unknown as AttendeeRow[];
+  const rsvps = (rsvpRows ?? []) as unknown as RsvpWithProfile[];
+  const accepted = rsvps.filter((r) => r.status === "accepted");
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const attendeeCount = attendees.length;
+  const attendeeCount = accepted.length;
   const isHost = !!user && user.id === event.host_id;
-  const initialJoined = !!user && attendees.some((a) => a.user_id === user.id);
+  const myStatus: "none" | RsvpStatus = user
+    ? (rsvps.find((r) => r.user_id === user.id)?.status ?? "none")
+    : "none";
   const isFull =
     !!event.max_attendees && attendeeCount >= event.max_attendees;
 
-  // Group chat is private to attendees + the host.
-  const canChat = isHost || initialJoined;
+  // Group chat is private to accepted attendees + the host.
+  const canChat = isHost || myStatus === "accepted";
 
   let initialMessages: ChatMessageUI[] = [];
   let currentUserName = "You";
@@ -165,22 +172,21 @@ export default async function EventDetailPage({
                       </p>
                     ) : (
                       <ul className="mt-4 flex flex-wrap gap-3">
-                        {attendees.map((a) => {
-                          const name = a.users?.name ?? "Guest";
-                          return (
-                            <li
-                              key={a.user_id}
-                              className="flex items-center gap-2 rounded-full border border-gray-100 bg-white py-1.5 pl-1.5 pr-4 shadow-sm"
-                            >
-                              <span className="grid h-8 w-8 place-items-center rounded-full bg-brand text-sm font-bold text-white">
-                                {name.charAt(0).toUpperCase()}
-                              </span>
-                              <span className="text-sm font-medium text-gray-700">
-                                {name}
-                              </span>
-                            </li>
-                          );
-                        })}
+                        {accepted.map((a) => (
+                          <li
+                            key={a.user_id}
+                            className="flex items-center gap-2 rounded-full border border-gray-100 bg-white py-1.5 pl-1.5 pr-4 shadow-sm"
+                          >
+                            <Avatar
+                              name={a.users?.name ?? null}
+                              url={a.users?.avatar_url ?? null}
+                              size="sm"
+                            />
+                            <span className="text-sm font-medium text-gray-700">
+                              {a.users?.name ?? "Guest"}
+                            </span>
+                          </li>
+                        ))}
                       </ul>
                     )}
                   </div>
@@ -200,6 +206,12 @@ export default async function EventDetailPage({
               }
             />
           </div>
+
+          {isHost && (
+            <div className="mt-8">
+              <ManageRequests initialRequests={rsvps} />
+            </div>
+          )}
         </div>
 
         {/* Sidebar */}
@@ -207,9 +219,11 @@ export default async function EventDetailPage({
           <div className="sticky top-24 rounded-2xl border border-gray-100 bg-white p-6 shadow-card">
             <p className="text-sm text-gray-500">Hosted by</p>
             <div className="mt-2 flex items-center gap-3">
-              <span className="grid h-11 w-11 place-items-center rounded-full bg-brand text-lg font-bold text-white">
-                {(event.host?.name ?? "H").charAt(0).toUpperCase()}
-              </span>
+              <Avatar
+                name={event.host?.name ?? null}
+                url={event.host?.avatar_url ?? null}
+                size="md"
+              />
               <div>
                 <p className="font-bold text-gray-900">
                   {event.host?.name ?? "A LinkUpNaija host"}
@@ -224,7 +238,7 @@ export default async function EventDetailPage({
               <RsvpButton
                 eventId={event.id}
                 isLoggedIn={!!user}
-                initialJoined={initialJoined}
+                initialStatus={myStatus}
                 isHost={isHost}
                 isFull={isFull}
               />

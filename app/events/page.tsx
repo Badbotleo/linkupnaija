@@ -3,9 +3,11 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import EventsFilters from "@/components/EventsFilters";
 import EventCard from "@/components/EventCard";
-import type { EventWithCount } from "@/lib/types";
+import type { EventRow, RsvpStatus } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+
+type FeedEvent = EventRow & { rsvps: { status: RsvpStatus }[] };
 
 export default async function EventsPage({
   searchParams,
@@ -16,7 +18,7 @@ export default async function EventsPage({
 
   let query = supabase
     .from("events")
-    .select("*, rsvps(count)")
+    .select("*, rsvps(status)")
     .gte("date", new Date().toISOString().slice(0, 10))
     .order("date", { ascending: true })
     .order("time", { ascending: true });
@@ -26,7 +28,10 @@ export default async function EventsPage({
     query = query.eq("category", searchParams.category);
 
   const { data, error } = await query;
-  const events = (data ?? []) as unknown as EventWithCount[];
+  const events = (data ?? []) as unknown as FeedEvent[];
+
+  const acceptedCount = (e: FeedEvent) =>
+    e.rsvps.filter((r) => r.status === "accepted").length;
 
   return (
     <div className="container-page py-10">
@@ -73,7 +78,11 @@ export default async function EventsPage({
       ) : (
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((event) => (
-            <EventCard key={event.id} event={event} />
+            <EventCard
+              key={event.id}
+              event={event}
+              attendeeCount={acceptedCount(event)}
+            />
           ))}
         </div>
       )}

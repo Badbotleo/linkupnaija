@@ -45,15 +45,15 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
         return;
       }
       // If email confirmation is on there is no active session yet — send the
-      // user to the "check your email" page.
+      // user to the "check your email" page. Otherwise straight to setup.
       if (data.session) {
-        router.push(redirect);
+        router.push("/profile/setup");
         router.refresh();
       } else {
         router.push(`/verify-email?email=${encodeURIComponent(email)}`);
       }
     } else {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -62,7 +62,19 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
         setLoading(false);
         return;
       }
-      router.push(redirect);
+      // First-time login (profile not set up yet) → onboarding.
+      let destination = redirect;
+      if (data.user) {
+        const { data: profile } = await supabase
+          .from("users")
+          .select("profile_completed")
+          .eq("id", data.user.id)
+          .single();
+        if (profile && !profile.profile_completed) {
+          destination = "/profile/setup";
+        }
+      }
+      router.push(destination);
       router.refresh();
     }
   }

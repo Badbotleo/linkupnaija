@@ -1,0 +1,225 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import ProfileCard from "@/components/ProfileCard";
+import CategoryBadge from "@/components/CategoryBadge";
+import { formatEventDate, formatEventTime } from "@/lib/format";
+import type { EventRow, RsvpStatus, UserProfile } from "@/lib/types";
+
+export const dynamic = "force-dynamic";
+
+type HostingEvent = EventRow & { rsvps: { status: RsvpStatus }[] };
+type MyRsvp = { status: RsvpStatus; events: EventRow | null };
+
+export default async function DashboardPage() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login?redirect=/dashboard");
+
+  const [{ data: profile }, { data: hostingRaw }, { data: myRsvpsRaw }] =
+    await Promise.all([
+      supabase.from("users").select("*").eq("id", user.id).single(),
+      supabase
+        .from("events")
+        .select("*, rsvps(status)")
+        .eq("host_id", user.id)
+        .order("date", { ascending: true }),
+      supabase
+        .from("rsvps")
+        .select("status, events(*)")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false }),
+    ]);
+
+  const hosting = (hostingRaw ?? []) as unknown as HostingEvent[];
+  const myRsvps = (myRsvpsRaw ?? []) as unknown as MyRsvp[];
+
+  const attending = myRsvps.filter((r) => r.status === "accepted" && r.events);
+  const pending = myRsvps.filter((r) => r.status === "pending" && r.events);
+  const declined = myRsvps.filter((r) => r.status === "declined" && r.events);
+
+  const p = profile as UserProfile | null;
+
+  return (
+    <div className="container-page py-10">
+      <h1 className="text-3xl font-extrabold text-gray-900">Your dashboard</h1>
+
+      <div className="mt-6 grid gap-8 lg:grid-cols-3">
+        {/* Profile summary */}
+        <div className="lg:col-span-1">
+          {p && (
+            <ProfileCard
+              showEdit
+              profile={{
+                id: p.id,
+                name: p.name,
+                state: p.state,
+                avatar_url: p.avatar_url,
+                bio: p.bio,
+                instagram_url: p.instagram_url,
+                twitter_url: p.twitter_url,
+                facebook_url: p.facebook_url,
+              }}
+            />
+          )}
+        </div>
+
+        {/* Lists */}
+        <div className="space-y-8 lg:col-span-2">
+          <Section
+            title="Events I'm hosting"
+            count={hosting.length}
+            emptyText="You haven't hosted any events yet."
+            emptyCta
+          >
+            {hosting.map((e) => {
+              const accepted = e.rsvps.filter(
+                (r) => r.status === "accepted"
+              ).length;
+              const pendingCount = e.rsvps.filter(
+                (r) => r.status === "pending"
+              ).length;
+              return (
+                <EventRowCard key={e.id} event={e}>
+                  <span className="text-sm font-semibold text-gray-700">
+                    👥 {accepted} going
+                  </span>
+                  {pendingCount > 0 && (
+                    <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-700">
+                      {pendingCount} pending
+                    </span>
+                  )}
+                </EventRowCard>
+              );
+            })}
+          </Section>
+
+          <Section
+            title="Events I'm attending"
+            count={attending.length}
+            emptyText="No accepted events yet — explore and request to join one!"
+            emptyCta
+          >
+            {attending.map((r) => (
+              <EventRowCard key={r.events!.id} event={r.events!}>
+                <StatusPill status="accepted" />
+              </EventRowCard>
+            ))}
+          </Section>
+
+          <Section
+            title="Pending requests"
+            count={pending.length}
+            emptyText="No pending requests."
+          >
+            {pending.map((r) => (
+              <EventRowCard key={r.events!.id} event={r.events!}>
+                <StatusPill status="pending" />
+              </EventRowCard>
+            ))}
+          </Section>
+
+          <Section
+            title="Declined"
+            count={declined.length}
+            emptyText="Nothing here."
+          >
+            {declined.map((r) => (
+              <EventRowCard key={r.events!.id} event={r.events!}>
+                <StatusPill status="declined" />
+              </EventRowCard>
+            ))}
+          </Section>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Section({
+  title,
+  count,
+  emptyText,
+  emptyCta = false,
+  children,
+}: {
+  title: string;
+  count: number;
+  emptyText: string;
+  emptyCta?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <section>
+      <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
+        {title}
+        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold text-gray-600">
+          {count}
+        </span>
+      </h2>
+      {count === 0 ? (
+        <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-8 text-center text-sm text-gray-500">
+          <p>{emptyText}</p>
+          {emptyCta && (
+            <Link href="/events" className="btn-outline mt-4">
+              Explore events
+            </Link>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-3">{children}</div>
+      )}
+    </section>
+  );
+}
+
+function EventRowCard({
+  event,
+  children,
+}: {
+  event: EventRow;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={`/events/${event.id}`}
+      className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-card transition hover:border-brand/30 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <div className="min-w-0">
+        <div className="flex items-center gap-2">
+          <CategoryBadge category={event.category} />
+          <span className="text-xs font-semibold text-brand">
+            {event.state}
+          </span>
+        </div>
+        <p className="mt-1.5 truncate font-bold text-gray-900">{event.title}</p>
+        <p className="text-sm text-gray-500">
+          📅 {formatEventDate(event.date)} · {formatEventTime(event.time)}
+        </p>
+      </div>
+      <div className="flex items-center gap-2">{children}</div>
+    </Link>
+  );
+}
+
+function StatusPill({ status }: { status: RsvpStatus }) {
+  const map: Record<RsvpStatus, string> = {
+    accepted: "bg-green-100 text-green-700",
+    pending: "bg-amber-100 text-amber-700",
+    declined: "bg-red-100 text-red-700",
+  };
+  const label: Record<RsvpStatus, string> = {
+    accepted: "✓ Going",
+    pending: "⏳ Pending",
+    declined: "Declined",
+  };
+  return (
+    <span
+      className={`rounded-full px-2.5 py-1 text-xs font-bold ${map[status]}`}
+    >
+      {label[status]}
+    </span>
+  );
+}

@@ -1,13 +1,18 @@
 import Link from "next/link";
 import CategoryBadge from "./CategoryBadge";
 import { formatEventDate, formatEventTime } from "@/lib/format";
-import type { EventWithCount } from "@/lib/types";
+import type { EventRow } from "@/lib/types";
 
-export default function EventCard({ event }: { event: EventWithCount }) {
-  const attendees = event.rsvps?.[0]?.count ?? 0;
+export default function EventCard({
+  event,
+  attendeeCount,
+}: {
+  event: EventRow;
+  attendeeCount: number;
+}) {
   const spotsLabel = event.max_attendees
-    ? `${attendees}/${event.max_attendees} going`
-    : `${attendees} going`;
+    ? `${attendeeCount}/${event.max_attendees} going`
+    : `${attendeeCount} going`;
 
   return (
     <Link
