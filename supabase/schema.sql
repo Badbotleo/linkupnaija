@@ -423,3 +423,40 @@ drop trigger if exists on_review_change on public.reviews;
 create trigger on_review_change
   after insert or update or delete on public.reviews
   for each row execute function public.refresh_host_rating();
+
+-- ============================================================================
+-- Batch 3: admin flag + platform-fee transactions
+-- (See supabase/migration-batch3.sql for the standalone migration.)
+-- ============================================================================
+
+alter table public.users add column if not exists is_admin boolean not null default false;
+
+create or replace function public.is_admin()
+returns boolean language sql security definer stable set search_path = public as $$
+  select coalesce((select is_admin from public.users where id = auth.uid()), false);
+$$;
+
+create table if not exists public.transactions (
+  id                 uuid primary key default gen_random_uuid(),
+  event_id           uuid references public.events (id) on delete set null,
+  user_id            uuid references public.users (id) on delete set null,
+  amount             integer not null,
+  platform_fee       integer not null,
+  paystack_reference text,
+  created_at         timestamptz not null default now()
+);
+create index if not exists transactions_created_idx on public.transactions (created_at desc);
+create index if not exists transactions_event_idx   on public.transactions (event_id);
+alter table public.transactions enable row level security;
+
+drop policy if exists "Users record their own transactions" on public.transactions;
+create policy "Users record their own transactions"
+  on public.transactions for insert with check (user_id = auth.uid());
+
+drop policy if exists "Admins read all transactions" on public.transactions;
+create policy "Admins read all transactions"
+  on public.transactions for select using (public.is_admin());
+
+drop policy if exists "Users read their own transactions" on public.transactions;
+create policy "Users read their own transactions"
+  on public.transactions for select using (user_id = auth.uid());

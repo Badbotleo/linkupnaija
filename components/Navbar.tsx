@@ -8,6 +8,16 @@ export default async function Navbar() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  let isAdmin = false;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("users")
+      .select("is_admin")
+      .eq("id", user.id)
+      .single();
+    isAdmin = !!profile?.is_admin;
+  }
+
   return (
     <header className="sticky top-0 z-40 border-b border-gray-100 bg-white/90 backdrop-blur">
       <nav className="container-page flex h-16 items-center justify-between">
@@ -37,6 +47,14 @@ export default async function Navbar() {
           {user ? (
             <div className="flex items-center gap-1 sm:gap-2">
               <NotificationsBell userId={user.id} />
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-brand hover:bg-brand-50"
+                >
+                  Admin
+                </Link>
+              )}
               <Link
                 href="/dashboard"
                 className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"

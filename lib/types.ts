@@ -14,6 +14,17 @@ export interface UserProfile {
   profile_completed: boolean;
   rating_avg: number;
   rating_count: number;
+  is_admin: boolean;
+  created_at: string;
+}
+
+export interface Transaction {
+  id: string;
+  event_id: string | null;
+  user_id: string | null;
+  amount: number;
+  platform_fee: number;
+  paystack_reference: string | null;
   created_at: string;
 }
 

@@ -7,10 +7,42 @@ import ChatWidget from "@/components/ChatWidget";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const TITLE = "LinkUpNaija — Connect. Hang out. Vibe.";
+const DESCRIPTION =
+  "Nigeria's social events platform. Find clubbing, parties, picnics, book clubs, dinners and game nights near you — or host your own.";
+
 export const metadata: Metadata = {
-  title: "LinkUpNaija — Connect. Hang out. Vibe.",
-  description:
-    "Nigeria's social events platform. Find clubbing, parties, picnics, book clubs, dinners and game nights near you — or host your own.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: TITLE,
+    template: "%s · LinkUpNaija",
+  },
+  description: DESCRIPTION,
+  applicationName: "LinkUpNaija",
+  keywords: [
+    "Nigeria events",
+    "Lagos events",
+    "parties",
+    "clubbing",
+    "picnic",
+    "book club",
+    "hangouts",
+    "LinkUpNaija",
+  ],
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    siteName: "LinkUpNaija",
+    type: "website",
+    locale: "en_NG",
+    url: SITE_URL,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 };
 
 export default function RootLayout({

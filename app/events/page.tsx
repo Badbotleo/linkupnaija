@@ -7,6 +7,12 @@ import type { EventRow, RsvpStatus } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  title: "Explore events",
+  description:
+    "Browse upcoming hangouts, parties, picnics, book clubs and more across Nigeria. Filter by state and category, and find your next link-up.",
+};
+
 type FeedEvent = EventRow & {
   rsvps: { status: RsvpStatus }[];
   host: { rating_avg: number; rating_count: number } | null;

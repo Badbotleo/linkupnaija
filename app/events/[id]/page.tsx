@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -33,6 +34,45 @@ interface ChatRow {
   message: string;
   created_at: string;
   users: { name: string | null } | null;
+}
+
+// Rich link previews per event (WhatsApp, X, etc.) using the cover image.
+export async function generateMetadata({
+  params,
+}: {
+  params: { id: string };
+}): Promise<Metadata> {
+  const supabase = createClient();
+  const { data: event } = await supabase
+    .from("events")
+    .select("title, description, category, state, cover_image_url")
+    .eq("id", params.id)
+    .single();
+
+  if (!event) return { title: "Event not found" };
+
+  const title = event.title as string;
+  const description =
+    (event.description as string)?.slice(0, 150) ||
+    `A ${event.category} in ${event.state} — join it on LinkUpNaija.`;
+  const cover = event.cover_image_url as string | null;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      ...(cover ? { images: [{ url: cover }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      ...(cover ? { images: [cover] } : {}),
+    },
+  };
 }
 
 export default async function EventDetailPage({

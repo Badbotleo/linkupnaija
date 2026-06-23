@@ -8,6 +8,8 @@ import type { EventRow, RsvpStatus, UserProfile } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Your dashboard" };
+
 type HostingEvent = EventRow & { rsvps: { status: RsvpStatus }[] };
 type MyRsvp = { status: RsvpStatus; events: EventRow | null };
 

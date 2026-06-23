@@ -5,6 +5,11 @@ import AuthForm from "@/components/AuthForm";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  title: "Log in",
+  description: "Log in to join events and host your own on LinkUpNaija.",
+};
+
 export default async function LoginPage() {
   const supabase = createClient();
   const {

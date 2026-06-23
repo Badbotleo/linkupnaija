@@ -94,11 +94,26 @@ export default function RsvpButton({
       paid: price > 0,
       payment_reference: paymentReference,
     });
-    if (error) setError(error.message);
-    else {
-      setStatus("pending");
-      router.refresh();
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+      return;
     }
+
+    // Record the transaction + 10% platform fee for paid tickets.
+    if (price > 0 && paymentReference) {
+      const { error: txErr } = await supabase.from("transactions").insert({
+        event_id: eventId,
+        user_id: user.id,
+        amount: price,
+        platform_fee: Math.round(price * 0.1),
+        paystack_reference: paymentReference,
+      });
+      if (txErr) console.error("Failed to record transaction:", txErr.message);
+    }
+
+    setStatus("pending");
+    router.refresh();
     setLoading(false);
   }
 

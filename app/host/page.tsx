@@ -4,6 +4,12 @@ import HostForm from "@/components/HostForm";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  title: "Host an event",
+  description:
+    "Create a link-up on LinkUpNaija — set the vibe, pick a spot, add a cover photo and gather your people.",
+};
+
 export default async function HostPage() {
   const supabase = createClient();
   const {
