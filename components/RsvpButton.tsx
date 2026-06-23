@@ -46,12 +46,9 @@ export default function RsvpButton({
     );
   }
 
+  // Hosts don't see a "you're hosting" card here — they use Manage Requests.
   if (isHost) {
-    return (
-      <div className="rounded-xl bg-brand-50 px-4 py-3 text-center text-sm font-semibold text-brand">
-        🎤 You&apos;re hosting this event
-      </div>
-    );
+    return null;
   }
 
   async function getUser() {

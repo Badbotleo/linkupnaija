@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import NotificationsBell from "./NotificationsBell";
+import ThemeToggle from "./ThemeToggle";
 
 export default async function Navbar() {
   const supabase = createClient();
@@ -49,6 +50,8 @@ export default async function Navbar() {
           >
             Host
           </Link>
+
+          <ThemeToggle />
 
           {user ? (
             <div className="flex items-center gap-1 sm:gap-2">

@@ -9,6 +9,7 @@ import EventTabs from "@/components/EventTabs";
 import ChatPanel from "@/components/ChatPanel";
 import ManageRequests from "@/components/ManageRequests";
 import Avatar from "@/components/Avatar";
+import AttendeeChips from "@/components/AttendeeChips";
 import EventCover from "@/components/EventCover";
 import ReviewsSection from "@/components/ReviewsSection";
 import FeatureButton from "@/components/FeatureButton";
@@ -275,23 +276,13 @@ export default async function EventDetailPage({
                         No one yet — be the first to join! 🎈
                       </p>
                     ) : (
-                      <ul className="mt-4 flex flex-wrap gap-3">
-                        {accepted.map((a) => (
-                          <li
-                            key={a.user_id}
-                            className="flex items-center gap-2 rounded-full border border-gray-100 bg-white py-1.5 pl-1.5 pr-4 shadow-sm"
-                          >
-                            <Avatar
-                              name={a.users?.name ?? null}
-                              url={a.users?.avatar_url ?? null}
-                              size="sm"
-                            />
-                            <span className="text-sm font-medium text-gray-700">
-                              {a.users?.name ?? "Guest"}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
+                      <AttendeeChips
+                        attendees={accepted.map((a) => ({
+                          user_id: a.user_id,
+                          name: a.users?.name ?? null,
+                          avatar_url: a.users?.avatar_url ?? null,
+                        }))}
+                      />
                     )}
                   </div>
                 </div>
@@ -332,45 +323,47 @@ export default async function EventDetailPage({
         {/* Sidebar */}
         <aside className="lg:col-span-1">
           <div className="sticky top-24 rounded-2xl border border-gray-100 bg-white p-6 shadow-card">
-            <p className="text-sm text-gray-500">Hosted by</p>
-            <div className="mt-2 flex items-center gap-3">
-              <Avatar
-                name={event.host?.name ?? null}
-                url={event.host?.avatar_url ?? null}
-                size="md"
-              />
-              <div>
-                <p className="font-bold text-gray-900">
-                  {event.host?.name ?? "A LinkUpNaija host"}
-                </p>
-                {event.host?.state && (
-                  <p className="text-sm text-gray-500">{event.host.state}</p>
-                )}
-                <RatingSummary
-                  avg={event.host?.rating_avg ?? 0}
-                  count={event.host?.rating_count ?? 0}
-                  className="mt-0.5"
-                />
-              </div>
-            </div>
+            {isHost ? (
+              <FeatureButton eventId={event.id} alreadyFeatured={featured} />
+            ) : (
+              <>
+                <p className="text-sm text-gray-500">Hosted by</p>
+                <div className="mt-2 flex items-center gap-3">
+                  <Avatar
+                    name={event.host?.name ?? null}
+                    url={event.host?.avatar_url ?? null}
+                    size="md"
+                  />
+                  <div>
+                    <p className="font-bold text-gray-900">
+                      {event.host?.name ?? "A LinkUpNaija host"}
+                    </p>
+                    {event.host?.state && (
+                      <p className="text-sm text-gray-500">
+                        {event.host.state}
+                      </p>
+                    )}
+                    <RatingSummary
+                      avg={event.host?.rating_avg ?? 0}
+                      count={event.host?.rating_count ?? 0}
+                      className="mt-0.5"
+                    />
+                  </div>
+                </div>
 
-            <div className="mt-6">
-              <RsvpButton
-                eventId={event.id}
-                isLoggedIn={!!user}
-                initialStatus={myStatus}
-                isHost={isHost}
-                isFull={isFull}
-                price={event.price}
-                isPro={isPro}
-                requestsThisMonth={requestsThisMonth}
-              />
-            </div>
-
-            {isHost && (
-              <div className="mt-4 border-t border-gray-100 pt-4">
-                <FeatureButton eventId={event.id} alreadyFeatured={featured} />
-              </div>
+                <div className="mt-6">
+                  <RsvpButton
+                    eventId={event.id}
+                    isLoggedIn={!!user}
+                    initialStatus={myStatus}
+                    isHost={isHost}
+                    isFull={isFull}
+                    price={event.price}
+                    isPro={isPro}
+                    requestsThisMonth={requestsThisMonth}
+                  />
+                </div>
+              </>
             )}
           </div>
         </aside>

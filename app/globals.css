@@ -34,3 +34,117 @@ body {
     @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
   }
 }
+
+/* ----------------------------------------------------------------------------
+   Dark mode — palette: page #0F0A2E, cards #1A1040, text white, accent #7F77DD.
+   Common utility classes are remapped under .dark so the whole app themes
+   without per-component changes. Transitions keep the toggle smooth.
+---------------------------------------------------------------------------- */
+body,
+header,
+footer,
+.bg-white,
+.bg-gray-50,
+.bg-gray-100,
+.input,
+.shadow-card,
+[class*="border-gray"] {
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.2s ease;
+}
+
+.dark body {
+  background-color: #0f0a2e;
+  color: #ffffff;
+}
+
+/* Surfaces */
+.dark .bg-white {
+  background-color: #1a1040 !important;
+}
+.dark .bg-white\/90 {
+  background-color: rgba(15, 10, 46, 0.9) !important;
+}
+.dark .bg-white\/80 {
+  background-color: rgba(15, 10, 46, 0.8) !important;
+}
+.dark .bg-gray-50 {
+  background-color: #150c38 !important;
+}
+.dark .bg-gray-100 {
+  background-color: #241654 !important;
+}
+.dark .bg-brand-50 {
+  background-color: rgba(127, 119, 221, 0.15) !important;
+}
+.dark .bg-brand-50\/40 {
+  background-color: rgba(127, 119, 221, 0.1) !important;
+}
+
+/* Hero / gradient stops */
+.dark .from-brand-50 {
+  --tw-gradient-from: #1a1040 var(--tw-gradient-from-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+.dark .via-white {
+  --tw-gradient-stops: var(--tw-gradient-from), #14093a
+    var(--tw-gradient-via-position), var(--tw-gradient-to) !important;
+}
+.dark .to-white {
+  --tw-gradient-to: #0f0a2e var(--tw-gradient-to-position) !important;
+}
+
+/* Text */
+.dark .text-gray-900 {
+  color: #ffffff !important;
+}
+.dark .text-gray-800 {
+  color: #eceaf7 !important;
+}
+.dark .text-gray-700 {
+  color: #d9d5ef !important;
+}
+.dark .text-gray-600 {
+  color: #bbb5dd !important;
+}
+.dark .text-gray-500 {
+  color: #9f99c6 !important;
+}
+.dark .text-gray-400 {
+  color: #7e78a6 !important;
+}
+.dark .text-brand {
+  color: #7f77dd !important;
+}
+
+/* Borders & dividers */
+.dark .border-gray-100 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+.dark .border-gray-200 {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+.dark .divide-gray-50 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+/* Inputs */
+.dark .input {
+  background-color: #160c3a !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+.dark .input::placeholder {
+  color: #7e78a6 !important;
+}
+
+/* Misc */
+.dark .btn-outline {
+  background-color: #1a1040 !important;
+}
+.dark .shadow-card {
+  box-shadow: 0 4px 24px -8px rgba(0, 0, 0, 0.55) !important;
+}

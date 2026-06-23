@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import Avatar from "./Avatar";
 import SocialLinks from "./SocialLinks";
 import VerifiedBadge from "./VerifiedBadge";
+import AttendeeProfileModal from "./AttendeeProfileModal";
 import { hasSocialLinks } from "@/lib/social";
 import type { RsvpWithProfile } from "@/lib/types";
 
@@ -18,6 +19,7 @@ export default function ManageRequests({
   const supabase = createClient();
   const [requests, setRequests] = useState<RsvpWithProfile[]>(initialRequests);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const pending = requests.filter((r) => r.status === "pending");
@@ -74,16 +76,27 @@ export default function ManageRequests({
                 className="rounded-xl border border-gray-100 bg-gray-50 p-4"
               >
                 <div className="flex items-start gap-3">
-                  <Avatar
-                    name={r.users?.name ?? null}
-                    url={r.users?.avatar_url ?? null}
-                    size="md"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setOpenId(r.user_id)}
+                    aria-label={`View ${r.users?.name ?? "member"}'s profile`}
+                    className="rounded-full transition hover:opacity-80"
+                  >
+                    <Avatar
+                      name={r.users?.name ?? null}
+                      url={r.users?.avatar_url ?? null}
+                      size="md"
+                    />
+                  </button>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-bold text-gray-900">
+                      <button
+                        type="button"
+                        onClick={() => setOpenId(r.user_id)}
+                        className="font-bold text-gray-900 hover:text-brand hover:underline"
+                      >
                         {r.users?.name ?? "Member"}
-                      </p>
+                      </button>
                       {r.users && hasSocialLinks(r.users) && <VerifiedBadge />}
                     </div>
                     {r.users?.state && (
@@ -130,6 +143,7 @@ export default function ManageRequests({
         rows={accepted}
         tone="green"
         emptyText="No one accepted yet."
+        onSelect={setOpenId}
       />
 
       {/* Declined */}
@@ -138,7 +152,12 @@ export default function ManageRequests({
         rows={declined}
         tone="red"
         emptyText="No declined requests."
+        onSelect={setOpenId}
       />
+
+      {openId && (
+        <AttendeeProfileModal userId={openId} onClose={() => setOpenId(null)} />
+      )}
     </div>
   );
 }
@@ -148,11 +167,13 @@ function CompactList({
   rows,
   tone,
   emptyText,
+  onSelect,
 }: {
   title: string;
   rows: RsvpWithProfile[];
   tone: "green" | "red";
   emptyText: string;
+  onSelect: (userId: string) => void;
 }) {
   const dot = tone === "green" ? "bg-green-500" : "bg-red-400";
   return (
@@ -165,17 +186,23 @@ function CompactList({
       ) : (
         <ul className="mt-3 space-y-2">
           {rows.map((r) => (
-            <li key={r.id} className="flex items-center gap-3">
-              <span className={`h-2 w-2 rounded-full ${dot}`} />
-              <Avatar
-                name={r.users?.name ?? null}
-                url={r.users?.avatar_url ?? null}
-                size="sm"
-              />
-              <span className="text-sm font-medium text-gray-700">
-                {r.users?.name ?? "Member"}
-              </span>
-              {r.users && hasSocialLinks(r.users) && <VerifiedBadge />}
+            <li key={r.id}>
+              <button
+                type="button"
+                onClick={() => onSelect(r.user_id)}
+                className="flex w-full items-center gap-3 rounded-lg px-1 py-1 text-left transition hover:bg-gray-50"
+              >
+                <span className={`h-2 w-2 rounded-full ${dot}`} />
+                <Avatar
+                  name={r.users?.name ?? null}
+                  url={r.users?.avatar_url ?? null}
+                  size="sm"
+                />
+                <span className="text-sm font-medium text-gray-700">
+                  {r.users?.name ?? "Member"}
+                </span>
+                {r.users && hasSocialLinks(r.users) && <VerifiedBadge />}
+              </button>
             </li>
           ))}
         </ul>
