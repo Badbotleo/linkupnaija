@@ -16,6 +16,7 @@ import RatingSummary from "@/components/RatingSummary";
 import FeaturedBadge, { isFeatured } from "@/components/FeaturedBadge";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
+import { isProActive } from "@/lib/pro";
 import type {
   ChatMessageUI,
   RsvpStatus,
@@ -112,6 +113,29 @@ export default async function EventDetailPage({
     : "none";
   const isFull =
     !!event.max_attendees && attendeeCount >= event.max_attendees;
+
+  // Pro status + this month's join-request count (free users are capped).
+  let isPro = false;
+  let requestsThisMonth = 0;
+  if (user && !isHost) {
+    const startOfMonth = new Date();
+    startOfMonth.setUTCDate(1);
+    startOfMonth.setUTCHours(0, 0, 0, 0);
+    const [{ data: meProfile }, { count }] = await Promise.all([
+      supabase
+        .from("users")
+        .select("is_pro, pro_expires_at")
+        .eq("id", user.id)
+        .single(),
+      supabase
+        .from("rsvps")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .gte("created_at", startOfMonth.toISOString()),
+    ]);
+    isPro = isProActive(meProfile?.is_pro, meProfile?.pro_expires_at);
+    requestsThisMonth = count ?? 0;
+  }
 
   // Group chat is private to accepted attendees + the host.
   const canChat = isHost || myStatus === "accepted";
@@ -338,6 +362,8 @@ export default async function EventDetailPage({
                 isHost={isHost}
                 isFull={isFull}
                 price={event.price}
+                isPro={isPro}
+                requestsThisMonth={requestsThisMonth}
               />
             </div>
 

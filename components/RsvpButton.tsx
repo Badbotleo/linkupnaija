@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { payWithPaystack, formatNaira } from "@/lib/paystack";
+import { FREE_REQUEST_LIMIT } from "@/lib/pro";
 import type { RsvpStatus } from "@/lib/types";
 
 type JoinState = "none" | RsvpStatus;
@@ -16,6 +17,8 @@ export default function RsvpButton({
   isHost,
   isFull,
   price,
+  isPro,
+  requestsThisMonth,
 }: {
   eventId: string;
   isLoggedIn: boolean;
@@ -23,6 +26,8 @@ export default function RsvpButton({
   isHost: boolean;
   isFull: boolean;
   price: number;
+  isPro: boolean;
+  requestsThisMonth: number;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -175,22 +180,32 @@ export default function RsvpButton({
         </div>
       )}
 
-      {status === "none" && (
-        <button
-          type="button"
-          onClick={request}
-          disabled={loading || isFull}
-          className="btn-primary w-full"
-        >
-          {loading
-            ? "Processing…"
-            : isFull
-              ? "Event is full"
-              : price > 0
-                ? `Pay ${formatNaira(price)} & request to join`
-                : "Request to join"}
-        </button>
-      )}
+      {status === "none" &&
+        (!isPro && requestsThisMonth >= FREE_REQUEST_LIMIT ? (
+          <div className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-yellow-50 px-4 py-4 text-center">
+            <p className="text-sm font-semibold text-amber-800">
+              You&apos;ve used all {FREE_REQUEST_LIMIT} free requests this month.
+            </p>
+            <Link href="/pro" className="btn-primary mt-3 w-full">
+              ★ Upgrade to Pro to send more requests
+            </Link>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={request}
+            disabled={loading || isFull}
+            className="btn-primary w-full"
+          >
+            {loading
+              ? "Processing…"
+              : isFull
+                ? "Event is full"
+                : price > 0
+                  ? `Pay ${formatNaira(price)} & request to join`
+                  : "Request to join"}
+          </button>
+        ))}
 
       {error && <p className="text-sm text-red-600">{error}</p>}
     </div>

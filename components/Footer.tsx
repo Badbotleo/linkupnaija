@@ -22,6 +22,9 @@ export default function Footer() {
           <Link href="/host" className="hover:text-brand">
             Host an event
           </Link>
+          <Link href="/pro" className="font-semibold text-amber-600 hover:text-amber-700">
+            Pro
+          </Link>
           <Link href="/privacy-policy" className="hover:text-brand">
             Privacy Policy
           </Link>

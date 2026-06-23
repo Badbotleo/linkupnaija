@@ -2,6 +2,7 @@ import Link from "next/link";
 import Avatar from "./Avatar";
 import SocialLinks from "./SocialLinks";
 import VerifiedBadge from "./VerifiedBadge";
+import ProBadge from "./ProBadge";
 import RatingSummary from "./RatingSummary";
 import { hasSocialLinks } from "@/lib/social";
 import type { PublicProfile } from "@/lib/types";
@@ -10,10 +11,12 @@ export default function ProfileCard({
   profile,
   showEdit = false,
   rating,
+  isPro = false,
 }: {
   profile: PublicProfile;
   showEdit?: boolean;
   rating?: { avg: number; count: number };
+  isPro?: boolean;
 }) {
   const verified = hasSocialLinks(profile);
 
@@ -26,6 +29,7 @@ export default function ProfileCard({
             <h2 className="truncate text-xl font-extrabold text-gray-900">
               {profile.name ?? "LinkUpNaija member"}
             </h2>
+            {isPro && <ProBadge />}
             {verified && <VerifiedBadge />}
           </div>
           {profile.state && (

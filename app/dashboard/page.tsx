@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import ProfileCard from "@/components/ProfileCard";
 import CategoryBadge from "@/components/CategoryBadge";
 import { formatEventDate, formatEventTime } from "@/lib/format";
+import { isProActive } from "@/lib/pro";
 import type { EventRow, RsvpStatus, UserProfile } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -54,6 +55,7 @@ export default async function DashboardPage() {
           {p && (
             <ProfileCard
               showEdit
+              isPro={isProActive(p.is_pro, p.pro_expires_at)}
               rating={{ avg: p.rating_avg, count: p.rating_count }}
               profile={{
                 id: p.id,

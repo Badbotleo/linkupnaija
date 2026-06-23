@@ -528,3 +528,11 @@ drop trigger if exists on_reservation_status_change on public.reservations;
 create trigger on_reservation_status_change
   after update on public.reservations
   for each row execute function public.handle_reservation_status_change();
+
+-- ============================================================================
+-- LinkUpNaija Pro subscription
+-- (See supabase/migration-pro.sql for the standalone migration.)
+-- ============================================================================
+
+alter table public.users add column if not exists is_pro         boolean not null default false;
+alter table public.users add column if not exists pro_expires_at timestamptz;

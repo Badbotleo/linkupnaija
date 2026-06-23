@@ -15,6 +15,8 @@ export interface UserProfile {
   rating_avg: number;
   rating_count: number;
   is_admin: boolean;
+  is_pro: boolean;
+  pro_expires_at: string | null;
   created_at: string;
 }
 
