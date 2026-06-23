@@ -2,9 +2,10 @@ import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import CategoryBadge from "@/components/CategoryBadge";
+import AdminReservations from "@/components/admin/AdminReservations";
 import { formatNaira } from "@/lib/paystack";
 import { formatEventDate } from "@/lib/format";
-import type { Transaction } from "@/lib/types";
+import type { Transaction, ReservationWithUser } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Admin" };
@@ -45,6 +46,7 @@ export default async function AdminPage() {
     { data: txns },
     { data: recentUsers },
     { data: recentEvents },
+    { data: reservationRows },
   ] = await Promise.all([
     supabase.from("users").select("*", { count: "exact", head: true }),
     supabase.from("events").select("*", { count: "exact", head: true }),
@@ -59,7 +61,14 @@ export default async function AdminPage() {
       .select("id, title, category, state, price, created_at")
       .order("created_at", { ascending: false })
       .limit(6),
+    supabase
+      .from("reservations")
+      .select("*, users(name, email)")
+      .eq("status", "pending")
+      .order("created_at", { ascending: false }),
   ]);
+
+  const reservations = (reservationRows ?? []) as unknown as ReservationWithUser[];
 
   const transactions = (txns ?? []) as Pick<
     Transaction,
@@ -103,6 +112,19 @@ export default async function AdminPage() {
           </div>
         ))}
       </div>
+
+      {/* Reservations */}
+      <section className="mt-10">
+        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
+          Reservations
+          {reservations.length > 0 && (
+            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700">
+              {reservations.length} pending
+            </span>
+          )}
+        </h2>
+        <AdminReservations initialReservations={reservations} />
+      </section>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-2">
         {/* Recent signups */}

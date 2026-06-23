@@ -18,6 +18,33 @@ export interface UserProfile {
   created_at: string;
 }
 
+export type ReservationStatus = "pending" | "confirmed" | "declined" | "paid";
+
+export interface Reservation {
+  id: string;
+  user_id: string;
+  venue_name: string;
+  venue_address: string | null;
+  venue_lat: number | null;
+  venue_lng: number | null;
+  event_name: string;
+  event_type: string | null;
+  date: string;
+  time: string;
+  group_size: number;
+  special_requests: string | null;
+  contact_phone: string | null;
+  status: ReservationStatus;
+  commission_amount: number | null;
+  admin_notes: string | null;
+  created_at: string;
+}
+
+// A reservation joined with the requester's basic info (admin view).
+export interface ReservationWithUser extends Reservation {
+  users: { name: string | null; email: string } | null;
+}
+
 export interface Transaction {
   id: string;
   event_id: string | null;
