@@ -24,10 +24,15 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
 
   async function signInWithGoogle() {
     setError(null);
+    // Use the configured site URL so the callback is deterministic and matches
+    // the Supabase redirect allowlist; fall back to the current origin locally.
+    const base = (
+      process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin
+    ).replace(/\/+$/, "");
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${location.origin}/auth/callback?redirect=${encodeURIComponent(redirect)}`,
+        redirectTo: `${base}/auth/callback?redirect=${encodeURIComponent(redirect)}`,
       },
     });
     if (error) setError(error.message);
