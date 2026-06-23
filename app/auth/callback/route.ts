@@ -7,6 +7,13 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const redirect = searchParams.get("redirect") ?? "/login?verified=1";
 
+  // Prefer the configured public site URL (the request origin can resolve to
+  // localhost behind a proxy/load balancer), falling back to the origin.
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? origin).replace(
+    /\/+$/,
+    ""
+  );
+
   if (code) {
     const supabase = createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
@@ -14,7 +21,7 @@ export async function GET(request: Request) {
       // Email-verification flow: clear the session so the user logs in explicitly.
       if (redirect.startsWith("/login")) {
         await supabase.auth.signOut();
-        return NextResponse.redirect(`${origin}${redirect}`);
+        return NextResponse.redirect(`${baseUrl}${redirect}`);
       }
 
       // OAuth (Google) sign-in: keep the session and send first-timers to setup.
@@ -32,9 +39,9 @@ export async function GET(request: Request) {
           destination = "/profile/setup";
         }
       }
-      return NextResponse.redirect(`${origin}${destination}`);
+      return NextResponse.redirect(`${baseUrl}${destination}`);
     }
   }
 
-  return NextResponse.redirect(`${origin}/login`);
+  return NextResponse.redirect(`${baseUrl}/login`);
 }
