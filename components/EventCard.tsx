@@ -1,24 +1,34 @@
 import Link from "next/link";
 import CategoryBadge from "./CategoryBadge";
 import EventCover from "./EventCover";
+import FeaturedBadge, { isFeatured } from "./FeaturedBadge";
+import RatingSummary from "./RatingSummary";
 import { formatEventDate, formatEventTime } from "@/lib/format";
+import { formatNaira } from "@/lib/paystack";
 import type { EventRow } from "@/lib/types";
 
 export default function EventCard({
   event,
   attendeeCount,
+  hostRating,
 }: {
   event: EventRow;
   attendeeCount: number;
+  hostRating?: { avg: number; count: number } | null;
 }) {
   const spotsLabel = event.max_attendees
     ? `${attendeeCount}/${event.max_attendees} going`
     : `${attendeeCount} going`;
+  const featured = isFeatured(event.featured, event.featured_until);
 
   return (
     <Link
       href={`/events/${event.id}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card transition hover:-translate-y-0.5 hover:border-brand/30"
+      className={`group flex flex-col overflow-hidden rounded-2xl border bg-white shadow-card transition hover:-translate-y-0.5 ${
+        featured
+          ? "border-amber-300 ring-1 ring-amber-200"
+          : "border-gray-100 hover:border-brand/30"
+      }`}
     >
       <div className="relative">
         <EventCover
@@ -33,12 +43,31 @@ export default function EventCard({
             {event.state}
           </span>
         </div>
+        {featured && (
+          <div className="absolute bottom-3 left-3">
+            <FeaturedBadge />
+          </div>
+        )}
+        {event.price > 0 && (
+          <span className="absolute bottom-3 right-3 rounded-full bg-gray-900/80 px-2.5 py-1 text-xs font-bold text-white">
+            {formatNaira(event.price)}
+          </span>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col p-5 pt-4">
-        <h3 className="line-clamp-2 text-lg font-bold text-gray-900 group-hover:text-brand">
-          {event.title}
-        </h3>
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="line-clamp-2 text-lg font-bold text-gray-900 group-hover:text-brand">
+            {event.title}
+          </h3>
+        </div>
+        {hostRating && (
+          <RatingSummary
+            avg={hostRating.avg}
+            count={hostRating.count}
+            className="mt-1"
+          />
+        )}
         <p className="mt-1.5 line-clamp-2 text-sm text-gray-500">
           {event.description}
         </p>

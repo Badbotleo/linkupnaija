@@ -12,6 +12,8 @@ export interface UserProfile {
   facebook_url: string | null;
   phone: string | null;
   profile_completed: boolean;
+  rating_avg: number;
+  rating_count: number;
   created_at: string;
 }
 
@@ -42,6 +44,9 @@ export interface EventRow {
   host_id: string;
   max_attendees: number | null;
   cover_image_url: string | null;
+  price: number;
+  featured: boolean;
+  featured_until: string | null;
   created_at: string;
 }
 
@@ -50,7 +55,33 @@ export interface Rsvp {
   event_id: string;
   user_id: string;
   status: RsvpStatus;
+  payment_reference: string | null;
+  paid: boolean;
   created_at: string;
+}
+
+export interface AppNotification {
+  id: string;
+  user_id: string;
+  message: string;
+  event_id: string | null;
+  read: boolean;
+  created_at: string;
+}
+
+export interface Review {
+  id: string;
+  event_id: string;
+  reviewer_id: string;
+  host_id: string;
+  rating: number;
+  review_text: string | null;
+  created_at: string;
+}
+
+// A review joined with the reviewer's display info (for the UI).
+export interface ReviewWithReviewer extends Review {
+  reviewer: { name: string | null; avatar_url: string | null } | null;
 }
 
 // An RSVP row joined with the requester's public profile (host management).

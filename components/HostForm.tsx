@@ -18,6 +18,7 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
     location: "",
     state: hostState ?? "",
     max_attendees: "",
+    price: "",
   });
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
@@ -78,6 +79,7 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
         state: form.state,
         host_id: user.id,
         max_attendees: form.max_attendees ? Number(form.max_attendees) : null,
+        price: form.price ? Math.max(0, Math.round(Number(form.price))) : 0,
         cover_image_url: coverImageUrl,
       })
       .select("id")
@@ -236,20 +238,41 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
         />
       </div>
 
-      <div>
-        <label htmlFor="max_attendees" className="label">
-          Max attendees{" "}
-          <span className="font-normal text-gray-400">(optional)</span>
-        </label>
-        <input
-          id="max_attendees"
-          type="number"
-          min={1}
-          value={form.max_attendees}
-          onChange={(e) => update("max_attendees", e.target.value)}
-          placeholder="Leave blank for unlimited"
-          className="input"
-        />
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label htmlFor="max_attendees" className="label">
+            Max attendees{" "}
+            <span className="font-normal text-gray-400">(optional)</span>
+          </label>
+          <input
+            id="max_attendees"
+            type="number"
+            min={1}
+            value={form.max_attendees}
+            onChange={(e) => update("max_attendees", e.target.value)}
+            placeholder="Unlimited"
+            className="input"
+          />
+        </div>
+        <div>
+          <label htmlFor="price" className="label">
+            Ticket price (₦){" "}
+            <span className="font-normal text-gray-400">(0 = free)</span>
+          </label>
+          <input
+            id="price"
+            type="number"
+            min={0}
+            step={100}
+            value={form.price}
+            onChange={(e) => update("price", e.target.value)}
+            placeholder="0"
+            className="input"
+          />
+          <p className="mt-1 text-xs text-gray-400">
+            Paid events collect payment via Paystack before a request is sent.
+          </p>
+        </div>
       </div>
 
       <div>

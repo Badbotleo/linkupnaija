@@ -5,7 +5,10 @@ import Link from "next/link";
 import EventCard from "./EventCard";
 import type { EventRow } from "@/lib/types";
 
-type FeedEvent = EventRow & { attendeeCount: number };
+type FeedEvent = EventRow & {
+  attendeeCount: number;
+  hostRating: { avg: number; count: number } | null;
+};
 
 export default function EventsList({ events }: { events: FeedEvent[] }) {
   const [query, setQuery] = useState("");
@@ -78,6 +81,7 @@ export default function EventsList({ events }: { events: FeedEvent[] }) {
               key={event.id}
               event={event}
               attendeeCount={event.attendeeCount}
+              hostRating={event.hostRating}
             />
           ))}
         </div>

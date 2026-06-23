@@ -7,7 +7,10 @@ import type { EventRow, RsvpStatus } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-type FeedEvent = EventRow & { rsvps: { status: RsvpStatus }[] };
+type FeedEvent = EventRow & {
+  rsvps: { status: RsvpStatus }[];
+  host: { rating_avg: number; rating_count: number } | null;
+};
 
 export default async function EventsPage({
   searchParams,
@@ -18,7 +21,9 @@ export default async function EventsPage({
 
   let query = supabase
     .from("events")
-    .select("*, rsvps(status)")
+    .select(
+      "*, rsvps(status), host:users!events_host_id_fkey(rating_avg, rating_count)"
+    )
     .gte("date", new Date().toISOString().slice(0, 10))
     .order("date", { ascending: true })
     .order("time", { ascending: true });
@@ -33,9 +38,24 @@ export default async function EventsPage({
   const acceptedCount = (e: FeedEvent) =>
     e.rsvps.filter((r) => r.status === "accepted").length;
 
-  const feedEvents = events.map((e) => ({
+  const now = Date.now();
+  const activeFeatured = (e: FeedEvent) =>
+    e.featured && !!e.featured_until && new Date(e.featured_until).getTime() > now;
+
+  // Featured (within their 48h window) float to the top of the feed.
+  const sorted = [...events].sort((a, b) => {
+    const fa = activeFeatured(a) ? 1 : 0;
+    const fb = activeFeatured(b) ? 1 : 0;
+    if (fa !== fb) return fb - fa;
+    return 0; // preserve the date ordering from the query
+  });
+
+  const feedEvents = sorted.map((e) => ({
     ...e,
     attendeeCount: acceptedCount(e),
+    hostRating: e.host
+      ? { avg: e.host.rating_avg, count: e.host.rating_count }
+      : null,
   }));
 
   return (

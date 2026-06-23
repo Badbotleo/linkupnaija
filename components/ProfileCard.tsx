@@ -2,15 +2,18 @@ import Link from "next/link";
 import Avatar from "./Avatar";
 import SocialLinks from "./SocialLinks";
 import VerifiedBadge from "./VerifiedBadge";
+import RatingSummary from "./RatingSummary";
 import { hasSocialLinks } from "@/lib/social";
 import type { PublicProfile } from "@/lib/types";
 
 export default function ProfileCard({
   profile,
   showEdit = false,
+  rating,
 }: {
   profile: PublicProfile;
   showEdit?: boolean;
+  rating?: { avg: number; count: number };
 }) {
   const verified = hasSocialLinks(profile);
 
@@ -27,6 +30,13 @@ export default function ProfileCard({
           </div>
           {profile.state && (
             <p className="mt-0.5 text-sm text-gray-500">📍 {profile.state}</p>
+          )}
+          {rating && (
+            <RatingSummary
+              avg={rating.avg}
+              count={rating.count}
+              className="mt-1"
+            />
           )}
           {profile.bio && (
             <p className="mt-2 text-sm leading-relaxed text-gray-600">

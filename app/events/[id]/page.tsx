@@ -9,11 +9,17 @@ import ChatPanel from "@/components/ChatPanel";
 import ManageRequests from "@/components/ManageRequests";
 import Avatar from "@/components/Avatar";
 import EventCover from "@/components/EventCover";
+import ReviewsSection from "@/components/ReviewsSection";
+import FeatureButton from "@/components/FeatureButton";
+import RatingSummary from "@/components/RatingSummary";
+import FeaturedBadge, { isFeatured } from "@/components/FeaturedBadge";
 import { formatEventDate, formatEventTime } from "@/lib/format";
+import { formatNaira } from "@/lib/paystack";
 import type {
   ChatMessageUI,
   RsvpStatus,
   RsvpWithProfile,
+  ReviewWithReviewer,
 } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +44,9 @@ export default async function EventDetailPage({
 
   const { data: event } = await supabase
     .from("events")
-    .select("*, host:users!events_host_id_fkey(id, name, avatar_url, state)")
+    .select(
+      "*, host:users!events_host_id_fkey(id, name, avatar_url, state, rating_avg, rating_count)"
+    )
     .eq("id", params.id)
     .single();
 
@@ -90,6 +98,22 @@ export default async function EventDetailPage({
     currentUserName = me?.name ?? "You";
   }
 
+  // Reviews — eligible reviewers are accepted attendees of a past event.
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const eventIsOver = event.date < todayStr;
+  const { data: reviewRows } = await supabase
+    .from("reviews")
+    .select("*, reviewer:users!reviews_reviewer_id_fkey(name, avatar_url)")
+    .eq("event_id", params.id)
+    .order("created_at", { ascending: false });
+  const reviews = (reviewRows ?? []) as unknown as ReviewWithReviewer[];
+  const myReview = user
+    ? reviews.find((r) => r.reviewer_id === user.id) ?? null
+    : null;
+  const canReview = !isHost && myStatus === "accepted" && eventIsOver;
+
+  const featured = isFeatured(event.featured, event.featured_until);
+
   return (
     <div className="container-page py-10">
       <Link
@@ -112,10 +136,16 @@ export default async function EventDetailPage({
         {/* Main */}
         <div className="lg:col-span-2">
           <div className="flex flex-wrap items-center gap-2">
+            {featured && <FeaturedBadge />}
             <CategoryBadge category={event.category} />
             <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand">
               📍 {event.state}
             </span>
+            {event.price > 0 && (
+              <span className="rounded-full bg-gray-900 px-2.5 py-1 text-xs font-bold text-white">
+                {formatNaira(event.price)}
+              </span>
+            )}
           </div>
 
           <h1 className="mt-4 text-3xl font-extrabold text-gray-900 sm:text-4xl">
@@ -222,6 +252,17 @@ export default async function EventDetailPage({
               <ManageRequests initialRequests={rsvps} />
             </div>
           )}
+
+          <ReviewsSection
+            eventId={event.id}
+            hostId={event.host_id}
+            currentUserId={user?.id ?? null}
+            canReview={canReview}
+            initialReviews={reviews}
+            existingReview={myReview}
+            hostAvg={event.host?.rating_avg ?? 0}
+            hostCount={event.host?.rating_count ?? 0}
+          />
         </div>
 
         {/* Sidebar */}
@@ -241,6 +282,11 @@ export default async function EventDetailPage({
                 {event.host?.state && (
                   <p className="text-sm text-gray-500">{event.host.state}</p>
                 )}
+                <RatingSummary
+                  avg={event.host?.rating_avg ?? 0}
+                  count={event.host?.rating_count ?? 0}
+                  className="mt-0.5"
+                />
               </div>
             </div>
 
@@ -251,8 +297,15 @@ export default async function EventDetailPage({
                 initialStatus={myStatus}
                 isHost={isHost}
                 isFull={isFull}
+                price={event.price}
               />
             </div>
+
+            {isHost && (
+              <div className="mt-4 border-t border-gray-100 pt-4">
+                <FeatureButton eventId={event.id} alreadyFeatured={featured} />
+              </div>
+            )}
           </div>
         </aside>
       </div>

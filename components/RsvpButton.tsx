@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { payWithPaystack, formatNaira } from "@/lib/paystack";
 import type { RsvpStatus } from "@/lib/types";
 
 type JoinState = "none" | RsvpStatus;
@@ -14,12 +15,14 @@ export default function RsvpButton({
   initialStatus,
   isHost,
   isFull,
+  price,
 }: {
   eventId: string;
   isLoggedIn: boolean;
   initialStatus: JoinState;
   isHost: boolean;
   isFull: boolean;
+  price: number;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -46,7 +49,7 @@ export default function RsvpButton({
     );
   }
 
-  async function getUserId() {
+  async function getUser() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -54,17 +57,43 @@ export default function RsvpButton({
       router.push(`/login?redirect=/events/${eventId}`);
       return null;
     }
-    return user.id;
+    return user;
   }
 
   async function request() {
     setLoading(true);
     setError(null);
-    const userId = await getUserId();
-    if (!userId) return;
-    const { error } = await supabase
-      .from("rsvps")
-      .insert({ event_id: eventId, user_id: userId, status: "pending" });
+    const user = await getUser();
+    if (!user) return;
+
+    // Paid events: collect payment before sending the request.
+    let paymentReference: string | null = null;
+    if (price > 0) {
+      try {
+        const result = await payWithPaystack({
+          email: user.email ?? "",
+          amountNaira: price,
+          metadata: { purpose: "event_ticket", eventId, userId: user.id },
+        });
+        if (!result) {
+          setLoading(false); // user closed the popup without paying
+          return;
+        }
+        paymentReference = result.reference;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Payment failed.");
+        setLoading(false);
+        return;
+      }
+    }
+
+    const { error } = await supabase.from("rsvps").insert({
+      event_id: eventId,
+      user_id: user.id,
+      status: "pending",
+      paid: price > 0,
+      payment_reference: paymentReference,
+    });
     if (error) setError(error.message);
     else {
       setStatus("pending");
@@ -76,13 +105,13 @@ export default function RsvpButton({
   async function cancel() {
     setLoading(true);
     setError(null);
-    const userId = await getUserId();
-    if (!userId) return;
+    const user = await getUser();
+    if (!user) return;
     const { error } = await supabase
       .from("rsvps")
       .delete()
       .eq("event_id", eventId)
-      .eq("user_id", userId);
+      .eq("user_id", user.id);
     if (error) setError(error.message);
     else {
       setStatus("none");
@@ -139,10 +168,12 @@ export default function RsvpButton({
           className="btn-primary w-full"
         >
           {loading
-            ? "Sending…"
+            ? "Processing…"
             : isFull
               ? "Event is full"
-              : "Request to join"}
+              : price > 0
+                ? `Pay ${formatNaira(price)} & request to join`
+                : "Request to join"}
         </button>
       )}
 

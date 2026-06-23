@@ -52,6 +52,7 @@ export default async function DashboardPage() {
           {p && (
             <ProfileCard
               showEdit
+              rating={{ avg: p.rating_avg, count: p.rating_count }}
               profile={{
                 id: p.id,
                 name: p.name,
