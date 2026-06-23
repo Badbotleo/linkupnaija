@@ -12,15 +12,21 @@ export default function Footer() {
             LinkUp<span className="text-brand">Naija</span>
           </span>
         </div>
-        <div className="flex items-center gap-5 text-sm text-gray-500">
+        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-gray-500">
           <Link href="/events" className="hover:text-brand">
             Explore
+          </Link>
+          <Link href="/venues" className="hover:text-brand">
+            Venues
           </Link>
           <Link href="/host" className="hover:text-brand">
             Host an event
           </Link>
-          <Link href="/signup" className="hover:text-brand">
-            Join
+          <Link href="/privacy-policy" className="hover:text-brand">
+            Privacy Policy
+          </Link>
+          <Link href="/terms-of-service" className="hover:text-brand">
+            Terms of Service
           </Link>
         </div>
         <p className="text-xs text-gray-400">
