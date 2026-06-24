@@ -1,4 +1,4 @@
-// Gold "Featured" badge for promoted events.
+// Gold "Boost" badge for promoted events.
 export default function FeaturedBadge({
   className = "",
 }: {
@@ -8,7 +8,7 @@ export default function FeaturedBadge({
     <span
       className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 px-2.5 py-1 text-xs font-bold text-white shadow-sm ${className}`}
     >
-      <span aria-hidden>★</span> Featured
+      <span aria-hidden>★</span> Boost
     </span>
   );
 }

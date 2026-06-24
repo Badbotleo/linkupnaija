@@ -37,7 +37,7 @@ export default function PrivacyPolicyPage() {
             </>,
             <>
               <strong>Payment information</strong> — when you pay for a ticket or
-              feature an event, payments are processed by Paystack. We receive a
+              boost an event, payments are processed by Paystack. We receive a
               transaction reference and amount, but{" "}
               <strong>we never collect or store your full card details</strong>.
             </>,
@@ -92,7 +92,7 @@ export default function PrivacyPolicyPage() {
 
       <LegalSection n={4} title="Payments">
         <p>
-          Paid event tickets and featured-event payments are handled by{" "}
+          Paid event tickets and event-boost payments are handled by{" "}
           <strong>Paystack</strong>, a third-party payment processor. Your card
           and banking details are entered directly into Paystack&apos;s secure
           checkout and are governed by Paystack&apos;s own privacy policy.

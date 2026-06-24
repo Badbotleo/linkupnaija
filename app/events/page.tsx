@@ -48,7 +48,7 @@ export default async function EventsPage({
   const activeFeatured = (e: FeedEvent) =>
     e.featured && !!e.featured_until && new Date(e.featured_until).getTime() > now;
 
-  // Featured (within their 48h window) float to the top of the feed.
+  // Boosted events (within their 48h window) float to the top of the feed.
   const sorted = [...events].sort((a, b) => {
     const fa = activeFeatured(a) ? 1 : 0;
     const fb = activeFeatured(b) ? 1 : 0;

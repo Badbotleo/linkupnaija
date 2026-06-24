@@ -27,7 +27,7 @@ export default function FeatureButton({
   if (alreadyFeatured) {
     return (
       <div className="rounded-xl bg-gradient-to-r from-amber-50 to-yellow-50 px-4 py-3 text-center text-sm font-semibold text-amber-700">
-        ★ Your event is featured
+        ★ Your event is boosted
       </div>
     );
   }
@@ -82,10 +82,12 @@ export default function FeatureButton({
         disabled={loading}
         className="btn w-full border border-amber-300 bg-gradient-to-r from-amber-400 to-yellow-500 text-white hover:opacity-90"
       >
-        {loading ? "Processing…" : `★ Feature for 48h — ${formatNaira(FEATURE_PRICE)}`}
+        {loading
+          ? "Processing…"
+          : `★ Boost this event for 48 hours — ${formatNaira(FEATURE_PRICE)}`}
       </button>
       <p className="mt-1.5 text-center text-xs text-gray-400">
-        Featured events show at the top of the feed.
+        Boosted events show at the top of the feed.
       </p>
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
     </div>

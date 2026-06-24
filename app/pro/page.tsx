@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "LinkUpNaija Pro",
   description:
-    "Go Pro for ₦3,000/month — see who viewed your profile, early access to events, unlimited join requests, and a profile boost.",
+    "Go Pro for ₦9,900/month — see who viewed your profile, early access to events, unlimited join requests, and a profile boost.",
 };
 
 const BENEFITS = [
