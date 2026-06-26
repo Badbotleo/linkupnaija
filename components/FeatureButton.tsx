@@ -66,8 +66,17 @@ export default function FeatureButton({
         .from("events")
         .update({ featured: true, featured_until: until })
         .eq("id", eventId);
-      if (error) setError(error.message);
-      else router.refresh();
+      if (error) {
+        setError(error.message);
+      } else {
+        await supabase.from("notifications").insert({
+          user_id: user.id,
+          event_id: eventId,
+          message:
+            "Your event has been boosted 🚀 It's now featured for 48 hours",
+        });
+        router.refresh();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Payment failed.");
     }

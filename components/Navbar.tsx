@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import NotificationsBell from "./NotificationsBell";
 import ThemeToggle from "./ThemeToggle";
+import Logo from "./Logo";
 
 export default async function Navbar() {
   const supabase = createClient();
@@ -22,13 +23,8 @@ export default async function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-gray-100 bg-white/90 backdrop-blur">
       <nav className="container-page flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand text-lg font-black text-white">
-            L
-          </span>
-          <span className="text-lg font-extrabold tracking-tight text-gray-900">
-            LinkUp<span className="text-brand">Naija</span>
-          </span>
+        <Link href="/" aria-label="LinkUpNaija home">
+          <Logo size={34} textClassName="text-lg" />
         </Link>
 
         <div className="flex items-center gap-1 sm:gap-2">

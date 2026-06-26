@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { EVENT_CATEGORIES, CATEGORY_STYLES } from "@/lib/constants";
+import FcPopup from "@/components/FcPopup";
 
 const HOW_IT_WORKS = [
   {
@@ -162,6 +163,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <FcPopup />
     </div>
   );
 }

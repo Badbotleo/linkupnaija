@@ -13,6 +13,7 @@ interface FullProfile extends PublicProfile {
   rating_avg: number;
   rating_count: number;
   created_at: string;
+  gender: string | null;
 }
 
 export default function AttendeeProfileModal({
@@ -33,7 +34,7 @@ export default function AttendeeProfileModal({
       supabase
         .from("users")
         .select(
-          "id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, rating_avg, rating_count, created_at"
+          "id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, rating_avg, rating_count, created_at, gender"
         )
         .eq("id", userId)
         .single(),
@@ -48,6 +49,34 @@ export default function AttendeeProfileModal({
       setAttended(c.count ?? 0);
       setLoading(false);
     });
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
+  // Record a profile view (notifies the viewed user), deduped to once / 24h.
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!active || !user || user.id === userId) return;
+
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { count } = await supabase
+        .from("profile_views")
+        .select("*", { count: "exact", head: true })
+        .eq("viewer_id", user.id)
+        .eq("viewed_id", userId)
+        .gte("created_at", since);
+      if (!active || (count ?? 0) > 0) return;
+
+      await supabase
+        .from("profile_views")
+        .insert({ viewer_id: user.id, viewed_id: userId });
+    })();
     return () => {
       active = false;
     };
@@ -93,6 +122,11 @@ export default function AttendeeProfileModal({
             </div>
             {profile.state && (
               <p className="mt-0.5 text-sm text-gray-500">📍 {profile.state}</p>
+            )}
+            {profile.gender && profile.gender !== "prefer not to say" && (
+              <p className="mt-0.5 text-sm capitalize text-gray-500">
+                {profile.gender}
+              </p>
             )}
             {profile.rating_count > 0 && (
               <div className="mt-1 flex justify-center">

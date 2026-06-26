@@ -19,6 +19,7 @@ export default function RsvpButton({
   price,
   isPro,
   requestsThisMonth,
+  eventTitle,
 }: {
   eventId: string;
   isLoggedIn: boolean;
@@ -28,6 +29,7 @@ export default function RsvpButton({
   price: number;
   isPro: boolean;
   requestsThisMonth: number;
+  eventTitle: string;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -112,6 +114,13 @@ export default function RsvpButton({
         paystack_reference: paymentReference,
       });
       if (txErr) console.error("Failed to record transaction:", txErr.message);
+
+      // Payment-success notification.
+      await supabase.from("notifications").insert({
+        user_id: user.id,
+        event_id: eventId,
+        message: `Payment confirmed ✅ You're going to ${eventTitle}!`,
+      });
     }
 
     setStatus("pending");

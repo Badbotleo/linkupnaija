@@ -8,6 +8,7 @@ import ShareButtons from "@/components/ShareButtons";
 import EventTabs from "@/components/EventTabs";
 import ChatPanel from "@/components/ChatPanel";
 import ManageRequests from "@/components/ManageRequests";
+import DeleteEventButton from "@/components/DeleteEventButton";
 import Avatar from "@/components/Avatar";
 import AttendeeChips from "@/components/AttendeeChips";
 import EventCover from "@/components/EventCover";
@@ -28,7 +29,7 @@ import type {
 export const dynamic = "force-dynamic";
 
 const RSVP_PROFILE_SELECT =
-  "id, user_id, status, created_at, users(id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url)";
+  "id, user_id, status, paid, created_at, users(id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, gender)";
 
 interface ChatRow {
   id: string;
@@ -303,8 +304,12 @@ export default async function EventDetailPage({
           </div>
 
           {isHost && (
-            <div className="mt-8">
+            <div className="mt-8 space-y-8">
               <ManageRequests initialRequests={rsvps} />
+              <DeleteEventButton
+                eventId={event.id}
+                hasPaidAttendees={rsvps.some((r) => r.paid)}
+              />
             </div>
           )}
 
@@ -361,6 +366,7 @@ export default async function EventDetailPage({
                     price={event.price}
                     isPro={isPro}
                     requestsThisMonth={requestsThisMonth}
+                    eventTitle={event.title}
                   />
                 </div>
               </>

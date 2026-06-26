@@ -33,6 +33,7 @@ export default function ProfileForm({
     | "twitter_url"
     | "facebook_url"
     | "phone"
+    | "gender"
   >;
   mode: "setup" | "edit";
 }) {
@@ -46,6 +47,7 @@ export default function ProfileForm({
   const [twitter, setTwitter] = useState(handleOf(initial.twitter_url));
   const [facebook, setFacebook] = useState(initial.facebook_url ?? "");
   const [phone, setPhone] = useState(initial.phone ?? "");
+  const [gender, setGender] = useState(initial.gender ?? "");
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(initial.avatar_url);
@@ -91,6 +93,7 @@ export default function ProfileForm({
           twitter_url: twitter.trim() ? normalizeTwitter(twitter) : null,
           facebook_url: facebook.trim() ? normalizeFacebook(facebook) : null,
           phone: phone.trim() || null,
+          gender: gender || null,
           profile_completed: completed,
         })
         .eq("id", userId);
@@ -160,6 +163,23 @@ export default function ProfileForm({
             ))}
           </select>
         </div>
+      </div>
+
+      <div>
+        <label htmlFor="gender" className="label">
+          Gender
+        </label>
+        <select
+          id="gender"
+          value={gender}
+          onChange={(e) => setGender(e.target.value)}
+          className="input cursor-pointer"
+        >
+          <option value="">Prefer not to say</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="prefer not to say">Prefer not to say</option>
+        </select>
       </div>
 
       <div>

@@ -15,7 +15,7 @@ export default async function ProfileEditPage() {
   const { data: profile } = await supabase
     .from("users")
     .select(
-      "name, state, bio, avatar_url, instagram_url, twitter_url, facebook_url, phone"
+      "name, state, bio, avatar_url, instagram_url, twitter_url, facebook_url, phone, gender"
     )
     .eq("id", user.id)
     .single();
@@ -46,6 +46,7 @@ export default async function ProfileEditPage() {
             twitter_url: profile?.twitter_url ?? null,
             facebook_url: profile?.facebook_url ?? null,
             phone: profile?.phone ?? null,
+            gender: profile?.gender ?? null,
           }}
         />
       </div>

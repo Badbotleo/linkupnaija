@@ -84,8 +84,15 @@ export default function GoProButton({
         .from("users")
         .update({ is_pro: true, pro_expires_at: expires })
         .eq("id", user.id);
-      if (error) setError(error.message);
-      else router.refresh();
+      if (error) {
+        setError(error.message);
+      } else {
+        await supabase.from("notifications").insert({
+          user_id: user.id,
+          message: "Welcome to Pro ⭐ Your benefits are now active",
+        });
+        router.refresh();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Payment failed.");
     }

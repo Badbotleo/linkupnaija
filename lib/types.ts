@@ -17,6 +17,30 @@ export interface UserProfile {
   is_admin: boolean;
   is_pro: boolean;
   pro_expires_at: string | null;
+  gender: "male" | "female" | "prefer not to say" | null;
+  payout_bank: string | null;
+  payout_account_number: string | null;
+  payout_account_name: string | null;
+  paystack_subaccount_code: string | null;
+  created_at: string;
+}
+
+export interface Message {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  message: string;
+  read: boolean;
+  created_at: string;
+}
+
+export interface Payout {
+  id: string;
+  host_id: string;
+  event_id: string | null;
+  amount: number;
+  platform_fee: number;
+  status: "pending" | "approved" | "paid" | "declined";
   created_at: string;
 }
 
@@ -87,6 +111,7 @@ export interface EventRow {
   price: number;
   featured: boolean;
   featured_until: string | null;
+  event_type: "general" | "private";
   created_at: string;
 }
 
@@ -129,8 +154,9 @@ export interface RsvpWithProfile {
   id: string;
   user_id: string;
   status: RsvpStatus;
+  paid: boolean;
   created_at: string;
-  users: PublicProfile | null;
+  users: (PublicProfile & { gender?: string | null }) | null;
 }
 
 // Event with a joined attendee count, as returned by the events feed query.

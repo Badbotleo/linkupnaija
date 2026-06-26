@@ -99,9 +99,16 @@ export default function ManageRequests({
                       </button>
                       {r.users && hasSocialLinks(r.users) && <VerifiedBadge />}
                     </div>
-                    {r.users?.state && (
-                      <p className="text-sm text-gray-500">
-                        📍 {r.users.state}
+                    {(r.users?.state || r.users?.gender) && (
+                      <p className="text-sm capitalize text-gray-500">
+                        {[
+                          r.users?.state && `📍 ${r.users.state}`,
+                          r.users?.gender &&
+                            r.users.gender !== "prefer not to say" &&
+                            r.users.gender,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
                       </p>
                     )}
                     {r.users?.bio && (
