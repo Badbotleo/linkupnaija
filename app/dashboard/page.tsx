@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ProfileCard from "@/components/ProfileCard";
+import UserMessages from "@/components/UserMessages";
 import CategoryBadge from "@/components/CategoryBadge";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { isProActive } from "@/lib/pro";
@@ -76,6 +77,11 @@ export default async function DashboardPage() {
 
         {/* Lists */}
         <div className="space-y-8 lg:col-span-2">
+          <section>
+            <h2 className="mb-3 text-lg font-bold text-gray-900">Messages</h2>
+            <UserMessages meId={user.id} />
+          </section>
+
           <Section
             title="Events I'm hosting"
             count={hosting.length}

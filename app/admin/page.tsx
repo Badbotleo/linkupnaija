@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import CategoryBadge from "@/components/CategoryBadge";
 import AdminReservations from "@/components/admin/AdminReservations";
 import AdminExpiredEvents from "@/components/admin/AdminExpiredEvents";
+import AdminMessages from "@/components/admin/AdminMessages";
 import { formatNaira } from "@/lib/paystack";
 import { formatEventDate } from "@/lib/format";
 import type { Transaction, ReservationWithUser } from "@/lib/types";
@@ -49,6 +50,7 @@ export default async function AdminPage() {
     { data: recentEvents },
     { data: reservationRows },
     { data: expiredRows },
+    { data: allUsers },
   ] = await Promise.all([
     supabase.from("users").select("*", { count: "exact", head: true }),
     supabase.from("events").select("*", { count: "exact", head: true }),
@@ -74,7 +76,19 @@ export default async function AdminPage() {
       .lt("date", new Date().toISOString().slice(0, 10))
       .order("date", { ascending: false })
       .limit(50),
+    supabase
+      .from("users")
+      .select("id, name, email")
+      .neq("id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(200),
   ]);
+
+  const messageUsers = (allUsers ?? []) as {
+    id: string;
+    name: string | null;
+    email: string;
+  }[];
 
   const reservations = (reservationRows ?? []) as unknown as ReservationWithUser[];
   const expiredEvents = (expiredRows ?? []) as {
@@ -152,6 +166,12 @@ export default async function AdminPage() {
           )}
         </h2>
         <AdminExpiredEvents initialEvents={expiredEvents} />
+      </section>
+
+      {/* Messages */}
+      <section className="mt-10">
+        <h2 className="mb-3 text-lg font-bold text-gray-900">Messages</h2>
+        <AdminMessages adminId={user.id} users={messageUsers} />
       </section>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-2">

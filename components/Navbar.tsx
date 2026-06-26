@@ -11,13 +11,18 @@ export default async function Navbar() {
   } = await supabase.auth.getUser();
 
   let isAdmin = false;
+  let unreadMessages = 0;
   if (user) {
-    const { data: profile } = await supabase
-      .from("users")
-      .select("is_admin")
-      .eq("id", user.id)
-      .single();
+    const [{ data: profile }, { count }] = await Promise.all([
+      supabase.from("users").select("is_admin").eq("id", user.id).single(),
+      supabase
+        .from("messages")
+        .select("*", { count: "exact", head: true })
+        .eq("receiver_id", user.id)
+        .eq("read", false),
+    ]);
     isAdmin = !!profile?.is_admin;
+    unreadMessages = count ?? 0;
   }
 
   return (
@@ -62,9 +67,14 @@ export default async function Navbar() {
               )}
               <Link
                 href="/dashboard"
-                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                className="relative rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
               >
                 Dashboard
+                {unreadMessages > 0 && (
+                  <span className="absolute right-0 top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                    {unreadMessages > 9 ? "9+" : unreadMessages}
+                  </span>
+                )}
               </Link>
               <form action="/auth/signout" method="post">
                 <button type="submit" className="btn-outline ml-1 py-2">
