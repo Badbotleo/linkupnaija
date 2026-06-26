@@ -3,6 +3,7 @@ import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import CategoryBadge from "@/components/CategoryBadge";
 import AdminReservations from "@/components/admin/AdminReservations";
+import AdminExpiredEvents from "@/components/admin/AdminExpiredEvents";
 import { formatNaira } from "@/lib/paystack";
 import { formatEventDate } from "@/lib/format";
 import type { Transaction, ReservationWithUser } from "@/lib/types";
@@ -47,6 +48,7 @@ export default async function AdminPage() {
     { data: recentUsers },
     { data: recentEvents },
     { data: reservationRows },
+    { data: expiredRows },
   ] = await Promise.all([
     supabase.from("users").select("*", { count: "exact", head: true }),
     supabase.from("events").select("*", { count: "exact", head: true }),
@@ -66,9 +68,22 @@ export default async function AdminPage() {
       .select("*, users(name, email)")
       .eq("status", "pending")
       .order("created_at", { ascending: false }),
+    supabase
+      .from("events")
+      .select("id, title, category, state, date")
+      .lt("date", new Date().toISOString().slice(0, 10))
+      .order("date", { ascending: false })
+      .limit(50),
   ]);
 
   const reservations = (reservationRows ?? []) as unknown as ReservationWithUser[];
+  const expiredEvents = (expiredRows ?? []) as {
+    id: string;
+    title: string;
+    category: string;
+    state: string;
+    date: string;
+  }[];
 
   const transactions = (txns ?? []) as Pick<
     Transaction,
@@ -124,6 +139,19 @@ export default async function AdminPage() {
           )}
         </h2>
         <AdminReservations initialReservations={reservations} />
+      </section>
+
+      {/* Expired events */}
+      <section className="mt-10">
+        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
+          Expired events
+          {expiredEvents.length > 0 && (
+            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-bold text-gray-600">
+              {expiredEvents.length}
+            </span>
+          )}
+        </h2>
+        <AdminExpiredEvents initialEvents={expiredEvents} />
       </section>
 
       <div className="mt-10 grid gap-8 lg:grid-cols-2">

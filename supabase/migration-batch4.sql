@@ -186,5 +186,10 @@ create trigger on_event_deleted
   before delete on public.events
   for each row execute function public.handle_event_deleted();
 
+-- Admins can delete events (e.g. clearing out expired events).
+drop policy if exists "Admins can delete events" on public.events;
+create policy "Admins can delete events"
+  on public.events for delete using (public.is_admin());
+
 -- NOTE: "Expired" events are derived from date < current_date (the feed already
 -- hides them) — no status column or cron needed.

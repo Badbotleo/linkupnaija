@@ -19,6 +19,7 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
     state: hostState ?? "",
     max_attendees: "",
     price: "",
+    event_type: "general" as "general" | "private",
   });
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
@@ -80,6 +81,7 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
         host_id: user.id,
         max_attendees: form.max_attendees ? Number(form.max_attendees) : null,
         price: form.price ? Math.max(0, Math.round(Number(form.price))) : 0,
+        event_type: form.event_type,
         cover_image_url: coverImageUrl,
       })
       .select("id")
@@ -132,6 +134,46 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
             className="hidden"
           />
         </label>
+      </div>
+
+      <div>
+        <span className="label">Visibility</span>
+        <div className="grid grid-cols-2 gap-2">
+          {(
+            [
+              { v: "general", label: "General", hint: "Visible to everyone" },
+              {
+                v: "private",
+                label: "Private 🔒",
+                hint: "Invited guests only",
+              },
+            ] as const
+          ).map((opt) => (
+            <button
+              key={opt.v}
+              type="button"
+              onClick={() =>
+                setForm((f) => ({ ...f, event_type: opt.v }))
+              }
+              className={`rounded-xl border p-3 text-left transition ${
+                form.event_type === opt.v
+                  ? "border-brand bg-brand-50"
+                  : "border-gray-200 bg-white hover:border-brand/40"
+              }`}
+            >
+              <span className="block text-sm font-bold text-gray-900">
+                {opt.label}
+              </span>
+              <span className="block text-xs text-gray-500">{opt.hint}</span>
+            </button>
+          ))}
+        </div>
+        {form.event_type === "private" && (
+          <p className="mt-1.5 text-xs text-gray-400">
+            Private events don&apos;t appear in the public feed — share the event
+            link directly with your guests.
+          </p>
+        )}
       </div>
 
       <div>

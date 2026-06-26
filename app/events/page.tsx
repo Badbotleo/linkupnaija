@@ -30,6 +30,7 @@ export default async function EventsPage({
     .select(
       "*, rsvps(status), host:users!events_host_id_fkey(rating_avg, rating_count)"
     )
+    .eq("event_type", "general")
     .gte("date", new Date().toISOString().slice(0, 10))
     .order("date", { ascending: true })
     .order("time", { ascending: true });

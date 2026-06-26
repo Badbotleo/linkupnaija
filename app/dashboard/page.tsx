@@ -36,7 +36,10 @@ export default async function DashboardPage() {
         .order("created_at", { ascending: false }),
     ]);
 
-  const hosting = (hostingRaw ?? []) as unknown as HostingEvent[];
+  const allHosting = (hostingRaw ?? []) as unknown as HostingEvent[];
+  const today = new Date().toISOString().slice(0, 10);
+  const hosting = allHosting.filter((e) => e.date >= today);
+  const pastHosting = allHosting.filter((e) => e.date < today);
   const myRsvps = (myRsvpsRaw ?? []) as unknown as MyRsvp[];
 
   const attending = myRsvps.filter((r) => r.status === "accepted" && r.events);
@@ -100,6 +103,22 @@ export default async function DashboardPage() {
               );
             })}
           </Section>
+
+          {pastHosting.length > 0 && (
+            <Section
+              title="Past events"
+              count={pastHosting.length}
+              emptyText=""
+            >
+              {pastHosting.map((e) => (
+                <EventRowCard key={e.id} event={e}>
+                  <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-500">
+                    Expired
+                  </span>
+                </EventRowCard>
+              ))}
+            </Section>
+          )}
 
           <Section
             title="Events I'm attending"

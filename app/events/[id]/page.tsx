@@ -203,6 +203,11 @@ export default async function EventDetailPage({
         <div className="lg:col-span-2">
           <div className="flex flex-wrap items-center gap-2">
             {featured && <FeaturedBadge />}
+            {event.event_type === "private" && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-gray-900 px-2.5 py-1 text-xs font-bold text-white">
+                🔒 Private Event
+              </span>
+            )}
             <CategoryBadge category={event.category} />
             <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand">
               📍 {event.state}
