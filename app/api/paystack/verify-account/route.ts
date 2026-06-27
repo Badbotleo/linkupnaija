@@ -19,11 +19,21 @@ export async function POST(req: Request) {
     );
   }
 
-  const secret = process.env.PAYSTACK_SECRET_KEY;
+  // Trim to guard against stray whitespace/newlines pasted into env vars.
+  const secret = process.env.PAYSTACK_SECRET_KEY?.trim();
   if (!secret) {
     return NextResponse.json(
       { error: "Payouts are not configured yet (missing PAYSTACK_SECRET_KEY)." },
       { status: 503 }
+    );
+  }
+  if (secret.startsWith("pk_")) {
+    return NextResponse.json(
+      {
+        error:
+          "PAYSTACK_SECRET_KEY is set to a public key (pk_…). Use your Paystack SECRET key (sk_…) instead.",
+      },
+      { status: 500 }
     );
   }
 
@@ -36,10 +46,11 @@ export async function POST(req: Request) {
     );
     const data = await res.json();
     if (!res.ok || !data.status) {
-      return NextResponse.json(
-        { error: data.message || "Could not verify account." },
-        { status: 422 }
-      );
+      const msg: string = data.message || "Could not verify account.";
+      const friendly = /invalid key/i.test(msg)
+        ? "Paystack rejected the API key. Check that PAYSTACK_SECRET_KEY is a valid live secret key (sk_live_…) with no extra spaces."
+        : msg;
+      return NextResponse.json({ error: friendly }, { status: 422 });
     }
     return NextResponse.json({ account_name: data.data.account_name });
   } catch {
