@@ -114,6 +114,11 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
         Continue with Google
       </button>
 
+      <p className="text-center text-[12px] text-gray-500">
+        You&apos;ll be redirected to Google to sign in securely — then brought
+        back to LinkUpNaija.
+      </p>
+
       <div className="flex items-center gap-3">
         <span className="h-px flex-1 bg-gray-200" />
         <span className="text-xs font-medium uppercase text-gray-400">or</span>
