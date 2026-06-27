@@ -95,11 +95,24 @@ export default function PayoutSettings({
 
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-card">
-      <h2 className="text-lg font-bold text-gray-900">Payout settings</h2>
+      <h2 className="text-lg font-bold text-gray-900">Payout Settings</h2>
       <p className="mt-1 text-sm text-gray-500">
-        Where we send your earnings from paid events (90% after the 10% platform
-        fee).
+        Add your bank details to receive payments from your hosted events.
+        LinkUpNaija takes a 10% platform fee.
       </p>
+
+      {initial.payout_bank && initial.payout_account_number && (
+        <div className="mt-4 rounded-xl bg-brand-50 px-4 py-3 text-sm">
+          <p className="font-semibold text-brand">Currently saving to</p>
+          <p className="mt-0.5 text-gray-700">
+            {initial.payout_account_name
+              ? `${initial.payout_account_name} · `
+              : ""}
+            {initial.payout_bank} ••••
+            {initial.payout_account_number.slice(-4)}
+          </p>
+        </div>
+      )}
 
       <div className="mt-4 space-y-4">
         <div>
