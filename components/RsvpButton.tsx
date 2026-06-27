@@ -20,6 +20,7 @@ export default function RsvpButton({
   isPro,
   requestsThisMonth,
   eventTitle,
+  hostSubaccount,
 }: {
   eventId: string;
   isLoggedIn: boolean;
@@ -30,6 +31,7 @@ export default function RsvpButton({
   isPro: boolean;
   requestsThisMonth: number;
   eventTitle: string;
+  hostSubaccount: string | null;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -78,6 +80,9 @@ export default function RsvpButton({
           email: user.email ?? "",
           amountNaira: price,
           metadata: { purpose: "event_ticket", eventId, userId: user.id },
+          // If the host has a payout subaccount, Paystack splits the ticket
+          // automatically: 90% to the host, 10% to LinkUpNaija.
+          subaccount: hostSubaccount ?? undefined,
         });
         if (!result) {
           setLoading(false); // user closed the popup without paying

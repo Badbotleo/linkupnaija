@@ -88,7 +88,7 @@ export default async function EventDetailPage({
   const { data: event } = await supabase
     .from("events")
     .select(
-      "*, host:users!events_host_id_fkey(id, name, avatar_url, state, rating_avg, rating_count)"
+      "*, host:users!events_host_id_fkey(id, name, avatar_url, state, rating_avg, rating_count, paystack_subaccount_code)"
     )
     .eq("id", params.id)
     .single();
@@ -372,6 +372,7 @@ export default async function EventDetailPage({
                     isPro={isPro}
                     requestsThisMonth={requestsThisMonth}
                     eventTitle={event.title}
+                    hostSubaccount={event.host?.paystack_subaccount_code ?? null}
                   />
                 </div>
               </>

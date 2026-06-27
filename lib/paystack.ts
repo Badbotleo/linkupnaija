@@ -12,6 +12,8 @@ interface PaystackPop {
     amount: number; // in kobo
     currency?: string;
     ref?: string;
+    subaccount?: string;
+    bearer?: string;
     metadata?: Record<string, unknown>;
     callback: (response: { reference: string }) => void;
     onClose: () => void;
@@ -66,6 +68,7 @@ export async function payWithPaystack(opts: {
   email: string;
   amountNaira: number;
   metadata?: Record<string, unknown>;
+  subaccount?: string; // host's Paystack subaccount for split payments
 }): Promise<{ reference: string } | null> {
   const key = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
   if (!key) {
@@ -85,6 +88,12 @@ export async function payWithPaystack(opts: {
       email: opts.email,
       amount: Math.round(opts.amountNaira * 100), // Naira → kobo
       currency: "NGN",
+      // When a subaccount is set, Paystack splits using its percentage_charge
+      // (host 90% / platform 10%). "bearer: account" makes the platform (main
+      // account) bear the Paystack transaction fees.
+      ...(opts.subaccount
+        ? { subaccount: opts.subaccount, bearer: "account" }
+        : {}),
       metadata: opts.metadata ?? {},
       callback: (response) => resolve({ reference: response.reference }),
       onClose: () => resolve(null),
