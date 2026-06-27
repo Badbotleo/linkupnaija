@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { NIGERIAN_BANKS } from "@/lib/banks";
 
 export default function PayoutSettings({
@@ -17,7 +16,6 @@ export default function PayoutSettings({
   };
 }) {
   const router = useRouter();
-  const supabase = createClient();
   const [bank, setBank] = useState(initial.payout_bank ?? "");
   const [accountNumber, setAccountNumber] = useState(
     initial.payout_account_number ?? ""
@@ -63,19 +61,34 @@ export default function PayoutSettings({
   async function save() {
     setError(null);
     setMsg(null);
+    const code = NIGERIAN_BANKS.find((b) => b.name === bank)?.code;
+    if (!code || accountNumber.length < 10) {
+      setError("Select a bank and enter a valid 10-digit account number.");
+      return;
+    }
     setSaving(true);
-    const { error } = await supabase
-      .from("users")
-      .update({
-        payout_bank: bank || null,
-        payout_account_number: accountNumber.trim() || null,
-        payout_account_name: accountName.trim() || null,
-      })
-      .eq("id", userId);
-    if (error) setError(error.message);
-    else {
-      setMsg("Payout details saved ✅");
-      router.refresh();
+    try {
+      // Creates a real Paystack subaccount and persists payout details server-side.
+      const res = await fetch("/api/paystack/subaccount", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bank_code: code,
+          bank_name: bank,
+          account_number: accountNumber,
+          account_name: accountName.trim() || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Could not save payout details.");
+      } else {
+        if (data.account_name) setAccountName(data.account_name);
+        setMsg("Payout details saved & subaccount created ✅");
+        router.refresh();
+      }
+    } catch {
+      setError("Could not save payout details. Please try again.");
     }
     setSaving(false);
   }

@@ -2,9 +2,7 @@ import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-// Resolves a Nigerian bank account via Paystack. If PAYSTACK_SECRET_KEY is not
-// set, returns a stubbed response so the payout UI works before payments are
-// wired up for real.
+// Resolves a Nigerian bank account via Paystack's account-resolution API.
 export async function POST(req: Request) {
   let body: { account_number?: string; bank_code?: string };
   try {
@@ -23,13 +21,10 @@ export async function POST(req: Request) {
 
   const secret = process.env.PAYSTACK_SECRET_KEY;
   if (!secret) {
-    // Stub: not configured yet. Let the host save details without verification.
-    return NextResponse.json({
-      stubbed: true,
-      account_name: null,
-      message:
-        "Account verification isn't wired up yet (no PAYSTACK_SECRET_KEY). You can still save your details.",
-    });
+    return NextResponse.json(
+      { error: "Payouts are not configured yet (missing PAYSTACK_SECRET_KEY)." },
+      { status: 503 }
+    );
   }
 
   try {
