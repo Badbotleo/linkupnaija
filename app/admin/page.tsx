@@ -5,6 +5,7 @@ import CategoryBadge from "@/components/CategoryBadge";
 import AdminReservations from "@/components/admin/AdminReservations";
 import AdminExpiredEvents from "@/components/admin/AdminExpiredEvents";
 import AdminMessages from "@/components/admin/AdminMessages";
+import AdminPayouts from "@/components/admin/AdminPayouts";
 import { formatNaira } from "@/lib/paystack";
 import { formatEventDate } from "@/lib/format";
 import type { Transaction, ReservationWithUser } from "@/lib/types";
@@ -51,6 +52,7 @@ export default async function AdminPage() {
     { data: reservationRows },
     { data: expiredRows },
     { data: allUsers },
+    { data: payoutRows },
   ] = await Promise.all([
     supabase.from("users").select("*", { count: "exact", head: true }),
     supabase.from("events").select("*", { count: "exact", head: true }),
@@ -82,12 +84,31 @@ export default async function AdminPage() {
       .neq("id", user.id)
       .order("created_at", { ascending: false })
       .limit(200),
+    supabase
+      .from("payouts")
+      .select(
+        "id, amount, platform_fee, status, users:users!payouts_host_id_fkey(name, payout_bank, payout_account_number), events:events!payouts_event_id_fkey(title)"
+      )
+      .in("status", ["pending", "approved"])
+      .order("created_at", { ascending: false }),
   ]);
 
   const messageUsers = (allUsers ?? []) as {
     id: string;
     name: string | null;
     email: string;
+  }[];
+  const payouts = (payoutRows ?? []) as unknown as {
+    id: string;
+    amount: number;
+    platform_fee: number;
+    status: string;
+    users: {
+      name: string | null;
+      payout_bank: string | null;
+      payout_account_number: string | null;
+    } | null;
+    events: { title: string | null } | null;
   }[];
 
   const reservations = (reservationRows ?? []) as unknown as ReservationWithUser[];
@@ -166,6 +187,19 @@ export default async function AdminPage() {
           )}
         </h2>
         <AdminExpiredEvents initialEvents={expiredEvents} />
+      </section>
+
+      {/* Payouts */}
+      <section className="mt-10">
+        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
+          Payout requests
+          {payouts.length > 0 && (
+            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700">
+              {payouts.length}
+            </span>
+          )}
+        </h2>
+        <AdminPayouts initialPayouts={payouts} />
       </section>
 
       {/* Messages */}

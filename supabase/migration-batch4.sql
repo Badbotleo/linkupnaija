@@ -186,6 +186,17 @@ create trigger on_event_deleted
   before delete on public.events
   for each row execute function public.handle_event_deleted();
 
+-- Hosts can read transactions for events they host (for payout totals).
+drop policy if exists "Hosts read transactions for their events" on public.transactions;
+create policy "Hosts read transactions for their events"
+  on public.transactions for select
+  using (
+    exists (
+      select 1 from public.events e
+      where e.id = transactions.event_id and e.host_id = auth.uid()
+    )
+  );
+
 -- Admins can delete events (e.g. clearing out expired events).
 drop policy if exists "Admins can delete events" on public.events;
 create policy "Admins can delete events"

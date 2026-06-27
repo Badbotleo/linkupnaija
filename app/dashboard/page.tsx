@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ProfileCard from "@/components/ProfileCard";
 import UserMessages from "@/components/UserMessages";
+import PayoutRequest from "@/components/PayoutRequest";
 import CategoryBadge from "@/components/CategoryBadge";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { isProActive } from "@/lib/pro";
@@ -47,6 +48,54 @@ export default async function DashboardPage() {
   const pending = myRsvps.filter((r) => r.status === "pending" && r.events);
   const declined = myRsvps.filter((r) => r.status === "declined" && r.events);
 
+  // Payouts for the host's paid events.
+  const paidEvents = allHosting.filter((e) => e.price > 0);
+  let payoutCards: {
+    eventId: string;
+    eventTitle: string;
+    collected: number;
+    platformFee: number;
+    due: number;
+    status: string | null;
+  }[] = [];
+  if (paidEvents.length) {
+    const paidIds = paidEvents.map((e) => e.id);
+    const [{ data: txRows }, { data: payoutRows }] = await Promise.all([
+      supabase
+        .from("transactions")
+        .select("event_id, amount, platform_fee")
+        .in("event_id", paidIds),
+      supabase
+        .from("payouts")
+        .select("event_id, status")
+        .eq("host_id", user.id),
+    ]);
+    const txns = (txRows ?? []) as {
+      event_id: string | null;
+      amount: number;
+      platform_fee: number;
+    }[];
+    const payouts = (payoutRows ?? []) as {
+      event_id: string | null;
+      status: string;
+    }[];
+    payoutCards = paidEvents
+      .map((e) => {
+        const evTx = txns.filter((t) => t.event_id === e.id);
+        const collected = evTx.reduce((s, t) => s + t.amount, 0);
+        const platformFee = evTx.reduce((s, t) => s + t.platform_fee, 0);
+        return {
+          eventId: e.id,
+          eventTitle: e.title,
+          collected,
+          platformFee,
+          due: collected - platformFee,
+          status: payouts.find((p) => p.event_id === e.id)?.status ?? null,
+        };
+      })
+      .filter((c) => c.collected > 0);
+  }
+
   const p = profile as UserProfile | null;
 
   return (
@@ -81,6 +130,26 @@ export default async function DashboardPage() {
             <h2 className="mb-3 text-lg font-bold text-gray-900">Messages</h2>
             <UserMessages meId={user.id} />
           </section>
+
+          {payoutCards.length > 0 && (
+            <section>
+              <h2 className="mb-3 text-lg font-bold text-gray-900">Payouts</h2>
+              <div className="space-y-3">
+                {payoutCards.map((c) => (
+                  <PayoutRequest
+                    key={c.eventId}
+                    hostId={user.id}
+                    eventId={c.eventId}
+                    eventTitle={c.eventTitle}
+                    collected={c.collected}
+                    platformFee={c.platformFee}
+                    due={c.due}
+                    status={c.status}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
 
           <Section
             title="Events I'm hosting"

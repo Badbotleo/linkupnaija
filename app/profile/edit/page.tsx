@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ProfileForm from "@/components/ProfileForm";
+import PayoutSettings from "@/components/PayoutSettings";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ export default async function ProfileEditPage() {
   const { data: profile } = await supabase
     .from("users")
     .select(
-      "name, state, bio, avatar_url, instagram_url, twitter_url, facebook_url, phone, gender"
+      "name, state, bio, avatar_url, instagram_url, twitter_url, facebook_url, phone, gender, payout_bank, payout_account_number, payout_account_name"
     )
     .eq("id", user.id)
     .single();
@@ -47,6 +48,17 @@ export default async function ProfileEditPage() {
             facebook_url: profile?.facebook_url ?? null,
             phone: profile?.phone ?? null,
             gender: profile?.gender ?? null,
+          }}
+        />
+      </div>
+
+      <div className="mt-6">
+        <PayoutSettings
+          userId={user.id}
+          initial={{
+            payout_bank: profile?.payout_bank ?? null,
+            payout_account_number: profile?.payout_account_number ?? null,
+            payout_account_name: profile?.payout_account_name ?? null,
           }}
         />
       </div>
