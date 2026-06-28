@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import EventsFilters from "@/components/EventsFilters";
 import EventsList from "@/components/EventsList";
+import TournamentBanner from "@/components/tournament/TournamentBanner";
 import type { EventRow, RsvpStatus } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -67,6 +68,8 @@ export default async function EventsPage({
 
   return (
     <div className="container-page py-10">
+      <TournamentBanner />
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900">

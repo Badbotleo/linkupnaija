@@ -46,6 +46,12 @@ export default async function Navbar() {
             Venues
           </Link>
           <Link
+            href="/tournament"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+          >
+            Tournament
+          </Link>
+          <Link
             href="/host"
             className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
           >
