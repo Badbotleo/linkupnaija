@@ -25,6 +25,18 @@ export interface UserProfile {
   created_at: string;
 }
 
+export interface TournamentRegistration {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  state: string | null;
+  psn_id: string | null;
+  payment_reference: string | null;
+  paid: boolean;
+  created_at: string;
+}
+
 export interface Message {
   id: string;
   sender_id: string;

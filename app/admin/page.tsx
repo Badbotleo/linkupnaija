@@ -6,9 +6,14 @@ import AdminReservations from "@/components/admin/AdminReservations";
 import AdminExpiredEvents from "@/components/admin/AdminExpiredEvents";
 import AdminMessages from "@/components/admin/AdminMessages";
 import AdminPayouts from "@/components/admin/AdminPayouts";
+import AdminTournament from "@/components/admin/AdminTournament";
 import { formatNaira } from "@/lib/paystack";
 import { formatEventDate } from "@/lib/format";
-import type { Transaction, ReservationWithUser } from "@/lib/types";
+import type {
+  Transaction,
+  ReservationWithUser,
+  TournamentRegistration,
+} from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Admin" };
@@ -53,6 +58,7 @@ export default async function AdminPage() {
     { data: expiredRows },
     { data: allUsers },
     { data: payoutRows },
+    { data: tournamentRows },
   ] = await Promise.all([
     supabase.from("users").select("*", { count: "exact", head: true }),
     supabase.from("events").select("*", { count: "exact", head: true }),
@@ -91,7 +97,13 @@ export default async function AdminPage() {
       )
       .in("status", ["pending", "approved"])
       .order("created_at", { ascending: false }),
+    supabase
+      .from("tournament_registrations")
+      .select("*")
+      .order("created_at", { ascending: false }),
   ]);
+
+  const tournamentRegs = (tournamentRows ?? []) as TournamentRegistration[];
 
   const messageUsers = (allUsers ?? []) as {
     id: string;
@@ -174,6 +186,19 @@ export default async function AdminPage() {
           )}
         </h2>
         <AdminReservations initialReservations={reservations} />
+      </section>
+
+      {/* Tournament */}
+      <section className="mt-10">
+        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
+          🎮 FC26 Tournament
+          {tournamentRegs.length > 0 && (
+            <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand">
+              {tournamentRegs.length}
+            </span>
+          )}
+        </h2>
+        <AdminTournament registrations={tournamentRegs} />
       </section>
 
       {/* Expired events */}

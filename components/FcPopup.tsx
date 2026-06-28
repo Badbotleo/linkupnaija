@@ -64,7 +64,7 @@ export default function FcPopup() {
           onClick={dismiss}
           className="mt-4 block w-full rounded-xl bg-gradient-to-r from-brand to-[#7F77DD] py-2.5 text-center text-sm font-bold text-white transition hover:opacity-90"
         >
-          JOIN WAITLIST →
+          Register Now — ₦10,000 →
         </Link>
       </div>
     </div>
