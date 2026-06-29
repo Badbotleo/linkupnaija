@@ -8,6 +8,7 @@ import ChatWidget from "@/components/ChatWidget";
 import ScrollProgress from "@/components/ScrollProgress";
 import NavProgress from "@/components/NavProgress";
 import ActivityTicker from "@/components/ActivityTicker";
+import Toaster from "@/components/Toaster";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -72,6 +73,7 @@ export default function RootLayout({
         <Footer />
         <ActivityTicker />
         <ChatWidget />
+        <Toaster />
       </body>
       <GoogleAnalytics gaId="G-4YZV5789P8" />
     </html>

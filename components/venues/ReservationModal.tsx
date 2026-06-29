@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { EVENT_CATEGORIES } from "@/lib/constants";
+import { toast } from "@/lib/toast";
 import type { Venue } from "@/lib/overpass";
 
 export default function ReservationModal({
@@ -62,8 +63,13 @@ export default function ReservationModal({
       contact_phone: form.contact_phone.trim() || null,
     });
 
-    if (error) setError(error.message);
-    else setDone(true);
+    if (error) {
+      setError(error.message);
+      toast.error(error.message);
+    } else {
+      setDone(true);
+      toast.success("Reservation request sent! 🎉");
+    }
     setLoading(false);
   }
 
