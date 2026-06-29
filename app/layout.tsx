@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
 import ScrollProgress from "@/components/ScrollProgress";
 import NavProgress from "@/components/NavProgress";
+import ActivityTicker from "@/components/ActivityTicker";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -69,6 +70,7 @@ export default function RootLayout({
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />
+        <ActivityTicker />
         <ChatWidget />
       </body>
       <GoogleAnalytics gaId="G-4YZV5789P8" />
