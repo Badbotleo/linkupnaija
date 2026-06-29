@@ -63,13 +63,15 @@ export default function EventsFilters() {
           label="All vibes"
           active={!activeCategory}
           onClick={() => setParam("category", "")}
+          delay={0}
         />
-        {EVENT_CATEGORIES.map((cat) => (
+        {EVENT_CATEGORIES.map((cat, i) => (
           <Chip
             key={cat}
             label={cat}
             active={activeCategory === cat}
             onClick={() => setParam("category", cat)}
+            delay={(i + 1) * 35}
           />
         ))}
       </div>
@@ -81,16 +83,19 @@ function Chip({
   label,
   active,
   onClick,
+  delay = 0,
 }: {
   label: string;
   active: boolean;
   onClick: () => void;
+  delay?: number;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition ${
+      style={{ animationDelay: `${delay}ms` }}
+      className={`animate-pop-in rounded-full border px-4 py-1.5 text-sm font-semibold transition ${
         active
           ? "border-brand bg-brand text-white"
           : "border-gray-200 bg-white text-gray-600 hover:border-brand/40 hover:text-brand"

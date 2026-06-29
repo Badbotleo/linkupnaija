@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ProfileCard from "@/components/ProfileCard";
+import ProfileCompletion from "@/components/ProfileCompletion";
 import UserMessages from "@/components/UserMessages";
 import PayoutRequest from "@/components/PayoutRequest";
 import CategoryBadge from "@/components/CategoryBadge";
@@ -98,9 +99,25 @@ export default async function DashboardPage() {
 
   const p = profile as UserProfile | null;
 
+  const completionItems = p
+    ? [
+        { label: "Avatar", done: !!p.avatar_url },
+        { label: "Bio", done: !!p.bio },
+        { label: "Instagram", done: !!p.instagram_url },
+        { label: "Payout details", done: !!p.payout_account_number },
+        { label: "Gender", done: !!p.gender },
+      ]
+    : [];
+
   return (
     <div className="container-page py-10">
       <h1 className="text-3xl font-extrabold text-gray-900">Your dashboard</h1>
+
+      {p && (
+        <div className="mt-6">
+          <ProfileCompletion items={completionItems} />
+        </div>
+      )}
 
       <div className="mt-6 grid gap-8 lg:grid-cols-3">
         {/* Profile summary */}

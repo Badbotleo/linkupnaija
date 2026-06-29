@@ -76,13 +76,18 @@ export default function EventsList({ events }: { events: FeedEvent[] }) {
         />
       ) : (
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((event) => (
-            <EventCard
+          {filtered.map((event, i) => (
+            <div
               key={event.id}
-              event={event}
-              attendeeCount={event.attendeeCount}
-              hostRating={event.hostRating}
-            />
+              className="animate-fade-in-up"
+              style={{ animationDelay: `${Math.min(i, 11) * 80}ms` }}
+            >
+              <EventCard
+                event={event}
+                attendeeCount={event.attendeeCount}
+                hostRating={event.hostRating}
+              />
+            </div>
           ))}
         </div>
       )}
