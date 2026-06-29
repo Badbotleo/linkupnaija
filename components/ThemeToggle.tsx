@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 export default function ThemeToggle() {
   const [dark, setDark] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [turns, setTurns] = useState(0);
 
   useEffect(() => {
     setDark(document.documentElement.classList.contains("dark"));
@@ -14,6 +15,7 @@ export default function ThemeToggle() {
   function toggle() {
     const next = !dark;
     setDark(next);
+    setTurns((t) => t + 1);
     document.documentElement.classList.toggle("dark", next);
     try {
       localStorage.setItem("theme", next ? "dark" : "light");
@@ -31,7 +33,12 @@ export default function ThemeToggle() {
       className="grid h-9 w-9 place-items-center rounded-lg text-gray-600 transition hover:bg-gray-50 hover:text-gray-900"
     >
       {/* Avoid hydration mismatch: render a neutral icon until mounted */}
-      {mounted && dark ? <SunIcon /> : <MoonIcon />}
+      <span
+        className="grid place-items-center transition-transform duration-500"
+        style={{ transform: `rotate(${turns * 360}deg)` }}
+      >
+        {mounted && dark ? <SunIcon /> : <MoonIcon />}
+      </span>
     </button>
   );
 }

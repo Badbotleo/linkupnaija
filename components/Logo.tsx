@@ -1,7 +1,13 @@
 // LinkUpNaija pin-mark logo: a purple emblem with three "people", plus the
 // wordmark. Works on light and dark backgrounds.
 
-export function LogoMark({ size = 32 }: { size?: number }) {
+export function LogoMark({
+  size = 32,
+  pulse = false,
+}: {
+  size?: number;
+  pulse?: boolean;
+}) {
   return (
     <svg
       width={size}
@@ -10,6 +16,8 @@ export function LogoMark({ size = 32 }: { size?: number }) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden
+      className={pulse ? "animate-logo-pulse" : undefined}
+      style={{ transformOrigin: "center" }}
     >
       <circle cx="24" cy="24" r="22" fill="#534AB7" />
       <circle cx="24" cy="24" r="16.5" fill="#3C3489" />
@@ -48,13 +56,15 @@ export function Wordmark({ className = "" }: { className?: string }) {
 export default function Logo({
   size = 32,
   textClassName = "text-lg",
+  pulse = false,
 }: {
   size?: number;
   textClassName?: string;
+  pulse?: boolean;
 }) {
   return (
     <span className="flex items-center gap-2">
-      <LogoMark size={size} />
+      <LogoMark size={size} pulse={pulse} />
       <Wordmark className={textClassName} />
     </span>
   );

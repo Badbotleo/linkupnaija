@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { payWithPaystack, formatNaira } from "@/lib/paystack";
 import { FREE_REQUEST_LIMIT } from "@/lib/pro";
+import { confettiJoin, confettiCoins } from "@/lib/confetti";
 import type { RsvpStatus } from "@/lib/types";
 
 type JoinState = "none" | RsvpStatus;
@@ -128,6 +129,8 @@ export default function RsvpButton({
       });
     }
 
+    if (price > 0) confettiCoins();
+    else confettiJoin();
     setStatus("pending");
     router.refresh();
     setLoading(false);

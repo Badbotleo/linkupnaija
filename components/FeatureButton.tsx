@@ -8,6 +8,7 @@ import {
   isPaystackConfigured,
   formatNaira,
 } from "@/lib/paystack";
+import { confettiCoins } from "@/lib/confetti";
 
 const FEATURE_PRICE = 5000; // ₦5,000 for 48 hours
 const FEATURE_HOURS = 48;
@@ -69,6 +70,7 @@ export default function FeatureButton({
       if (error) {
         setError(error.message);
       } else {
+        confettiCoins();
         await supabase.from("notifications").insert({
           user_id: user.id,
           event_id: eventId,

@@ -9,6 +9,7 @@ import {
   formatNaira,
 } from "@/lib/paystack";
 import { PRO_PRICE, PRO_DAYS } from "@/lib/pro";
+import { confettiCoins } from "@/lib/confetti";
 
 export default function GoProButton({
   isLoggedIn,
@@ -87,6 +88,7 @@ export default function GoProButton({
       if (error) {
         setError(error.message);
       } else {
+        confettiCoins();
         await supabase.from("notifications").insert({
           user_id: user.id,
           message: "Welcome to Pro ⭐ Your benefits are now active",

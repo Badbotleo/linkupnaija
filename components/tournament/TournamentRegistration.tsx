@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { payWithPaystack, formatNaira } from "@/lib/paystack";
 import { NIGERIAN_STATES } from "@/lib/constants";
 import { TOURNAMENT } from "@/lib/tournament";
+import { confettiPs5 } from "@/lib/confetti";
 
 const inputCls =
   "w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-white placeholder-white/40 focus:border-[#7F77DD] focus:outline-none focus:ring-2 focus:ring-[#7F77DD]/40";
@@ -71,6 +72,7 @@ export default function TournamentRegistration() {
       });
       if (error) setError(error.message);
       else {
+        confettiPs5();
         setDone(true);
         loadCount();
       }

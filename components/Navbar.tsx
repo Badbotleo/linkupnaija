@@ -29,7 +29,7 @@ export default async function Navbar() {
     <header className="sticky top-0 z-40 border-b border-gray-100 bg-white/90 backdrop-blur">
       <nav className="container-page flex h-16 items-center justify-between">
         <Link href="/" aria-label="LinkUpNaija home">
-          <Logo size={34} textClassName="text-lg" />
+          <Logo size={34} textClassName="text-lg" pulse />
         </Link>
 
         <div className="flex items-center gap-1 sm:gap-2">

@@ -5,6 +5,8 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChatWidget from "@/components/ChatWidget";
+import ScrollProgress from "@/components/ScrollProgress";
+import NavProgress from "@/components/NavProgress";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -62,6 +64,8 @@ export default function RootLayout({
         />
       </head>
       <body className="flex min-h-screen flex-col">
+        <ScrollProgress />
+        <NavProgress />
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />

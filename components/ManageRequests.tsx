@@ -8,6 +8,7 @@ import SocialLinks from "./SocialLinks";
 import VerifiedBadge from "./VerifiedBadge";
 import AttendeeProfileModal from "./AttendeeProfileModal";
 import { hasSocialLinks } from "@/lib/social";
+import { confettiGold } from "@/lib/confetti";
 import type { RsvpWithProfile } from "@/lib/types";
 
 export default function ManageRequests({
@@ -36,6 +37,7 @@ export default function ManageRequests({
     if (error) {
       setError(error.message);
     } else {
+      if (status === "accepted") confettiGold();
       setRequests((prev) =>
         prev.map((r) => (r.id === id ? { ...r, status } : r))
       );
