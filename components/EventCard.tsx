@@ -20,22 +20,26 @@ export default function EventCard({
     ? `${attendeeCount}/${event.max_attendees} going`
     : `${attendeeCount} going`;
   const featured = isFeatured(event.featured, event.featured_until);
+  const spotsLeft = event.max_attendees
+    ? event.max_attendees - attendeeCount
+    : null;
+  const lowSpots = spotsLeft !== null && spotsLeft > 0 && spotsLeft < 5;
 
   return (
     <Link
       href={`/events/${event.id}`}
-      className={`group flex flex-col overflow-hidden rounded-2xl border bg-white shadow-card transition hover:-translate-y-0.5 ${
+      className={`group flex flex-col overflow-hidden rounded-2xl border bg-white shadow-card transition-all duration-200 hover:-translate-y-2 hover:shadow-xl ${
         featured
           ? "border-amber-300 ring-1 ring-amber-200"
-          : "border-gray-100 hover:border-brand/30"
+          : "border-gray-100 hover:border-brand/40 hover:ring-2 hover:ring-brand/15"
       }`}
     >
-      <div className="relative">
+      <div className="relative overflow-hidden">
         <EventCover
           url={event.cover_image_url}
           category={event.category}
           title={event.title}
-          className="h-40 w-full"
+          className="h-40 w-full transition-transform duration-300 group-hover:scale-105"
         />
         <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
           <CategoryBadge category={event.category} className="shadow-sm" />
@@ -86,11 +90,18 @@ export default function EventCard({
         </dl>
 
         <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
-          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-700">
-            <span aria-hidden>👥</span>
-            {spotsLabel}
-          </span>
-          <span className="text-sm font-semibold text-brand opacity-0 transition group-hover:opacity-100">
+          {lowSpots ? (
+            <span className="inline-flex animate-spot-pulse items-center gap-1.5 text-sm font-bold text-red-600">
+              <span aria-hidden>🔥</span>
+              {spotsLeft} spot{spotsLeft === 1 ? "" : "s"} left
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-700">
+              <span aria-hidden>👥</span>
+              {spotsLabel}
+            </span>
+          )}
+          <span className="inline-flex items-center gap-1 text-sm font-semibold text-brand opacity-0 transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100">
             View →
           </span>
         </div>

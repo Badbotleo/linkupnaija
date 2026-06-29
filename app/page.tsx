@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { EVENT_CATEGORIES, CATEGORY_STYLES } from "@/lib/constants";
+import { createClient } from "@/lib/supabase/server";
 import FcPopup from "@/components/FcPopup";
+import Typewriter from "@/components/anim/Typewriter";
+import LandingStats from "@/components/LandingStats";
+
+export const dynamic = "force-dynamic";
 
 const HOW_IT_WORKS = [
   {
@@ -20,7 +25,13 @@ const HOW_IT_WORKS = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = createClient();
+  const { count } = await supabase
+    .from("events")
+    .select("*", { count: "exact", head: true });
+  const eventsCount = count ?? 0;
+
   return (
     <div>
       {/* Hero */}
@@ -31,7 +42,7 @@ export default function HomePage() {
               🇳🇬 Nigeria&apos;s social events platform
             </span>
             <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-              Link up. <span className="text-brand">Hang out.</span> Vibe.
+              <Typewriter text="Link up. Hang out. Vibe." />
             </h1>
             <p className="mt-5 max-w-lg text-lg text-gray-600">
               From clubbing in Lagos to book clubs in Abuja and picnics in PH —
@@ -72,6 +83,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Floating stats */}
+      <LandingStats eventsCount={eventsCount} />
 
       {/* How it works */}
       <section className="container-page py-16">
