@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { EVENT_CATEGORIES } from "@/lib/constants";
@@ -29,6 +30,11 @@ export default function ReservationModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Portal-mount only on the client so the modal is appended to <body>,
+  // guaranteeing it stacks above the Leaflet map regardless of DOM nesting.
+  useEffect(() => setMounted(true), []);
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -73,9 +79,11 @@ export default function ReservationModal({
     setLoading(false);
   }
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
       onClick={onClose}
     >
       <div
@@ -247,6 +255,7 @@ export default function ReservationModal({
           </form>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

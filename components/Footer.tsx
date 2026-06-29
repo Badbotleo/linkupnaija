@@ -16,6 +16,9 @@ export default function Footer() {
           <Link href="/host" className="hover:text-brand">
             Host an event
           </Link>
+          <Link href="/opportunities" className="hover:text-brand">
+            Opportunities
+          </Link>
           <Link href="/pro" className="font-semibold text-amber-600 hover:text-amber-700">
             Pro
           </Link>

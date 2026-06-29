@@ -37,6 +37,19 @@ export interface TournamentRegistration {
   created_at: string;
 }
 
+export interface Opportunity {
+  id: string;
+  type: "car_hire" | "photographer" | "venue";
+  business_name: string;
+  contact_name: string | null;
+  phone: string | null;
+  email: string | null;
+  details: Record<string, unknown>;
+  state: string | null;
+  status: "pending" | "approved" | "rejected";
+  created_at: string;
+}
+
 export interface Message {
   id: string;
   sender_id: string;

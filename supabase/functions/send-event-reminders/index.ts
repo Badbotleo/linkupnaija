@@ -8,7 +8,7 @@
 //
 // Set secrets (SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are injected
 // automatically; you only need to add Resend + the From address):
-//   supabase secrets set RESEND_API_KEY=re_xxx REMINDER_FROM="LinkUpNaija <events@yourdomain.com>"
+//   supabase secrets set RESEND_API_KEY=re_xxx REMINDER_FROM="LinkUpNaija <support@linkupnaija.com>"
 //
 // Schedule it daily (e.g. 08:00 UTC) with pg_cron + pg_net in the SQL editor:
 //   select cron.schedule(
@@ -41,7 +41,7 @@ Deno.serve(async () => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const resendKey = Deno.env.get("RESEND_API_KEY");
   const from =
-    Deno.env.get("REMINDER_FROM") ?? "LinkUpNaija <onboarding@resend.dev>";
+    Deno.env.get("REMINDER_FROM") ?? "LinkUpNaija <support@linkupnaija.com>";
 
   if (!resendKey) {
     return new Response(JSON.stringify({ error: "RESEND_API_KEY not set" }), {

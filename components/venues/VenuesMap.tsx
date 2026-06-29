@@ -65,14 +65,14 @@ export default function VenuesMap({
 
   return (
     <div
-      className="relative overflow-hidden rounded-2xl border border-gray-100 shadow-card"
+      className="relative z-0 overflow-hidden rounded-2xl border border-gray-100 shadow-card"
       style={{ height }}
     >
       <MapContainer
         center={[center.lat, center.lng]}
         zoom={zoom}
         scrollWheelZoom={false}
-        style={{ height: "100%", width: "100%" }}
+        style={{ height: "100%", width: "100%", zIndex: 0 }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

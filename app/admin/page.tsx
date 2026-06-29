@@ -7,12 +7,14 @@ import AdminExpiredEvents from "@/components/admin/AdminExpiredEvents";
 import AdminMessages from "@/components/admin/AdminMessages";
 import AdminPayouts from "@/components/admin/AdminPayouts";
 import AdminTournament from "@/components/admin/AdminTournament";
+import AdminOpportunities from "@/components/admin/AdminOpportunities";
 import { formatNaira } from "@/lib/paystack";
 import { formatEventDate } from "@/lib/format";
 import type {
   Transaction,
   ReservationWithUser,
   TournamentRegistration,
+  Opportunity,
 } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -59,6 +61,7 @@ export default async function AdminPage() {
     { data: allUsers },
     { data: payoutRows },
     { data: tournamentRows },
+    { data: opportunityRows },
   ] = await Promise.all([
     supabase.from("users").select("*", { count: "exact", head: true }),
     supabase.from("events").select("*", { count: "exact", head: true }),
@@ -101,9 +104,14 @@ export default async function AdminPage() {
       .from("tournament_registrations")
       .select("*")
       .order("created_at", { ascending: false }),
+    supabase
+      .from("opportunities")
+      .select("*")
+      .order("created_at", { ascending: false }),
   ]);
 
   const tournamentRegs = (tournamentRows ?? []) as TournamentRegistration[];
+  const opportunities = (opportunityRows ?? []) as unknown as Opportunity[];
 
   const messageUsers = (allUsers ?? []) as {
     id: string;
@@ -199,6 +207,19 @@ export default async function AdminPage() {
           )}
         </h2>
         <AdminTournament registrations={tournamentRegs} />
+      </section>
+
+      {/* Opportunities */}
+      <section className="mt-10">
+        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
+          Opportunities
+          {opportunities.length > 0 && (
+            <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand">
+              {opportunities.length}
+            </span>
+          )}
+        </h2>
+        <AdminOpportunities initial={opportunities} />
       </section>
 
       {/* Expired events */}

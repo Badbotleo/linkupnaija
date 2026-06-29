@@ -288,6 +288,12 @@ footer,
   animation: shimmer 1.4s infinite;
 }
 
+/* Keep the Leaflet map at the base stacking layer so portalled modals/overlays
+   always render above it. (Internal panes keep their own relative ordering.) */
+.leaflet-container {
+  z-index: 0;
+}
+
 /* Accessibility: honour reduced-motion by disabling animations & transitions. */
 @media (prefers-reduced-motion: reduce) {
   *,
