@@ -173,6 +173,43 @@ footer,
   animation: spot-pulse 1.2s ease-in-out infinite;
 }
 
+/* Slot counter: golden glow once landed + JACKPOT flash */
+@keyframes slot-glow-pulse {
+  0%, 100% { text-shadow: 0 0 14px rgba(250, 199, 117, 0.45); }
+  50% { text-shadow: 0 0 30px rgba(250, 199, 117, 0.9); }
+}
+.slot-glow {
+  animation: slot-glow-pulse 2s ease-in-out infinite;
+}
+@keyframes jackpot-flash {
+  0% { opacity: 0; transform: translate(-50%, 6px) scale(0.85); }
+  20% { opacity: 1; transform: translate(-50%, 0) scale(1.12); }
+  100% { opacity: 0; transform: translate(-50%, -22px) scale(1); }
+}
+.slot-jackpot {
+  position: absolute;
+  left: 50%;
+  top: -1.3em;
+  transform: translateX(-50%);
+  font-size: 0.35em;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  color: #fac775;
+  pointer-events: none;
+  animation: jackpot-flash 1s ease-out forwards;
+}
+
+/* Countdown flip */
+@keyframes flip-in {
+  0% { transform: rotateX(-90deg); opacity: 0; color: #7f77dd; }
+  60% { color: #7f77dd; }
+  100% { transform: rotateX(0deg); opacity: 1; }
+}
+.flip-number {
+  display: block;
+  animation: flip-in 0.5s ease;
+}
+
 @keyframes fade-in-up {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }

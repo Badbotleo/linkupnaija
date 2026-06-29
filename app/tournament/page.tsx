@@ -2,6 +2,8 @@ import Link from "next/link";
 import { LogoMark } from "@/components/Logo";
 import PsSymbols from "@/components/tournament/PsSymbols";
 import TournamentRegistration from "@/components/tournament/TournamentRegistration";
+import SlotCounter from "@/components/tournament/SlotCounter";
+import Countdown from "@/components/tournament/Countdown";
 import { TOURNAMENT } from "@/lib/tournament";
 import { formatNaira } from "@/lib/paystack";
 
@@ -74,11 +76,8 @@ export default function TournamentPage() {
           <p className="mt-8 text-sm font-bold uppercase tracking-widest text-white/50">
             Prize pool
           </p>
-          <p
-            className="text-6xl font-black sm:text-8xl"
-            style={{ color: GOLD }}
-          >
-            {formatNaira(TOURNAMENT.prize)}
+          <p className="text-6xl font-black sm:text-8xl" style={{ color: GOLD }}>
+            <SlotCounter value={TOURNAMENT.prize} />
           </p>
 
           <a
@@ -109,6 +108,9 @@ export default function TournamentPage() {
           <Meta label="Date" value="To be announced" />
           <Meta label="Venue" value="Abuja — TBA" />
         </div>
+
+        {/* Countdown (pass an ISO date string here once announced) */}
+        <Countdown date={null} />
       </section>
 
       {/* ===== HOW TO ENTER ===== */}
