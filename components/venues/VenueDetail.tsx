@@ -100,6 +100,7 @@ export default function VenueDetail({
             center={{ lat: venue.lat, lng: venue.lng }}
             venues={[venue]}
             zoom={15}
+            showPreview={false}
           />
         </div>
 
