@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { fetchVenueById, VENUE_CATEGORIES, type Venue } from "@/lib/overpass";
 import ReservationModal from "./ReservationModal";
+import { SkeletonBox } from "../skeletons/Skeletons";
 
 const VenuesMap = dynamic(() => import("./VenuesMap"), {
   ssr: false,
@@ -45,8 +46,14 @@ export default function VenueDetail({
 
   if (loading) {
     return (
-      <div className="grid h-64 place-items-center text-gray-400">
-        Loading venue…
+      <div>
+        <SkeletonBox className="h-6 w-28 rounded-full" />
+        <SkeletonBox className="mt-3 h-9 w-2/3" />
+        <SkeletonBox className="mt-2 h-4 w-1/2" />
+        <div className="mt-6 grid gap-8 lg:grid-cols-3">
+          <SkeletonBox className="h-[360px] rounded-2xl lg:col-span-2" />
+          <SkeletonBox className="h-48 rounded-2xl" />
+        </div>
       </div>
     );
   }

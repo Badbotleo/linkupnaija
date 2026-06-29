@@ -7,6 +7,7 @@ import SocialLinks from "./SocialLinks";
 import VerifiedBadge from "./VerifiedBadge";
 import RatingSummary from "./RatingSummary";
 import { hasSocialLinks } from "@/lib/social";
+import { ProfileSkeleton } from "./skeletons/Skeletons";
 import type { PublicProfile } from "@/lib/types";
 
 interface FullProfile extends PublicProfile {
@@ -104,7 +105,7 @@ export default function AttendeeProfileModal({
         </div>
 
         {loading ? (
-          <p className="py-10 text-center text-sm text-gray-400">Loading…</p>
+          <ProfileSkeleton />
         ) : !profile ? (
           <p className="py-10 text-center text-sm text-gray-500">
             Profile not available.
