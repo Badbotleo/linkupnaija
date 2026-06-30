@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { AppNotification } from "@/lib/types";
@@ -8,6 +8,12 @@ import type { AppNotification } from "@/lib/types";
 export default function NotificationsBell({ userId }: { userId: string }) {
   const router = useRouter();
   const supabase = createClient();
+  // Unique per component instance. The browser Supabase client is a singleton,
+  // and RealtimeClient.channel(topic) returns an EXISTING channel for a repeated
+  // topic — calling .on() on an already-subscribed channel throws. The bell can
+  // render more than once (e.g. desktop navbar + mobile drawer), so each needs
+  // its own channel topic.
+  const instanceId = useId();
   const [items, setItems] = useState<AppNotification[]>([]);
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -28,7 +34,7 @@ export default function NotificationsBell({ userId }: { userId: string }) {
       });
 
     const channel = supabase
-      .channel(`notifications-${userId}`)
+      .channel(`notifications-${userId}-${instanceId}`)
       .on(
         "postgres_changes",
         {
