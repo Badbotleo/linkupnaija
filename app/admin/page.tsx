@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionUser, getCurrentUserMeta } from "@/lib/supabase/auth";
 import CategoryBadge from "@/components/CategoryBadge";
 import AdminReservations from "@/components/admin/AdminReservations";
 import AdminExpiredEvents from "@/components/admin/AdminExpiredEvents";
@@ -37,19 +38,14 @@ interface RecentEvent {
 }
 
 export default async function AdminPage() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Auth is validated once per request and shared with the Navbar via cache().
+  const user = await getSessionUser();
   if (!user) redirect("/login?redirect=/admin");
 
-  const { data: me } = await supabase
-    .from("users")
-    .select("is_admin")
-    .eq("id", user.id)
-    .single();
+  const me = await getCurrentUserMeta();
   if (!me?.is_admin) notFound(); // hide the page from non-admins
 
+  const supabase = createClient();
   const [
     { count: userCount },
     { count: eventCount },

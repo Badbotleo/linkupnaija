@@ -1,27 +1,27 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionUser, getCurrentUserMeta } from "@/lib/supabase/auth";
 import NotificationsBell from "./NotificationsBell";
 import ThemeToggle from "./ThemeToggle";
 import Logo from "./Logo";
 
 export default async function Navbar() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Shared (request-cached) with the page being rendered — see lib/supabase/auth.
+  const user = await getSessionUser();
 
   let isAdmin = false;
   let unreadMessages = 0;
   if (user) {
-    const [{ data: profile }, { count }] = await Promise.all([
-      supabase.from("users").select("is_admin").eq("id", user.id).single(),
+    const supabase = createClient();
+    const [meta, { count }] = await Promise.all([
+      getCurrentUserMeta(),
       supabase
         .from("messages")
         .select("*", { count: "exact", head: true })
         .eq("receiver_id", user.id)
         .eq("read", false),
     ]);
-    isAdmin = !!profile?.is_admin;
+    isAdmin = !!meta?.is_admin;
     unreadMessages = count ?? 0;
   }
 
