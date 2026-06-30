@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import QrModalButton from "./qr/QrModalButton";
 
 export default function ShareButtons({
   title,
@@ -104,6 +105,18 @@ export default function ShareButtons({
           {copied ? <CheckIcon /> : <LinkIcon />}
           {copied ? "Copied!" : "Copy link"}
         </button>
+
+        {/* Share via QR */}
+        {url && (
+          <QrModalButton
+            value={url}
+            copyValue={url}
+            caption="Scan to view this event"
+            fileName="linkupnaija-event"
+            title="Share via QR"
+            buttonLabel="Generate QR Code"
+          />
+        )}
       </div>
     </div>
   );

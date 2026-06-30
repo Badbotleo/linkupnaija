@@ -5,7 +5,9 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { fetchVenueById, VENUE_CATEGORIES, type Venue } from "@/lib/overpass";
 import ReservationModal from "./ReservationModal";
+import QrModalButton from "../qr/QrModalButton";
 import { SkeletonBox } from "../skeletons/Skeletons";
+import { SITE_ORIGIN } from "@/lib/qr";
 
 const VenuesMap = dynamic(() => import("./VenuesMap"), {
   ssr: false,
@@ -145,6 +147,19 @@ export default function VenueDetail({
             >
               Request Reservation
             </button>
+
+            {/* For venue owners: a printable QR linking to this venue. */}
+            <div className="mt-3">
+              <QrModalButton
+                value={`${SITE_ORIGIN}/venues/${id}`}
+                copyValue={`${SITE_ORIGIN}/venues/${id}`}
+                caption="Scan to book us on LinkUpNaija"
+                fileName="linkupnaija-venue"
+                title="Venue QR code"
+                buttonLabel="Get QR code"
+                buttonClassName="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100"
+              />
+            </div>
           </div>
 
           <Link

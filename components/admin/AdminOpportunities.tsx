@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import QrModalButton from "@/components/qr/QrModalButton";
+import { SITE_ORIGIN } from "@/lib/qr";
 import type { Opportunity } from "@/lib/types";
 
 const TYPE_LABELS: Record<Opportunity["type"], string> = {
@@ -111,15 +113,28 @@ export default function AdminOpportunities({
                         </button>
                       </div>
                     ) : (
-                      <span
-                        className={`rounded-full px-2.5 py-1 text-xs font-bold ${
-                          o.status === "approved"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {o.status}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                            o.status === "approved"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {o.status}
+                        </span>
+                        {o.status === "approved" && (
+                          <QrModalButton
+                            value={`${SITE_ORIGIN}/opportunities`}
+                            copyValue={`${SITE_ORIGIN}/opportunities`}
+                            caption="Scan to apply on LinkUpNaija"
+                            fileName="linkupnaija-opportunities"
+                            title="Outreach QR code"
+                            buttonLabel="QR"
+                            buttonClassName="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-xs font-semibold text-gray-700 transition hover:bg-gray-50"
+                          />
+                        )}
+                      </div>
                     )}
                   </div>
                 </li>

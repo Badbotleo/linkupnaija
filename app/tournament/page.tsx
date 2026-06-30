@@ -4,8 +4,10 @@ import PsSymbols from "@/components/tournament/PsSymbols";
 import TournamentRegistration from "@/components/tournament/TournamentRegistration";
 import SlotCounter from "@/components/tournament/SlotCounter";
 import Countdown from "@/components/tournament/Countdown";
+import QrCode from "@/components/qr/QrCode";
 import { TOURNAMENT } from "@/lib/tournament";
 import { formatNaira } from "@/lib/paystack";
+import { SITE_ORIGIN } from "@/lib/qr";
 
 export const metadata = {
   title: "FC26 Tournament — Abuja",
@@ -144,6 +146,31 @@ export default function TournamentPage() {
         </p>
         <div className="mt-8">
           <TournamentRegistration />
+        </div>
+
+        {/* Shareable QR for physical flyers */}
+        <div
+          className="mt-10 flex flex-col items-center rounded-2xl border-2 p-6"
+          style={{ borderColor: GOLD, backgroundColor: "rgba(255,255,255,0.04)" }}
+        >
+          <p
+            className="text-sm font-black uppercase tracking-wide"
+            style={{ color: GOLD }}
+          >
+            Spread the word
+          </p>
+          <p className="mt-1 text-center text-sm text-white/60">
+            Print this on flyers — scan to register for the FC26 tournament.
+          </p>
+          <div className="mt-5">
+            <QrCode
+              value={`${SITE_ORIGIN}/tournament`}
+              caption="Scan to register"
+              fileName="fc26-tournament-qr"
+              copyValue={`${SITE_ORIGIN}/tournament`}
+              dark
+            />
+          </div>
         </div>
       </section>
 
