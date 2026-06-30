@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import NotificationsBell from "./NotificationsBell";
@@ -24,7 +25,11 @@ export default function MobileNav({
   unreadMessages: number;
 }) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+
+  // Portal target is only available on the client.
+  useEffect(() => setMounted(true), []);
 
   // Close on route change.
   useEffect(() => {
@@ -56,24 +61,29 @@ export default function MobileNav({
         <MenuIcon />
       </button>
 
-      {/* Overlay */}
-      <div
-        onClick={() => setOpen(false)}
-        aria-hidden
-        className={`fixed inset-0 z-[60] bg-black/40 transition-opacity duration-300 ${
-          open ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
-      />
+      {/* Overlay + drawer are portalled to <body> so they escape the header's
+          backdrop-blur, which would otherwise trap fixed positioning. */}
+      {mounted &&
+        createPortal(
+          <>
+            {/* Overlay */}
+            <div
+              onClick={() => setOpen(false)}
+              aria-hidden
+              className={`fixed inset-0 z-[60] bg-black/40 transition-opacity duration-300 lg:hidden ${
+                open ? "opacity-100" : "pointer-events-none opacity-0"
+              }`}
+            />
 
-      {/* Drawer */}
-      <aside
-        role="dialog"
-        aria-modal="true"
-        aria-label="Menu"
-        className={`fixed right-0 top-0 z-[70] flex h-full w-[82%] max-w-xs flex-col bg-white shadow-2xl transition-transform duration-300 ease-out ${
-          open ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
+            {/* Drawer */}
+            <aside
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menu"
+              className={`fixed right-0 top-0 z-[70] flex h-full w-[82%] max-w-xs flex-col bg-white shadow-2xl transition-transform duration-300 ease-out lg:hidden ${
+                open ? "translate-x-0" : "translate-x-full"
+              }`}
+            >
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
           <span className="text-lg font-extrabold tracking-tight text-gray-900">
             Menu
@@ -172,8 +182,11 @@ export default function MobileNav({
               </Link>
             </div>
           )}
-        </nav>
-      </aside>
+            </nav>
+          </aside>
+          </>,
+          document.body
+        )}
     </div>
   );
 }
