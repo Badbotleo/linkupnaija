@@ -173,8 +173,11 @@ export default async function DashboardPage() {
           <Section
             title="Events I'm hosting"
             count={hosting.length}
-            emptyText="You haven't hosted any events yet."
+            emptyText="Ready to bring people together?"
             emptyCta
+            ctaHref="/host"
+            ctaLabel="Host your first event →"
+            emptyEmoji="🎤"
           >
             {hosting.map((e) => {
               const accepted = e.rsvps.filter(
@@ -217,8 +220,11 @@ export default async function DashboardPage() {
           <Section
             title="Events I'm attending"
             count={attending.length}
-            emptyText="No accepted events yet — explore and request to join one!"
+            emptyText="You haven't joined any events yet."
             emptyCta
+            ctaHref="/events"
+            ctaLabel="Browse what's happening →"
+            emptyEmoji="🎟️"
           >
             {attending.map((r) => (
               <EventRowCard key={r.events!.id} event={r.events!}>
@@ -261,12 +267,18 @@ function Section({
   count,
   emptyText,
   emptyCta = false,
+  ctaHref = "/events",
+  ctaLabel = "Explore events",
+  emptyEmoji,
   children,
 }: {
   title: string;
   count: number;
   emptyText: string;
   emptyCta?: boolean;
+  ctaHref?: string;
+  ctaLabel?: string;
+  emptyEmoji?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -278,11 +290,12 @@ function Section({
         </span>
       </h2>
       {count === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-8 text-center text-sm text-gray-500">
-          <p>{emptyText}</p>
+        <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-10 text-center">
+          {emptyEmoji && <p className="text-3xl">{emptyEmoji}</p>}
+          <p className="mt-2 text-sm text-gray-600">{emptyText}</p>
           {emptyCta && (
-            <Link href="/events" className="btn-outline mt-4">
-              Explore events
+            <Link href={ctaHref} className="btn-primary mt-4">
+              {ctaLabel}
             </Link>
           )}
         </div>

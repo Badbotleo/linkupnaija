@@ -30,6 +30,11 @@ export async function GET(request: Request) {
       } = await supabase.auth.getUser();
       let destination = redirect;
       if (user) {
+        // Track activity for re-engagement emails (best-effort).
+        await supabase
+          .from("users")
+          .update({ last_login_at: new Date().toISOString() })
+          .eq("id", user.id);
         const { data: profile } = await supabase
           .from("users")
           .select("profile_completed")

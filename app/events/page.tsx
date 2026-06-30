@@ -123,7 +123,7 @@ export default async function EventsPage({
       ) : (
         <>
           <div className="mt-6">
-            <EventsList events={feedEvents} />
+            <EventsList events={feedEvents} stateFilter={searchParams.state} />
           </div>
 
           {totalPages > 1 && (

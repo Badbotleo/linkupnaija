@@ -1,7 +1,7 @@
 // LinkUpNaija — daily event-reminder Edge Function.
 //
-// Runs once a day, finds events happening *tomorrow*, and emails every
-// accepted attendee a reminder via Resend.
+// Runs once a day, finds events happening *tomorrow* (the next 24h window for a
+// daily job), and emails every accepted attendee a branded reminder via Resend.
 //
 // Deploy:
 //   supabase functions deploy send-event-reminders
@@ -10,18 +10,18 @@
 // automatically; you only need to add Resend + the From address):
 //   supabase secrets set RESEND_API_KEY=re_xxx REMINDER_FROM="LinkUpNaija <support@linkupnaija.com>"
 //
-// Schedule it daily (e.g. 08:00 UTC) with pg_cron + pg_net in the SQL editor:
-//   select cron.schedule(
-//     'event-reminders-daily', '0 8 * * *',
-//     $$ select net.http_post(
-//          url := 'https://<project-ref>.supabase.co/functions/v1/send-event-reminders',
-//          headers := jsonb_build_object(
-//            'Content-Type','application/json',
-//            'Authorization','Bearer <SUPABASE_SERVICE_ROLE_KEY>')
-//        ); $$
-//   );
+// Scheduled daily via pg_cron — see supabase/migration-retention.sql.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  emailLayout,
+  heading,
+  paragraph,
+  eventCardHtml,
+  firstName,
+  escapeHtml,
+  sendEmail,
+} from "../_shared/email.ts";
 
 interface AttendeeRow {
   users: { email: string | null; name: string | null } | null;
@@ -39,11 +39,8 @@ interface EventRow {
 Deno.serve(async () => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const resendKey = Deno.env.get("RESEND_API_KEY");
-  const from =
-    Deno.env.get("REMINDER_FROM") ?? "LinkUpNaija <support@linkupnaija.com>";
 
-  if (!resendKey) {
+  if (!Deno.env.get("RESEND_API_KEY")) {
     return new Response(JSON.stringify({ error: "RESEND_API_KEY not set" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
@@ -82,35 +79,26 @@ Deno.serve(async () => {
       const email = row.users?.email;
       if (!email) continue;
 
-      const firstName = (row.users?.name ?? "there").split(" ")[0];
-      const html = `
-        <div style="font-family:system-ui,sans-serif;max-width:480px;margin:auto">
-          <h2 style="color:#534AB7">See you tomorrow, ${firstName}! 🎉</h2>
-          <p>This is a friendly reminder that you're going to:</p>
-          <div style="border:1px solid #eee;border-radius:12px;padding:16px">
-            <h3 style="margin:0 0 8px">${event.title}</h3>
-            <p style="margin:4px 0">📅 ${event.date} at ${event.time}</p>
-            <p style="margin:4px 0">📍 ${event.location}, ${event.state}</p>
-          </div>
-          <p style="color:#888;font-size:13px;margin-top:16px">
-            See you there — from your friends at LinkUpNaija 💜
-          </p>
-        </div>`;
+      const html = emailLayout({
+        title: `Reminder: ${event.title} is tomorrow`,
+        preheader: `See you tomorrow at ${event.title}!`,
+        bodyHtml: `
+          ${heading(`See you tomorrow, ${escapeHtml(firstName(row.users?.name))}! 🎉`)}
+          ${paragraph("This is a friendly reminder that you're going to:")}
+          ${eventCardHtml(event)}
+          ${paragraph("Have a great time — your friends at LinkUpNaija 💜")}
+        `,
+      });
 
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${resendKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from,
+      if (
+        await sendEmail({
           to: email,
           subject: `Reminder: "${event.title}" is tomorrow!`,
           html,
-        }),
-      });
-      if (res.ok) sent++;
+        })
+      ) {
+        sent++;
+      }
     }
   }
 

@@ -10,7 +10,13 @@ type FeedEvent = EventRow & {
   hostRating: { avg: number; count: number } | null;
 };
 
-export default function EventsList({ events }: { events: FeedEvent[] }) {
+export default function EventsList({
+  events,
+  stateFilter,
+}: {
+  events: FeedEvent[];
+  stateFilter?: string;
+}) {
   const [query, setQuery] = useState("");
 
   const term = query.trim().toLowerCase();
@@ -56,8 +62,12 @@ export default function EventsList({ events }: { events: FeedEvent[] }) {
       {/* Results */}
       {events.length === 0 ? (
         <EmptyState
-          title="No events match your filters yet"
-          subtitle="Try a different state or category — or be the first to host one!"
+          title={
+            stateFilter
+              ? `No events here yet — be the first to host one in ${stateFilter}!`
+              : "No events here yet — be the first to host one!"
+          }
+          subtitle="Got a vibe in mind? Set it up in a couple of minutes and gather your people."
           cta
         />
       ) : filtered.length === 0 ? (

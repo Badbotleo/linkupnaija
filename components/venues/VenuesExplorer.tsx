@@ -131,9 +131,16 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
         </h2>
 
         {!loading && venues.length === 0 && !error && (
-          <p className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-12 text-center text-sm text-gray-500">
-            No {category.toLowerCase()} found here. Try another area or category.
-          </p>
+          <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-14 text-center">
+            <p className="text-4xl">🗺️</p>
+            <h3 className="mt-3 text-lg font-bold text-gray-900">
+              No venues found here
+            </h3>
+            <p className="mx-auto mt-1 max-w-sm text-sm text-gray-500">
+              We couldn&apos;t find venues matching that search. Try a different
+              area or category.
+            </p>
+          </div>
         )}
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

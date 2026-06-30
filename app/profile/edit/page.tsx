@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ProfileForm from "@/components/ProfileForm";
 import PayoutSettings from "@/components/PayoutSettings";
+import EmailPreferences from "@/components/EmailPreferences";
 
 export const dynamic = "force-dynamic";
 
@@ -13,13 +14,20 @@ export default async function ProfileEditPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?redirect=/profile/edit");
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select(
-      "name, state, bio, avatar_url, instagram_url, twitter_url, facebook_url, phone, gender, payout_bank, payout_account_number, payout_account_name"
-    )
-    .eq("id", user.id)
-    .single();
+  const [{ data: profile }, { data: emailPrefs }] = await Promise.all([
+    supabase
+      .from("users")
+      .select(
+        "name, state, bio, avatar_url, instagram_url, twitter_url, facebook_url, phone, gender, payout_bank, payout_account_number, payout_account_name"
+      )
+      .eq("id", user.id)
+      .single(),
+    supabase
+      .from("email_preferences")
+      .select("weekly_digest_enabled, welcome_emails_enabled")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+  ]);
 
   return (
     <div className="container-page max-w-2xl py-10">
@@ -59,6 +67,16 @@ export default async function ProfileEditPage() {
             payout_bank: profile?.payout_bank ?? null,
             payout_account_number: profile?.payout_account_number ?? null,
             payout_account_name: profile?.payout_account_name ?? null,
+          }}
+        />
+      </div>
+
+      <div className="mt-6">
+        <EmailPreferences
+          userId={user.id}
+          initial={{
+            weekly_digest_enabled: emailPrefs?.weekly_digest_enabled ?? true,
+            welcome_emails_enabled: emailPrefs?.welcome_emails_enabled ?? true,
           }}
         />
       </div>

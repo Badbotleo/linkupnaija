@@ -22,6 +22,32 @@ export interface UserProfile {
   payout_account_number: string | null;
   payout_account_name: string | null;
   paystack_subaccount_code: string | null;
+  last_login_at: string | null;
+  created_at: string;
+}
+
+export interface EmailPreferences {
+  user_id: string;
+  weekly_digest_enabled: boolean;
+  welcome_emails_enabled: boolean;
+  unsubscribe_token: string;
+  created_at: string;
+}
+
+export type ScheduledEmailType =
+  | "welcome"
+  | "day2_events"
+  | "profile_nudge"
+  | "host_nudge"
+  | "reengagement";
+
+export interface ScheduledEmail {
+  id: string;
+  user_id: string;
+  email_type: ScheduledEmailType;
+  scheduled_for: string;
+  sent_at: string | null;
+  status: "pending" | "sent" | "skipped" | "failed";
   created_at: string;
 }
 

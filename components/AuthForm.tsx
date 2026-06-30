@@ -81,6 +81,11 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
       // First-time login (profile not set up yet) → onboarding.
       let destination = redirect;
       if (data.user) {
+        // Track activity for re-engagement emails (best-effort).
+        await supabase
+          .from("users")
+          .update({ last_login_at: new Date().toISOString() })
+          .eq("id", data.user.id);
         const { data: profile } = await supabase
           .from("users")
           .select("profile_completed")
