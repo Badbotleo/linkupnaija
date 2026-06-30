@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { compressImage } from "@/lib/image";
 import { NIGERIAN_STATES } from "@/lib/constants";
 import {
   normalizeFacebook,
@@ -63,11 +64,16 @@ export default function ProfileForm({
 
   async function uploadAvatar(): Promise<string | null> {
     if (!file) return initial.avatar_url;
-    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    // Avatars only ever render small — resize hard before upload.
+    const optimized = await compressImage(file, {
+      maxDimension: 512,
+      quality: 0.85,
+    });
+    const ext = optimized.name.split(".").pop()?.toLowerCase() || "jpg";
     const path = `${userId}/${Date.now()}.${ext}`;
     const { error: upErr } = await supabase.storage
       .from("avatars")
-      .upload(path, file, { upsert: true, cacheControl: "3600" });
+      .upload(path, optimized, { upsert: true, cacheControl: "3600" });
     if (upErr) throw upErr;
     const {
       data: { publicUrl },

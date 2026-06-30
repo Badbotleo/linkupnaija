@@ -29,12 +29,14 @@ export default async function DashboardPage() {
       supabase.from("users").select("*").eq("id", user.id).single(),
       supabase
         .from("events")
-        .select("*, rsvps(status)")
+        .select("id, title, category, state, date, time, price, rsvps(status)")
         .eq("host_id", user.id)
         .order("date", { ascending: true }),
       supabase
         .from("rsvps")
-        .select("status, events(*)")
+        .select(
+          "status, events(id, title, category, state, date, time)"
+        )
         .eq("user_id", user.id)
         .order("created_at", { ascending: false }),
     ]);

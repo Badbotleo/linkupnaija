@@ -1,26 +1,35 @@
+import Image from "next/image";
 import { categoryGradient, categoryStyle } from "@/lib/constants";
 
 // Event cover image, or a category-colored gradient placeholder when none.
-// `className` controls size (e.g. "h-40 w-full").
+// `className` controls size (e.g. "h-40 w-full") and is applied to a relative
+// wrapper so the optimized <Image fill> can cover it.
 export default function EventCover({
   url,
   category,
   title,
   className = "",
+  priority = false,
 }: {
   url: string | null;
   category: string;
   title: string;
   className?: string;
+  priority?: boolean;
 }) {
   if (url) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={url}
-        alt={title}
-        className={`object-cover ${className}`}
-      />
+      <div className={`relative overflow-hidden ${className}`}>
+        <Image
+          src={url}
+          alt={title}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="object-cover"
+          priority={priority}
+          loading={priority ? undefined : "lazy"}
+        />
+      </div>
     );
   }
 

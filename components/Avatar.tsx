@@ -1,10 +1,12 @@
+import Image from "next/image";
+
 // User avatar with graceful fallback to the first initial.
-// Uses a plain <img> since avatars are user-uploaded Supabase storage URLs.
+// Uses the optimized Next <Image> for user-uploaded Supabase storage URLs.
 
 const SIZES = {
-  sm: "h-9 w-9 text-sm",
-  md: "h-12 w-12 text-base",
-  lg: "h-20 w-20 text-2xl",
+  sm: { cls: "h-9 w-9 text-sm", px: 36 },
+  md: { cls: "h-12 w-12 text-base", px: 48 },
+  lg: { cls: "h-20 w-20 text-2xl", px: 80 },
 } as const;
 
 export default function Avatar({
@@ -17,22 +19,25 @@ export default function Avatar({
   size?: keyof typeof SIZES;
 }) {
   const initial = (name ?? "?").charAt(0).toUpperCase();
-  const cls = `${SIZES[size]} shrink-0 overflow-hidden rounded-full`;
+  const { cls, px } = SIZES[size];
+  const wrap = `${cls} shrink-0 overflow-hidden rounded-full`;
 
   if (url) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
+      <Image
         src={url}
         alt={name ?? "User avatar"}
-        className={`${cls} object-cover`}
+        width={px}
+        height={px}
+        loading="lazy"
+        className={`${wrap} object-cover`}
       />
     );
   }
 
   return (
     <span
-      className={`${cls} grid place-items-center bg-brand font-bold text-white`}
+      className={`${wrap} grid place-items-center bg-brand font-bold text-white`}
       aria-hidden
     >
       {initial}

@@ -195,6 +195,7 @@ export default async function EventDetailPage({
           category={event.category}
           title={event.title}
           className="h-52 w-full sm:h-72"
+          priority
         />
       </div>
 

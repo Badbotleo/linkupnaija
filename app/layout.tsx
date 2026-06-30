@@ -4,10 +4,9 @@ import "./globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import ChatWidget from "@/components/ChatWidget";
+import DeferredWidgets from "@/components/DeferredWidgets";
 import ScrollProgress from "@/components/ScrollProgress";
 import NavProgress from "@/components/NavProgress";
-import ActivityTicker from "@/components/ActivityTicker";
 import Toaster from "@/components/Toaster";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -71,8 +70,7 @@ export default function RootLayout({
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />
-        <ActivityTicker />
-        <ChatWidget />
+        <DeferredWidgets />
         <Toaster />
       </body>
       <GoogleAnalytics gaId="G-4YZV5789P8" />

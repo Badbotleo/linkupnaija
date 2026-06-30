@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { compressImage } from "@/lib/image";
 import { EVENT_CATEGORIES, NIGERIAN_STATES } from "@/lib/constants";
 
 export default function HostForm({ hostState }: { hostState: string | null }) {
@@ -54,11 +55,13 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
     // Upload the cover image first (if one was chosen).
     let coverImageUrl: string | null = null;
     if (coverFile) {
-      const ext = coverFile.name.split(".").pop()?.toLowerCase() || "jpg";
+      // Compress/resize before upload so we don't store multi-MB photos.
+      const optimized = await compressImage(coverFile, { maxDimension: 1600 });
+      const ext = optimized.name.split(".").pop()?.toLowerCase() || "jpg";
       const path = `${user.id}/${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("event-covers")
-        .upload(path, coverFile, { upsert: true, cacheControl: "3600" });
+        .upload(path, optimized, { upsert: true, cacheControl: "3600" });
       if (upErr) {
         setError(`Cover upload failed: ${upErr.message}`);
         setLoading(false);

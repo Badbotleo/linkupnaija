@@ -1,11 +1,28 @@
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
+import { createClient } from "@supabase/supabase-js";
 import { EVENT_CATEGORIES, CATEGORY_STYLES } from "@/lib/constants";
-import { createClient } from "@/lib/supabase/server";
 import FcPopup from "@/components/FcPopup";
 import Typewriter from "@/components/anim/Typewriter";
 import LandingStats from "@/components/LandingStats";
 
-export const dynamic = "force-dynamic";
+// The homepage hero/stats don't need to be real-time — cache the event count
+// for 5 minutes so we don't hit the DB on every single landing-page view.
+// Uses a cookieless anon client (unstable_cache can't read request cookies).
+const getEventsCount = unstable_cache(
+  async () => {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const { count } = await supabase
+      .from("events")
+      .select("*", { count: "exact", head: true });
+    return count ?? 0;
+  },
+  ["homepage-events-count"],
+  { revalidate: 300 }
+);
 
 const HOW_IT_WORKS = [
   {
@@ -26,11 +43,7 @@ const HOW_IT_WORKS = [
 ];
 
 export default async function HomePage() {
-  const supabase = createClient();
-  const { count } = await supabase
-    .from("events")
-    .select("*", { count: "exact", head: true });
-  const eventsCount = count ?? 0;
+  const eventsCount = await getEventsCount();
 
   return (
     <div>
