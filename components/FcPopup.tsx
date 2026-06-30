@@ -46,7 +46,10 @@ export default function FcPopup() {
           ✕
         </button>
 
-        <p className="text-sm font-black tracking-wide text-[#7F77DD]">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-white/50">
+          One of many link-ups on LinkUpNaija
+        </p>
+        <p className="mt-1 text-sm font-black tracking-wide text-[#7F77DD]">
           🎮 FC26 TOURNAMENT — ABUJA
         </p>
         <p className="mt-2 text-2xl font-extrabold leading-tight">

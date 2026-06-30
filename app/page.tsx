@@ -24,6 +24,34 @@ const getEventsCount = unstable_cache(
   { revalidate: 300 }
 );
 
+const WHY_LINKUPNAIJA = [
+  {
+    emoji: "🤝",
+    title: "Built for real connection",
+    text: "Not just parties. Family hangouts, friend meetups, book clubs, picnics — events that bring people closer together.",
+  },
+  {
+    emoji: "✅",
+    title: "Vetted, safe gatherings",
+    text: "Hosts approve every attendee. Verified profiles. No randos, no wahala.",
+  },
+  {
+    emoji: "👨‍👩‍👧‍👦",
+    title: "For everyone, not just nightlife",
+    text: "Whether you're planning a family outing or meeting new friends who share your interests, there's a place for you here.",
+  },
+  {
+    emoji: "💬",
+    title: "Connect before you meet",
+    text: "Private group chats let you get to know your fellow attendees before the event even starts.",
+  },
+  {
+    emoji: "🇳🇬",
+    title: "Made for Nigeria, by Nigerians",
+    text: "We understand the culture, the cities, and what brings Nigerians together.",
+  },
+];
+
 const HOW_IT_WORKS = [
   {
     emoji: "🔎",
@@ -55,11 +83,17 @@ export default async function HomePage() {
               🇳🇬 Nigeria&apos;s social events platform
             </span>
             <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-              <Typewriter text="Link up. Hang out. Vibe." />
+              Find your people.
+              <br />
+              Build real connections.
             </h1>
+            <p className="mt-3 text-lg font-bold text-brand">
+              <Typewriter text="Link up. Hang out. Vibe." />
+            </p>
             <p className="mt-5 max-w-lg text-lg text-gray-600">
-              From clubbing in Lagos to book clubs in Abuja and picnics in PH —
-              find your people and your next outing on LinkUpNaija.
+              From family picnics to friend reunions, book clubs to new
+              friendships — LinkUpNaija helps Nigerians build real connections,
+              not just attend events.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/events" className="btn-primary px-6 py-3 text-base">
@@ -99,6 +133,32 @@ export default async function HomePage() {
 
       {/* Floating stats */}
       <LandingStats eventsCount={eventsCount} />
+
+      {/* Why LinkUpNaija */}
+      <section className="container-page py-16">
+        <h2 className="text-center text-3xl font-extrabold text-gray-900">
+          Why LinkUpNaija
+        </h2>
+        <p className="mx-auto mt-3 max-w-xl text-center text-gray-600">
+          More than an events app — a place to build genuine connections.
+        </p>
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {WHY_LINKUPNAIJA.map((item) => (
+            <div
+              key={item.title}
+              className="rounded-2xl border border-gray-100 bg-white p-6 shadow-card"
+            >
+              <span className="grid h-12 w-12 place-items-center rounded-xl bg-brand-50 text-2xl">
+                {item.emoji}
+              </span>
+              <h3 className="mt-4 text-lg font-bold text-gray-900">
+                {item.title}
+              </h3>
+              <p className="mt-1.5 text-gray-600">{item.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* How it works */}
       <section className="container-page py-16">

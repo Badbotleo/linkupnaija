@@ -42,28 +42,33 @@ export const NIGERIAN_STATES = [
 
 export type NigerianState = (typeof NIGERIAN_STATES)[number];
 
+// Ordered to lead with family/friendship/connection-oriented gatherings;
+// nightlife sits at the end. This order flows through every category list and
+// filter across the site.
 export const EVENT_CATEGORIES = [
-  "Clubbing",
-  "Party",
+  "Family Hangout",
+  "Friend Reunion",
   "Picnic",
   "Book Club",
-  "Dinner",
   "Game Night",
-  "Cinema",
-  "Sports Viewing",
+  "Dinner",
+  "Networking",
+  "Board Games",
+  "Paint and Sip",
   "Hiking",
   "Beach Day",
-  "Comedy Night",
-  "Concert",
-  "Art Gallery",
-  "Bowling",
-  "Karaoke",
-  "Pool Party",
   "Yoga",
-  "Board Games",
   "Food Festival",
-  "Paint and Sip",
-  "Networking",
+  "Art Gallery",
+  "Comedy Night",
+  "Cinema",
+  "Sports Viewing",
+  "Concert",
+  "Karaoke",
+  "Bowling",
+  "Pool Party",
+  "Clubbing",
+  "Party",
 ] as const;
 
 export type EventCategory = (typeof EVENT_CATEGORIES)[number];
@@ -73,6 +78,8 @@ export const CATEGORY_STYLES: Record<
   EventCategory,
   { badge: string; emoji: string }
 > = {
+  "Family Hangout": { badge: "bg-orange-100 text-orange-700", emoji: "👨‍👩‍👧‍👦" },
+  "Friend Reunion": { badge: "bg-teal-100 text-teal-700", emoji: "🤗" },
   Clubbing: { badge: "bg-purple-100 text-purple-700", emoji: "🪩" },
   Party: { badge: "bg-pink-100 text-pink-700", emoji: "🎉" },
   Picnic: { badge: "bg-green-100 text-green-700", emoji: "🧺" },
@@ -107,6 +114,8 @@ export function categoryStyle(category: string) {
 
 // Gradient placeholder (Tailwind classes) used when an event has no cover image.
 export const CATEGORY_GRADIENTS: Record<EventCategory, string> = {
+  "Family Hangout": "from-orange-400 to-amber-500",
+  "Friend Reunion": "from-teal-400 to-cyan-500",
   Clubbing: "from-purple-500 to-indigo-600",
   Party: "from-pink-500 to-rose-500",
   Picnic: "from-green-500 to-emerald-600",

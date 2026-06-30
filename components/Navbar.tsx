@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSessionUser, getCurrentUserMeta } from "@/lib/supabase/auth";
 import NotificationsBell from "./NotificationsBell";
 import ThemeToggle from "./ThemeToggle";
+import MobileNav from "./MobileNav";
 import Logo from "./Logo";
 
 export default async function Navbar() {
@@ -32,7 +33,8 @@ export default async function Navbar() {
           <Logo size={34} textClassName="text-lg" pulse />
         </Link>
 
-        <div className="flex items-center gap-1 sm:gap-2">
+        {/* Desktop navigation (lg and up) */}
+        <div className="hidden items-center gap-1 lg:flex xl:gap-2">
           <Link
             href="/events"
             className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
@@ -57,11 +59,17 @@ export default async function Navbar() {
           >
             Host
           </Link>
+          <Link
+            href="/opportunities"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+          >
+            Opportunities
+          </Link>
 
           <ThemeToggle />
 
           {user ? (
-            <div className="flex items-center gap-1 sm:gap-2">
+            <div className="flex items-center gap-1 xl:gap-2">
               <NotificationsBell userId={user.id} />
               {isAdmin && (
                 <Link
@@ -99,6 +107,13 @@ export default async function Navbar() {
             </div>
           )}
         </div>
+
+        {/* Mobile / tablet navigation (below lg) */}
+        <MobileNav
+          userId={user?.id ?? null}
+          isAdmin={isAdmin}
+          unreadMessages={unreadMessages}
+        />
       </nav>
     </header>
   );

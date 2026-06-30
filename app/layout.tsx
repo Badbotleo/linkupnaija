@@ -12,9 +12,9 @@ import Toaster from "@/components/Toaster";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-const TITLE = "LinkUpNaija — Connect. Hang out. Vibe.";
+const TITLE = "LinkUpNaija — Find your people. Build real connections.";
 const DESCRIPTION =
-  "Nigeria's social events platform. Find clubbing, parties, picnics, book clubs, dinners and game nights near you — or host your own.";
+  "Nigeria's platform for real connection. Find family hangouts, friend reunions, picnics, book clubs, game nights and more near you — or host your own.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -26,11 +26,12 @@ export const metadata: Metadata = {
   applicationName: "LinkUpNaija",
   keywords: [
     "Nigeria events",
-    "Lagos events",
-    "parties",
-    "clubbing",
-    "picnic",
+    "family hangout",
+    "friend reunion",
+    "meet new people",
     "book club",
+    "picnic",
+    "game night",
     "hangouts",
     "LinkUpNaija",
   ],

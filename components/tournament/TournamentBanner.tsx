@@ -68,7 +68,10 @@ export default function TournamentBanner() {
 
       <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="pr-6 sm:pr-0">
-          <p className="text-base font-black tracking-wide">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-white/50">
+            One of many link-ups on LinkUpNaija
+          </p>
+          <p className="mt-0.5 text-base font-black tracking-wide">
             🎮 FC26 TOURNAMENT — ABUJA
           </p>
           <p className="mt-1 text-sm text-white/70">
