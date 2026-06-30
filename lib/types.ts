@@ -207,7 +207,26 @@ export interface RsvpWithProfile {
   status: RsvpStatus;
   paid: boolean;
   created_at: string;
+  companion_id?: string | null;
   users: (PublicProfile & { gender?: string | null }) | null;
+}
+
+export type ConnectionStatus = "pending" | "accepted" | "declined";
+
+export interface Connection {
+  id: string;
+  requester_id: string;
+  receiver_id: string;
+  status: ConnectionStatus;
+  created_at: string;
+}
+
+// A connected user as shown in friends lists / pickers.
+export interface FriendUser {
+  id: string;
+  name: string | null;
+  avatar_url: string | null;
+  state: string | null;
 }
 
 // Event with a joined attendee count, as returned by the events feed query.

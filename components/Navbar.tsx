@@ -71,6 +71,12 @@ export default async function Navbar() {
           {user ? (
             <div className="flex items-center gap-1 xl:gap-2">
               <NotificationsBell userId={user.id} />
+              <Link
+                href="/friends"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              >
+                Friends
+              </Link>
               {isAdmin && (
                 <Link
                   href="/admin"

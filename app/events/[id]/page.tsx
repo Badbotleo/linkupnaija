@@ -11,6 +11,7 @@ import ManageRequests from "@/components/ManageRequests";
 import DeleteEventButton from "@/components/DeleteEventButton";
 import Avatar from "@/components/Avatar";
 import AttendeeChips from "@/components/AttendeeChips";
+import FriendPickerButton from "@/components/friends/FriendPickerButton";
 import EventCover from "@/components/EventCover";
 import ReviewsSection from "@/components/ReviewsSection";
 import FeatureButton from "@/components/FeatureButton";
@@ -29,7 +30,7 @@ import type {
 export const dynamic = "force-dynamic";
 
 const RSVP_PROFILE_SELECT =
-  "id, user_id, status, paid, created_at, users(id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, gender)";
+  "id, user_id, status, paid, created_at, companion_id, users(id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, gender)";
 
 interface ChatRow {
   id: string;
@@ -115,6 +116,22 @@ export default async function EventDetailPage({
     : "none";
   const isFull =
     !!event.max_attendees && attendeeCount >= event.max_attendees;
+
+  // Friends of the viewer (accepted connections) → 🤝 markers in the attendee
+  // list and a "your friend is going" banner.
+  let friendIds: string[] = [];
+  if (user) {
+    const { data: conns } = await supabase
+      .from("connections")
+      .select("requester_id, receiver_id")
+      .eq("status", "accepted")
+      .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`);
+    friendIds = (conns ?? []).map((c) =>
+      c.requester_id === user.id ? c.receiver_id : c.requester_id
+    );
+  }
+  const friendIdSet = new Set(friendIds);
+  const friendsGoing = accepted.filter((a) => friendIdSet.has(a.user_id));
 
   // Pro status + this month's join-request count (free users are capped).
   let isPro = false;
@@ -224,6 +241,19 @@ export default async function EventDetailPage({
             {event.title}
           </h1>
 
+          {friendsGoing.length > 0 && (
+            <div className="mt-4 flex items-center gap-2 rounded-xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm font-semibold text-brand">
+              <span aria-hidden>🤝</span>
+              <span>
+                {friendsGoing.length === 1
+                  ? `Your friend ${friendsGoing[0].users?.name ?? "is"} is going to this`
+                  : `Your friends ${friendsGoing[0].users?.name ?? ""} and ${
+                      friendsGoing.length - 1
+                    } other${friendsGoing.length - 1 > 1 ? "s" : ""} are going to this`}
+              </span>
+            </div>
+          )}
+
           <div className="mt-6">
             <EventTabs
               details={
@@ -289,7 +319,21 @@ export default async function EventDetailPage({
                           name: a.users?.name ?? null,
                           avatar_url: a.users?.avatar_url ?? null,
                         }))}
+                        friendIds={friendIds}
                       />
+                    )}
+
+                    {/* Invite a friend — only for attendees who've joined. */}
+                    {myStatus === "accepted" && (
+                      <div className="mt-4">
+                        <FriendPickerButton
+                          mode="invite"
+                          eventId={event.id}
+                          eventTitle={event.title}
+                          buttonLabel="🤝 Invite a Friend"
+                          buttonClassName="btn-outline"
+                        />
+                      </div>
                     )}
                   </div>
                 </div>
@@ -375,6 +419,19 @@ export default async function EventDetailPage({
                     eventTitle={event.title}
                     hostSubaccount={event.host?.paystack_subaccount_code ?? null}
                   />
+
+                  {/* Secondary option: bring a friend along (both join together). */}
+                  {!!user && myStatus === "none" && !isFull && (
+                    <div className="mt-3">
+                      <FriendPickerButton
+                        mode="join"
+                        eventId={event.id}
+                        eventTitle={event.title}
+                        buttonLabel="🤝 Join with a friend"
+                        buttonClassName="btn-outline w-full"
+                      />
+                    </div>
+                  )}
                 </div>
               </>
             )}

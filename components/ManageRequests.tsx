@@ -27,6 +27,11 @@ export default function ManageRequests({
   const accepted = requests.filter((r) => r.status === "accepted");
   const declined = requests.filter((r) => r.status === "declined");
 
+  // For "attend with a friend": map a user to their companion's name.
+  const nameById = new Map(
+    requests.map((r) => [r.user_id, r.users?.name ?? "a friend"])
+  );
+
   async function setStatus(id: string, status: "accepted" | "declined") {
     setBusyId(id);
     setError(null);
@@ -100,6 +105,11 @@ export default function ManageRequests({
                         {r.users?.name ?? "Member"}
                       </button>
                       {r.users && hasSocialLinks(r.users) && <VerifiedBadge />}
+                      {r.companion_id && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand">
+                          🤝 with {nameById.get(r.companion_id) ?? "a friend"}
+                        </span>
+                      )}
                     </div>
                     {(r.users?.state || r.users?.gender) && (
                       <p className="text-sm capitalize text-gray-500">

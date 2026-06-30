@@ -133,6 +133,14 @@ export default function MobileNav({
 
           {userId ? (
             <>
+              <Link
+                href="/friends"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-semibold text-gray-700 transition hover:bg-brand-50 hover:text-brand"
+              >
+                <span aria-hidden>🤝</span>
+                Friends
+              </Link>
               {isAdmin && (
                 <Link
                   href="/admin"
