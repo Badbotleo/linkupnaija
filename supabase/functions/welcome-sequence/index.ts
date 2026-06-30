@@ -14,13 +14,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
-  SITE_URL,
-  emailLayout,
-  heading,
-  paragraph,
-  button,
-  eventCardHtml,
-  firstName,
+  welcomeEmailHtml,
   sendEmail,
   type EmailEvent,
 } from "../_shared/email.ts";
@@ -94,27 +88,10 @@ Deno.serve(async (req) => {
     events = (data ?? []) as EmailEvent[];
   }
 
-  const name = firstName(user.name);
-  const eventsBlock = events.length
-    ? `<p style="margin:18px 0 10px;color:#1A1040;font-size:15px;font-weight:700">
-         Happening soon in ${escapeState(user.state)} 👇
-       </p>${events.map(eventCardHtml).join("")}`
-    : "";
-
-  const html = emailLayout({
-    title: "Welcome to LinkUpNaija",
-    preheader: "Find your people and your next outing.",
-    bodyHtml: `
-      ${heading(`Welcome to LinkUpNaija, ${escapeState(name)}! 🎉`)}
-      ${paragraph(
-        "We're buzzing to have you. LinkUpNaija is where Nigerians find hangouts, parties, picnics, game nights and more — or host their own."
-      )}
-      ${paragraph("Here's how to get started:")}
-      ${button(`${SITE_URL}/events`, "🔎 Browse events")}
-      ${button(`${SITE_URL}/host`, "🎤 Host an event")}
-      ${button(`${SITE_URL}/profile/edit`, "✨ Complete your profile")}
-      ${eventsBlock}
-    `,
+  const html = welcomeEmailHtml({
+    name: user.name,
+    state: user.state,
+    events,
   });
 
   const ok = await sendEmail({
@@ -161,10 +138,6 @@ Deno.serve(async (req) => {
 
   return json({ welcomeSent: ok, scheduled: ["day2_events", "profile_nudge", "host_nudge"] });
 });
-
-function escapeState(s: string | null): string {
-  return (s ?? "").replace(/[<>&"']/g, "");
-}
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {

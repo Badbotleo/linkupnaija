@@ -162,6 +162,34 @@ export function paragraph(html: string): string {
   return `<p style="margin:0 0 14px;color:#44444F;font-size:15px;line-height:1.6">${html}</p>`;
 }
 
+/** The "Welcome to LinkUpNaija" email (shared by welcome-sequence + backfill). */
+export function welcomeEmailHtml(opts: {
+  name: string | null;
+  state: string | null;
+  events: EmailEvent[];
+}): string {
+  const eventsBlock = opts.events.length
+    ? `<p style="margin:18px 0 10px;color:#1A1040;font-size:15px;font-weight:700">
+         Happening soon${opts.state ? ` in ${escapeHtml(opts.state)}` : ""} 👇
+       </p>${opts.events.map(eventCardHtml).join("")}`
+    : "";
+  return emailLayout({
+    title: "Welcome to LinkUpNaija",
+    preheader: "Find your people and your next outing.",
+    bodyHtml: `
+      ${heading(`Welcome to LinkUpNaija, ${firstName(opts.name)}! 🎉`)}
+      ${paragraph(
+        "We're buzzing to have you. LinkUpNaija is where Nigerians find hangouts, parties, picnics, game nights and more — or host their own."
+      )}
+      ${paragraph("Here's how to get started:")}
+      ${button(`${SITE_URL}/events`, "🔎 Browse events")}
+      ${button(`${SITE_URL}/host`, "🎤 Host an event")}
+      ${button(`${SITE_URL}/profile/edit`, "✨ Complete your profile")}
+      ${eventsBlock}
+    `,
+  });
+}
+
 /** Send one email through Resend. Returns true on success. */
 export async function sendEmail(opts: {
   to: string;
