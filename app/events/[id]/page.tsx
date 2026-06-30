@@ -12,6 +12,7 @@ import DeleteEventButton from "@/components/DeleteEventButton";
 import Avatar from "@/components/Avatar";
 import AttendeeChips from "@/components/AttendeeChips";
 import FriendPickerButton from "@/components/friends/FriendPickerButton";
+import EventGallery from "@/components/gallery/EventGallery";
 import EventCover from "@/components/EventCover";
 import ReviewsSection from "@/components/ReviewsSection";
 import FeatureButton from "@/components/FeatureButton";
@@ -25,6 +26,7 @@ import type {
   RsvpStatus,
   RsvpWithProfile,
   ReviewWithReviewer,
+  EventPhoto,
 } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -195,6 +197,31 @@ export default async function EventDetailPage({
     : null;
   const canReview = !isHost && myStatus === "accepted" && eventIsOver;
 
+  // Post-event gallery — visible (and uploadable) to the host + accepted
+  // attendees once the event date has passed.
+  const canViewGallery = eventIsOver && (isHost || myStatus === "accepted");
+  let galleryPhotos: EventPhoto[] = [];
+  let galleryViewer: { id: string; name: string | null; avatar_url: string | null } | null =
+    null;
+  if (canViewGallery && user) {
+    const [{ data: photoRows }, { data: viewer }] = await Promise.all([
+      supabase
+        .from("event_photos")
+        .select(
+          "id, event_id, uploader_id, photo_url, caption, created_at, uploader:users!event_photos_uploader_id_fkey(name, avatar_url)"
+        )
+        .eq("event_id", params.id)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("users")
+        .select("id, name, avatar_url")
+        .eq("id", user.id)
+        .single(),
+    ]);
+    galleryPhotos = (photoRows ?? []) as unknown as EventPhoto[];
+    galleryViewer = viewer ?? null;
+  }
+
   const featured = isFeatured(event.featured, event.featured_until);
 
   return (
@@ -349,6 +376,18 @@ export default async function EventDetailPage({
                 ) : (
                   <LockedChat isLoggedIn={!!user} eventId={event.id} />
                 )
+              }
+              gallery={
+                canViewGallery ? (
+                  <EventGallery
+                    eventId={event.id}
+                    eventTitle={event.title}
+                    canUpload={canViewGallery}
+                    isHost={isHost}
+                    currentUser={galleryViewer}
+                    initialPhotos={galleryPhotos}
+                  />
+                ) : undefined
               }
             />
           </div>

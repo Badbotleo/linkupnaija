@@ -211,6 +211,16 @@ export interface RsvpWithProfile {
   users: (PublicProfile & { gender?: string | null }) | null;
 }
 
+export interface EventPhoto {
+  id: string;
+  event_id: string;
+  uploader_id: string;
+  photo_url: string;
+  caption: string | null;
+  created_at: string;
+  uploader: { name: string | null; avatar_url: string | null } | null;
+}
+
 export type ConnectionStatus = "pending" | "accepted" | "declined";
 
 export interface Connection {

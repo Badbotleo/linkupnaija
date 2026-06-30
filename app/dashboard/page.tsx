@@ -51,6 +51,25 @@ export default async function DashboardPage() {
   const pending = myRsvps.filter((r) => r.status === "pending" && r.events);
   const declined = myRsvps.filter((r) => r.status === "declined" && r.events);
 
+  // Recent Memories — latest photos from events the user was part of (attended
+  // or hosted). RLS lets accepted attendees + hosts read these galleries.
+  const memoryEventIds = Array.from(
+    new Set([
+      ...attending.map((r) => r.events!.id),
+      ...allHosting.map((e) => e.id),
+    ])
+  );
+  let recentPhotos: { id: string; event_id: string; photo_url: string }[] = [];
+  if (memoryEventIds.length) {
+    const { data } = await supabase
+      .from("event_photos")
+      .select("id, event_id, photo_url")
+      .in("event_id", memoryEventIds)
+      .order("created_at", { ascending: false })
+      .limit(6);
+    recentPhotos = data ?? [];
+  }
+
   // Payouts for the host's paid events.
   const paidEvents = allHosting.filter((e) => e.price > 0);
   let payoutCards: {
@@ -149,6 +168,31 @@ export default async function DashboardPage() {
             <h2 className="mb-3 text-lg font-bold text-gray-900">Messages</h2>
             <UserMessages meId={user.id} />
           </section>
+
+          {recentPhotos.length > 0 && (
+            <section>
+              <h2 className="mb-3 text-lg font-bold text-gray-900">
+                📸 Recent memories
+              </h2>
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                {recentPhotos.map((p) => (
+                  <Link
+                    key={p.id}
+                    href={`/events/${p.event_id}`}
+                    className="aspect-square overflow-hidden rounded-xl"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={p.photo_url}
+                      alt="Event memory"
+                      loading="lazy"
+                      className="h-full w-full object-cover transition hover:opacity-90"
+                    />
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
 
           {payoutCards.length > 0 && (
             <section>

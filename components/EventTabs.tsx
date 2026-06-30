@@ -5,11 +5,13 @@ import { useState, type ReactNode } from "react";
 export default function EventTabs({
   details,
   chat,
+  gallery,
 }: {
   details: ReactNode;
   chat: ReactNode;
+  gallery?: ReactNode;
 }) {
-  const [tab, setTab] = useState<"details" | "chat">("details");
+  const [tab, setTab] = useState<"details" | "chat" | "gallery">("details");
 
   return (
     <div>
@@ -23,11 +25,22 @@ export default function EventTabs({
         <TabButton active={tab === "chat"} onClick={() => setTab("chat")}>
           💬 Chat
         </TabButton>
+        {gallery && (
+          <TabButton
+            active={tab === "gallery"}
+            onClick={() => setTab("gallery")}
+          >
+            📸 Gallery
+          </TabButton>
+        )}
       </div>
 
       {/* Both panels stay mounted so the chat realtime subscription persists. */}
       <div className={tab === "details" ? "" : "hidden"}>{details}</div>
       <div className={tab === "chat" ? "" : "hidden"}>{chat}</div>
+      {gallery && (
+        <div className={tab === "gallery" ? "" : "hidden"}>{gallery}</div>
+      )}
     </div>
   );
 }
