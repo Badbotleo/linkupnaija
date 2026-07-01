@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import Avatar from "./Avatar";
 import SocialLinks from "./SocialLinks";
@@ -203,6 +204,14 @@ export default function AttendeeProfileModal({
                 <p className="text-xs text-gray-500">Joined</p>
               </div>
             </div>
+
+            <Link
+              href={`/u/${userId}`}
+              onClick={onClose}
+              className="btn-outline mt-4 w-full"
+            >
+              View full profile →
+            </Link>
           </div>
         )}
       </div>

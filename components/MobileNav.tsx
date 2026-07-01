@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Avatar from "./Avatar";
+import ThemeToggle from "./ThemeToggle";
 
 const MENU = [
   { href: "/live", label: "Live feed", icon: "activity" },
@@ -135,6 +136,17 @@ export default function MobileNav({
                   </div>
                 )}
 
+                {/* Appearance */}
+                <div className="mt-4 flex items-center justify-between rounded-2xl bg-white p-3 shadow-sm">
+                  <span className="flex items-center gap-3 text-[15px] font-semibold text-gray-800">
+                    <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand">
+                      <Icon name="moon" />
+                    </span>
+                    Dark mode
+                  </span>
+                  <ThemeToggle />
+                </div>
+
                 {/* Menu list */}
                 <div className="mt-4 overflow-hidden rounded-2xl bg-white shadow-sm">
                   {MENU.map((m) => (
@@ -220,6 +232,7 @@ function MenuRow({ href, label, icon }: { href: string; label: string; icon: str
 function Icon({ name }: { name: string }) {
   const p: Record<string, string> = {
     activity: "M22 12h-4l-3 9L9 3l-3 9H2",
+    moon: "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z",
     calendar: "M3 8h18M7 3v3m10-3v3M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z",
     mic: "M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3",
     users: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.87M16 3.13A4 4 0 0 1 16 11",
