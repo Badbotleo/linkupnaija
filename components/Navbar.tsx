@@ -124,8 +124,11 @@ export default async function Navbar() {
           )}
         </div>
 
-        {/* Mobile / tablet top bar (below lg): search, bell, hamburger */}
+        {/* Mobile / tablet top bar (below lg): theme, search, bell, hamburger */}
         <div className="flex items-center gap-1.5 lg:hidden">
+          <div className="grid h-10 w-10 place-items-center rounded-full bg-gray-100">
+            <ThemeToggle />
+          </div>
           <Link
             href="/events"
             aria-label="Search events"

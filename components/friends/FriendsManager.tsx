@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "@/lib/toast";
 import Avatar from "../Avatar";
@@ -334,15 +335,20 @@ function Row({
 }) {
   return (
     <li className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm">
-      <Avatar name={user.name} url={user.avatar_url} size="sm" />
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-semibold text-gray-900">
-          {user.name ?? "LinkUpNaija member"}
-        </p>
-        {user.state && (
-          <p className="truncate text-xs text-gray-500">📍 {user.state}</p>
-        )}
-      </div>
+      <Link
+        href={`/u/${user.id}`}
+        className="flex min-w-0 flex-1 items-center gap-3"
+      >
+        <Avatar name={user.name} url={user.avatar_url} size="sm" />
+        <div className="min-w-0">
+          <p className="truncate font-semibold text-gray-900 hover:text-brand">
+            {user.name ?? "LinkUpNaija member"}
+          </p>
+          {user.state && (
+            <p className="truncate text-xs text-gray-500">📍 {user.state}</p>
+          )}
+        </div>
+      </Link>
       {action}
     </li>
   );
