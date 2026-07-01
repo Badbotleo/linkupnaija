@@ -24,6 +24,25 @@ const getEventsCount = unstable_cache(
   { revalidate: 300 }
 );
 
+// Popular recurring series for the "Recurring events near you" section.
+const getPopularSeries = unstable_cache(
+  async () => {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const { data } = await supabase
+      .from("event_series")
+      .select("id, title, category, state, frequency, cover_image_url, subscriber_count")
+      .order("subscriber_count", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(3);
+    return data ?? [];
+  },
+  ["homepage-popular-series"],
+  { revalidate: 300 }
+);
+
 const WHY_LINKUPNAIJA = [
   {
     emoji: "🤝",
@@ -71,7 +90,10 @@ const HOW_IT_WORKS = [
 ];
 
 export default async function HomePage() {
-  const eventsCount = await getEventsCount();
+  const [eventsCount, popularSeries] = await Promise.all([
+    getEventsCount(),
+    getPopularSeries(),
+  ]);
 
   return (
     <div>
@@ -223,6 +245,49 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Recurring series */}
+      {popularSeries.length > 0 && (
+        <section className="container-page py-16">
+          <h2 className="text-center text-3xl font-extrabold text-gray-900">
+            🔄 Recurring events near you
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-center text-gray-600">
+            Communities that meet again and again — subscribe and never miss one.
+          </p>
+          <div className="mt-10 grid gap-6 sm:grid-cols-3">
+            {popularSeries.map(
+              (s: {
+                id: string;
+                title: string;
+                category: string | null;
+                state: string | null;
+                subscriber_count: number;
+              }) => (
+                <Link
+                  key={s.id}
+                  href={`/series/${s.id}`}
+                  className="flex flex-col rounded-2xl border border-gray-100 bg-white p-6 shadow-card transition hover:-translate-y-0.5 hover:border-brand/30"
+                >
+                  <span className="inline-flex w-fit items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand">
+                    🔄 Series
+                  </span>
+                  <h3 className="mt-3 text-lg font-bold text-gray-900">
+                    {s.title}
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {[s.category, s.state].filter(Boolean).join(" · ")}
+                  </p>
+                  <p className="mt-3 text-sm font-semibold text-brand">
+                    {s.subscriber_count}{" "}
+                    {s.subscriber_count === 1 ? "follower" : "followers"} →
+                  </p>
+                </Link>
+              )
+            )}
+          </div>
+        </section>
+      )}
 
       {/* CTA */}
       <section className="container-page py-16">

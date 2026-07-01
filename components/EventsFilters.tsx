@@ -11,6 +11,7 @@ export default function EventsFilters() {
 
   const activeState = searchParams.get("state") ?? "";
   const activeCategory = searchParams.get("category") ?? "";
+  const seriesOnly = searchParams.get("series") === "1";
 
   const setParam = useCallback(
     (key: string, value: string) => {
@@ -47,15 +48,28 @@ export default function EventsFilters() {
           </select>
         </div>
 
-        {(activeState || activeCategory) && (
+        <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => router.push(pathname, { scroll: false })}
-            className="text-sm font-medium text-brand hover:underline"
+            onClick={() => setParam("series", seriesOnly ? "" : "1")}
+            className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition ${
+              seriesOnly
+                ? "border-brand bg-brand text-white"
+                : "border-gray-200 bg-white text-gray-600 hover:border-brand/40 hover:text-brand"
+            }`}
           >
-            Clear filters
+            🔄 Series only
           </button>
-        )}
+          {(activeState || activeCategory || seriesOnly) && (
+            <button
+              type="button"
+              onClick={() => router.push(pathname, { scroll: false })}
+              className="text-sm font-medium text-brand hover:underline"
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">

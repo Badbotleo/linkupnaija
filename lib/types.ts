@@ -184,6 +184,30 @@ export interface EventRow {
   featured: boolean;
   featured_until: string | null;
   event_type: "general" | "private";
+  series_id: string | null;
+  created_at: string;
+}
+
+export type SeriesFrequency = "weekly" | "biweekly" | "monthly";
+
+export interface EventSeries {
+  id: string;
+  host_id: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  state: string | null;
+  location: string | null;
+  frequency: SeriesFrequency;
+  cover_image_url: string | null;
+  subscriber_count: number;
+  created_at: string;
+}
+
+export interface SeriesSubscription {
+  id: string;
+  user_id: string;
+  series_id: string;
   created_at: string;
 }
 

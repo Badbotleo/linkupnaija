@@ -37,6 +37,8 @@ export default async function DashboardPage() {
     { data: myRsvpsRaw },
     { data: walletTxRaw },
     { data: referralRaw },
+    { data: mySeriesRaw },
+    { data: followedRaw },
   ] = await Promise.all([
     supabase.from("users").select("*").eq("id", user.id).single(),
     supabase
@@ -61,7 +63,46 @@ export default async function DashboardPage() {
       )
       .eq("referrer_id", user.id)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("event_series")
+      .select("id, title, subscriber_count")
+      .eq("host_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("series_subscriptions")
+      .select("series:event_series(id, title)")
+      .eq("user_id", user.id),
   ]);
+
+  const mySeries = (mySeriesRaw ?? []) as {
+    id: string;
+    title: string;
+    subscriber_count: number;
+  }[];
+  const followedSeries = ((followedRaw ?? []) as unknown as {
+    series: { id: string; title: string } | null;
+  }[])
+    .map((f) => f.series)
+    .filter((s): s is { id: string; title: string } => !!s);
+
+  // Upcoming events from series the user follows.
+  let followedEvents: {
+    id: string;
+    title: string;
+    date: string;
+    time: string;
+    series_id: string;
+  }[] = [];
+  if (followedSeries.length) {
+    const { data: fev } = await supabase
+      .from("events")
+      .select("id, title, date, time, series_id")
+      .in("series_id", followedSeries.map((s) => s.id))
+      .gte("date", new Date().toISOString().slice(0, 10))
+      .order("date", { ascending: true })
+      .limit(10);
+    followedEvents = (fev ?? []) as typeof followedEvents;
+  }
 
   const walletTx = (walletTxRaw ?? []) as WalletTransaction[];
   const referralRows = (referralRaw ?? []) as unknown as {
@@ -211,6 +252,64 @@ export default async function DashboardPage() {
             <h2 className="mb-3 text-lg font-bold text-gray-900">Messages</h2>
             <UserMessages meId={user.id} />
           </section>
+
+          {mySeries.length > 0 && (
+            <section>
+              <h2 className="mb-3 text-lg font-bold text-gray-900">
+                🔄 My Series
+              </h2>
+              <div className="space-y-2">
+                {mySeries.map((s) => (
+                  <Link
+                    key={s.id}
+                    href={`/series/${s.id}`}
+                    className="flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-4 shadow-card transition hover:border-brand/30"
+                  >
+                    <span className="font-bold text-gray-900">{s.title}</span>
+                    <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand">
+                      {s.subscriber_count}{" "}
+                      {s.subscriber_count === 1 ? "follower" : "followers"}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {followedSeries.length > 0 && (
+            <section>
+              <h2 className="mb-3 text-lg font-bold text-gray-900">
+                Series I Follow
+              </h2>
+              {followedEvents.length === 0 ? (
+                <p className="text-sm text-gray-500">
+                  No upcoming events from your series right now.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {followedEvents.map((e) => (
+                    <Link
+                      key={e.id}
+                      href={`/events/${e.id}`}
+                      className="flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-4 shadow-card transition hover:border-brand/30"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate font-bold text-gray-900">
+                          {e.title}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          📅 {formatEventDate(e.date)} · {formatEventTime(e.time)}
+                        </p>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand">
+                        🔄 Series
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
 
           {recentPhotos.length > 0 && (
             <section>

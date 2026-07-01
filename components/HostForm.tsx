@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/image";
 import { EVENT_CATEGORIES, NIGERIAN_STATES } from "@/lib/constants";
+import { FREQUENCY_OPTIONS, nextDates } from "@/lib/series";
+import { formatEventDate } from "@/lib/format";
+import type { SeriesFrequency } from "@/lib/types";
 
 export default function HostForm({ hostState }: { hostState: string | null }) {
   const router = useRouter();
@@ -26,6 +29,15 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Recurring-series options.
+  const [isSeries, setIsSeries] = useState(false);
+  const [seriesName, setSeriesName] = useState("");
+  const [seriesDescription, setSeriesDescription] = useState("");
+  const [frequency, setFrequency] = useState<SeriesFrequency>("monthly");
+
+  const seriesDates =
+    isSeries && form.date ? nextDates(form.date, frequency, 3) : [];
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -71,22 +83,63 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
         .data.publicUrl;
     }
 
+    const baseEvent = {
+      title: form.title.trim(),
+      category: form.category,
+      description: form.description.trim(),
+      time: form.time,
+      location: form.location.trim(),
+      state: form.state,
+      host_id: user.id,
+      max_attendees: form.max_attendees ? Number(form.max_attendees) : null,
+      price: form.price ? Math.max(0, Math.round(Number(form.price))) : 0,
+      event_type: form.event_type,
+      cover_image_url: coverImageUrl,
+    };
+
+    // Recurring series: create the series + its first 3 events.
+    if (isSeries) {
+      const { data: series, error: sErr } = await supabase
+        .from("event_series")
+        .insert({
+          host_id: user.id,
+          title: (seriesName || form.title).trim(),
+          description: seriesDescription.trim() || form.description.trim(),
+          category: form.category,
+          state: form.state,
+          location: form.location.trim(),
+          frequency,
+          cover_image_url: coverImageUrl,
+        })
+        .select("id")
+        .single();
+
+      if (sErr) {
+        setError(sErr.message);
+        setLoading(false);
+        return;
+      }
+
+      const rows = nextDates(form.date, frequency, 3).map((date) => ({
+        ...baseEvent,
+        date,
+        series_id: series.id,
+      }));
+      const { error: evErr } = await supabase.from("events").insert(rows);
+      if (evErr) {
+        setError(evErr.message);
+        setLoading(false);
+        return;
+      }
+
+      router.push(`/series/${series.id}`);
+      router.refresh();
+      return;
+    }
+
     const { data, error } = await supabase
       .from("events")
-      .insert({
-        title: form.title.trim(),
-        category: form.category,
-        description: form.description.trim(),
-        date: form.date,
-        time: form.time,
-        location: form.location.trim(),
-        state: form.state,
-        host_id: user.id,
-        max_attendees: form.max_attendees ? Number(form.max_attendees) : null,
-        price: form.price ? Math.max(0, Math.round(Number(form.price))) : 0,
-        event_type: form.event_type,
-        cover_image_url: coverImageUrl,
-      })
+      .insert({ ...baseEvent, date: form.date })
       .select("id")
       .single();
 
@@ -335,6 +388,86 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
         />
       </div>
 
+      {/* Recurring series */}
+      <div className="rounded-xl border border-gray-200 p-4">
+        <label className="flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            checked={isSeries}
+            onChange={(e) => setIsSeries(e.target.checked)}
+            className="mt-0.5 h-4 w-4 accent-brand"
+          />
+          <span>
+            <span className="block text-sm font-bold text-gray-900">
+              🔄 Make this a recurring series
+            </span>
+            <span className="block text-xs text-gray-500">
+              We&apos;ll create the first 3 events automatically based on your
+              frequency.
+            </span>
+          </span>
+        </label>
+
+        {isSeries && (
+          <div className="mt-4 space-y-4 border-t border-gray-100 pt-4">
+            <div>
+              <label htmlFor="seriesName" className="label">
+                Series name
+              </label>
+              <input
+                id="seriesName"
+                type="text"
+                value={seriesName}
+                onChange={(e) => setSeriesName(e.target.value)}
+                placeholder="Monthly Abuja Book Club"
+                className="input"
+              />
+            </div>
+            <div>
+              <span className="label">Frequency</span>
+              <div className="grid grid-cols-3 gap-2">
+                {FREQUENCY_OPTIONS.map((o) => (
+                  <button
+                    key={o.value}
+                    type="button"
+                    onClick={() => setFrequency(o.value)}
+                    className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${
+                      frequency === o.value
+                        ? "border-brand bg-brand-50 text-brand"
+                        : "border-gray-200 bg-white text-gray-600 hover:border-brand/40"
+                    }`}
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label htmlFor="seriesDescription" className="label">
+                Series description{" "}
+                <span className="font-normal text-gray-400">(optional)</span>
+              </label>
+              <textarea
+                id="seriesDescription"
+                rows={3}
+                value={seriesDescription}
+                onChange={(e) => setSeriesDescription(e.target.value)}
+                placeholder="What the series is about, who it's for…"
+                className="input resize-y"
+              />
+            </div>
+            {seriesDates.length > 0 && (
+              <div className="rounded-lg bg-brand-50 px-3 py-2.5 text-sm text-brand">
+                <p className="font-semibold">First 3 events:</p>
+                <p className="mt-0.5 text-brand/80">
+                  {seriesDates.map((d) => formatEventDate(d)).join("  ·  ")}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       {error && (
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
           {error}
@@ -342,7 +475,11 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
       )}
 
       <button type="submit" disabled={loading} className="btn-primary w-full">
-        {loading ? "Publishing…" : "Publish event 🚀"}
+        {loading
+          ? "Publishing…"
+          : isSeries
+            ? "Create series 🔄"
+            : "Publish event 🚀"}
       </button>
     </form>
   );

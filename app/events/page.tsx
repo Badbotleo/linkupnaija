@@ -26,7 +26,12 @@ const PAGE_SIZE = 24;
 export default async function EventsPage({
   searchParams,
 }: {
-  searchParams: { state?: string; category?: string; page?: string };
+  searchParams: {
+    state?: string;
+    category?: string;
+    page?: string;
+    series?: string;
+  };
 }) {
   const supabase = createClient();
 
@@ -49,6 +54,7 @@ export default async function EventsPage({
   if (searchParams.state) query = query.eq("state", searchParams.state);
   if (searchParams.category)
     query = query.eq("category", searchParams.category);
+  if (searchParams.series === "1") query = query.not("series_id", "is", null);
 
   const { data, error, count } = await query
     .order("date", { ascending: true })
@@ -86,6 +92,7 @@ export default async function EventsPage({
     const params = new URLSearchParams();
     if (searchParams.state) params.set("state", searchParams.state);
     if (searchParams.category) params.set("category", searchParams.category);
+    if (searchParams.series === "1") params.set("series", "1");
     if (p > 1) params.set("page", String(p));
     const qs = params.toString();
     return qs ? `/events?${qs}` : "/events";

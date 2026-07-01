@@ -42,7 +42,14 @@ export default function EventCard({
           className="h-40 w-full transition-transform duration-300 group-hover:scale-105"
         />
         <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
-          <CategoryBadge category={event.category} className="shadow-sm" />
+          <div className="flex flex-wrap gap-1.5">
+            <CategoryBadge category={event.category} className="shadow-sm" />
+            {event.series_id && (
+              <span className="rounded-full bg-brand/90 px-2.5 py-1 text-xs font-bold text-white shadow-sm">
+                🔄 Series
+              </span>
+            )}
+          </div>
           <span className="rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-brand shadow-sm">
             {event.state}
           </span>
