@@ -52,6 +52,9 @@ export default function MobileNav({
     };
   }, [open]);
 
+  // A friendly @username derived from the display name (no real handle field).
+  const handle = (name ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+
   function openChat() {
     setOpen(false);
     window.dispatchEvent(new CustomEvent("linkup:open-chat"));
@@ -117,7 +120,7 @@ export default function MobileNav({
                         {name ?? "Your profile"}
                       </p>
                       <p className="text-xs text-gray-500">
-                        Bad · {isAdmin ? "Admin" : "Founder"}
+                        {handle ? `@${handle}` : "View your profile"}
                       </p>
                     </div>
                   </Link>
