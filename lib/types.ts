@@ -188,6 +188,56 @@ export interface EventRow {
   created_at: string;
 }
 
+export interface Circle {
+  id: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  state: string | null;
+  cover_image_url: string | null;
+  creator_id: string | null;
+  is_private: boolean;
+  member_count: number;
+  created_at: string;
+}
+
+export interface CircleMember {
+  id: string;
+  circle_id: string;
+  user_id: string;
+  role: "admin" | "member";
+  status: "active" | "pending";
+  last_read_at: string;
+  joined_at: string;
+}
+
+export interface CirclePost {
+  id: string;
+  circle_id: string;
+  user_id: string;
+  content: string | null;
+  image_url: string | null;
+  event_id: string | null;
+  pinned: boolean;
+  like_count: number;
+  created_at: string;
+  author: { name: string | null; avatar_url: string | null } | null;
+  event?: Pick<
+    EventRow,
+    "id" | "title" | "date" | "time" | "location" | "state" | "category" | "cover_image_url"
+  > | null;
+}
+
+export interface CirclePostComment {
+  id: string;
+  post_id: string;
+  user_id: string;
+  parent_id: string | null;
+  content: string;
+  created_at: string;
+  author: { name: string | null; avatar_url: string | null } | null;
+}
+
 export type SeriesFrequency = "weekly" | "biweekly" | "monthly";
 
 export interface EventSeries {

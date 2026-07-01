@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/image";
@@ -35,6 +35,30 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
   const [seriesName, setSeriesName] = useState("");
   const [seriesDescription, setSeriesDescription] = useState("");
   const [frequency, setFrequency] = useState<SeriesFrequency>("monthly");
+
+  // Circles the host can share this event to.
+  const [myCircles, setMyCircles] = useState<{ id: string; name: string }[]>([]);
+  const [postToCircle, setPostToCircle] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("circle_members")
+        .select("circle:circles(id, name)")
+        .eq("user_id", user.id)
+        .eq("status", "active");
+      setMyCircles(
+        ((data ?? []) as unknown as { circle: { id: string; name: string } | null }[])
+          .map((r) => r.circle)
+          .filter((c): c is { id: string; name: string } => !!c)
+      );
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const seriesDates =
     isSeries && form.date ? nextDates(form.date, frequency, 3) : [];
@@ -147,6 +171,16 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
       setError(error.message);
       setLoading(false);
       return;
+    }
+
+    // Optionally share the new event to a circle (notifies its members).
+    if (postToCircle) {
+      await supabase.from("circle_posts").insert({
+        circle_id: postToCircle,
+        user_id: user.id,
+        event_id: data.id,
+        content: `📣 New event: ${form.title.trim()}`,
+      });
     }
 
     router.push(`/events/${data.id}`);
@@ -387,6 +421,31 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
           className="input resize-y"
         />
       </div>
+
+      {myCircles.length > 0 && !isSeries && (
+        <div>
+          <label htmlFor="postToCircle" className="label">
+            Post to a circle{" "}
+            <span className="font-normal text-gray-400">(optional)</span>
+          </label>
+          <select
+            id="postToCircle"
+            value={postToCircle}
+            onChange={(e) => setPostToCircle(e.target.value)}
+            className="input cursor-pointer"
+          >
+            <option value="">Don&apos;t share to a circle</option>
+            {myCircles.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-gray-400">
+            Shares this event to the circle&apos;s feed and notifies its members.
+          </p>
+        </div>
+      )}
 
       {/* Recurring series */}
       <div className="rounded-xl border border-gray-200 p-4">

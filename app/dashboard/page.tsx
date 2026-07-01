@@ -39,6 +39,7 @@ export default async function DashboardPage() {
     { data: referralRaw },
     { data: mySeriesRaw },
     { data: followedRaw },
+    { data: myCirclesRaw },
   ] = await Promise.all([
     supabase.from("users").select("*").eq("id", user.id).single(),
     supabase
@@ -72,6 +73,11 @@ export default async function DashboardPage() {
       .from("series_subscriptions")
       .select("series:event_series(id, title)")
       .eq("user_id", user.id),
+    supabase
+      .from("circle_members")
+      .select("last_read_at, circle:circles(id, name, category)")
+      .eq("user_id", user.id)
+      .eq("status", "active"),
   ]);
 
   const mySeries = (mySeriesRaw ?? []) as {
@@ -102,6 +108,35 @@ export default async function DashboardPage() {
       .order("date", { ascending: true })
       .limit(10);
     followedEvents = (fev ?? []) as typeof followedEvents;
+  }
+
+  // My circles + unread post counts (posts newer than my last_read_at).
+  const myCircleRows = (
+    (myCirclesRaw ?? []) as unknown as {
+      last_read_at: string;
+      circle: { id: string; name: string; category: string | null } | null;
+    }[]
+  ).filter((c) => c.circle);
+  const circleUnread = new Map<string, number>();
+  if (myCircleRows.length) {
+    const ids = myCircleRows.map((c) => c.circle!.id);
+    const { data: recentPosts } = await supabase
+      .from("circle_posts")
+      .select("circle_id, created_at, user_id")
+      .in("circle_id", ids)
+      .order("created_at", { ascending: false })
+      .limit(300);
+    const lastRead = new Map(myCircleRows.map((c) => [c.circle!.id, c.last_read_at]));
+    for (const p of (recentPosts ?? []) as {
+      circle_id: string;
+      created_at: string;
+      user_id: string;
+    }[]) {
+      if (p.user_id === user.id) continue;
+      const lr = lastRead.get(p.circle_id);
+      if (lr && p.created_at > lr)
+        circleUnread.set(p.circle_id, (circleUnread.get(p.circle_id) ?? 0) + 1);
+    }
   }
 
   const walletTx = (walletTxRaw ?? []) as WalletTransaction[];
@@ -252,6 +287,40 @@ export default async function DashboardPage() {
             <h2 className="mb-3 text-lg font-bold text-gray-900">Messages</h2>
             <UserMessages meId={user.id} />
           </section>
+
+          {myCircleRows.length > 0 && (
+            <section>
+              <h2 className="mb-3 text-lg font-bold text-gray-900">
+                ⭕ My Circles
+              </h2>
+              <div className="space-y-2">
+                {myCircleRows.map(({ circle }) => {
+                  const unread = circleUnread.get(circle!.id) ?? 0;
+                  return (
+                    <Link
+                      key={circle!.id}
+                      href={`/circles/${circle!.id}`}
+                      className="flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-4 shadow-card transition hover:border-brand/30"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate font-bold text-gray-900">
+                          {circle!.name}
+                        </p>
+                        {circle!.category && (
+                          <p className="text-xs text-gray-500">{circle!.category}</p>
+                        )}
+                      </div>
+                      {unread > 0 && (
+                        <span className="shrink-0 rounded-full bg-brand px-2.5 py-1 text-xs font-bold text-white">
+                          {unread > 9 ? "9+" : unread} new
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           {mySeries.length > 0 && (
             <section>

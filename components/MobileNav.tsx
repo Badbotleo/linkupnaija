@@ -9,6 +9,7 @@ import ThemeToggle from "./ThemeToggle";
 
 const LINKS = [
   { href: "/events", label: "Explore", emoji: "🔎" },
+  { href: "/circles", label: "Circles", emoji: "⭕" },
   { href: "/venues", label: "Venues", emoji: "📍" },
   { href: "/tournament", label: "Tournament", emoji: "🎮" },
   { href: "/host", label: "Host", emoji: "🎤" },
