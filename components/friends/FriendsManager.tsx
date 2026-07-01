@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "@/lib/toast";
 import Avatar from "../Avatar";
+import MessageButton from "../MessageButton";
 import type { FriendUser } from "@/lib/types";
 
 interface Relation {
@@ -277,7 +278,20 @@ export default function FriendsManager({
         ) : (
           <ul className="grid gap-2 sm:grid-cols-2">
             {friends.map((u) => (
-              <Row key={u.id} user={u} action={null} />
+              <Row
+                key={u.id}
+                user={u}
+                action={
+                  <MessageButton
+                    meId={meId}
+                    targetId={u.id}
+                    targetName={u.name}
+                    targetAvatar={u.avatar_url}
+                    label="Message"
+                    className="btn-outline px-3 py-1.5 text-sm"
+                  />
+                }
+              />
             ))}
           </ul>
         )}

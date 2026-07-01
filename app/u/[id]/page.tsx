@@ -5,6 +5,7 @@ import Avatar from "@/components/Avatar";
 import EventCover from "@/components/EventCover";
 import SocialLinks from "@/components/SocialLinks";
 import AddFriendButton from "@/components/profile/AddFriendButton";
+import MessageButton from "@/components/MessageButton";
 import ProfilePhotos from "@/components/profile/ProfilePhotos";
 import { formatEventDate } from "@/lib/format";
 import type { UserProfile } from "@/lib/types";
@@ -125,9 +126,17 @@ export default async function PublicProfilePage({
           <Stat value={hosting.count ?? 0} label="Hosting" />
         </div>
 
-        <div className="mt-4 flex gap-2">
-          <AddFriendButton targetId={params.id} isLoggedIn={!!user} />
-        </div>
+        {user?.id !== params.id && (
+          <div className="mt-4 flex gap-2">
+            <AddFriendButton targetId={params.id} isLoggedIn={!!user} />
+            <MessageButton
+              meId={user?.id ?? null}
+              targetId={params.id}
+              targetName={profile.name}
+              targetAvatar={profile.avatar_url}
+            />
+          </div>
+        )}
 
         <div className="mt-5 flex gap-1 border-b border-gray-100">
           {TABS.map((t) => (
