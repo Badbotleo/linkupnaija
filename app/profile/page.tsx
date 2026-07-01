@@ -58,9 +58,9 @@ export default async function ProfilePage({
       {/* Cover + avatar */}
       <BannerUpload userId={user.id} initialUrl={profile?.banner_url ?? null} editable />
 
-      <div className="container-page max-w-2xl">
+      <div className="container-page relative z-10 max-w-2xl">
         <div className="-mt-12 flex items-end gap-4">
-          <div className="rounded-full border-4 border-white bg-white">
+          <div className="rounded-full border-4 border-white bg-white shadow-sm">
             <Avatar name={profile?.name ?? null} url={profile?.avatar_url ?? null} size="lg" />
           </div>
         </div>
