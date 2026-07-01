@@ -3,7 +3,10 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Avatar from "@/components/Avatar";
 import EventCover from "@/components/EventCover";
+import SocialLinks from "@/components/SocialLinks";
 import ShareProfileButton from "@/components/profile/ShareProfileButton";
+import BannerUpload from "@/components/profile/BannerUpload";
+import ProfilePhotos from "@/components/profile/ProfilePhotos";
 import { formatEventDate } from "@/lib/format";
 import type { UserProfile } from "@/lib/types";
 
@@ -53,10 +56,8 @@ export default async function ProfilePage({
   return (
     <div className="pb-4">
       {/* Cover + avatar */}
-      <div
-        className="h-36 w-full sm:h-52"
-        style={{ background: "linear-gradient(120deg,#1A1040,#534AB7)" }}
-      />
+      <BannerUpload userId={user.id} initialUrl={profile?.banner_url ?? null} editable />
+
       <div className="container-page max-w-2xl">
         <div className="-mt-12 flex items-end gap-4">
           <div className="rounded-full border-4 border-white bg-white">
@@ -107,7 +108,7 @@ export default async function ProfilePage({
           {tab === "about" ? (
             <About profile={profile} />
           ) : tab === "photos" ? (
-            <Photos userId={user.id} />
+            <ProfilePhotos userId={user.id} editable />
           ) : tab === "posts" ? (
             <Posts userId={user.id} />
           ) : (
@@ -176,6 +177,8 @@ function About({ profile }: { profile: UserProfile | null }) {
       text: `Joined ${formatEventDate(profile.created_at.slice(0, 10))}`,
     },
   ].filter(Boolean) as { icon: string; text: string }[];
+  const hasSocials =
+    !!profile?.instagram_url || !!profile?.twitter_url || !!profile?.facebook_url;
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
       <ul className="space-y-3">
@@ -186,26 +189,14 @@ function About({ profile }: { profile: UserProfile | null }) {
           </li>
         ))}
       </ul>
-    </div>
-  );
-}
-
-async function Photos({ userId }: { userId: string }) {
-  const supabase = createClient();
-  const { data } = await supabase
-    .from("event_photos")
-    .select("id, photo_url")
-    .eq("uploader_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(24);
-  const photos = (data ?? []) as { id: string; photo_url: string }[];
-  if (photos.length === 0) return <Empty text="No photos shared yet." />;
-  return (
-    <div className="grid grid-cols-3 gap-1.5">
-      {photos.map((ph) => (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img key={ph.id} src={ph.photo_url} alt="" className="aspect-square w-full rounded-lg object-cover" />
-      ))}
+      {hasSocials && profile && (
+        <div className="mt-4 border-t border-gray-100 pt-4">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+            Social
+          </p>
+          <SocialLinks profile={profile} />
+        </div>
+      )}
     </div>
   );
 }

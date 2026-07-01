@@ -35,6 +35,25 @@ body {
   }
 }
 
+/* Prevent iOS auto-zoom on input focus (font-size must be >= 16px), stop text
+   auto-resizing on rotate, and tame scroll rubber-banding on mobile. These are
+   unlayered so they win over the @apply'd .input font-size. */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+body {
+  overscroll-behavior-y: none;
+}
+@media (max-width: 640px) {
+  .input,
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
 /* ----------------------------------------------------------------------------
    Dark mode — palette: page #0F0A2E, cards #1A1040, text white, accent #7F77DD.
    Common utility classes are remapped under .dark so the whole app themes

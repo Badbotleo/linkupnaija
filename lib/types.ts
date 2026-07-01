@@ -27,6 +27,7 @@ export interface UserProfile {
   referral_code: string | null;
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;
+  banner_url: string | null;
   created_at: string;
 }
 
