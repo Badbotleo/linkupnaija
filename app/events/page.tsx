@@ -5,6 +5,7 @@ import EventsFilters from "@/components/EventsFilters";
 import EventsList from "@/components/EventsList";
 import EventsTabs from "@/components/EventsTabs";
 import EventsStories from "@/components/EventsStories";
+import LocationMatch from "@/components/LocationMatch";
 import TournamentBanner from "@/components/tournament/TournamentBanner";
 import type { EventRow, RsvpStatus } from "@/lib/types";
 
@@ -201,6 +202,12 @@ export default async function EventsPage({
           <EventsTabs />
         </Suspense>
       </div>
+
+      {!forYou && !searchParams.state && (
+        <div className="mt-5">
+          <LocationMatch />
+        </div>
+      )}
 
       {!error && feedEvents.length > 0 && (
         <div className="mt-5">

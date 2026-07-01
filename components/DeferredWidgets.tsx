@@ -9,12 +9,16 @@ const ChatWidget = dynamic(() => import("./ChatWidget"), { ssr: false });
 const ActivityTicker = dynamic(() => import("./ActivityTicker"), {
   ssr: false,
 });
+const ScreenTimeGuard = dynamic(() => import("./ScreenTimeGuard"), {
+  ssr: false,
+});
 
 export default function DeferredWidgets() {
   return (
     <>
       <ActivityTicker />
       <ChatWidget />
+      <ScreenTimeGuard />
     </>
   );
 }
