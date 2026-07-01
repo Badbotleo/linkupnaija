@@ -138,6 +138,7 @@ export default async function EventDetailPage({
   // Pro status + this month's join-request count (free users are capped).
   let isPro = false;
   let requestsThisMonth = 0;
+  let walletBalance = 0;
   if (user && !isHost) {
     const startOfMonth = new Date();
     startOfMonth.setUTCDate(1);
@@ -145,7 +146,7 @@ export default async function EventDetailPage({
     const [{ data: meProfile }, { count }] = await Promise.all([
       supabase
         .from("users")
-        .select("is_pro, pro_expires_at")
+        .select("is_pro, pro_expires_at, wallet_balance")
         .eq("id", user.id)
         .single(),
       supabase
@@ -156,6 +157,7 @@ export default async function EventDetailPage({
     ]);
     isPro = isProActive(meProfile?.is_pro, meProfile?.pro_expires_at);
     requestsThisMonth = count ?? 0;
+    walletBalance = meProfile?.wallet_balance ?? 0;
   }
 
   // Group chat is private to accepted attendees + the host.
@@ -457,6 +459,7 @@ export default async function EventDetailPage({
                     requestsThisMonth={requestsThisMonth}
                     eventTitle={event.title}
                     hostSubaccount={event.host?.paystack_subaccount_code ?? null}
+                    walletBalance={walletBalance}
                   />
 
                   {/* Secondary option: bring a friend along (both join together). */}

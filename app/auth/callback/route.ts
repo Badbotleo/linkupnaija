@@ -20,6 +20,15 @@ export async function GET(request: Request) {
     if (!error) {
       // Email-verification flow: clear the session so the user logs in explicitly.
       if (redirect.startsWith("/login")) {
+        // If they signed up via a referral link, pay out both wallets now that
+        // the email is verified (idempotent + guarded in the RPC).
+        const {
+          data: { user: verified },
+        } = await supabase.auth.getUser();
+        const ref = verified?.user_metadata?.ref_code as string | undefined;
+        if (ref) {
+          await supabase.rpc("complete_referral", { p_ref_code: ref });
+        }
         await supabase.auth.signOut();
         return NextResponse.redirect(`${baseUrl}${redirect}`);
       }

@@ -6,9 +6,16 @@ import ProfileCompletion from "@/components/ProfileCompletion";
 import UserMessages from "@/components/UserMessages";
 import PayoutRequest from "@/components/PayoutRequest";
 import CategoryBadge from "@/components/CategoryBadge";
+import WalletCard from "@/components/wallet/WalletCard";
+import ReferralCard from "@/components/referral/ReferralCard";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { isProActive } from "@/lib/pro";
-import type { EventRow, RsvpStatus, UserProfile } from "@/lib/types";
+import type {
+  EventRow,
+  RsvpStatus,
+  UserProfile,
+  WalletTransaction,
+} from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -24,22 +31,49 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?redirect=/dashboard");
 
-  const [{ data: profile }, { data: hostingRaw }, { data: myRsvpsRaw }] =
-    await Promise.all([
-      supabase.from("users").select("*").eq("id", user.id).single(),
-      supabase
-        .from("events")
-        .select("id, title, category, state, date, time, price, rsvps(status)")
-        .eq("host_id", user.id)
-        .order("date", { ascending: true }),
-      supabase
-        .from("rsvps")
-        .select(
-          "status, events(id, title, category, state, date, time)"
-        )
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false }),
-    ]);
+  const [
+    { data: profile },
+    { data: hostingRaw },
+    { data: myRsvpsRaw },
+    { data: walletTxRaw },
+    { data: referralRaw },
+  ] = await Promise.all([
+    supabase.from("users").select("*").eq("id", user.id).single(),
+    supabase
+      .from("events")
+      .select("id, title, category, state, date, time, price, rsvps(status)")
+      .eq("host_id", user.id)
+      .order("date", { ascending: true }),
+    supabase
+      .from("rsvps")
+      .select("status, events(id, title, category, state, date, time)")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("wallet_transactions")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("referrals")
+      .select(
+        "reward_amount, status, referred:users!referrals_referred_id_fkey(name)"
+      )
+      .eq("referrer_id", user.id)
+      .order("created_at", { ascending: false }),
+  ]);
+
+  const walletTx = (walletTxRaw ?? []) as WalletTransaction[];
+  const referralRows = (referralRaw ?? []) as unknown as {
+    reward_amount: number;
+    status: string;
+    referred: { name: string | null } | null;
+  }[];
+  const referralCount = referralRows.length;
+  const totalEarned = referralRows.reduce((s, r) => s + (r.reward_amount ?? 0), 0);
+  const referredNames = referralRows.map(
+    (r) => (r.referred?.name ?? "A friend").split(" ")[0]
+  );
 
   const allHosting = (hostingRaw ?? []) as unknown as HostingEvent[];
   const today = new Date().toISOString().slice(0, 10);
@@ -141,8 +175,8 @@ export default async function DashboardPage() {
       )}
 
       <div className="mt-6 grid gap-8 lg:grid-cols-3">
-        {/* Profile summary */}
-        <div className="lg:col-span-1">
+        {/* Profile summary + wallet + referrals */}
+        <div className="space-y-6 lg:col-span-1">
           {p && (
             <ProfileCard
               showEdit
@@ -160,6 +194,15 @@ export default async function DashboardPage() {
               }}
             />
           )}
+
+          <WalletCard balance={p?.wallet_balance ?? 0} transactions={walletTx} />
+
+          <ReferralCard
+            referralCode={p?.referral_code ?? null}
+            referralCount={referralCount}
+            totalEarned={totalEarned}
+            referredNames={referredNames}
+          />
         </div>
 
         {/* Lists */}

@@ -23,6 +23,27 @@ export interface UserProfile {
   payout_account_name: string | null;
   paystack_subaccount_code: string | null;
   last_login_at: string | null;
+  wallet_balance: number;
+  referral_code: string | null;
+  created_at: string;
+}
+
+export interface WalletTransaction {
+  id: string;
+  user_id: string;
+  amount: number;
+  type: "credit" | "debit";
+  reason: string | null;
+  reference: string | null;
+  created_at: string;
+}
+
+export interface Referral {
+  id: string;
+  referrer_id: string;
+  referred_id: string;
+  status: "pending" | "completed";
+  reward_amount: number;
   created_at: string;
 }
 

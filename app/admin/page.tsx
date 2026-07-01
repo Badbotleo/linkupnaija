@@ -7,6 +7,7 @@ import AdminReservations from "@/components/admin/AdminReservations";
 import AdminExpiredEvents from "@/components/admin/AdminExpiredEvents";
 import AdminMessages from "@/components/admin/AdminMessages";
 import AdminPayouts from "@/components/admin/AdminPayouts";
+import AdminWalletCredit from "@/components/admin/AdminWalletCredit";
 import AdminTournament from "@/components/admin/AdminTournament";
 import AdminOpportunities from "@/components/admin/AdminOpportunities";
 import { formatNaira } from "@/lib/paystack";
@@ -242,6 +243,14 @@ export default async function AdminPage() {
           )}
         </h2>
         <AdminPayouts initialPayouts={payouts} />
+      </section>
+
+      {/* Wallet credits */}
+      <section className="mt-10">
+        <h2 className="mb-3 text-lg font-bold text-gray-900">
+          💰 Credit a wallet
+        </h2>
+        <AdminWalletCredit users={messageUsers} />
       </section>
 
       {/* Messages */}

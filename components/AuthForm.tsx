@@ -10,6 +10,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/events";
+  const refCode = searchParams.get("ref");
   const supabase = createClient();
 
   const [name, setName] = useState("");
@@ -51,7 +52,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
         email,
         password,
         options: {
-          data: { name, state },
+          data: refCode ? { name, state, ref_code: refCode } : { name, state },
           emailRedirectTo: `${location.origin}/auth/callback?redirect=${verifyRedirect}`,
         },
       });

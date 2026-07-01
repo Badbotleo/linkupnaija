@@ -23,6 +23,7 @@ export default function RsvpButton({
   requestsThisMonth,
   eventTitle,
   hostSubaccount,
+  walletBalance = 0,
 }: {
   eventId: string;
   isLoggedIn: boolean;
@@ -34,12 +35,14 @@ export default function RsvpButton({
   requestsThisMonth: number;
   eventTitle: string;
   hostSubaccount: string | null;
+  walletBalance?: number;
 }) {
   const router = useRouter();
   const supabase = createClient();
   const [status, setStatus] = useState<JoinState>(initialStatus);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [useWallet, setUseWallet] = useState(walletBalance > 0);
 
   if (!isLoggedIn) {
     return (
@@ -74,15 +77,19 @@ export default function RsvpButton({
     const user = await getUser();
     if (!user) return;
 
-    // Paid events: collect payment before sending the request.
+    // Paid events: apply wallet balance first, then charge the remainder.
     let paymentReference: string | null = null;
-    if (price > 0) {
+    const walletUsed =
+      price > 0 && useWallet ? Math.min(walletBalance, price) : 0;
+    const remainder = price - walletUsed;
+
+    if (remainder > 0) {
       try {
         const result = await payWithPaystack({
           email: user.email ?? "",
-          amountNaira: price,
+          amountNaira: remainder,
           metadata: { purpose: "event_ticket", eventId, userId: user.id },
-          // If the host has a payout subaccount, Paystack splits the ticket
+          // If the host has a payout subaccount, Paystack splits the charge
           // automatically: 90% to the host, 10% to LinkUpNaija.
           subaccount: hostSubaccount ?? undefined,
         });
@@ -98,12 +105,27 @@ export default function RsvpButton({
       }
     }
 
+    // Deduct the wallet portion server-side (balance-checked) only after any
+    // Paystack charge succeeded.
+    if (walletUsed > 0) {
+      const { error: wErr } = await supabase.rpc("redeem_wallet", {
+        p_amount: walletUsed,
+        p_reason: `Ticket: ${eventTitle}`,
+        p_event: eventId,
+      });
+      if (wErr) {
+        setError(`Wallet payment failed: ${wErr.message}`);
+        setLoading(false);
+        return;
+      }
+    }
+
     const { error } = await supabase.from("rsvps").insert({
       event_id: eventId,
       user_id: user.id,
       status: "pending",
       paid: price > 0,
-      payment_reference: paymentReference,
+      payment_reference: paymentReference ?? (walletUsed > 0 ? "wallet" : null),
     });
     if (error) {
       setError(error.message);
@@ -111,18 +133,17 @@ export default function RsvpButton({
       return;
     }
 
-    // Record the transaction + 10% platform fee for paid tickets.
-    if (price > 0 && paymentReference) {
+    // Record the ticket sale (drives host payout) + notify.
+    if (price > 0) {
       const { error: txErr } = await supabase.from("transactions").insert({
         event_id: eventId,
         user_id: user.id,
         amount: price,
         platform_fee: Math.round(price * 0.1),
-        paystack_reference: paymentReference,
+        paystack_reference: paymentReference ?? "wallet",
       });
       if (txErr) console.error("Failed to record transaction:", txErr.message);
 
-      // Payment-success notification.
       await supabase.from("notifications").insert({
         user_id: user.id,
         event_id: eventId,
@@ -159,6 +180,17 @@ export default function RsvpButton({
     }
     setLoading(false);
   }
+
+  // Button label reflecting the wallet portion for paid events.
+  const walletApplied =
+    price > 0 && useWallet ? Math.min(walletBalance, price) : 0;
+  const remainderDue = price - walletApplied;
+  const remainderLabel =
+    remainderDue === 0
+      ? "Pay with wallet & request to join"
+      : walletApplied > 0
+        ? `Pay ${formatNaira(remainderDue)} & request to join`
+        : `Pay ${formatNaira(price)} & request to join`;
 
   return (
     <div className="space-y-2">
@@ -211,20 +243,38 @@ export default function RsvpButton({
             </Link>
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={request}
-            disabled={loading || isFull}
-            className="btn-primary w-full"
-          >
-            {loading
-              ? "Processing…"
-              : isFull
-                ? "Event is full"
-                : price > 0
-                  ? `Pay ${formatNaira(price)} & request to join`
-                  : "Request to join"}
-          </button>
+          <>
+            {price > 0 && walletBalance > 0 && (
+              <label className="flex cursor-pointer items-start gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm">
+                <input
+                  type="checkbox"
+                  checked={useWallet}
+                  onChange={(e) => setUseWallet(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 accent-brand"
+                />
+                <span className="text-gray-700">
+                  Use wallet balance{" "}
+                  <span className="font-semibold text-brand">
+                    ({formatNaira(walletBalance)} available)
+                  </span>
+                </span>
+              </label>
+            )}
+            <button
+              type="button"
+              onClick={request}
+              disabled={loading || isFull}
+              className="btn-primary w-full"
+            >
+              {loading
+                ? "Processing…"
+                : isFull
+                  ? "Event is full"
+                  : price > 0
+                    ? remainderLabel
+                    : "Request to join"}
+            </button>
+          </>
         ))}
 
       {error && <p className="text-sm text-red-600">{error}</p>}
