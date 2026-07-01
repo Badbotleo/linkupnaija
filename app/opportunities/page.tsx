@@ -1,3 +1,4 @@
+import Link from "next/link";
 import OpportunityHubs from "@/components/opportunities/OpportunityHubs";
 
 export const metadata = {
@@ -27,6 +28,24 @@ export default function OpportunitiesPage() {
       {/* Hubs */}
       <section className="container-page py-12">
         <OpportunityHubs />
+
+        {/* Corporate */}
+        <Link
+          href="/corporate"
+          className="mt-6 flex flex-col items-start gap-3 rounded-2xl border border-gray-100 bg-white p-6 shadow-card transition hover:-translate-y-0.5 hover:border-brand/30 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div>
+            <span className="text-4xl">🏢</span>
+            <h3 className="mt-3 text-lg font-extrabold text-gray-900">
+              Corporate Events
+            </h3>
+            <p className="mt-1 text-sm text-gray-600">
+              Plan unforgettable team outings, client entertainment and
+              retreats — we handle everything.
+            </p>
+          </div>
+          <span className="btn-primary shrink-0">For Business →</span>
+        </Link>
       </section>
     </div>
   );

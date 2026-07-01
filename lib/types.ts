@@ -201,6 +201,36 @@ export interface EventRow {
   featured_until: string | null;
   event_type: "general" | "private";
   series_id: string | null;
+  is_corporate?: boolean;
+  created_at: string;
+}
+
+export type CorporateStatus =
+  | "new"
+  | "contacted"
+  | "proposal_sent"
+  | "confirmed"
+  | "completed";
+
+export interface CorporateAccount {
+  id: string;
+  company_name: string;
+  contact_name: string | null;
+  email: string;
+  phone: string | null;
+  industry: string | null;
+  company_size: string | null;
+  state: string | null;
+  plan: "starter" | "professional" | "enterprise" | null;
+  event_type: string | null;
+  attendees: number | null;
+  date_range: string | null;
+  budget_range: string | null;
+  requirements: string | null;
+  notes: string | null;
+  status: CorporateStatus;
+  payment_received: boolean;
+  event_id: string | null;
   created_at: string;
 }
 

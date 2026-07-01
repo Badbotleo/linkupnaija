@@ -10,6 +10,7 @@ import AdminPayouts from "@/components/admin/AdminPayouts";
 import AdminWalletCredit from "@/components/admin/AdminWalletCredit";
 import AdminTournament from "@/components/admin/AdminTournament";
 import AdminOpportunities from "@/components/admin/AdminOpportunities";
+import AdminCorporate from "@/components/admin/AdminCorporate";
 import { formatNaira } from "@/lib/paystack";
 import { formatEventDate } from "@/lib/format";
 import type {
@@ -17,6 +18,7 @@ import type {
   ReservationWithUser,
   TournamentRegistration,
   Opportunity,
+  CorporateAccount,
 } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -133,6 +135,12 @@ export default async function AdminPage() {
   const flaggedHosts = Array.from(safetyCounts.entries())
     .filter(([, v]) => v.count >= 2)
     .map(([host_id, v]) => ({ host_id, name: v.name, count: v.count }));
+
+  const { data: corporateRows } = await supabase
+    .from("corporate_accounts")
+    .select("*")
+    .order("created_at", { ascending: false });
+  const corporate = (corporateRows ?? []) as CorporateAccount[];
   const payouts = (payoutRows ?? []) as unknown as {
     id: string;
     amount: number;
@@ -261,6 +269,19 @@ export default async function AdminPage() {
           )}
         </h2>
         <AdminPayouts initialPayouts={payouts} />
+      </section>
+
+      {/* Corporate */}
+      <section className="mt-10">
+        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
+          🏢 Corporate
+          {corporate.length > 0 && (
+            <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand">
+              {corporate.length}
+            </span>
+          )}
+        </h2>
+        <AdminCorporate initial={corporate} adminId={user.id} />
       </section>
 
       {/* Safety flags */}

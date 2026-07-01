@@ -52,6 +52,9 @@ export default function Footer() {
             <Link href="/opportunities" className="hover:text-brand">
               Opportunities
             </Link>
+            <Link href="/corporate" className="hover:text-brand">
+              For Business
+            </Link>
             <Link
               href="/pro"
               className="font-semibold text-amber-600 hover:text-amber-700"

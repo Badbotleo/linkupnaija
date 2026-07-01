@@ -58,6 +58,11 @@ export default function EventCard({
                 🔥 Trending
               </span>
             )}
+            {event.is_corporate && (
+              <span className="rounded-full bg-[#1A1040] px-2.5 py-1 text-xs font-bold text-white shadow-sm">
+                🏢 Corporate
+              </span>
+            )}
           </div>
           <span className="rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-brand shadow-sm">
             {event.state}

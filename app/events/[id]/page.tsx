@@ -264,6 +264,11 @@ export default async function EventDetailPage({
         <div className="lg:col-span-2">
           <div className="flex flex-wrap items-center gap-2">
             {featured && <FeaturedBadge />}
+            {event.is_corporate && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#1A1040] px-2.5 py-1 text-xs font-bold text-white">
+                🏢 Corporate Event
+              </span>
+            )}
             {event.event_type === "private" && (
               <span className="inline-flex items-center gap-1 rounded-full bg-gray-900 px-2.5 py-1 text-xs font-bold text-white">
                 🔒 Private Event
