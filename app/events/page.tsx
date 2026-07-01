@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import EventsFilters from "@/components/EventsFilters";
 import EventsList from "@/components/EventsList";
 import EventsTabs from "@/components/EventsTabs";
+import EventsStories from "@/components/EventsStories";
 import TournamentBanner from "@/components/tournament/TournamentBanner";
 import type { EventRow, RsvpStatus } from "@/lib/types";
 
@@ -200,6 +201,19 @@ export default async function EventsPage({
           <EventsTabs />
         </Suspense>
       </div>
+
+      {!error && feedEvents.length > 0 && (
+        <div className="mt-5">
+          <EventsStories
+            events={feedEvents.slice(0, 12).map((e) => ({
+              id: e.id,
+              title: e.title,
+              category: e.category,
+              cover_image_url: e.cover_image_url,
+            }))}
+          />
+        </div>
+      )}
 
       {!forYou && (
         <div className="mt-6 space-y-4">

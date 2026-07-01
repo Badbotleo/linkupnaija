@@ -30,14 +30,14 @@ export default function EventCard({
   const lowSpots = spotsLeft !== null && spotsLeft > 0 && spotsLeft < 5;
 
   return (
-    <Link
-      href={`/events/${event.id}`}
-      className={`group flex flex-col overflow-hidden rounded-2xl border bg-white shadow-card transition-all duration-200 hover:-translate-y-2 hover:shadow-xl ${
+    <div
+      className={`group flex flex-col overflow-hidden rounded-2xl border bg-white shadow-card transition-all duration-200 hover:-translate-y-1 hover:shadow-xl ${
         featured
           ? "border-amber-300 ring-1 ring-amber-200"
-          : "border-gray-100 hover:border-brand/40 hover:ring-2 hover:ring-brand/15"
+          : "border-gray-100 hover:border-brand/40"
       }`}
     >
+      <Link href={`/events/${event.id}`} className="flex flex-1 flex-col">
       <div className="relative overflow-hidden">
         <EventCover
           url={event.cover_image_url}
@@ -127,6 +127,33 @@ export default function EventCard({
           </span>
         </div>
       </div>
+      </Link>
+
+      {/* Facebook-style reaction row */}
+      <div className="flex border-t border-gray-100">
+        <Reaction href={`/events/${event.id}`} icon="star" label="Interested" />
+        <Reaction href={`/events/${event.id}`} icon="check" label="Going" />
+        <Reaction href={`/events/${event.id}`} icon="share" label="Share" />
+      </div>
+    </div>
+  );
+}
+
+function Reaction({ href, icon, label }: { href: string; icon: string; label: string }) {
+  const paths: Record<string, string> = {
+    star: "M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7L12 2z",
+    check: "M20 6 9 17l-5-5",
+    share: "M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v13",
+  };
+  return (
+    <Link
+      href={href}
+      className="flex flex-1 items-center justify-center gap-1.5 py-2.5 text-sm font-semibold text-gray-500 transition hover:bg-brand-50 hover:text-brand"
+    >
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d={paths[icon]} />
+      </svg>
+      {label}
     </Link>
   );
 }

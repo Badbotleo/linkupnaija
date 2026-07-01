@@ -65,6 +65,13 @@ export default function ChatWidget() {
     if (open) inputRef.current?.focus();
   }, [open]);
 
+  // Let other parts of the app (e.g. the menu drawer) open the assistant.
+  useEffect(() => {
+    const openChat = () => setOpen(true);
+    window.addEventListener("linkup:open-chat", openChat);
+    return () => window.removeEventListener("linkup:open-chat", openChat);
+  }, []);
+
   async function send(e: React.FormEvent) {
     e.preventDefault();
     const text = input.trim();
@@ -104,7 +111,7 @@ export default function ChatWidget() {
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-label={open ? "Close chat" : "Open LinkUpNaija assistant"}
-        className="fixed bottom-5 right-5 z-50 grid h-14 w-14 place-items-center rounded-full bg-brand text-white shadow-lg shadow-brand/30 transition hover:bg-brand-600 active:scale-95"
+        className="fixed bottom-20 right-4 z-50 grid h-14 w-14 place-items-center rounded-full bg-brand text-white shadow-lg shadow-brand/30 transition hover:bg-brand-600 active:scale-95 lg:bottom-5 lg:right-5"
       >
         {open ? <CloseIcon /> : <ChatIcon />}
       </button>

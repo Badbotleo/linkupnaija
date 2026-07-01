@@ -12,6 +12,8 @@ export default async function Navbar() {
 
   let isAdmin = false;
   let unreadMessages = 0;
+  let myName: string | null = null;
+  let myAvatar: string | null = null;
   if (user) {
     const supabase = createClient();
     const [meta, { count }] = await Promise.all([
@@ -24,6 +26,8 @@ export default async function Navbar() {
     ]);
     isAdmin = !!meta?.is_admin;
     unreadMessages = count ?? 0;
+    myName = meta?.name ?? null;
+    myAvatar = meta?.avatar_url ?? null;
   }
 
   return (
@@ -120,12 +124,30 @@ export default async function Navbar() {
           )}
         </div>
 
-        {/* Mobile / tablet navigation (below lg) */}
-        <MobileNav
-          userId={user?.id ?? null}
-          isAdmin={isAdmin}
-          unreadMessages={unreadMessages}
-        />
+        {/* Mobile / tablet top bar (below lg): search, bell, hamburger */}
+        <div className="flex items-center gap-1.5 lg:hidden">
+          <Link
+            href="/events"
+            aria-label="Search events"
+            className="grid h-10 w-10 place-items-center rounded-full bg-gray-100 text-gray-700 transition hover:bg-gray-200"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+          </Link>
+          {user && (
+            <div className="grid h-10 w-10 place-items-center rounded-full bg-gray-100">
+              <NotificationsBell userId={user.id} />
+            </div>
+          )}
+          <MobileNav
+            userId={user?.id ?? null}
+            isAdmin={isAdmin}
+            name={myName}
+            avatarUrl={myAvatar}
+          />
+        </div>
       </nav>
     </header>
   );

@@ -20,17 +20,26 @@ export const getSessionUser = cache(async () => {
 export interface UserMeta {
   id: string;
   is_admin: boolean;
+  name: string | null;
+  avatar_url: string | null;
 }
 
-/** The current user's id + admin flag — one DB lookup per request, shared. */
+/** The current user's id + admin flag + name/avatar — one lookup per request. */
 export const getCurrentUserMeta = cache(async (): Promise<UserMeta | null> => {
   const user = await getSessionUser();
   if (!user) return null;
   const supabase = createClient();
   const { data } = await supabase
     .from("users")
-    .select("id, is_admin")
+    .select("id, is_admin, name, avatar_url")
     .eq("id", user.id)
     .single();
-  return (data as UserMeta | null) ?? { id: user.id, is_admin: false };
+  return (
+    (data as UserMeta | null) ?? {
+      id: user.id,
+      is_admin: false,
+      name: null,
+      avatar_url: null,
+    }
+  );
 });

@@ -4,10 +4,13 @@ import "./globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BottomNav from "@/components/BottomNav";
 import DeferredWidgets from "@/components/DeferredWidgets";
 import ScrollProgress from "@/components/ScrollProgress";
 import NavProgress from "@/components/NavProgress";
 import Toaster from "@/components/Toaster";
+import { getSessionUser } from "@/lib/supabase/auth";
+import { createClient } from "@/lib/supabase/server";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -50,11 +53,23 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = await getSessionUser();
+  let unread = 0;
+  if (user) {
+    const supabase = createClient();
+    const { count } = await supabase
+      .from("notifications")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("read", false);
+    unread = count ?? 0;
+  }
+
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
@@ -69,9 +84,11 @@ export default function RootLayout({
         <ScrollProgress />
         <NavProgress />
         <Navbar />
-        <main className="flex-1">{children}</main>
+        {/* pb clears the mobile bottom nav */}
+        <main className="flex-1 pb-16 lg:pb-0">{children}</main>
         <Footer />
         <DeferredWidgets />
+        <BottomNav isLoggedIn={!!user} unread={unread} />
         <Toaster />
       </body>
       <GoogleAnalytics gaId="G-4YZV5789P8" />
