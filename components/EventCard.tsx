@@ -11,10 +11,14 @@ export default function EventCard({
   event,
   attendeeCount,
   hostRating,
+  trending = false,
+  recommended = false,
 }: {
   event: EventRow;
   attendeeCount: number;
   hostRating?: { avg: number; count: number } | null;
+  trending?: boolean;
+  recommended?: boolean;
 }) {
   const spotsLabel = event.max_attendees
     ? `${attendeeCount}/${event.max_attendees} going`
@@ -49,6 +53,11 @@ export default function EventCard({
                 🔄 Series
               </span>
             )}
+            {trending && (
+              <span className="rounded-full bg-orange-500 px-2.5 py-1 text-xs font-bold text-white shadow-sm">
+                🔥 Trending
+              </span>
+            )}
           </div>
           <span className="rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-brand shadow-sm">
             {event.state}
@@ -67,6 +76,11 @@ export default function EventCard({
       </div>
 
       <div className="flex flex-1 flex-col p-5 pt-4">
+        {recommended && (
+          <p className="mb-1 text-xs font-bold uppercase tracking-wide text-brand">
+            ✨ Recommended for you
+          </p>
+        )}
         <div className="flex items-start justify-between gap-2">
           <h3 className="line-clamp-2 text-lg font-bold text-gray-900 group-hover:text-brand">
             {event.title}

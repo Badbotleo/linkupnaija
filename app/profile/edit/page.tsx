@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import ProfileForm from "@/components/ProfileForm";
 import PayoutSettings from "@/components/PayoutSettings";
 import EmailPreferences from "@/components/EmailPreferences";
+import SafetySettings from "@/components/safety/SafetySettings";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export default async function ProfileEditPage() {
     supabase
       .from("users")
       .select(
-        "name, state, bio, avatar_url, instagram_url, twitter_url, facebook_url, phone, gender, payout_bank, payout_account_number, payout_account_name"
+        "name, state, bio, avatar_url, instagram_url, twitter_url, facebook_url, phone, gender, payout_bank, payout_account_number, payout_account_name, emergency_contact_name, emergency_contact_phone"
       )
       .eq("id", user.id)
       .single(),
@@ -67,6 +68,16 @@ export default async function ProfileEditPage() {
             payout_bank: profile?.payout_bank ?? null,
             payout_account_number: profile?.payout_account_number ?? null,
             payout_account_name: profile?.payout_account_name ?? null,
+          }}
+        />
+      </div>
+
+      <div className="mt-6">
+        <SafetySettings
+          userId={user.id}
+          initial={{
+            name: profile?.emergency_contact_name ?? null,
+            phone: profile?.emergency_contact_phone ?? null,
           }}
         />
       </div>

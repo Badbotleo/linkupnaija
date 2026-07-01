@@ -30,7 +30,11 @@ export default function ReviewsSection({
   currentUserId: string | null;
   canReview: boolean;
   initialReviews: ReviewWithReviewer[];
-  existingReview: { rating: number; review_text: string | null } | null;
+  existingReview: {
+    rating: number;
+    review_text: string | null;
+    felt_safe?: "yes" | "no" | "somewhat" | null;
+  } | null;
   hostAvg: number;
   hostCount: number;
 }) {
@@ -41,6 +45,9 @@ export default function ReviewsSection({
   const [rating, setRating] = useState(existingReview?.rating ?? 0);
   const [hover, setHover] = useState(0);
   const [text, setText] = useState(existingReview?.review_text ?? "");
+  const [feltSafe, setFeltSafe] = useState<"yes" | "no" | "somewhat" | "">(
+    existingReview?.felt_safe ?? ""
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -58,6 +65,7 @@ export default function ReviewsSection({
         host_id: hostId,
         rating,
         review_text: text.trim() || null,
+        felt_safe: feltSafe || null,
       },
       { onConflict: "event_id,reviewer_id" }
     );
@@ -120,6 +128,35 @@ export default function ReviewsSection({
             placeholder="Share how the event went…"
             className="input mt-3 resize-y"
           />
+
+          <div className="mt-3">
+            <p className="text-sm font-semibold text-gray-700">
+              🛟 Did you feel safe?
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {(
+                [
+                  { v: "yes", label: "Yes" },
+                  { v: "somewhat", label: "Somewhat" },
+                  { v: "no", label: "No" },
+                ] as const
+              ).map((o) => (
+                <button
+                  key={o.v}
+                  type="button"
+                  onClick={() => setFeltSafe(o.v)}
+                  className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition ${
+                    feltSafe === o.v
+                      ? "border-brand bg-brand text-white"
+                      : "border-gray-200 bg-white text-gray-600 hover:border-brand/40"
+                  }`}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
           {done && (
             <p className="mt-2 text-sm text-green-700">Thanks for your review! 🙏</p>

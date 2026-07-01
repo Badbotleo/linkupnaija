@@ -25,8 +25,24 @@ export interface UserProfile {
   last_login_at: string | null;
   wallet_balance: number;
   referral_code: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
   created_at: string;
 }
+
+export interface SafetyCheckin {
+  id: string;
+  user_id: string;
+  event_id: string;
+  trusted_contact_name: string | null;
+  trusted_contact_phone: string | null;
+  shared_at: string | null;
+  prompted_at: string | null;
+  checked_in_at: string | null;
+  created_at: string;
+}
+
+export type FeltSafe = "yes" | "no" | "somewhat";
 
 export interface WalletTransaction {
   id: string;

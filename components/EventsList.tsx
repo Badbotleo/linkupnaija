@@ -13,11 +13,16 @@ type FeedEvent = EventRow & {
 export default function EventsList({
   events,
   stateFilter,
+  trendingIds = [],
+  recommendedAll = false,
 }: {
   events: FeedEvent[];
   stateFilter?: string;
+  trendingIds?: string[];
+  recommendedAll?: boolean;
 }) {
   const [query, setQuery] = useState("");
+  const trendingSet = new Set(trendingIds);
 
   const term = query.trim().toLowerCase();
   const filtered = useMemo(() => {
@@ -96,6 +101,8 @@ export default function EventsList({
                 event={event}
                 attendeeCount={event.attendeeCount}
                 hostRating={event.hostRating}
+                trending={trendingSet.has(event.id)}
+                recommended={recommendedAll}
               />
             </div>
           ))}

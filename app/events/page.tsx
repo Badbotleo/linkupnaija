@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import EventsFilters from "@/components/EventsFilters";
 import EventsList from "@/components/EventsList";
+import EventsTabs from "@/components/EventsTabs";
 import TournamentBanner from "@/components/tournament/TournamentBanner";
 import type { EventRow, RsvpStatus } from "@/lib/types";
 
@@ -19,9 +20,10 @@ type FeedEvent = EventRow & {
   host: { rating_avg: number; rating_count: number } | null;
 };
 
-// How many events we load per page. Keeps the query and the payload bounded
-// instead of fetching the entire events table on every visit.
 const PAGE_SIZE = 24;
+
+const SELECT =
+  "*, rsvps(status), host:users!events_host_id_fkey(rating_avg, rating_count)";
 
 export default async function EventsPage({
   searchParams,
@@ -31,62 +33,139 @@ export default async function EventsPage({
     category?: string;
     page?: string;
     series?: string;
+    tab?: string;
   };
 }) {
   const supabase = createClient();
-
-  const page = Math.max(1, Number(searchParams.page) || 1);
-  const from = (page - 1) * PAGE_SIZE;
-  const to = from + PAGE_SIZE - 1;
   const today = new Date().toISOString().slice(0, 10);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  // `count: "exact"` returns the total matching rows alongside the ranged
-  // page, so a single query drives both the feed and the pager.
-  let query = supabase
-    .from("events")
-    .select(
-      "*, rsvps(status), host:users!events_host_id_fkey(rating_avg, rating_count)",
-      { count: "exact" }
-    )
-    .eq("event_type", "general")
-    .gte("date", today);
+  const forYou = searchParams.tab === "foryou" && !!user;
 
-  if (searchParams.state) query = query.eq("state", searchParams.state);
-  if (searchParams.category)
-    query = query.eq("category", searchParams.category);
-  if (searchParams.series === "1") query = query.not("series_id", "is", null);
-
-  const { data, error, count } = await query
-    .order("date", { ascending: true })
-    .order("time", { ascending: true })
-    .range(from, to);
-
-  const events = (data ?? []) as unknown as FeedEvent[];
-  const total = count ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  let feedEvents: (FeedEvent & {
+    attendeeCount: number;
+    hostRating: { avg: number; count: number } | null;
+  })[] = [];
+  let totalPages = 1;
+  let error: { message: string } | null = null;
+  const page = Math.max(1, Number(searchParams.page) || 1);
 
   const acceptedCount = (e: FeedEvent) =>
     e.rsvps.filter((r) => r.status === "accepted").length;
-
-  const now = Date.now();
-  const activeFeatured = (e: FeedEvent) =>
-    e.featured && !!e.featured_until && new Date(e.featured_until).getTime() > now;
-
-  // Boosted events (within their 48h window) float to the top of the page.
-  const sorted = [...events].sort((a, b) => {
-    const fa = activeFeatured(a) ? 1 : 0;
-    const fb = activeFeatured(b) ? 1 : 0;
-    if (fa !== fb) return fb - fa;
-    return 0; // preserve the date ordering from the query
-  });
-
-  const feedEvents = sorted.map((e) => ({
+  const decorate = (e: FeedEvent) => ({
     ...e,
     attendeeCount: acceptedCount(e),
     hostRating: e.host
       ? { avg: e.host.rating_avg, count: e.host.rating_count }
       : null,
-  }));
+  });
+
+  if (forYou && user) {
+    // --- Personalised ranking ------------------------------------------------
+    const [{ data: me }, { data: attendedRows }, { data: connRows }] =
+      await Promise.all([
+        supabase.from("users").select("state").eq("id", user.id).single(),
+        supabase
+          .from("rsvps")
+          .select("events(category)")
+          .eq("user_id", user.id)
+          .eq("status", "accepted"),
+        supabase
+          .from("connections")
+          .select("requester_id, receiver_id")
+          .eq("status", "accepted")
+          .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`),
+      ]);
+
+    const myState = me?.state ?? null;
+    const attendedCats = new Set(
+      ((attendedRows ?? []) as unknown as { events: { category: string } | null }[])
+        .map((r) => r.events?.category)
+        .filter(Boolean) as string[]
+    );
+    const friendIds = ((connRows ?? []) as { requester_id: string; receiver_id: string }[]).map(
+      (c) => (c.requester_id === user.id ? c.receiver_id : c.requester_id)
+    );
+    let friendEventIds = new Set<string>();
+    if (friendIds.length) {
+      const { data: fev } = await supabase
+        .from("rsvps")
+        .select("event_id")
+        .eq("status", "accepted")
+        .in("user_id", friendIds);
+      friendEventIds = new Set(
+        ((fev ?? []) as { event_id: string }[]).map((r) => r.event_id)
+      );
+    }
+
+    const { data, error: e } = await supabase
+      .from("events")
+      .select(SELECT)
+      .eq("event_type", "general")
+      .gte("date", today)
+      .order("created_at", { ascending: false })
+      .limit(80);
+    error = e;
+    const candidates = ((data ?? []) as unknown as FeedEvent[]).map(decorate);
+
+    const score = (e: (typeof candidates)[number]) => {
+      let s = 0;
+      if (myState && e.state === myState) s += 100;
+      if (e.category && attendedCats.has(e.category)) s += 40;
+      if (friendEventIds.has(e.id)) s += 60;
+      const ageDays = (Date.now() - new Date(e.created_at).getTime()) / 86400000;
+      s += Math.max(0, 20 - ageDays);
+      if (e.max_attendees && e.attendeeCount / e.max_attendees >= 0.6) s += 25;
+      return s;
+    };
+    feedEvents = candidates.sort((a, b) => score(b) - score(a)).slice(0, 24);
+  } else {
+    // --- Standard paginated feed --------------------------------------------
+    const from = (page - 1) * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    let query = supabase
+      .from("events")
+      .select(SELECT, { count: "exact" })
+      .eq("event_type", "general")
+      .gte("date", today);
+    if (searchParams.state) query = query.eq("state", searchParams.state);
+    if (searchParams.category) query = query.eq("category", searchParams.category);
+    if (searchParams.series === "1") query = query.not("series_id", "is", null);
+
+    const { data, error: e, count } = await query
+      .order("date", { ascending: true })
+      .order("time", { ascending: true })
+      .range(from, to);
+    error = e;
+    totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
+
+    const now = Date.now();
+    const activeFeatured = (ev: FeedEvent) =>
+      ev.featured && !!ev.featured_until && new Date(ev.featured_until).getTime() > now;
+    feedEvents = ((data ?? []) as unknown as FeedEvent[])
+      .sort((a, b) => (activeFeatured(b) ? 1 : 0) - (activeFeatured(a) ? 1 : 0))
+      .map(decorate);
+  }
+
+  // --- Trending: 5+ RSVPs in the last 24h among the shown events -------------
+  let trendingIds: string[] = [];
+  if (feedEvents.length) {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { data: recent } = await supabase
+      .from("rsvps")
+      .select("event_id")
+      .in("event_id", feedEvents.map((e) => e.id))
+      .gte("created_at", since);
+    const counts = new Map<string, number>();
+    for (const r of (recent ?? []) as { event_id: string }[]) {
+      counts.set(r.event_id, (counts.get(r.event_id) ?? 0) + 1);
+    }
+    trendingIds = Array.from(counts.entries())
+      .filter(([, n]) => n >= 5)
+      .map(([id]) => id);
+  }
 
   const pageHref = (p: number) => {
     const params = new URLSearchParams();
@@ -116,24 +195,41 @@ export default async function EventsPage({
         </Link>
       </div>
 
-      <div className="mt-8 space-y-4">
+      <div className="mt-6">
         <Suspense fallback={null}>
-          <EventsFilters />
+          <EventsTabs />
         </Suspense>
       </div>
 
+      {!forYou && (
+        <div className="mt-6 space-y-4">
+          <Suspense fallback={null}>
+            <EventsFilters />
+          </Suspense>
+        </div>
+      )}
+
       {error ? (
         <p className="mt-8 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
-          Could not load events: {error.message}. Did you run the SQL schema and
-          set your Supabase env vars?
+          Could not load events: {error.message}.
+        </p>
+      ) : forYou && feedEvents.length === 0 ? (
+        <p className="mt-8 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-12 text-center text-sm text-gray-500">
+          We don&apos;t have enough signal to recommend events yet — join a few
+          and check back!
         </p>
       ) : (
         <>
           <div className="mt-6">
-            <EventsList events={feedEvents} stateFilter={searchParams.state} />
+            <EventsList
+              events={feedEvents}
+              stateFilter={searchParams.state}
+              trendingIds={trendingIds}
+              recommendedAll={forYou}
+            />
           </div>
 
-          {totalPages > 1 && (
+          {!forYou && totalPages > 1 && (
             <nav
               className="mt-10 flex items-center justify-center gap-3"
               aria-label="Pagination"

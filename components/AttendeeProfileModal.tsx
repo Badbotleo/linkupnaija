@@ -7,6 +7,7 @@ import SocialLinks from "./SocialLinks";
 import VerifiedBadge from "./VerifiedBadge";
 import RatingSummary from "./RatingSummary";
 import { hasSocialLinks } from "@/lib/social";
+import { toast } from "@/lib/toast";
 import { ProfileSkeleton } from "./skeletons/Skeletons";
 import type { PublicProfile } from "@/lib/types";
 
@@ -28,6 +29,22 @@ export default function AttendeeProfileModal({
   const [profile, setProfile] = useState<FullProfile | null>(null);
   const [attended, setAttended] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  async function blockUser() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user || user.id === userId) return;
+    const { error } = await supabase
+      .from("blocked_users")
+      .insert({ blocker_id: user.id, blocked_id: userId });
+    if (error) toast.error("Couldn't block. Try again.");
+    else {
+      toast.success("User blocked. They can no longer contact you.");
+      onClose();
+    }
+  }
 
   useEffect(() => {
     let active = true;
@@ -93,7 +110,28 @@ export default function AttendeeProfileModal({
         className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-label="More options"
+              className="rounded-lg px-2 py-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+            >
+              ⋯
+            </button>
+            {menuOpen && (
+              <div className="absolute left-0 z-10 mt-1 w-40 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg">
+                <button
+                  type="button"
+                  onClick={blockUser}
+                  className="block w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+                >
+                  🚫 Block user
+                </button>
+              </div>
+            )}
+          </div>
           <button
             type="button"
             onClick={onClose}

@@ -115,6 +115,24 @@ export default async function AdminPage() {
     name: string | null;
     email: string;
   }[];
+
+  // Safety flags: hosts with 2+ "did not feel safe" reviews.
+  const { data: unsafeRows } = await supabase
+    .from("reviews")
+    .select("host_id, host:users!reviews_host_id_fkey(name)")
+    .eq("felt_safe", "no");
+  const safetyCounts = new Map<string, { name: string | null; count: number }>();
+  for (const r of (unsafeRows ?? []) as unknown as {
+    host_id: string;
+    host: { name: string | null } | null;
+  }[]) {
+    const cur = safetyCounts.get(r.host_id) ?? { name: r.host?.name ?? null, count: 0 };
+    cur.count++;
+    safetyCounts.set(r.host_id, cur);
+  }
+  const flaggedHosts = Array.from(safetyCounts.entries())
+    .filter(([, v]) => v.count >= 2)
+    .map(([host_id, v]) => ({ host_id, name: v.name, count: v.count }));
   const payouts = (payoutRows ?? []) as unknown as {
     id: string;
     amount: number;
@@ -243,6 +261,39 @@ export default async function AdminPage() {
           )}
         </h2>
         <AdminPayouts initialPayouts={payouts} />
+      </section>
+
+      {/* Safety flags */}
+      <section className="mt-10">
+        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
+          🛟 Safety flags
+          {flaggedHosts.length > 0 && (
+            <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-700">
+              {flaggedHosts.length}
+            </span>
+          )}
+        </h2>
+        {flaggedHosts.length === 0 ? (
+          <p className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-8 text-center text-sm text-gray-500">
+            No hosts flagged for safety concerns.
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {flaggedHosts.map((h) => (
+              <li
+                key={h.host_id}
+                className="flex items-center justify-between rounded-xl border border-red-100 bg-red-50 px-4 py-3"
+              >
+                <span className="font-semibold text-gray-900">
+                  {h.name ?? "Unnamed host"}
+                </span>
+                <span className="rounded-full bg-red-100 px-2.5 py-1 text-xs font-bold text-red-700">
+                  {h.count} &quot;didn&apos;t feel safe&quot; reviews
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       {/* Wallet credits */}

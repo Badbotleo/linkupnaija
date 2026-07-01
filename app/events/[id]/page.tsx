@@ -12,6 +12,8 @@ import DeleteEventButton from "@/components/DeleteEventButton";
 import Avatar from "@/components/Avatar";
 import AttendeeChips from "@/components/AttendeeChips";
 import FriendPickerButton from "@/components/friends/FriendPickerButton";
+import SharePlansButton from "@/components/safety/SharePlansButton";
+import SafetyCheckinButton from "@/components/safety/SafetyCheckinButton";
 import EventGallery from "@/components/gallery/EventGallery";
 import EventCover from "@/components/EventCover";
 import ReviewsSection from "@/components/ReviewsSection";
@@ -139,6 +141,11 @@ export default async function EventDetailPage({
   let isPro = false;
   let requestsThisMonth = 0;
   let walletBalance = 0;
+  let myName = "A LinkUpNaija member";
+  let emergencyContact: { name: string | null; phone: string | null } = {
+    name: null,
+    phone: null,
+  };
   if (user && !isHost) {
     const startOfMonth = new Date();
     startOfMonth.setUTCDate(1);
@@ -146,7 +153,9 @@ export default async function EventDetailPage({
     const [{ data: meProfile }, { count }] = await Promise.all([
       supabase
         .from("users")
-        .select("is_pro, pro_expires_at, wallet_balance")
+        .select(
+          "name, is_pro, pro_expires_at, wallet_balance, emergency_contact_name, emergency_contact_phone"
+        )
         .eq("id", user.id)
         .single(),
       supabase
@@ -158,6 +167,11 @@ export default async function EventDetailPage({
     isPro = isProActive(meProfile?.is_pro, meProfile?.pro_expires_at);
     requestsThisMonth = count ?? 0;
     walletBalance = meProfile?.wallet_balance ?? 0;
+    myName = meProfile?.name ?? myName;
+    emergencyContact = {
+      name: meProfile?.emergency_contact_name ?? null,
+      phone: meProfile?.emergency_contact_phone ?? null,
+    };
   }
 
   // Group chat is private to accepted attendees + the host.
@@ -472,6 +486,27 @@ export default async function EventDetailPage({
                         buttonLabel="🤝 Join with a friend"
                         buttonClassName="btn-outline w-full"
                       />
+                    </div>
+                  )}
+
+                  {/* Safety: share your plans with a trusted contact. */}
+                  {!!user && myStatus === "accepted" && (
+                    <div className="mt-3">
+                      <SharePlansButton
+                        eventId={event.id}
+                        eventTitle={event.title}
+                        eventDate={event.date}
+                        eventLocation={event.location}
+                        hostName={event.host?.name ?? "the host"}
+                        userName={myName}
+                        defaultContactName={emergencyContact.name}
+                        defaultContactPhone={emergencyContact.phone}
+                      />
+                      {eventIsOver && (
+                        <div className="mt-2">
+                          <SafetyCheckinButton eventId={event.id} />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
