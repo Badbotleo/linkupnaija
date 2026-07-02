@@ -8,6 +8,8 @@ import PayoutRequest from "@/components/PayoutRequest";
 import CategoryBadge from "@/components/CategoryBadge";
 import WalletCard from "@/components/wallet/WalletCard";
 import ReferralCard from "@/components/referral/ReferralCard";
+import HostScorecard from "@/components/host/HostScorecard";
+import { computeBadges } from "@/lib/hostBadges";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { isProActive } from "@/lib/pro";
 import type {
@@ -15,6 +17,7 @@ import type {
   RsvpStatus,
   UserProfile,
   WalletTransaction,
+  HostStats,
 } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -230,6 +233,17 @@ export default async function DashboardPage() {
 
   const p = profile as UserProfile | null;
 
+  const { data: hs } = await supabase
+    .from("host_stats")
+    .select("*")
+    .eq("host_id", user.id)
+    .maybeSingle();
+  const hostStats = hs as HostStats | null;
+  const hostBadges = computeBadges(hostStats, {
+    awarded: p?.awarded_badges,
+    revoked: p?.revoked_badges,
+  });
+
   const completionItems = p
     ? [
         { label: "Avatar", done: !!p.avatar_url },
@@ -269,6 +283,18 @@ export default async function DashboardPage() {
                 facebook_url: p.facebook_url,
               }}
             />
+          )}
+
+          {hostStats && hostStats.total_events > 0 && (
+            <div>
+              <HostScorecard stats={hostStats} badges={hostBadges} />
+              <Link
+                href="/hosts/leaderboard"
+                className="mt-2 block text-center text-sm font-semibold text-brand hover:underline"
+              >
+                View the host leaderboard →
+              </Link>
+            </div>
           )}
 
           <WalletCard balance={p?.wallet_balance ?? 0} transactions={walletTx} />

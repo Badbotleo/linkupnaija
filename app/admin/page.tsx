@@ -11,6 +11,8 @@ import AdminWalletCredit from "@/components/admin/AdminWalletCredit";
 import AdminTournament from "@/components/admin/AdminTournament";
 import AdminOpportunities from "@/components/admin/AdminOpportunities";
 import AdminCorporate from "@/components/admin/AdminCorporate";
+import AdminHosts, { type AdminHostRow } from "@/components/admin/AdminHosts";
+import { hostScore } from "@/lib/hostBadges";
 import { formatNaira } from "@/lib/paystack";
 import { formatEventDate } from "@/lib/format";
 import type {
@@ -141,6 +143,50 @@ export default async function AdminPage() {
     .select("*")
     .order("created_at", { ascending: false });
   const corporate = (corporateRows ?? []) as CorporateAccount[];
+
+  const { data: hostStatRows } = await supabase
+    .from("host_stats")
+    .select(
+      "host_id, average_rating, total_events, safety_score, host:users!host_stats_host_id_fkey(name, featured_host, awarded_badges, revoked_badges)"
+    )
+    .limit(100);
+  const adminHosts: AdminHostRow[] = (
+    (hostStatRows ?? []) as unknown as {
+      host_id: string;
+      average_rating: number;
+      total_events: number;
+      safety_score: number | null;
+      host: {
+        name: string | null;
+        featured_host: boolean;
+        awarded_badges: string[];
+        revoked_badges: string[];
+      } | null;
+    }[]
+  )
+    .map((r) => ({
+      host_id: r.host_id,
+      name: r.host?.name ?? null,
+      average_rating: r.average_rating,
+      total_events: r.total_events,
+      safety_score: r.safety_score,
+      featured_host: !!r.host?.featured_host,
+      awarded_badges: r.host?.awarded_badges ?? [],
+      revoked_badges: r.host?.revoked_badges ?? [],
+    }))
+    .sort(
+      (a, b) =>
+        hostScore({
+          average_rating: b.average_rating,
+          total_events: b.total_events,
+          safety_score: b.safety_score,
+        } as never) -
+        hostScore({
+          average_rating: a.average_rating,
+          total_events: a.total_events,
+          safety_score: a.safety_score,
+        } as never)
+    );
   const payouts = (payoutRows ?? []) as unknown as {
     id: string;
     amount: number;
@@ -269,6 +315,19 @@ export default async function AdminPage() {
           )}
         </h2>
         <AdminPayouts initialPayouts={payouts} />
+      </section>
+
+      {/* Hosts */}
+      <section className="mt-10">
+        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
+          🏅 Hosts
+          {adminHosts.length > 0 && (
+            <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand">
+              {adminHosts.length}
+            </span>
+          )}
+        </h2>
+        <AdminHosts initial={adminHosts} />
       </section>
 
       {/* Corporate */}

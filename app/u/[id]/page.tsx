@@ -7,8 +7,11 @@ import SocialLinks from "@/components/SocialLinks";
 import AddFriendButton from "@/components/profile/AddFriendButton";
 import MessageButton from "@/components/MessageButton";
 import ProfilePhotos from "@/components/profile/ProfilePhotos";
+import HostScorecard from "@/components/host/HostScorecard";
+import HostBadges from "@/components/host/HostBadges";
+import { computeBadges } from "@/lib/hostBadges";
 import { formatEventDate } from "@/lib/format";
-import type { UserProfile } from "@/lib/types";
+import type { UserProfile, HostStats } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -82,6 +85,17 @@ export default async function PublicProfilePage({
       .eq("host_id", params.id),
   ]);
 
+  const { data: hs } = await supabase
+    .from("host_stats")
+    .select("*")
+    .eq("host_id", params.id)
+    .maybeSingle();
+  const hostStats = hs as HostStats | null;
+  const badges = computeBadges(hostStats, {
+    awarded: profile.awarded_badges,
+    revoked: profile.revoked_badges,
+  });
+
   // Record a profile view (deduped to once/24h) — triggers the "who viewed"
   // notification (named for Pro users).
   if (user && user.id !== params.id) {
@@ -119,6 +133,11 @@ export default async function PublicProfilePage({
           {profile.name ?? "LinkUpNaija member"}
         </h1>
         {profile.state && <p className="text-sm text-gray-500">📍 {profile.state}</p>}
+        {badges.length > 0 && (
+          <div className="mt-2">
+            <HostBadges badges={badges} />
+          </div>
+        )}
 
         <div className="mt-4 flex gap-6">
           <Stat value={friends.count ?? 0} label="Friends" />
@@ -135,6 +154,12 @@ export default async function PublicProfilePage({
               targetName={profile.name}
               targetAvatar={profile.avatar_url}
             />
+          </div>
+        )}
+
+        {hostStats && hostStats.total_events > 0 && (
+          <div className="mt-5">
+            <HostScorecard stats={hostStats} badges={badges} />
           </div>
         )}
 

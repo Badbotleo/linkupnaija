@@ -19,6 +19,8 @@ import EventCover from "@/components/EventCover";
 import ReviewsSection from "@/components/ReviewsSection";
 import FeatureButton from "@/components/FeatureButton";
 import RatingSummary from "@/components/RatingSummary";
+import HostBadges from "@/components/host/HostBadges";
+import { computeBadges } from "@/lib/hostBadges";
 import FeaturedBadge, { isFeatured } from "@/components/FeaturedBadge";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
@@ -136,6 +138,16 @@ export default async function EventDetailPage({
   }
   const friendIdSet = new Set(friendIds);
   const friendsGoing = accepted.filter((a) => friendIdSet.has(a.user_id));
+
+  // Host reputation badges (attendee-facing trust signal).
+  const { data: hostStatsRow } = await supabase
+    .from("host_stats")
+    .select("*")
+    .eq("host_id", event.host_id)
+    .maybeSingle();
+  const hostBadges = computeBadges(
+    (hostStatsRow as import("@/lib/types").HostStats | null) ?? null
+  );
 
   // Pro status + this month's join-request count (free users are capped).
   let isPro = false;
@@ -463,6 +475,11 @@ export default async function EventDetailPage({
                       count={event.host?.rating_count ?? 0}
                       className="mt-0.5"
                     />
+                    {hostBadges.length > 0 && (
+                      <div className="mt-1.5">
+                        <HostBadges badges={hostBadges} max={3} />
+                      </div>
+                    )}
                   </div>
                 </div>
 

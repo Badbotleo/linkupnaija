@@ -28,6 +28,9 @@ export interface UserProfile {
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;
   banner_url: string | null;
+  featured_host: boolean;
+  awarded_badges: string[];
+  revoked_badges: string[];
   created_at: string;
 }
 
@@ -44,6 +47,18 @@ export interface SafetyCheckin {
 }
 
 export type FeltSafe = "yes" | "no" | "somewhat";
+
+export interface HostStats {
+  host_id: string;
+  total_events: number;
+  total_attendees: number;
+  average_rating: number;
+  review_count: number;
+  attendance_rate: number | null;
+  avg_response_time_hours: number | null;
+  safety_score: number | null;
+  updated_at: string;
+}
 
 export interface WalletTransaction {
   id: string;

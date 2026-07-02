@@ -7,8 +7,11 @@ import SocialLinks from "@/components/SocialLinks";
 import ShareProfileButton from "@/components/profile/ShareProfileButton";
 import BannerUpload from "@/components/profile/BannerUpload";
 import ProfilePhotos from "@/components/profile/ProfilePhotos";
+import HostScorecard from "@/components/host/HostScorecard";
+import HostBadges from "@/components/host/HostBadges";
+import { computeBadges } from "@/lib/hostBadges";
 import { formatEventDate } from "@/lib/format";
-import type { UserProfile } from "@/lib/types";
+import type { UserProfile, HostStats } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Profile" };
@@ -53,6 +56,17 @@ export default async function ProfilePage({
 
   const profile = p as UserProfile | null;
 
+  const { data: hs } = await supabase
+    .from("host_stats")
+    .select("*")
+    .eq("host_id", user.id)
+    .maybeSingle();
+  const hostStats = hs as HostStats | null;
+  const badges = computeBadges(hostStats, {
+    awarded: profile?.awarded_badges,
+    revoked: profile?.revoked_badges,
+  });
+
   return (
     <div className="pb-4">
       {/* Cover + avatar */}
@@ -71,6 +85,11 @@ export default async function ProfilePage({
         {profile?.state && (
           <p className="text-sm text-gray-500">📍 {profile.state}</p>
         )}
+        {badges.length > 0 && (
+          <div className="mt-2">
+            <HostBadges badges={badges} />
+          </div>
+        )}
 
         {/* Stats */}
         <div className="mt-4 flex gap-6">
@@ -86,6 +105,12 @@ export default async function ProfilePage({
           </Link>
           <ShareProfileButton />
         </div>
+
+        {hostStats && hostStats.total_events > 0 && (
+          <div className="mt-5">
+            <HostScorecard stats={hostStats} badges={badges} />
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="mt-5 flex gap-1 border-b border-gray-100">

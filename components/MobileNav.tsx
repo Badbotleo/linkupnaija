@@ -9,6 +9,7 @@ import ThemeToggle from "./ThemeToggle";
 
 const MENU = [
   { href: "/live", label: "Live feed", icon: "activity" },
+  { href: "/hosts/leaderboard", label: "Host leaderboard", icon: "trophy" },
   { href: "/dashboard", label: "My Events", icon: "calendar" },
   { href: "/host", label: "Hosting", icon: "mic" },
   { href: "/friends", label: "Friends", icon: "users" },
@@ -233,6 +234,7 @@ function Icon({ name }: { name: string }) {
   const p: Record<string, string> = {
     activity: "M22 12h-4l-3 9L9 3l-3 9H2",
     moon: "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z",
+    trophy: "M8 21h8m-4-4v4M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3",
     calendar: "M3 8h18M7 3v3m10-3v3M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z",
     mic: "M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3",
     users: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.87M16 3.13A4 4 0 0 1 16 11",
