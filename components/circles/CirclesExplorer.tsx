@@ -116,6 +116,19 @@ export default function CirclesExplorer({
             <Grid>{filtered.map(card)}</Grid>
           )}
         </Section>
+      ) : circles.length === 0 ? (
+        <div className="mt-8 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-16 text-center">
+          <p className="text-4xl">⭕</p>
+          <h2 className="mt-3 text-lg font-bold text-gray-900">
+            No circles yet
+          </h2>
+          <p className="mx-auto mt-1 max-w-sm text-sm text-gray-500">
+            Be the first to start a community around what you love.
+          </p>
+          <Link href="/circles/create" className="btn-primary mt-5">
+            Create a circle
+          </Link>
+        </div>
       ) : (
         <>
           {nearYou.length > 0 && (
