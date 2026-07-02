@@ -124,7 +124,8 @@ export default async function Navbar() {
           )}
         </div>
 
-        {/* Mobile / tablet top bar (below lg): theme, search, bell, hamburger */}
+        {/* Mobile / tablet top bar (below lg): theme, search, hamburger.
+            Notifications live in the bottom nav's Alerts tab. */}
         <div className="flex items-center gap-1.5 lg:hidden">
           <div className="grid h-10 w-10 place-items-center rounded-full bg-gray-100">
             <ThemeToggle />
@@ -139,11 +140,6 @@ export default async function Navbar() {
               <path d="m21 21-4.3-4.3" />
             </svg>
           </Link>
-          {user && (
-            <div className="grid h-10 w-10 place-items-center rounded-full bg-gray-100">
-              <NotificationsBell userId={user.id} />
-            </div>
-          )}
           <MobileNav
             userId={user?.id ?? null}
             isAdmin={isAdmin}
