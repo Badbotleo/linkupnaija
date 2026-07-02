@@ -365,6 +365,7 @@ export interface RsvpWithProfile {
   paid: boolean;
   created_at: string;
   companion_id?: string | null;
+  attended?: boolean | null;
   users: (PublicProfile & { gender?: string | null }) | null;
 }
 

@@ -15,11 +15,13 @@ export default function EventsList({
   stateFilter,
   trendingIds = [],
   recommendedAll = false,
+  hostBadgesByHost = {},
 }: {
   events: FeedEvent[];
   stateFilter?: string;
   trendingIds?: string[];
   recommendedAll?: boolean;
+  hostBadgesByHost?: Record<string, import("@/lib/hostBadges").Badge[]>;
 }) {
   const [query, setQuery] = useState("");
   const trendingSet = new Set(trendingIds);
@@ -101,6 +103,7 @@ export default function EventsList({
                 event={event}
                 attendeeCount={event.attendeeCount}
                 hostRating={event.hostRating}
+                hostBadges={hostBadgesByHost[event.host_id]}
                 trending={trendingSet.has(event.id)}
                 recommended={recommendedAll}
               />

@@ -13,8 +13,10 @@ import type { RsvpWithProfile } from "@/lib/types";
 
 export default function ManageRequests({
   initialRequests,
+  isPast = false,
 }: {
   initialRequests: RsvpWithProfile[];
+  isPast?: boolean;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -22,6 +24,14 @@ export default function ManageRequests({
   const [busyId, setBusyId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  async function markAttended(id: string, attended: boolean) {
+    setRequests((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, attended } : r))
+    );
+    await supabase.from("rsvps").update({ attended }).eq("id", id);
+    router.refresh();
+  }
 
   const pending = requests.filter((r) => r.status === "pending");
   const accepted = requests.filter((r) => r.status === "accepted");
@@ -155,6 +165,44 @@ export default function ManageRequests({
           </ul>
         )}
       </div>
+
+      {/* Check-in (past events): mark who actually showed up. */}
+      {isPast && accepted.length > 0 && (
+        <div className="mt-5 border-t border-gray-100 pt-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+            Check-in — who showed up?
+          </h3>
+          <p className="mt-1 text-xs text-gray-400">
+            This powers your attendance rate on your host scorecard.
+          </p>
+          <ul className="mt-3 space-y-1.5">
+            {accepted.map((r) => (
+              <li
+                key={r.id}
+                className="flex items-center gap-3 rounded-lg px-1 py-1"
+              >
+                <Avatar
+                  name={r.users?.name ?? null}
+                  url={r.users?.avatar_url ?? null}
+                  size="sm"
+                />
+                <span className="flex-1 text-sm font-medium text-gray-700">
+                  {r.users?.name ?? "Member"}
+                </span>
+                <label className="flex cursor-pointer items-center gap-1.5 text-sm font-semibold text-gray-600">
+                  <input
+                    type="checkbox"
+                    checked={r.attended === true}
+                    onChange={(e) => markAttended(r.id, e.target.checked)}
+                    className="h-4 w-4 accent-brand"
+                  />
+                  Attended
+                </label>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Accepted */}
       <CompactList

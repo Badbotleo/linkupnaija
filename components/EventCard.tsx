@@ -3,20 +3,24 @@ import CategoryBadge from "./CategoryBadge";
 import EventCover from "./EventCover";
 import FeaturedBadge, { isFeatured } from "./FeaturedBadge";
 import RatingSummary from "./RatingSummary";
+import HostBadges from "./host/HostBadges";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
 import type { EventRow } from "@/lib/types";
+import type { Badge } from "@/lib/hostBadges";
 
 export default function EventCard({
   event,
   attendeeCount,
   hostRating,
+  hostBadges,
   trending = false,
   recommended = false,
 }: {
   event: EventRow;
   attendeeCount: number;
   hostRating?: { avg: number; count: number } | null;
+  hostBadges?: Badge[];
   trending?: boolean;
   recommended?: boolean;
 }) {
@@ -91,12 +95,17 @@ export default function EventCard({
             {event.title}
           </h3>
         </div>
-        {hostRating && (
-          <RatingSummary
-            avg={hostRating.avg}
-            count={hostRating.count}
-            className="mt-1"
-          />
+        {(hostRating || (hostBadges && hostBadges.length > 0)) && (
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            {hostRating && (
+              <RatingSummary avg={hostRating.avg} count={hostRating.count} />
+            )}
+            {hostBadges && hostBadges.length > 0 && (
+              <span className="text-sm">
+                <HostBadges badges={hostBadges} compact max={2} />
+              </span>
+            )}
+          </div>
         )}
         <p className="mt-1.5 line-clamp-2 text-sm text-gray-500">
           {event.description}

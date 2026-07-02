@@ -6,6 +6,7 @@ import EventsList from "@/components/EventsList";
 import EventsTabs from "@/components/EventsTabs";
 import EventsStories from "@/components/EventsStories";
 import LocationMatch from "@/components/LocationMatch";
+import { computeBadges, type Badge } from "@/lib/hostBadges";
 import TournamentBanner from "@/components/tournament/TournamentBanner";
 import type { EventRow, RsvpStatus } from "@/lib/types";
 
@@ -169,6 +170,26 @@ export default async function EventsPage({
       .map(([id]) => id);
   }
 
+  // --- Host reputation badges for the hosts in the feed ----------------------
+  const hostBadgesByHost: Record<string, Badge[]> = {};
+  if (feedEvents.length) {
+    const hostIds = Array.from(new Set(feedEvents.map((e) => e.host_id)));
+    const { data: hsRows } = await supabase
+      .from("host_stats")
+      .select(
+        "*, host:users!host_stats_host_id_fkey(awarded_badges, revoked_badges)"
+      )
+      .in("host_id", hostIds);
+    for (const r of (hsRows ?? []) as unknown as (import("@/lib/types").HostStats & {
+      host: { awarded_badges: string[]; revoked_badges: string[] } | null;
+    })[]) {
+      hostBadgesByHost[r.host_id] = computeBadges(r, {
+        awarded: r.host?.awarded_badges,
+        revoked: r.host?.revoked_badges,
+      });
+    }
+  }
+
   const pageHref = (p: number) => {
     const params = new URLSearchParams();
     if (searchParams.state) params.set("state", searchParams.state);
@@ -247,6 +268,7 @@ export default async function EventsPage({
               stateFilter={searchParams.state}
               trendingIds={trendingIds}
               recommendedAll={forYou}
+              hostBadgesByHost={hostBadgesByHost}
             />
           </div>
 

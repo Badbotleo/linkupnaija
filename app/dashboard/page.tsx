@@ -8,8 +8,8 @@ import PayoutRequest from "@/components/PayoutRequest";
 import CategoryBadge from "@/components/CategoryBadge";
 import WalletCard from "@/components/wallet/WalletCard";
 import ReferralCard from "@/components/referral/ReferralCard";
-import HostScorecard from "@/components/host/HostScorecard";
-import { computeBadges } from "@/lib/hostBadges";
+import HostRings from "@/components/host/HostRings";
+import { computeBadges, hostScore } from "@/lib/hostBadges";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { isProActive } from "@/lib/pro";
 import type {
@@ -244,6 +244,26 @@ export default async function DashboardPage() {
     revoked: p?.revoked_badges,
   });
 
+  // Percentile among hosts in the same state.
+  let hostPercentile: number | null = null;
+  if (hostStats && p?.state) {
+    const { data: peers } = await supabase
+      .from("host_stats")
+      .select("average_rating, total_events, safety_score, host:users!host_stats_host_id_fkey(state)")
+      .limit(1000);
+    const inState = ((peers ?? []) as unknown as {
+      average_rating: number;
+      total_events: number;
+      safety_score: number | null;
+      host: { state: string | null } | null;
+    }[]).filter((x) => x.host?.state === p.state);
+    if (inState.length > 0) {
+      const my = hostScore(hostStats);
+      const better = inState.filter((x) => hostScore(x as never) >= my).length;
+      hostPercentile = Math.max(1, Math.round((100 * better) / inState.length));
+    }
+  }
+
   const completionItems = p
     ? [
         { label: "Avatar", done: !!p.avatar_url },
@@ -287,7 +307,11 @@ export default async function DashboardPage() {
 
           {hostStats && hostStats.total_events > 0 && (
             <div>
-              <HostScorecard stats={hostStats} badges={hostBadges} />
+              <HostRings
+                stats={hostStats}
+                badges={hostBadges}
+                percentile={hostPercentile}
+              />
               <Link
                 href="/hosts/leaderboard"
                 className="mt-2 block text-center text-sm font-semibold text-brand hover:underline"

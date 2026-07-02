@@ -36,7 +36,7 @@ import type {
 export const dynamic = "force-dynamic";
 
 const RSVP_PROFILE_SELECT =
-  "id, user_id, status, paid, created_at, companion_id, users(id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, gender)";
+  "id, user_id, status, paid, created_at, companion_id, attended, users(id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, gender)";
 
 interface ChatRow {
   id: string;
@@ -427,7 +427,7 @@ export default async function EventDetailPage({
 
           {isHost && (
             <div className="mt-8 space-y-8">
-              <ManageRequests initialRequests={rsvps} />
+              <ManageRequests initialRequests={rsvps} isPast={eventIsOver} />
               <DeleteEventButton
                 eventId={event.id}
                 hasPaidAttendees={rsvps.some((r) => r.paid)}
