@@ -8,6 +8,8 @@ import Avatar from "./Avatar";
 import ThemeToggle from "./ThemeToggle";
 
 const MENU = [
+  { href: "/events", label: "Explore events", icon: "search" },
+  { href: "/circles", label: "Circles", icon: "circles" },
   { href: "/live", label: "Live feed", icon: "activity" },
   { href: "/hosts/leaderboard", label: "Host leaderboard", icon: "trophy" },
   { href: "/dashboard", label: "My Events", icon: "calendar" },
@@ -233,6 +235,8 @@ function MenuRow({ href, label, icon }: { href: string; label: string; icon: str
 function Icon({ name }: { name: string }) {
   const p: Record<string, string> = {
     activity: "M22 12h-4l-3 9L9 3l-3 9H2",
+    search: "M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3",
+    circles: "M9 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM15 21a5 5 0 1 0 0-10 5 5 0 0 0 0 10z",
     moon: "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z",
     trophy: "M8 21h8m-4-4v4M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3",
     calendar: "M3 8h18M7 3v3m10-3v3M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z",
