@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import Avatar from "@/components/Avatar";
 import EventCover from "@/components/EventCover";
 import SocialLinks from "@/components/SocialLinks";
 import ShareProfileButton from "@/components/profile/ShareProfileButton";
 import BannerUpload from "@/components/profile/BannerUpload";
+import AvatarUpload from "@/components/profile/AvatarUpload";
 import ProfilePhotos from "@/components/profile/ProfilePhotos";
 import HostScorecard from "@/components/host/HostScorecard";
 import HostBadges from "@/components/host/HostBadges";
@@ -73,9 +73,14 @@ export default async function ProfilePage({
       <BannerUpload userId={user.id} initialUrl={profile?.banner_url ?? null} editable />
 
       <div className="container-page relative z-10 max-w-2xl">
-        <div className="-mt-12 flex items-end gap-4">
-          <div className="rounded-full border-4 border-white bg-white shadow-sm">
-            <Avatar name={profile?.name ?? null} url={profile?.avatar_url ?? null} size="lg" />
+        <div className="pointer-events-none -mt-12 flex items-end gap-4">
+          <div className="pointer-events-auto">
+            <AvatarUpload
+              userId={user.id}
+              name={profile?.name ?? null}
+              initialUrl={profile?.avatar_url ?? null}
+              editable
+            />
           </div>
         </div>
 
