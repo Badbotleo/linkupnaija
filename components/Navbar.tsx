@@ -124,22 +124,10 @@ export default async function Navbar() {
           )}
         </div>
 
-        {/* Mobile / tablet top bar (below lg): theme, search, hamburger.
-            Notifications live in the bottom nav's Alerts tab. */}
-        <div className="flex items-center gap-1.5 lg:hidden">
-          <div className="grid h-10 w-10 place-items-center rounded-full bg-gray-100">
-            <ThemeToggle />
-          </div>
-          <Link
-            href="/events"
-            aria-label="Search events"
-            className="grid h-10 w-10 place-items-center rounded-full bg-gray-100 text-gray-700 transition hover:bg-gray-200"
-          >
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-          </Link>
+        {/* Mobile / tablet top bar (below lg): just the hamburger.
+            Search lives in the bottom nav's Explore tab; theme + notifications
+            live in the drawer and bottom nav respectively. */}
+        <div className="flex items-center lg:hidden">
           <MobileNav
             userId={user?.id ?? null}
             isAdmin={isAdmin}
