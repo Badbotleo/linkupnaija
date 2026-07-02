@@ -9,8 +9,8 @@ import type { HostStats } from "@/lib/types";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Host leaderboard" };
 
-interface Row {
-  stats: HostStats;
+// host_stats rows come back flat, with the joined user under `host`.
+type Row = HostStats & {
   host: {
     id: string;
     name: string | null;
@@ -20,7 +20,7 @@ interface Row {
     revoked_badges: string[];
     featured_host: boolean;
   } | null;
-}
+};
 
 export default async function LeaderboardPage({
   searchParams,
@@ -48,21 +48,21 @@ export default async function LeaderboardPage({
   }
   const topHostIds = new Set<string>();
   for (const group of Array.from(byState.values())) {
-    group.sort((a, b) => hostScore(b.stats) - hostScore(a.stats));
+    group.sort((a, b) => hostScore(b) - hostScore(a));
     const cut = Math.max(1, Math.ceil(group.length * 0.1));
     group.slice(0, cut).forEach((r) => topHostIds.add(r.host!.id));
   }
 
   let list = rows
-    .filter((r) => r.stats.average_rating >= minRating)
+    .filter((r) => Number(r.average_rating) >= minRating)
     .filter((r) => !searchParams.state || r.host!.state === searchParams.state)
-    .sort((a, b) => hostScore(b.stats) - hostScore(a.stats));
+    .sort((a, b) => hostScore(b) - hostScore(a));
 
   const featured = rows.find((r) => r.host!.featured_host) ?? null;
   list = list.slice(0, searchParams.state ? 10 : 30);
 
   const card = (r: Row, rank?: number) => {
-    const badges = computeBadges(r.stats, {
+    const badges = computeBadges(r, {
       awarded: r.host!.awarded_badges,
       revoked: r.host!.revoked_badges,
       isTopHost: topHostIds.has(r.host!.id),
@@ -84,7 +84,7 @@ export default async function LeaderboardPage({
             {r.host!.name ?? "Host"}
           </p>
           <p className="text-xs text-gray-500">
-            ⭐ {r.stats.average_rating.toFixed(1)} · {r.stats.total_events} events
+            ⭐ {Number(r.average_rating).toFixed(1)} · {r.total_events} events
             {r.host!.state ? ` · ${r.host!.state}` : ""}
           </p>
           {badges.length > 0 && (

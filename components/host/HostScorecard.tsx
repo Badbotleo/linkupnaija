@@ -11,7 +11,7 @@ export default function HostScorecard({
 }) {
   const pct = (v: number | null) => (v == null ? "—" : `${Math.round(v)}%`);
   const rows = [
-    { icon: "⭐", label: "Rating", value: `${stats.average_rating.toFixed(1)}/5 (${stats.review_count} review${stats.review_count === 1 ? "" : "s"})` },
+    { icon: "⭐", label: "Rating", value: `${Number(stats.average_rating).toFixed(1)}/5 (${stats.review_count} review${Number(stats.review_count) === 1 ? "" : "s"})` },
     { icon: "📅", label: "Events hosted", value: String(stats.total_events) },
     { icon: "👥", label: "Total attendees", value: String(stats.total_attendees) },
     { icon: "✅", label: "Attendance rate", value: pct(stats.attendance_rate) },

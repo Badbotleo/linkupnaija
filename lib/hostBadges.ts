@@ -26,6 +26,10 @@ const ORDER = [
   "new_host",
 ];
 
+// Postgres `numeric` columns come back from Supabase as strings — coerce.
+const num = (v: unknown): number | null =>
+  v == null || v === "" ? null : Number(v);
+
 export function computeBadges(
   stats: HostStats | null | undefined,
   opts: {
@@ -35,22 +39,18 @@ export function computeBadges(
   } = {}
 ): Badge[] {
   const keys = new Set<string>();
-  if (stats && stats.total_events > 0) {
+  if (stats && Number(stats.total_events) > 0) {
+    const events = Number(stats.total_events);
+    const rating = num(stats.average_rating) ?? 0;
+    const attendance = num(stats.attendance_rate) ?? 0;
+    const response = num(stats.avg_response_time_hours);
+    const safety = num(stats.safety_score);
+
     keys.add("new_host");
-    if (stats.total_events >= 3 && stats.average_rating >= 4) keys.add("verified");
-    if (
-      stats.total_events >= 10 &&
-      stats.average_rating >= 4.8 &&
-      (stats.attendance_rate ?? 0) >= 90
-    )
-      keys.add("elite");
-    if (
-      stats.avg_response_time_hours != null &&
-      stats.avg_response_time_hours <= 2
-    )
-      keys.add("quick_responder");
-    if (stats.total_events >= 5 && stats.safety_score === 100)
-      keys.add("safety_champion");
+    if (events >= 3 && rating >= 4) keys.add("verified");
+    if (events >= 10 && rating >= 4.8 && attendance >= 90) keys.add("elite");
+    if (response != null && response <= 2) keys.add("quick_responder");
+    if (events >= 5 && safety === 100) keys.add("safety_champion");
   }
   if (opts.isTopHost) keys.add("top_host");
 
@@ -62,8 +62,8 @@ export function computeBadges(
 
 /** A composite score for ranking hosts on the leaderboard (0–100-ish). */
 export function hostScore(stats: HostStats): number {
-  const rating = (stats.average_rating / 5) * 60; // up to 60
-  const volume = Math.min(stats.total_events, 20) * 1.5; // up to 30
-  const safety = ((stats.safety_score ?? 70) / 100) * 10; // up to 10
+  const rating = ((num(stats.average_rating) ?? 0) / 5) * 60; // up to 60
+  const volume = Math.min(Number(stats.total_events) || 0, 20) * 1.5; // up to 30
+  const safety = ((num(stats.safety_score) ?? 70) / 100) * 10; // up to 10
   return Math.round(rating + volume + safety);
 }

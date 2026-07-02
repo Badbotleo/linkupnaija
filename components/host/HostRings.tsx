@@ -63,16 +63,22 @@ export default function HostRings({
   badges?: Badge[];
   percentile?: number | null;
 }) {
+  // Postgres numeric columns arrive as strings — coerce.
+  const rating = Number(stats.average_rating) || 0;
+  const attendance = stats.attendance_rate == null ? null : Number(stats.attendance_rate);
+  const safety = stats.safety_score == null ? null : Number(stats.safety_score);
+  const response = stats.avg_response_time_hours == null ? null : Number(stats.avg_response_time_hours);
+
   const responsePct =
-    stats.avg_response_time_hours == null
+    response == null
       ? null
-      : Math.max(0, Math.min(100, Math.round(100 - (stats.avg_response_time_hours - 1) * 20)));
+      : Math.max(0, Math.min(100, Math.round(100 - (response - 1) * 20)));
 
   const rings = [
-    { label: "Rating", pct: (stats.average_rating / 5) * 100, value: stats.average_rating.toFixed(1), color: "#534AB7" },
-    { label: "Attendance", pct: stats.attendance_rate, value: stats.attendance_rate == null ? "—" : `${Math.round(stats.attendance_rate)}%`, color: "#1D9E75" },
-    { label: "Felt safe", pct: stats.safety_score, value: stats.safety_score == null ? "—" : `${Math.round(stats.safety_score)}%`, color: "#D85A30" },
-    { label: "Responds", pct: responsePct, value: stats.avg_response_time_hours == null ? "—" : `${Math.max(1, Math.round(stats.avg_response_time_hours))}h`, color: "#FAC775" },
+    { label: "Rating", pct: (rating / 5) * 100, value: rating.toFixed(1), color: "#534AB7" },
+    { label: "Attendance", pct: attendance, value: attendance == null ? "—" : `${Math.round(attendance)}%`, color: "#1D9E75" },
+    { label: "Felt safe", pct: safety, value: safety == null ? "—" : `${Math.round(safety)}%`, color: "#D85A30" },
+    { label: "Responds", pct: responsePct, value: response == null ? "—" : `${Math.max(1, Math.round(response))}h`, color: "#FAC775" },
   ];
 
   const tips: string[] = [];
