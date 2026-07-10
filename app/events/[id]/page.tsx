@@ -266,8 +266,9 @@ export default async function EventDetailPage({
           url={event.cover_image_url}
           category={event.category}
           title={event.title}
-          className="h-52 w-full sm:h-72"
+          className="h-64 w-full sm:h-80"
           priority
+          fit="contain"
         />
       </div>
 
