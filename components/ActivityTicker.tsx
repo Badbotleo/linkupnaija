@@ -7,14 +7,22 @@ const KEY = "activity_ticker_dismissed";
 
 interface RsvpRow {
   users: { name: string | null } | null;
-  events: { title: string | null; state: string | null } | null;
+  events: { id: string; title: string | null; state: string | null } | null;
 }
 interface EventRow {
+  id: string;
   title: string | null;
   state: string | null;
   max_attendees: number | null;
   host: { name: string | null } | null;
   rsvps: { status: string }[];
+}
+
+// Each message remembers which event it came from so we can drop it live
+// when an admin deletes that event.
+interface TickerMessage {
+  eventId: string | null;
+  text: string;
 }
 
 function rand(min: number, max: number) {
@@ -23,7 +31,7 @@ function rand(min: number, max: number) {
 
 export default function ActivityTicker() {
   const supabase = createClient();
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<TickerMessage[]>([]);
   const [index, setIndex] = useState(0);
   const [show, setShow] = useState(false);
 
@@ -39,14 +47,14 @@ export default function ActivityTicker() {
       const [{ data: rsvps }, { data: events }] = await Promise.all([
         supabase
           .from("rsvps")
-          .select("users(name), events(title, state)")
+          .select("users(name), events(id, title, state)")
           .eq("status", "accepted")
           .order("created_at", { ascending: false })
           .limit(10),
         supabase
           .from("events")
           .select(
-            "title, state, max_attendees, host:users!events_host_id_fkey(name), rsvps(status)"
+            "id, title, state, max_attendees, host:users!events_host_id_fkey(name), rsvps(status)"
           )
           .order("created_at", { ascending: false })
           .limit(8),
@@ -54,24 +62,26 @@ export default function ActivityTicker() {
 
       if (!active) return;
 
-      const msgs: string[] = [];
+      const msgs: TickerMessage[] = [];
 
       for (const r of (rsvps ?? []) as unknown as RsvpRow[]) {
         if (r.users?.name && r.events?.title) {
-          msgs.push(
-            `${r.users.name} just joined ${r.events.title}${
+          msgs.push({
+            eventId: r.events.id,
+            text: `${r.users.name} just joined ${r.events.title}${
               r.events.state ? ` in ${r.events.state}` : ""
-            } 🎉`
-          );
+            } 🎉`,
+          });
         }
       }
       for (const e of (events ?? []) as unknown as EventRow[]) {
         if (e.host?.name && e.title) {
-          msgs.push(
-            `${e.host.name} just hosted ${e.title}${
+          msgs.push({
+            eventId: e.id,
+            text: `${e.host.name} just hosted ${e.title}${
               e.state ? ` in ${e.state}` : ""
-            } 📚`
-          );
+            } 📚`,
+          });
         }
         const accepted = (e.rsvps ?? []).filter(
           (x) => x.status === "accepted"
@@ -80,12 +90,14 @@ export default function ActivityTicker() {
           const left = e.max_attendees
             ? e.max_attendees - accepted
             : 10 - accepted;
-          if (left > 0) msgs.push(`⚡ ${left} spots left for ${e.title}`);
+          if (left > 0)
+            msgs.push({ eventId: e.id, text: `⚡ ${left} spots left for ${e.title}` });
         }
       }
-      msgs.push(
-        `🔥 ${rand(8, 47)} people viewed the FC26 Tournament in the last hour`
-      );
+      msgs.push({
+        eventId: null,
+        text: `🔥 ${rand(8, 47)} people viewed the FC26 Tournament in the last hour`,
+      });
 
       // shuffle for variety
       for (let i = msgs.length - 1; i > 0; i--) {
@@ -97,8 +109,25 @@ export default function ActivityTicker() {
       setTimeout(() => active && setShow(true), 3000); // slide in after 3s
     })();
 
+    // Live prune: when an event is deleted (e.g. by an admin removing spam),
+    // drop its ticker messages immediately instead of waiting for a reload.
+    const channel = supabase
+      .channel(`ticker-event-deletes-${Math.random().toString(36).slice(2)}`)
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "events" },
+        (payload) => {
+          const deletedId = (payload.old as { id?: string }).id;
+          if (deletedId) {
+            setMessages((prev) => prev.filter((m) => m.eventId !== deletedId));
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       active = false;
+      supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -123,6 +152,9 @@ export default function ActivityTicker() {
 
   if (!show || messages.length === 0) return null;
 
+  // Clamp: the list can shrink under us when events are deleted live.
+  const current = messages[index % messages.length];
+
   return (
     <div
       className="fixed bottom-24 left-4 right-4 z-40 sm:left-auto sm:right-5 sm:w-[22rem]"
@@ -141,7 +173,7 @@ export default function ActivityTicker() {
           key={index}
           className="animate-fade-in-up flex-1 truncate text-[#DAD8F0]"
         >
-          {messages[index]}
+          {current.text}
         </span>
         <button
           type="button"

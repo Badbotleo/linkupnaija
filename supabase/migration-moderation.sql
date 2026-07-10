@@ -138,3 +138,18 @@ begin
       for each row execute function public.enforce_moderation();
   end if;
 end $$;
+
+-- ----------------------------------------------------------------------------
+-- 5. Realtime on events — lets the live activity ticker drop messages for an
+--    event the moment an admin deletes it (DELETE payloads carry the PK).
+-- ----------------------------------------------------------------------------
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public' and tablename = 'events'
+  ) then
+    alter publication supabase_realtime add table public.events;
+  end if;
+end $$;
