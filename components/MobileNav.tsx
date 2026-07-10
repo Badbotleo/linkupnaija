@@ -97,7 +97,7 @@ export default function MobileNav({
               }`}
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-4 pb-2 pt-4">
+              <div className="flex items-center justify-between px-4 pb-2 pt-[max(1rem,env(safe-area-inset-top))]">
                 <span className="text-xl font-extrabold tracking-tight text-gray-900">
                   Menu
                 </span>
