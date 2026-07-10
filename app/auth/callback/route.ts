@@ -16,16 +16,16 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    // exchangeCodeForSession already returns the user — no extra getUser() call.
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      const user = data.user;
+
       // Email-verification flow: clear the session so the user logs in explicitly.
       if (redirect.startsWith("/login")) {
         // If they signed up via a referral link, pay out both wallets now that
         // the email is verified (idempotent + guarded in the RPC).
-        const {
-          data: { user: verified },
-        } = await supabase.auth.getUser();
-        const ref = verified?.user_metadata?.ref_code as string | undefined;
+        const ref = user?.user_metadata?.ref_code as string | undefined;
         if (ref) {
           await supabase.rpc("complete_referral", { p_ref_code: ref });
         }
@@ -34,20 +34,15 @@ export async function GET(request: Request) {
       }
 
       // OAuth (Google) sign-in: keep the session and send first-timers to setup.
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
       let destination = redirect;
       if (user) {
-        // Track activity for re-engagement emails (best-effort).
-        await supabase
-          .from("users")
-          .update({ last_login_at: new Date().toISOString() })
-          .eq("id", user.id);
+        // One round trip: track activity for re-engagement emails and read
+        // profile_completed via UPDATE … RETURNING.
         const { data: profile } = await supabase
           .from("users")
-          .select("profile_completed")
+          .update({ last_login_at: new Date().toISOString() })
           .eq("id", user.id)
+          .select("profile_completed")
           .single();
         if (!profile || !profile.profile_completed) {
           destination = "/profile/setup";
