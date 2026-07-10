@@ -34,6 +34,12 @@ export const metadata: Metadata = {
   },
   description: DESCRIPTION,
   applicationName: "LinkUpNaija",
+  // iOS: launch full-screen from the home-screen icon (no Safari chrome).
+  appleWebApp: {
+    capable: true,
+    title: "LinkUpNaija",
+    statusBarStyle: "black-translucent",
+  },
   keywords: [
     "Nigeria events",
     "family hangout",

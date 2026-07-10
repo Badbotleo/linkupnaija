@@ -5,6 +5,8 @@ import { EVENT_CATEGORIES, CATEGORY_STYLES } from "@/lib/constants";
 import FcPopup from "@/components/FcPopup";
 import Typewriter from "@/components/anim/Typewriter";
 import LandingStats from "@/components/LandingStats";
+import LoggedInHome from "@/components/home/LoggedInHome";
+import { getSessionUser } from "@/lib/supabase/auth";
 
 // The homepage hero/stats don't need to be real-time — cache the event count
 // for 5 minutes so we don't hit the DB on every single landing-page view.
@@ -90,6 +92,10 @@ const HOW_IT_WORKS = [
 ];
 
 export default async function HomePage() {
+  // Signed-in members get a personalised home instead of re-reading the pitch.
+  const user = await getSessionUser();
+  if (user) return <LoggedInHome userId={user.id} />;
+
   const [eventsCount, popularSeries] = await Promise.all([
     getEventsCount(),
     getPopularSeries(),
