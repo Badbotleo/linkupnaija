@@ -12,6 +12,12 @@ const ActivityTicker = dynamic(() => import("./ActivityTicker"), {
 const ScreenTimeGuard = dynamic(() => import("./ScreenTimeGuard"), {
   ssr: false,
 });
+const InstallAppBanner = dynamic(() => import("./InstallAppBanner"), {
+  ssr: false,
+});
+const TelegramMiniApp = dynamic(() => import("./TelegramMiniApp"), {
+  ssr: false,
+});
 
 export default function DeferredWidgets() {
   return (
@@ -19,6 +25,8 @@ export default function DeferredWidgets() {
       <ActivityTicker />
       <ChatWidget />
       <ScreenTimeGuard />
+      <InstallAppBanner />
+      <TelegramMiniApp />
     </>
   );
 }
