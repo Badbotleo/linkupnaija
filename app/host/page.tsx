@@ -21,9 +21,30 @@ export default async function HostPage() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("state")
+    .select("state, moderation_status")
     .eq("id", user.id)
-    .single();
+    .single<{ state: string | null; moderation_status?: string }>();
+
+  // Restricted/blocked accounts can't host (also enforced by a DB trigger).
+  const status = profile?.moderation_status;
+  if (status === "restricted" || status === "blocked") {
+    return (
+      <div className="container-page max-w-lg py-16 text-center">
+        <p className="text-5xl">🚫</p>
+        <h1 className="mt-4 text-2xl font-extrabold text-gray-900">
+          Hosting unavailable
+        </h1>
+        <p className="mt-2 text-gray-600">
+          Your account is currently {status} and can&apos;t create events. If
+          you think this is a mistake, contact{" "}
+          <a href="mailto:support@linkupnaija.com" className="font-semibold text-brand">
+            support@linkupnaija.com
+          </a>
+          .
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="container-page max-w-2xl py-10">

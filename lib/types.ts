@@ -31,8 +31,14 @@ export interface UserProfile {
   featured_host: boolean;
   awarded_badges: string[];
   revoked_badges: string[];
+  moderation_status: ModerationStatus;
+  moderation_reason: string | null;
+  moderated_at: string | null;
+  warning_count: number;
   created_at: string;
 }
+
+export type ModerationStatus = "active" | "warned" | "restricted" | "blocked";
 
 export interface SafetyCheckin {
   id: string;

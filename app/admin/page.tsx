@@ -12,6 +12,10 @@ import AdminTournament from "@/components/admin/AdminTournament";
 import AdminOpportunities from "@/components/admin/AdminOpportunities";
 import AdminCorporate from "@/components/admin/AdminCorporate";
 import AdminHosts, { type AdminHostRow } from "@/components/admin/AdminHosts";
+import AdminModeration, {
+  type ModUserRow,
+  type ModEventRow,
+} from "@/components/admin/AdminModeration";
 import { hostScore } from "@/lib/hostBadges";
 import { formatNaira } from "@/lib/paystack";
 import { formatEventDate } from "@/lib/format";
@@ -137,6 +141,24 @@ export default async function AdminPage() {
   const flaggedHosts = Array.from(safetyCounts.entries())
     .filter(([, v]) => v.count >= 2)
     .map(([host_id, v]) => ({ host_id, name: v.name, count: v.count }));
+
+  // Moderation data — queried separately so the page still renders if
+  // migration-moderation.sql hasn't been run yet.
+  const [{ data: modUserRows }, { data: modEventRows }] = await Promise.all([
+    supabase
+      .from("users")
+      .select("id, name, email, moderation_status, warning_count, moderation_reason")
+      .neq("id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(200),
+    supabase
+      .from("events")
+      .select("id, title, category, state, created_at, host:users!events_host_id_fkey(id, name)")
+      .order("created_at", { ascending: false })
+      .limit(100),
+  ]);
+  const modUsers = (modUserRows ?? []) as unknown as ModUserRow[];
+  const modEvents = (modEventRows ?? []) as unknown as ModEventRow[];
 
   const { data: corporateRows } = await supabase
     .from("corporate_accounts")
@@ -341,6 +363,29 @@ export default async function AdminPage() {
           )}
         </h2>
         <AdminCorporate initial={corporate} adminId={user.id} />
+      </section>
+
+      {/* Moderation */}
+      <section className="mt-10">
+        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
+          🛡️ Moderation
+          {modUsers.filter((u) => u.moderation_status && u.moderation_status !== "active").length > 0 && (
+            <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-700">
+              {modUsers.filter((u) => u.moderation_status !== "active").length} flagged
+            </span>
+          )}
+        </h2>
+        <p className="mb-3 text-sm text-gray-500">
+          Warn, restrict or block spammers, and delete events that violate the terms.
+        </p>
+        <AdminModeration
+          users={modUsers.map((u) => ({
+            ...u,
+            moderation_status: u.moderation_status ?? "active",
+            warning_count: u.warning_count ?? 0,
+          }))}
+          events={modEvents}
+        />
       </section>
 
       {/* Safety flags */}
