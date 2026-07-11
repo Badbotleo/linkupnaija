@@ -108,6 +108,19 @@ end; $$;
 grant execute on function public.admin_delete_event(uuid, text) to authenticated;
 
 -- ----------------------------------------------------------------------------
+-- 3b. admin_delete_series(p_series) — remove a recurring series.
+--     events.series_id is ON DELETE SET NULL, so the underlying events survive
+--     (they just stop being part of the series); subscriptions cascade away.
+-- ----------------------------------------------------------------------------
+create or replace function public.admin_delete_series(p_series uuid)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'not authorised'; end if;
+  delete from public.event_series where id = p_series;
+end; $$;
+grant execute on function public.admin_delete_series(uuid) to authenticated;
+
+-- ----------------------------------------------------------------------------
 -- 4. Enforce restrictions at the database level.
 --    Restricted/blocked users cannot create or edit events (edit is included
 --    so a spammer can't rewrite an old event's title into spam).

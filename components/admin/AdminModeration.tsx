@@ -25,6 +25,15 @@ export interface ModEventRow {
   host: { id: string; name: string | null } | null;
 }
 
+export interface ModSeriesRow {
+  id: string;
+  title: string;
+  category: string | null;
+  state: string | null;
+  frequency: string;
+  host: { id: string; name: string | null } | null;
+}
+
 const STATUS_CHIP: Record<ModerationStatus, string> = {
   active: "bg-green-100 text-green-700",
   warned: "bg-amber-100 text-amber-700",
@@ -35,17 +44,38 @@ const STATUS_CHIP: Record<ModerationStatus, string> = {
 export default function AdminModeration({
   users: initialUsers,
   events: initialEvents,
+  series: initialSeries = [],
 }: {
   users: ModUserRow[];
   events: ModEventRow[];
+  series?: ModSeriesRow[];
 }) {
   const router = useRouter();
   const supabase = createClient();
   const [users, setUsers] = useState(initialUsers);
   const [events, setEvents] = useState(initialEvents);
+  const [series, setSeries] = useState(initialSeries);
   const [userQuery, setUserQuery] = useState("");
   const [eventQuery, setEventQuery] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+
+  async function deleteSeries(s: ModSeriesRow) {
+    if (
+      !window.confirm(
+        `Delete the recurring series "${s.title}"? The individual events stay; they just stop being part of a series.`
+      )
+    )
+      return;
+    setBusy(s.id);
+    const { error } = await supabase.rpc("admin_delete_series", { p_series: s.id });
+    if (error) toast.error(error.message);
+    else {
+      setSeries((prev) => prev.filter((x) => x.id !== s.id));
+      toast.success("Series removed.");
+      router.refresh();
+    }
+    setBusy(null);
+  }
 
   async function moderate(u: ModUserRow, action: "warn" | "restrict" | "block" | "clear") {
     const labels = {
@@ -233,6 +263,42 @@ export default function AdminModeration({
           ))}
         </ul>
       </div>
+
+      {/* Recurring series */}
+      {series.length > 0 && (
+        <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-card lg:col-span-2">
+          <p className="text-sm font-bold text-gray-900">Recurring series</p>
+          <p className="mt-0.5 text-xs text-gray-500">
+            Deleting a series keeps its events — they just stop recurring.
+          </p>
+          <ul className="mt-3 divide-y divide-gray-50">
+            {series.map((s) => (
+              <li key={s.id} className="flex items-center justify-between gap-3 py-3">
+                <div className="min-w-0">
+                  <Link
+                    href={`/series/${s.id}`}
+                    className="block truncate text-sm font-semibold text-gray-900 hover:text-brand"
+                  >
+                    🔁 {s.title}
+                  </Link>
+                  <p className="truncate text-xs text-gray-500">
+                    {s.host?.name ?? "Unknown host"} · {s.frequency}
+                    {s.state ? ` · ${s.state}` : ""}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  disabled={busy === s.id}
+                  onClick={() => deleteSeries(s)}
+                  className="shrink-0 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
+                >
+                  🗑 Delete
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

@@ -15,6 +15,7 @@ import AdminHosts, { type AdminHostRow } from "@/components/admin/AdminHosts";
 import AdminModeration, {
   type ModUserRow,
   type ModEventRow,
+  type ModSeriesRow,
 } from "@/components/admin/AdminModeration";
 import { hostScore } from "@/lib/hostBadges";
 import { formatNaira } from "@/lib/paystack";
@@ -144,21 +145,28 @@ export default async function AdminPage() {
 
   // Moderation data — queried separately so the page still renders if
   // migration-moderation.sql hasn't been run yet.
-  const [{ data: modUserRows }, { data: modEventRows }] = await Promise.all([
-    supabase
-      .from("users")
-      .select("id, name, email, moderation_status, warning_count, moderation_reason")
-      .neq("id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(200),
-    supabase
-      .from("events")
-      .select("id, title, category, state, created_at, host:users!events_host_id_fkey(id, name)")
-      .order("created_at", { ascending: false })
-      .limit(100),
-  ]);
+  const [{ data: modUserRows }, { data: modEventRows }, { data: modSeriesRows }] =
+    await Promise.all([
+      supabase
+        .from("users")
+        .select("id, name, email, moderation_status, warning_count, moderation_reason")
+        .neq("id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(200),
+      supabase
+        .from("events")
+        .select("id, title, category, state, created_at, host:users!events_host_id_fkey(id, name)")
+        .order("created_at", { ascending: false })
+        .limit(100),
+      supabase
+        .from("event_series")
+        .select("id, title, category, state, frequency, host:users!event_series_host_id_fkey(id, name)")
+        .order("created_at", { ascending: false })
+        .limit(100),
+    ]);
   const modUsers = (modUserRows ?? []) as unknown as ModUserRow[];
   const modEvents = (modEventRows ?? []) as unknown as ModEventRow[];
+  const modSeries = (modSeriesRows ?? []) as unknown as ModSeriesRow[];
 
   const { data: corporateRows } = await supabase
     .from("corporate_accounts")
@@ -385,6 +393,7 @@ export default async function AdminPage() {
             warning_count: u.warning_count ?? 0,
           }))}
           events={modEvents}
+          series={modSeries}
         />
       </section>
 
