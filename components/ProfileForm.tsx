@@ -4,13 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/image";
-import { NIGERIAN_STATES } from "@/lib/constants";
+import { NIGERIAN_STATES, MIN_INTERESTS } from "@/lib/constants";
 import {
   normalizeFacebook,
   normalizeInstagram,
   normalizeTwitter,
 } from "@/lib/social";
 import Avatar from "./Avatar";
+import InterestPicker from "./InterestPicker";
 import type { UserProfile } from "@/lib/types";
 
 function handleOf(url: string | null): string {
@@ -35,6 +36,7 @@ export default function ProfileForm({
     | "facebook_url"
     | "phone"
     | "gender"
+    | "interests"
   >;
   mode: "setup" | "edit";
 }) {
@@ -49,6 +51,7 @@ export default function ProfileForm({
   const [facebook, setFacebook] = useState(initial.facebook_url ?? "");
   const [phone, setPhone] = useState(initial.phone ?? "");
   const [gender, setGender] = useState(initial.gender ?? "");
+  const [interests, setInterests] = useState<string[]>(initial.interests ?? []);
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(initial.avatar_url);
@@ -100,6 +103,7 @@ export default function ProfileForm({
           facebook_url: facebook.trim() ? normalizeFacebook(facebook) : null,
           phone: phone.trim() || null,
           gender: gender || null,
+          interests,
           profile_completed: completed,
         })
         .eq("id", userId);
@@ -202,6 +206,20 @@ export default function ProfileForm({
         />
       </div>
 
+      {/* Interests */}
+      <div>
+        <label className="label">
+          What are you into?{" "}
+          <span className="font-normal text-gray-400">
+            (pick at least {MIN_INTERESTS})
+          </span>
+        </label>
+        <p className="mb-3 text-sm text-gray-500">
+          We&apos;ll use these to show you link-ups you&apos;ll actually love.
+        </p>
+        <InterestPicker selected={interests} onChange={setInterests} />
+      </div>
+
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="instagram" className="label">
@@ -272,13 +290,17 @@ export default function ProfileForm({
       <div className="flex flex-col gap-3 sm:flex-row">
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || (mode === "setup" && interests.length < MIN_INTERESTS)}
           className="btn-primary flex-1"
         >
           {loading
             ? "Saving…"
             : mode === "setup"
-              ? "Save & continue"
+              ? interests.length < MIN_INTERESTS
+                ? `Pick ${MIN_INTERESTS - interests.length} more interest${
+                    MIN_INTERESTS - interests.length === 1 ? "" : "s"
+                  }`
+                : "Save & continue"
               : "Save changes"}
         </button>
         {mode === "setup" && (

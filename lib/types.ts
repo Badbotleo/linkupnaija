@@ -35,6 +35,7 @@ export interface UserProfile {
   moderation_reason: string | null;
   moderated_at: string | null;
   warning_count: number;
+  interests: string[];
   created_at: string;
 }
 

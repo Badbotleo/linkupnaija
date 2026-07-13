@@ -219,6 +219,24 @@ function About({ profile }: { profile: UserProfile | null }) {
           </li>
         ))}
       </ul>
+      {profile?.interests && profile.interests.length > 0 && (
+        <div className="mt-4 border-t border-gray-100 pt-4">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+            Interests
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {profile.interests.map((i) => (
+              <span
+                key={i}
+                className="rounded-full bg-brand-50 px-3 py-1 text-sm font-semibold text-brand"
+              >
+                {i}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {hasSocials && profile && (
         <div className="mt-4 border-t border-gray-100 pt-4">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">

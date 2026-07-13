@@ -19,7 +19,7 @@ export default async function ProfileEditPage() {
     supabase
       .from("users")
       .select(
-        "name, state, bio, avatar_url, instagram_url, twitter_url, facebook_url, phone, gender, payout_bank, payout_account_number, payout_account_name, emergency_contact_name, emergency_contact_phone"
+        "name, state, bio, avatar_url, instagram_url, twitter_url, facebook_url, phone, gender, interests, payout_bank, payout_account_number, payout_account_name, emergency_contact_name, emergency_contact_phone"
       )
       .eq("id", user.id)
       .single(),
@@ -57,6 +57,7 @@ export default async function ProfileEditPage() {
             facebook_url: profile?.facebook_url ?? null,
             phone: profile?.phone ?? null,
             gender: profile?.gender ?? null,
+            interests: profile?.interests ?? [],
           }}
         />
       </div>

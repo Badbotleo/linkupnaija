@@ -14,7 +14,7 @@ export default async function ProfileSetupPage() {
   const { data: profile } = await supabase
     .from("users")
     .select(
-      "name, state, bio, avatar_url, instagram_url, twitter_url, facebook_url, phone, gender"
+      "name, state, bio, avatar_url, instagram_url, twitter_url, facebook_url, phone, gender, interests"
     )
     .eq("id", user.id)
     .single();
@@ -45,6 +45,7 @@ export default async function ProfileSetupPage() {
             facebook_url: profile?.facebook_url ?? null,
             phone: profile?.phone ?? null,
             gender: profile?.gender ?? null,
+            interests: profile?.interests ?? [],
           }}
         />
       </div>

@@ -73,6 +73,90 @@ export const EVENT_CATEGORIES = [
 
 export type EventCategory = (typeof EVENT_CATEGORIES)[number];
 
+// ---------------------------------------------------------------------------
+// Interests — what users pick during onboarding (Substack/Tinder style).
+// Grouped for a scannable chip picker. Each interest maps loosely to event
+// categories so we can recommend events that match.
+// ---------------------------------------------------------------------------
+export interface InterestGroup {
+  title: string;
+  interests: { label: string; emoji: string }[];
+}
+
+export const INTEREST_GROUPS: InterestGroup[] = [
+  {
+    title: "🎉 Nightlife & Social",
+    interests: [
+      { label: "Parties", emoji: "🎉" },
+      { label: "Clubbing", emoji: "🪩" },
+      { label: "Karaoke", emoji: "🎤" },
+      { label: "Comedy", emoji: "😂" },
+      { label: "Concerts", emoji: "🎫" },
+      { label: "Pool Parties", emoji: "🏊" },
+    ],
+  },
+  {
+    title: "🍽️ Food & Drink",
+    interests: [
+      { label: "Dining Out", emoji: "🍽️" },
+      { label: "Food Festivals", emoji: "🥘" },
+      { label: "Paint & Sip", emoji: "🎨" },
+      { label: "Coffee & Chill", emoji: "☕" },
+      { label: "Cooking", emoji: "👩‍🍳" },
+    ],
+  },
+  {
+    title: "🎨 Arts & Culture",
+    interests: [
+      { label: "Live Music", emoji: "🎶" },
+      { label: "Art Galleries", emoji: "🖼️" },
+      { label: "Cinema", emoji: "🎬" },
+      { label: "Photography", emoji: "📷" },
+      { label: "Fashion", emoji: "👗" },
+    ],
+  },
+  {
+    title: "🏃 Active & Outdoors",
+    interests: [
+      { label: "Hiking", emoji: "🥾" },
+      { label: "Beach Days", emoji: "🏖️" },
+      { label: "Yoga", emoji: "🧘" },
+      { label: "Fitness", emoji: "💪" },
+      { label: "Football", emoji: "⚽" },
+      { label: "Sports Viewing", emoji: "📺" },
+    ],
+  },
+  {
+    title: "🧠 Learning & Growth",
+    interests: [
+      { label: "Book Clubs", emoji: "📚" },
+      { label: "Networking", emoji: "🤝" },
+      { label: "Tech & Startups", emoji: "💻" },
+      { label: "Public Speaking", emoji: "🎙️" },
+      { label: "Faith", emoji: "🙏" },
+    ],
+  },
+  {
+    title: "🎮 Play & Chill",
+    interests: [
+      { label: "Board Games", emoji: "♟️" },
+      { label: "Video Games", emoji: "🎮" },
+      { label: "Movie Nights", emoji: "🍿" },
+      { label: "Picnics", emoji: "🧺" },
+      { label: "Family Hangouts", emoji: "👨‍👩‍👧‍👦" },
+      { label: "Friend Reunions", emoji: "🤗" },
+    ],
+  },
+];
+
+// Flat list of every valid interest label (for validation/lookup).
+export const ALL_INTERESTS: string[] = INTEREST_GROUPS.flatMap((g) =>
+  g.interests.map((i) => i.label)
+);
+
+// Minimum interests we ask a user to pick during onboarding.
+export const MIN_INTERESTS = 3;
+
 // Each category gets its own badge styling (Tailwind classes).
 export const CATEGORY_STYLES: Record<
   EventCategory,
