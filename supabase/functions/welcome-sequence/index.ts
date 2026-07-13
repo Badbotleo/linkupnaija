@@ -116,6 +116,12 @@ Deno.serve(async (req) => {
       },
       {
         user_id: user.id,
+        email_type: "founder_intro",
+        scheduled_for: plus(1),
+        status: "pending",
+      },
+      {
+        user_id: user.id,
         email_type: "day2_events",
         scheduled_for: plus(2),
         status: "pending",
@@ -136,7 +142,10 @@ Deno.serve(async (req) => {
     { onConflict: "user_id,email_type", ignoreDuplicates: true }
   );
 
-  return json({ welcomeSent: ok, scheduled: ["day2_events", "profile_nudge", "host_nudge"] });
+  return json({
+    welcomeSent: ok,
+    scheduled: ["founder_intro", "day2_events", "profile_nudge", "host_nudge"],
+  });
 });
 
 function json(body: unknown, status = 200): Response {

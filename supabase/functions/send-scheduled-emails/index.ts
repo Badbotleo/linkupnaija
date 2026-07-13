@@ -22,6 +22,7 @@ import {
   sendEmail,
   type EmailEvent,
 } from "../_shared/email.ts";
+import { founderEmailHtml, FOUNDER_SUBJECT } from "../_shared/founder.ts";
 
 const REENGAGE_AFTER_DAYS = 3;
 const REENGAGE_COOLDOWN_DAYS = 7;
@@ -33,6 +34,7 @@ Deno.serve(async () => {
   );
 
   const result = {
+    founder_intro: 0,
     day2_events: 0,
     profile_nudge: 0,
     host_nudge: 0,
@@ -64,7 +66,17 @@ Deno.serve(async () => {
 
     let outcome: "sent" | "skipped" = "skipped";
 
-    if (row.email_type === "day2_events") {
+    if (row.email_type === "founder_intro") {
+      // One-time founder hello — always send (no re-check condition).
+      const unsubscribeUrl = await unsubUrl(supabase, user.id);
+      outcome = (await sendEmail({
+        to: user.email,
+        subject: FOUNDER_SUBJECT,
+        html: founderEmailHtml({ name: user.name, unsubscribeUrl }),
+      }))
+        ? "sent"
+        : "skipped";
+    } else if (row.email_type === "day2_events") {
       if (!(await hasJoined(supabase, user.id))) {
         outcome = (await sendEventsEmail(supabase, user, {
           subject: "Haven't found your vibe yet? 👀",
