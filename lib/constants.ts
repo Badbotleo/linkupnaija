@@ -157,6 +157,49 @@ export const ALL_INTERESTS: string[] = INTEREST_GROUPS.flatMap((g) =>
 // Minimum interests we ask a user to pick during onboarding.
 export const MIN_INTERESTS = 3;
 
+// Maps an interest label → the event categories that satisfy it. Powers the
+// "Picked for you" personalised feed. Interests without a category match
+// (e.g. Coffee & Chill, Fashion) simply don't surface events yet.
+export const INTEREST_TO_CATEGORIES: Record<string, EventCategory[]> = {
+  Parties: ["Party"],
+  Clubbing: ["Clubbing"],
+  Karaoke: ["Karaoke"],
+  Comedy: ["Comedy Night"],
+  Concerts: ["Concert"],
+  "Pool Parties": ["Pool Party"],
+  "Dining Out": ["Dinner"],
+  "Food Festivals": ["Food Festival"],
+  "Paint & Sip": ["Paint and Sip"],
+  Cooking: ["Food Festival", "Dinner"],
+  "Live Music": ["Concert"],
+  "Art Galleries": ["Art Gallery"],
+  Cinema: ["Cinema"],
+  Hiking: ["Hiking"],
+  "Beach Days": ["Beach Day"],
+  Yoga: ["Yoga"],
+  Fitness: ["Yoga", "Hiking"],
+  Football: ["Sports Viewing"],
+  "Sports Viewing": ["Sports Viewing"],
+  "Book Clubs": ["Book Club"],
+  Networking: ["Networking"],
+  "Tech & Startups": ["Networking"],
+  "Board Games": ["Board Games", "Game Night"],
+  "Video Games": ["Game Night"],
+  "Movie Nights": ["Cinema"],
+  Picnics: ["Picnic"],
+  "Family Hangouts": ["Family Hangout"],
+  "Friend Reunions": ["Friend Reunion"],
+};
+
+// Union of event categories that match a user's interests.
+export function categoriesForInterests(interests: string[]): EventCategory[] {
+  const set = new Set<EventCategory>();
+  for (const i of interests) {
+    for (const c of INTEREST_TO_CATEGORIES[i] ?? []) set.add(c);
+  }
+  return Array.from(set);
+}
+
 // Each category gets its own badge styling (Tailwind classes).
 export const CATEGORY_STYLES: Record<
   EventCategory,

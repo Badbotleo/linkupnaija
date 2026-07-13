@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import EventCover from "@/components/EventCover";
 import CategoryBadge from "@/components/CategoryBadge";
 import { formatEventDate, formatEventTime } from "@/lib/format";
+import { categoriesForInterests } from "@/lib/constants";
 
 interface EventLite {
   id: string;
@@ -43,7 +44,7 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
 
   const [{ data: profile }, { data: rsvpRows }, { data: hostingRows }] =
     await Promise.all([
-      supabase.from("users").select("name, state").eq("id", userId).single(),
+      supabase.from("users").select("name, state, interests").eq("id", userId).single(),
       supabase
         .from("rsvps")
         .select(
@@ -75,6 +76,32 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 4);
   const hostingIds = new Set(hosting.map((e) => e.id));
+
+  // ✨ Picked for you — upcoming events whose category matches the user's
+  // interests, soonest first. Events they already have are excluded.
+  const forYouCategories = categoriesForInterests(profile?.interests ?? []);
+  let forYou: EventLite[] = [];
+  if (forYouCategories.length > 0) {
+    const { data: forYouRows } = await supabase
+      .from("events")
+      .select("id, title, category, date, time, location, state, cover_image_url")
+      .eq("event_type", "general")
+      .gte("date", today)
+      .neq("host_id", userId)
+      .in("category", forYouCategories)
+      .order("date", { ascending: true })
+      .limit(12);
+    forYou = ((forYouRows ?? []) as EventLite[])
+      .filter((e) => !seen.has(e.id))
+      // Rank: same-state matches first, then soonest.
+      .sort((a, b) => {
+        const sa = profile?.state && a.state === profile.state ? 0 : 1;
+        const sb = profile?.state && b.state === profile.state ? 0 : 1;
+        return sa - sb || a.date.localeCompare(b.date);
+      })
+      .slice(0, 4);
+    for (const e of forYou) seen.add(e.id);
+  }
 
   // Nearby events (their state), excluding ones already in their list.
   let nearbyQuery = supabase
@@ -146,6 +173,49 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
           </div>
         )}
       </section>
+
+      {/* Picked for you */}
+      {forYou.length > 0 && (
+        <section className="mt-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-gray-900">
+              ✨ Picked for you
+            </h2>
+            <Link href="/profile/edit" className="text-sm font-semibold text-brand">
+              Edit interests →
+            </Link>
+          </div>
+          <p className="mt-0.5 text-sm text-gray-500">
+            Based on what you&apos;re into.
+          </p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {forYou.map((e) => (
+              <EventTile key={e.id} event={e} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* No interests yet → nudge to personalise */}
+      {(!profile?.interests || profile.interests.length === 0) && (
+        <section className="mt-8">
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-brand/20 bg-brand-50 px-6 py-8 text-center sm:flex-row sm:text-left">
+            <span className="text-3xl" aria-hidden>✨</span>
+            <div className="flex-1">
+              <h2 className="text-lg font-bold text-gray-900">
+                Get events picked just for you
+              </h2>
+              <p className="mt-0.5 text-sm text-gray-600">
+                Tell us what you&apos;re into and we&apos;ll surface link-ups
+                you&apos;ll actually love.
+              </p>
+            </div>
+            <Link href="/profile/edit" className="btn-primary shrink-0">
+              Choose interests
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* Near you */}
       {nearby.length > 0 && (
