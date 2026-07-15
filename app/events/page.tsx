@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import EventsFilters from "@/components/EventsFilters";
 import EventsList from "@/components/EventsList";
+import EventsMapToggle from "@/components/events/EventsMapToggle";
 import EventsTabs from "@/components/EventsTabs";
 import EventsStories from "@/components/EventsStories";
 import LocationMatch from "@/components/LocationMatch";
@@ -284,6 +285,20 @@ export default async function EventsPage({
           <Suspense fallback={null}>
             <EventsFilters />
           </Suspense>
+        </div>
+      )}
+
+      {!error && feedEvents.length > 0 && (
+        <div className="mt-4">
+          <EventsMapToggle
+            events={feedEvents.map((e) => ({
+              id: e.id,
+              title: e.title,
+              state: e.state,
+              category: e.category,
+              date: e.date,
+            }))}
+          />
         </div>
       )}
 

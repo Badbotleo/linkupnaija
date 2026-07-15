@@ -1,0 +1,45 @@
+// Approximate centroids (capital cities) for each Nigerian state + FCT.
+// Events only store a text `location`, so the discovery map clusters events by
+// state at these points rather than exact addresses.
+
+export const STATE_COORDS: Record<string, { lat: number; lng: number }> = {
+  Abia: { lat: 5.53, lng: 7.49 },
+  Adamawa: { lat: 9.2, lng: 12.48 },
+  "Akwa Ibom": { lat: 5.04, lng: 7.93 },
+  Anambra: { lat: 6.21, lng: 7.07 },
+  Bauchi: { lat: 10.31, lng: 9.84 },
+  Bayelsa: { lat: 4.92, lng: 6.26 },
+  Benue: { lat: 7.73, lng: 8.53 },
+  Borno: { lat: 11.83, lng: 13.15 },
+  "Cross River": { lat: 4.98, lng: 8.34 },
+  Delta: { lat: 6.2, lng: 6.73 },
+  Ebonyi: { lat: 6.32, lng: 8.11 },
+  Edo: { lat: 6.34, lng: 5.62 },
+  Ekiti: { lat: 7.62, lng: 5.22 },
+  Enugu: { lat: 6.52, lng: 7.51 },
+  "FCT - Abuja": { lat: 9.06, lng: 7.49 },
+  Gombe: { lat: 10.29, lng: 11.17 },
+  Imo: { lat: 5.48, lng: 7.03 },
+  Jigawa: { lat: 11.7, lng: 9.34 },
+  Kaduna: { lat: 10.52, lng: 7.44 },
+  Kano: { lat: 12.0, lng: 8.52 },
+  Katsina: { lat: 12.99, lng: 7.6 },
+  Kebbi: { lat: 12.45, lng: 4.2 },
+  Kogi: { lat: 7.8, lng: 6.74 },
+  Kwara: { lat: 8.5, lng: 4.55 },
+  Lagos: { lat: 6.52, lng: 3.38 },
+  Nasarawa: { lat: 8.49, lng: 8.52 },
+  Niger: { lat: 9.61, lng: 6.55 },
+  Ogun: { lat: 7.15, lng: 3.35 },
+  Ondo: { lat: 7.25, lng: 5.19 },
+  Osun: { lat: 7.77, lng: 4.56 },
+  Oyo: { lat: 7.38, lng: 3.9 },
+  Plateau: { lat: 9.9, lng: 8.86 },
+  Rivers: { lat: 4.82, lng: 7.03 },
+  Sokoto: { lat: 13.06, lng: 5.24 },
+  Taraba: { lat: 8.89, lng: 11.36 },
+  Yobe: { lat: 11.75, lng: 11.97 },
+  Zamfara: { lat: 12.15, lng: 6.66 },
+};
+
+export const NIGERIA_CENTER = { lat: 9.08, lng: 8.68 };
