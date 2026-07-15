@@ -5,6 +5,7 @@ import NotificationsBell from "./NotificationsBell";
 import ThemeToggle from "./ThemeToggle";
 import MobileNav from "./MobileNav";
 import Logo from "./Logo";
+import { isProActive } from "@/lib/pro";
 
 export default async function Navbar() {
   // Shared (request-cached) with the page being rendered — see lib/supabase/auth.
@@ -14,6 +15,7 @@ export default async function Navbar() {
   let unreadMessages = 0;
   let myName: string | null = null;
   let myAvatar: string | null = null;
+  let isPro = false;
   if (user) {
     const supabase = createClient();
     const [meta, { count }] = await Promise.all([
@@ -28,6 +30,7 @@ export default async function Navbar() {
     unreadMessages = count ?? 0;
     myName = meta?.name ?? null;
     myAvatar = meta?.avatar_url ?? null;
+    isPro = isProActive(meta?.is_pro, meta?.pro_expires_at);
   }
 
   return (
@@ -133,6 +136,7 @@ export default async function Navbar() {
             isAdmin={isAdmin}
             name={myName}
             avatarUrl={myAvatar}
+            isPro={isPro}
           />
         </div>
       </nav>

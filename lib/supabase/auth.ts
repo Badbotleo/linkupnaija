@@ -22,16 +22,18 @@ export interface UserMeta {
   is_admin: boolean;
   name: string | null;
   avatar_url: string | null;
+  is_pro: boolean;
+  pro_expires_at: string | null;
 }
 
-/** The current user's id + admin flag + name/avatar — one lookup per request. */
+/** The current user's id + admin flag + name/avatar + pro — one lookup per request. */
 export const getCurrentUserMeta = cache(async (): Promise<UserMeta | null> => {
   const user = await getSessionUser();
   if (!user) return null;
   const supabase = createClient();
   const { data } = await supabase
     .from("users")
-    .select("id, is_admin, name, avatar_url")
+    .select("id, is_admin, name, avatar_url, is_pro, pro_expires_at")
     .eq("id", user.id)
     .single();
   return (
@@ -40,6 +42,8 @@ export const getCurrentUserMeta = cache(async (): Promise<UserMeta | null> => {
       is_admin: false,
       name: null,
       avatar_url: null,
+      is_pro: false,
+      pro_expires_at: null,
     }
   );
 });

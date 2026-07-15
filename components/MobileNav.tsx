@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import ProBadge from "./ProBadge";
 import Avatar from "./Avatar";
 import ThemeToggle from "./ThemeToggle";
 
@@ -32,11 +33,13 @@ export default function MobileNav({
   isAdmin,
   name,
   avatarUrl,
+  isPro = false,
 }: {
   userId: string | null;
   isAdmin: boolean;
   name: string | null;
   avatarUrl: string | null;
+  isPro?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -120,8 +123,9 @@ export default function MobileNav({
                   >
                     <Avatar name={name} url={avatarUrl} size="md" />
                     <div className="min-w-0">
-                      <p className="truncate text-base font-bold text-gray-900">
-                        {name ?? "Your profile"}
+                      <p className="flex items-center gap-1 truncate text-base font-bold text-gray-900">
+                        <span className="truncate">{name ?? "Your profile"}</span>
+                        {isPro && <ProBadge size={16} />}
                       </p>
                       <p className="text-xs text-gray-500">
                         {handle ? `@${handle}` : "View your profile"}
