@@ -15,6 +15,7 @@ import FriendPickerButton from "@/components/friends/FriendPickerButton";
 import SharePlansButton from "@/components/safety/SharePlansButton";
 import AddToCalendar from "@/components/AddToCalendar";
 import ReportButton from "@/components/ReportButton";
+import TicketButton from "@/components/TicketButton";
 import SafetyCheckinButton from "@/components/safety/SafetyCheckinButton";
 import EventGallery from "@/components/gallery/EventGallery";
 import EventCover from "@/components/EventCover";
@@ -119,6 +120,9 @@ export default async function EventDetailPage({
 
   const attendeeCount = accepted.length;
   const isHost = !!user && user.id === event.host_id;
+  const myRsvpId = user
+    ? (rsvps.find((r) => r.user_id === user.id)?.id ?? null)
+    : null;
   const myStatus: "none" | RsvpStatus = user
     ? (rsvps.find((r) => r.user_id === user.id)?.status ?? "none")
     : "none";
@@ -514,6 +518,17 @@ export default async function EventDetailPage({
                       }}
                     />
                   </div>
+
+                  {/* QR ticket for accepted attendees — scan at the door. */}
+                  {myStatus === "accepted" && myRsvpId && (
+                    <div className="mt-3">
+                      <TicketButton
+                        rsvpId={myRsvpId}
+                        eventTitle={event.title}
+                        attendeeName={myName}
+                      />
+                    </div>
+                  )}
 
                   {/* Secondary option: bring a friend along (both join together). */}
                   {!!user && myStatus === "none" && !isFull && (
