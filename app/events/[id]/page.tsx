@@ -13,6 +13,7 @@ import Avatar from "@/components/Avatar";
 import AttendeeChips from "@/components/AttendeeChips";
 import FriendPickerButton from "@/components/friends/FriendPickerButton";
 import SharePlansButton from "@/components/safety/SharePlansButton";
+import AddToCalendar from "@/components/AddToCalendar";
 import SafetyCheckinButton from "@/components/safety/SafetyCheckinButton";
 import EventGallery from "@/components/gallery/EventGallery";
 import EventCover from "@/components/EventCover";
@@ -498,6 +499,20 @@ export default async function EventDetailPage({
                     hostSubaccount={event.host?.paystack_subaccount_code ?? null}
                     walletBalance={walletBalance}
                   />
+
+                  {/* Add to calendar — cheapest no-show reducer. */}
+                  <div className="mt-3">
+                    <AddToCalendar
+                      event={{
+                        id: event.id,
+                        title: event.title,
+                        description: event.description,
+                        location: event.location,
+                        date: event.date,
+                        time: event.time,
+                      }}
+                    />
+                  </div>
 
                   {/* Secondary option: bring a friend along (both join together). */}
                   {!!user && myStatus === "none" && !isFull && (
