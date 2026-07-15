@@ -130,8 +130,16 @@ export default async function PublicProfilePage({
           </div>
         </div>
 
-        <h1 className="mt-3 text-2xl font-extrabold text-gray-900">
+        <h1 className="mt-3 flex items-center gap-2 text-2xl font-extrabold text-gray-900">
           {profile.name ?? "LinkUpNaija member"}
+          {profile.phone_verified && (
+            <span
+              title="Verified phone number"
+              className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700"
+            >
+              ✓ Verified
+            </span>
+          )}
         </h1>
         {profile.state && <p className="text-sm text-gray-500">📍 {profile.state}</p>}
         {badges.length > 0 && (

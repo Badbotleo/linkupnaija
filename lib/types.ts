@@ -36,6 +36,7 @@ export interface UserProfile {
   moderated_at: string | null;
   warning_count: number;
   interests: string[];
+  phone_verified: boolean;
   created_at: string;
 }
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ProfileForm from "@/components/ProfileForm";
+import PhoneVerify from "@/components/PhoneVerify";
 import PayoutSettings from "@/components/PayoutSettings";
 import EmailPreferences from "@/components/EmailPreferences";
 import SafetySettings from "@/components/safety/SafetySettings";
@@ -19,7 +20,7 @@ export default async function ProfileEditPage() {
     supabase
       .from("users")
       .select(
-        "name, state, bio, avatar_url, instagram_url, twitter_url, facebook_url, phone, gender, interests, payout_bank, payout_account_number, payout_account_name, emergency_contact_name, emergency_contact_phone"
+        "name, state, bio, avatar_url, instagram_url, twitter_url, facebook_url, phone, phone_verified, gender, interests, payout_bank, payout_account_number, payout_account_name, emergency_contact_name, emergency_contact_phone"
       )
       .eq("id", user.id)
       .single(),
@@ -42,6 +43,13 @@ export default async function ProfileEditPage() {
       <h1 className="mt-4 text-3xl font-extrabold text-gray-900">
         Edit your profile
       </h1>
+
+      <div className="mt-6">
+        <PhoneVerify
+          initialPhone={profile?.phone ?? null}
+          alreadyVerified={!!profile?.phone_verified}
+        />
+      </div>
 
       <div className="mt-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-card sm:p-8">
         <ProfileForm
