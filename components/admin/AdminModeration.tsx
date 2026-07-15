@@ -34,6 +34,17 @@ export interface ModSeriesRow {
   host: { id: string; name: string | null } | null;
 }
 
+export interface ModReportRow {
+  id: string;
+  target_type: "event" | "user";
+  target_id: string;
+  target_label: string;
+  reason: string;
+  details: string | null;
+  reporter_name: string | null;
+  created_at: string;
+}
+
 const STATUS_CHIP: Record<ModerationStatus, string> = {
   active: "bg-green-100 text-green-700",
   warned: "bg-amber-100 text-amber-700",
@@ -45,16 +56,31 @@ export default function AdminModeration({
   users: initialUsers,
   events: initialEvents,
   series: initialSeries = [],
+  reports: initialReports = [],
 }: {
   users: ModUserRow[];
   events: ModEventRow[];
   series?: ModSeriesRow[];
+  reports?: ModReportRow[];
 }) {
   const router = useRouter();
   const supabase = createClient();
   const [users, setUsers] = useState(initialUsers);
   const [events, setEvents] = useState(initialEvents);
   const [series, setSeries] = useState(initialSeries);
+  const [reports, setReports] = useState(initialReports);
+
+  async function triageReport(id: string, status: "reviewed" | "dismissed") {
+    setBusy(id);
+    const { error } = await supabase.from("reports").update({ status }).eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      setReports((prev) => prev.filter((r) => r.id !== id));
+      toast.success(status === "dismissed" ? "Dismissed" : "Marked reviewed");
+      router.refresh();
+    }
+    setBusy(null);
+  }
   const [userQuery, setUserQuery] = useState("");
   const [eventQuery, setEventQuery] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
@@ -176,6 +202,61 @@ export default function AdminModeration({
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
+      {/* User reports — most urgent, full width */}
+      {reports.length > 0 && (
+        <div className="rounded-2xl border border-red-100 bg-red-50/50 p-4 shadow-card lg:col-span-2">
+          <p className="text-sm font-bold text-gray-900">
+            🚩 User reports
+            <span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-700">
+              {reports.length}
+            </span>
+          </p>
+          <ul className="mt-3 divide-y divide-red-100/70">
+            {reports.map((r) => (
+              <li key={r.id} className="flex flex-wrap items-start justify-between gap-2 py-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-700">
+                      {r.reason}
+                    </span>
+                    <Link
+                      href={r.target_type === "event" ? `/events/${r.target_id}` : `/u/${r.target_id}`}
+                      className="truncate text-sm font-semibold text-gray-900 hover:text-brand"
+                    >
+                      {r.target_type === "event" ? "📅" : "👤"} {r.target_label}
+                    </Link>
+                  </div>
+                  {r.details && (
+                    <p className="mt-1 text-sm text-gray-600">&ldquo;{r.details}&rdquo;</p>
+                  )}
+                  <p className="mt-0.5 text-xs text-gray-400">
+                    reported by {r.reporter_name ?? "someone"}
+                  </p>
+                </div>
+                <div className="flex shrink-0 gap-1.5">
+                  <button
+                    type="button"
+                    disabled={busy === r.id}
+                    onClick={() => triageReport(r.id, "reviewed")}
+                    className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600 hover:bg-gray-200 disabled:opacity-50"
+                  >
+                    ✓ Reviewed
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy === r.id}
+                    onClick={() => triageReport(r.id, "dismissed")}
+                    className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Users */}
       <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-card">
         <p className="text-sm font-bold text-gray-900">Users</p>

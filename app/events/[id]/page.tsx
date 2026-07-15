@@ -14,6 +14,7 @@ import AttendeeChips from "@/components/AttendeeChips";
 import FriendPickerButton from "@/components/friends/FriendPickerButton";
 import SharePlansButton from "@/components/safety/SharePlansButton";
 import AddToCalendar from "@/components/AddToCalendar";
+import ReportButton from "@/components/ReportButton";
 import SafetyCheckinButton from "@/components/safety/SafetyCheckinButton";
 import EventGallery from "@/components/gallery/EventGallery";
 import EventCover from "@/components/EventCover";
@@ -545,6 +546,18 @@ export default async function EventDetailPage({
                           <SafetyCheckinButton eventId={event.id} />
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {/* Report this event */}
+                  {!isHost && (
+                    <div className="mt-4 text-center">
+                      <ReportButton
+                        targetType="event"
+                        targetId={event.id}
+                        isLoggedIn={!!user}
+                        label="Report this event"
+                      />
                     </div>
                   )}
                 </div>

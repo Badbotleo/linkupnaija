@@ -16,6 +16,7 @@ import AdminModeration, {
   type ModUserRow,
   type ModEventRow,
   type ModSeriesRow,
+  type ModReportRow,
 } from "@/components/admin/AdminModeration";
 import { hostScore } from "@/lib/hostBadges";
 import { formatNaira } from "@/lib/paystack";
@@ -167,6 +168,48 @@ export default async function AdminPage() {
   const modUsers = (modUserRows ?? []) as unknown as ModUserRow[];
   const modEvents = (modEventRows ?? []) as unknown as ModEventRow[];
   const modSeries = (modSeriesRows ?? []) as unknown as ModSeriesRow[];
+
+  // Open user reports, with target labels resolved for display.
+  const { data: reportRows } = await supabase
+    .from("reports")
+    .select("id, target_type, target_id, reason, details, created_at, reporter:users!reports_reporter_id_fkey(name)")
+    .eq("status", "open")
+    .order("created_at", { ascending: false })
+    .limit(50);
+  const rawReports = (reportRows ?? []) as unknown as {
+    id: string;
+    target_type: "event" | "user";
+    target_id: string;
+    reason: string;
+    details: string | null;
+    created_at: string;
+    reporter: { name: string | null } | null;
+  }[];
+  // Resolve target labels (event titles / user names) in two batched lookups.
+  const eventTargetIds = rawReports.filter((r) => r.target_type === "event").map((r) => r.target_id);
+  const userTargetIds = rawReports.filter((r) => r.target_type === "user").map((r) => r.target_id);
+  const [{ data: evTitles }, { data: usrNames }] = await Promise.all([
+    eventTargetIds.length
+      ? supabase.from("events").select("id, title").in("id", eventTargetIds)
+      : Promise.resolve({ data: [] }),
+    userTargetIds.length
+      ? supabase.from("users").select("id, name").in("id", userTargetIds)
+      : Promise.resolve({ data: [] }),
+  ]);
+  const labelMap = new Map<string, string>();
+  for (const e of (evTitles ?? []) as { id: string; title: string }[]) labelMap.set(e.id, e.title);
+  for (const u of (usrNames ?? []) as { id: string; name: string | null }[])
+    labelMap.set(u.id, u.name ?? "Unnamed user");
+  const modReports: ModReportRow[] = rawReports.map((r) => ({
+    id: r.id,
+    target_type: r.target_type,
+    target_id: r.target_id,
+    target_label: labelMap.get(r.target_id) ?? "(deleted)",
+    reason: r.reason,
+    details: r.details,
+    reporter_name: r.reporter?.name ?? null,
+    created_at: r.created_at,
+  }));
 
   const { data: corporateRows } = await supabase
     .from("corporate_accounts")
@@ -394,6 +437,7 @@ export default async function AdminPage() {
           }))}
           events={modEvents}
           series={modSeries}
+          reports={modReports}
         />
       </section>
 

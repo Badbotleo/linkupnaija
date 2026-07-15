@@ -6,6 +6,7 @@ import EventCover from "@/components/EventCover";
 import SocialLinks from "@/components/SocialLinks";
 import AddFriendButton from "@/components/profile/AddFriendButton";
 import MessageButton from "@/components/MessageButton";
+import ReportButton from "@/components/ReportButton";
 import ProfilePhotos from "@/components/profile/ProfilePhotos";
 import HostScorecard from "@/components/host/HostScorecard";
 import HostBadges from "@/components/host/HostBadges";
@@ -146,13 +147,19 @@ export default async function PublicProfilePage({
         </div>
 
         {user?.id !== params.id && (
-          <div className="mt-4 flex gap-2">
+          <div className="mt-4 flex items-center gap-2">
             <AddFriendButton targetId={params.id} isLoggedIn={!!user} />
             <MessageButton
               meId={user?.id ?? null}
               targetId={params.id}
               targetName={profile.name}
               targetAvatar={profile.avatar_url}
+            />
+            <ReportButton
+              targetType="user"
+              targetId={params.id}
+              isLoggedIn={!!user}
+              className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-gray-400 transition hover:text-red-500"
             />
           </div>
         )}
