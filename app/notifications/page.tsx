@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { AppNotification } from "@/lib/types";
+import EnablePush from "@/components/EnablePush";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Notifications" };
@@ -39,6 +40,10 @@ export default async function NotificationsPage() {
   return (
     <div className="container-page max-w-2xl py-6">
       <h1 className="text-2xl font-extrabold text-gray-900">Notifications</h1>
+
+      <div className="mt-4">
+        <EnablePush />
+      </div>
 
       {items.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-16 text-center">
