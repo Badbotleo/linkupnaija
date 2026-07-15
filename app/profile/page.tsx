@@ -8,6 +8,8 @@ import BannerUpload from "@/components/profile/BannerUpload";
 import AvatarUpload from "@/components/profile/AvatarUpload";
 import ProfilePhotos from "@/components/profile/ProfilePhotos";
 import HostScorecard from "@/components/host/HostScorecard";
+import ProBadge from "@/components/ProBadge";
+import { isProActive } from "@/lib/pro";
 import HostBadges from "@/components/host/HostBadges";
 import { computeBadges } from "@/lib/hostBadges";
 import { formatEventDate } from "@/lib/format";
@@ -86,6 +88,9 @@ export default async function ProfilePage({
 
         <h1 className="mt-3 flex items-center gap-2 text-2xl font-extrabold text-gray-900">
           {profile?.name ?? "LinkUpNaija member"}
+          {isProActive(profile?.is_pro, profile?.pro_expires_at) && (
+            <ProBadge size={20} />
+          )}
           {profile?.phone_verified && (
             <span
               title="Verified phone number"

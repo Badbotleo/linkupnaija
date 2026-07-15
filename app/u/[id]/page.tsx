@@ -7,6 +7,8 @@ import SocialLinks from "@/components/SocialLinks";
 import AddFriendButton from "@/components/profile/AddFriendButton";
 import MessageButton from "@/components/MessageButton";
 import ReportButton from "@/components/ReportButton";
+import ProBadge from "@/components/ProBadge";
+import { isProActive } from "@/lib/pro";
 import ProfilePhotos from "@/components/profile/ProfilePhotos";
 import HostScorecard from "@/components/host/HostScorecard";
 import HostBadges from "@/components/host/HostBadges";
@@ -132,6 +134,9 @@ export default async function PublicProfilePage({
 
         <h1 className="mt-3 flex items-center gap-2 text-2xl font-extrabold text-gray-900">
           {profile.name ?? "LinkUpNaija member"}
+          {isProActive(profile.is_pro, profile.pro_expires_at) && (
+            <ProBadge size={20} />
+          )}
           {profile.phone_verified && (
             <span
               title="Verified phone number"
