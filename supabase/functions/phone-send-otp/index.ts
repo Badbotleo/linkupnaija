@@ -57,6 +57,13 @@ Deno.serve(async (req) => {
     { onConflict: "user_id" }
   );
 
+  // Test mode: skip the SMS provider and return the code so the full flow can
+  // be exercised without a Termii account. Gate with OTP_TEST_MODE=true; remove
+  // it (and set TERMII_API_KEY) before real launch.
+  if (Deno.env.get("OTP_TEST_MODE") === "true") {
+    return json({ sent: true, test_code: code });
+  }
+
   const apiKey = Deno.env.get("TERMII_API_KEY");
   if (!apiKey) {
     return json({ error: "SMS not configured. Set TERMII_API_KEY." }, 500);

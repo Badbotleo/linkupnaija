@@ -41,7 +41,14 @@ export default function PhoneVerify({
       toast.error((data as { error?: string })?.error ?? "Couldn't send code.");
       return;
     }
-    toast.success("Code sent 📲");
+    // Test mode returns the code directly (no SMS provider configured).
+    const testCode = (data as { test_code?: string })?.test_code;
+    if (testCode) {
+      setCode(testCode);
+      toast.success(`Test mode — your code is ${testCode}`);
+    } else {
+      toast.success("Code sent 📲");
+    }
     setStep("code");
   }
 
