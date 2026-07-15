@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "@/lib/toast";
 import Avatar from "../Avatar";
 import MessageButton from "../MessageButton";
+import ProBadge from "../ProBadge";
+import { isProActive } from "@/lib/pro";
 import type { FriendUser } from "@/lib/types";
 
 interface Relation {
@@ -25,8 +27,8 @@ interface ConnRow {
 
 const CONN_SELECT =
   "id, status, requester_id, receiver_id, " +
-  "requester:users!connections_requester_id_fkey(id, name, avatar_url, state), " +
-  "receiver:users!connections_receiver_id_fkey(id, name, avatar_url, state)";
+  "requester:users!connections_requester_id_fkey(id, name, avatar_url, state, is_pro, pro_expires_at), " +
+  "receiver:users!connections_receiver_id_fkey(id, name, avatar_url, state, is_pro, pro_expires_at)";
 
 export default function FriendsManager({
   meId,
@@ -94,7 +96,7 @@ export default function FriendsManager({
 
       const { data } = await supabase
         .from("users")
-        .select("id, name, avatar_url, state")
+        .select("id, name, avatar_url, state, is_pro, pro_expires_at")
         .eq("state", myState)
         .neq("id", meId)
         .order("created_at", { ascending: false })
@@ -126,7 +128,7 @@ export default function FriendsManager({
     const t = setTimeout(async () => {
       const { data } = await supabase
         .from("users")
-        .select("id, name, avatar_url, state")
+        .select("id, name, avatar_url, state, is_pro, pro_expires_at")
         .or(`name.ilike.%${term}%,email.ilike.%${term}%`)
         .neq("id", meId)
         .limit(12);
@@ -341,8 +343,9 @@ function Row({
       >
         <Avatar name={user.name} url={user.avatar_url} size="sm" />
         <div className="min-w-0">
-          <p className="truncate font-semibold text-gray-900 hover:text-brand">
-            {user.name ?? "LinkUpNaija member"}
+          <p className="flex items-center gap-1 font-semibold text-gray-900 hover:text-brand">
+            <span className="truncate">{user.name ?? "LinkUpNaija member"}</span>
+            {isProActive(user.is_pro, user.pro_expires_at) && <ProBadge size={14} />}
           </p>
           {user.state && (
             <p className="truncate text-xs text-gray-500">📍 {user.state}</p>

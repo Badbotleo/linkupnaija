@@ -403,6 +403,8 @@ export interface FriendUser {
   name: string | null;
   avatar_url: string | null;
   state: string | null;
+  is_pro?: boolean;
+  pro_expires_at?: string | null;
 }
 
 // Event with a joined attendee count, as returned by the events feed query.

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Avatar from "@/components/Avatar";
 import HostBadges from "@/components/host/HostBadges";
+import ProBadge from "@/components/ProBadge";
+import { isProActive } from "@/lib/pro";
 import { computeBadges, hostScore } from "@/lib/hostBadges";
 import { NIGERIAN_STATES } from "@/lib/constants";
 import type { HostStats } from "@/lib/types";
@@ -19,6 +21,8 @@ type Row = HostStats & {
     awarded_badges: string[];
     revoked_badges: string[];
     featured_host: boolean;
+    is_pro: boolean;
+    pro_expires_at: string | null;
   } | null;
 };
 
@@ -33,7 +37,7 @@ export default async function LeaderboardPage({
   const { data } = await supabase
     .from("host_stats")
     .select(
-      "*, host:users!host_stats_host_id_fkey(id, name, avatar_url, state, awarded_badges, revoked_badges, featured_host)"
+      "*, host:users!host_stats_host_id_fkey(id, name, avatar_url, state, awarded_badges, revoked_badges, featured_host, is_pro, pro_expires_at)"
     )
     .order("average_rating", { ascending: false })
     .limit(300);
@@ -80,8 +84,11 @@ export default async function LeaderboardPage({
         )}
         <Avatar name={r.host!.name} url={r.host!.avatar_url} size="md" />
         <div className="min-w-0 flex-1">
-          <p className="truncate font-bold text-gray-900">
-            {r.host!.name ?? "Host"}
+          <p className="flex items-center gap-1 font-bold text-gray-900">
+            <span className="truncate">{r.host!.name ?? "Host"}</span>
+            {isProActive(r.host!.is_pro, r.host!.pro_expires_at) && (
+              <ProBadge size={15} />
+            )}
           </p>
           <p className="text-xs text-gray-500">
             ⭐ {Number(r.average_rating).toFixed(1)} · {r.total_events} events
