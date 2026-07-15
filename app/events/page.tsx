@@ -152,6 +152,42 @@ export default async function EventsPage({
       .map(decorate);
   }
 
+  // --- Social proof: which of the viewer's friends are going -----------------
+  // Map event_id -> { count, names, avatars } for a "friends going" badge.
+  const friendsGoing: Record<
+    string,
+    { count: number; names: string[]; avatars: (string | null)[] }
+  > = {};
+  if (user && feedEvents.length) {
+    const { data: connRows } = await supabase
+      .from("connections")
+      .select("requester_id, receiver_id")
+      .eq("status", "accepted")
+      .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`);
+    const friendIds = ((connRows ?? []) as { requester_id: string; receiver_id: string }[]).map(
+      (c) => (c.requester_id === user.id ? c.receiver_id : c.requester_id)
+    );
+    if (friendIds.length) {
+      const { data: fr } = await supabase
+        .from("rsvps")
+        .select("event_id, users(name, avatar_url)")
+        .eq("status", "accepted")
+        .in("user_id", friendIds)
+        .in("event_id", feedEvents.map((e) => e.id));
+      for (const row of (fr ?? []) as unknown as {
+        event_id: string;
+        users: { name: string | null; avatar_url: string | null } | null;
+      }[]) {
+        const g = (friendsGoing[row.event_id] ??= { count: 0, names: [], avatars: [] });
+        g.count++;
+        if (g.names.length < 3) {
+          g.names.push(row.users?.name ?? "A friend");
+          g.avatars.push(row.users?.avatar_url ?? null);
+        }
+      }
+    }
+  }
+
   // --- Trending: 5+ RSVPs in the last 24h among the shown events -------------
   let trendingIds: string[] = [];
   if (feedEvents.length) {
@@ -269,6 +305,7 @@ export default async function EventsPage({
               trendingIds={trendingIds}
               recommendedAll={forYou}
               hostBadgesByHost={hostBadgesByHost}
+              friendsGoing={friendsGoing}
             />
           </div>
 

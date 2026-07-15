@@ -16,6 +16,7 @@ export default function EventCard({
   hostBadges,
   trending = false,
   recommended = false,
+  friendsGoing,
 }: {
   event: EventRow;
   attendeeCount: number;
@@ -23,6 +24,7 @@ export default function EventCard({
   hostBadges?: Badge[];
   trending?: boolean;
   recommended?: boolean;
+  friendsGoing?: { count: number; names: string[]; avatars: (string | null)[] };
 }) {
   const spotsLabel = event.max_attendees
     ? `${attendeeCount}/${event.max_attendees} going`
@@ -123,6 +125,39 @@ export default function EventCard({
             <span className="line-clamp-1">{event.location}</span>
           </div>
         </dl>
+
+        {friendsGoing && friendsGoing.count > 0 && (
+          <div className="mt-3 flex items-center gap-2">
+            <div className="flex -space-x-2">
+              {friendsGoing.avatars.map((url, i) =>
+                url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={i}
+                    src={url}
+                    alt=""
+                    className="h-6 w-6 rounded-full border-2 border-white object-cover"
+                  />
+                ) : (
+                  <span
+                    key={i}
+                    className="grid h-6 w-6 place-items-center rounded-full border-2 border-white bg-brand text-[10px] font-bold text-white"
+                    aria-hidden
+                  >
+                    {(friendsGoing.names[i] ?? "?").charAt(0).toUpperCase()}
+                  </span>
+                )
+              )}
+            </div>
+            <span className="text-xs font-semibold text-brand">
+              {friendsGoing.count === 1
+                ? `${friendsGoing.names[0]} is going`
+                : `${friendsGoing.names[0]} + ${friendsGoing.count - 1} ${
+                    friendsGoing.count - 1 === 1 ? "friend" : "friends"
+                  } going`}
+            </span>
+          </div>
+        )}
 
         <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
           {lowSpots ? (

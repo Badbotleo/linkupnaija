@@ -10,18 +10,26 @@ type FeedEvent = EventRow & {
   hostRating: { avg: number; count: number } | null;
 };
 
+export interface FriendsGoing {
+  count: number;
+  names: string[];
+  avatars: (string | null)[];
+}
+
 export default function EventsList({
   events,
   stateFilter,
   trendingIds = [],
   recommendedAll = false,
   hostBadgesByHost = {},
+  friendsGoing = {},
 }: {
   events: FeedEvent[];
   stateFilter?: string;
   trendingIds?: string[];
   recommendedAll?: boolean;
   hostBadgesByHost?: Record<string, import("@/lib/hostBadges").Badge[]>;
+  friendsGoing?: Record<string, FriendsGoing>;
 }) {
   const [query, setQuery] = useState("");
   const trendingSet = new Set(trendingIds);
@@ -106,6 +114,7 @@ export default function EventsList({
                 hostBadges={hostBadgesByHost[event.host_id]}
                 trending={trendingSet.has(event.id)}
                 recommended={recommendedAll}
+                friendsGoing={friendsGoing[event.id]}
               />
             </div>
           ))}
