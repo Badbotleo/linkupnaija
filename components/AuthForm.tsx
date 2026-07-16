@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { NIGERIAN_STATES } from "@/lib/constants";
+import { isInAppBrowser } from "@/lib/webview";
 
 export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const router = useRouter();
@@ -22,6 +23,11 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
 
   // Success banner shown on the login page right after email verification.
   const justVerified = mode === "login" && searchParams.get("verified") === "1";
+
+  // Google OAuth is blocked inside in-app browsers (Instagram, FB, TikTok…),
+  // so warn users who opened the link there.
+  const [inApp, setInApp] = useState(false);
+  useEffect(() => setInApp(isInAppBrowser()), []);
 
   async function signInWithGoogle() {
     setError(null);
@@ -108,6 +114,14 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
       {justVerified && (
         <p className="rounded-lg bg-green-50 px-3 py-2 text-sm font-medium text-green-700">
           ✅ Email verified! Please log in.
+        </p>
+      )}
+
+      {inApp && (
+        <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800">
+          ⚠️ Google sign-in doesn&apos;t work inside this app&apos;s browser. Tap
+          the menu (⋯) and choose <strong>Open in browser</strong> (Chrome or
+          Safari), or use email below.
         </p>
       )}
 
