@@ -40,97 +40,66 @@ export default async function Navbar() {
           <Logo size={34} textClassName="text-lg" pulse />
         </Link>
 
-        {/* Desktop navigation (lg and up) */}
-        <div className="hidden items-center gap-1 lg:flex xl:gap-2">
-          <Link
-            href="/events"
-            className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-          >
-            Explore
-          </Link>
-          <Link
-            href="/circles"
-            className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-          >
-            Circles
-          </Link>
-          <Link
-            href="/venues"
-            className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-          >
-            Venues
-          </Link>
-          <Link
-            href="/tournament"
-            className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-          >
-            Tournament
-          </Link>
-          <Link
-            href="/host"
-            className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-          >
-            Host
-          </Link>
-          <Link
-            href="/opportunities"
-            className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-          >
-            Opportunities
-          </Link>
+        {/* Right side: a few primary links on desktop + a hamburger menu that
+            holds everything else, on every screen size. */}
+        <div className="flex items-center gap-1 xl:gap-2">
+          {/* Primary links (lg and up) */}
+          <div className="hidden items-center gap-1 lg:flex xl:gap-2">
+            <Link
+              href="/events"
+              className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            >
+              Explore
+            </Link>
+            <Link
+              href="/circles"
+              className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            >
+              Circles
+            </Link>
+            <Link
+              href="/host"
+              className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            >
+              Host
+            </Link>
+            <Link
+              href="/hosts/leaderboard"
+              className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+            >
+              Leaderboard
+            </Link>
 
-          <ThemeToggle />
+            <ThemeToggle />
 
-          {user ? (
-            <div className="flex items-center gap-1 xl:gap-2">
-              <NotificationsBell userId={user.id} />
-              <Link
-                href="/friends"
-                className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-              >
-                Friends
-              </Link>
-              {isAdmin && (
+            {user ? (
+              <>
+                <NotificationsBell userId={user.id} />
                 <Link
-                  href="/admin"
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-brand hover:bg-brand-50"
+                  href="/dashboard"
+                  className="relative rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 >
-                  Admin
+                  Dashboard
+                  {unreadMessages > 0 && (
+                    <span className="absolute right-0 top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                      {unreadMessages > 9 ? "9+" : unreadMessages}
+                    </span>
+                  )}
                 </Link>
-              )}
-              <Link
-                href="/dashboard"
-                className="relative rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-              >
-                Dashboard
-                {unreadMessages > 0 && (
-                  <span className="absolute right-0 top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                    {unreadMessages > 9 ? "9+" : unreadMessages}
-                  </span>
-                )}
-              </Link>
-              <form action="/auth/signout" method="post">
-                <button type="submit" className="btn-outline ml-1 py-2">
-                  Sign out
-                </button>
-              </form>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Link href="/login" className="btn-outline py-2">
-                Log in
-              </Link>
-              <Link href="/signup" className="btn-primary py-2">
-                Sign up
-              </Link>
-            </div>
-          )}
-        </div>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="btn-outline py-2">
+                  Log in
+                </Link>
+                <Link href="/signup" className="btn-primary py-2">
+                  Sign up
+                </Link>
+              </>
+            )}
+          </div>
 
-        {/* Mobile / tablet top bar (below lg): just the hamburger.
-            Search lives in the bottom nav's Explore tab; theme + notifications
-            live in the drawer and bottom nav respectively. */}
-        <div className="flex items-center lg:hidden">
+          {/* Hamburger menu — all sizes */}
           <MobileNav
             userId={user?.id ?? null}
             isAdmin={isAdmin}

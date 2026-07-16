@@ -8,24 +8,27 @@ import ProBadge from "./ProBadge";
 import Avatar from "./Avatar";
 import ThemeToggle from "./ThemeToggle";
 
-const MENU = [
-  { href: "/events", label: "Explore events", icon: "search" },
+// Top actions as a compact tappable grid.
+const QUICK = [
+  { href: "/events", label: "Explore", icon: "search" },
+  { href: "/host", label: "Host", icon: "mic" },
   { href: "/circles", label: "Circles", icon: "circles" },
-  { href: "/live", label: "Live feed", icon: "activity" },
-  { href: "/hosts/leaderboard", label: "Host leaderboard", icon: "trophy" },
-  { href: "/dashboard", label: "My Events", icon: "calendar" },
-  { href: "/host", label: "Hosting", icon: "mic" },
   { href: "/friends", label: "Friends", icon: "users" },
-  { href: "/dashboard", label: "Saved", icon: "bookmark" },
-  { href: "/profile/edit", label: "Settings", icon: "settings" },
-  { href: "mailto:support@linkupnaija.com", label: "Help", icon: "help" },
 ];
 
-const ALSO = [
-  { label: "AI Assistant", icon: "sparkles", action: "chat" },
+// Grouped, scannable lists.
+const DISCOVER = [
+  { href: "/live", label: "Live feed", icon: "activity" },
+  { href: "/hosts/leaderboard", label: "Host leaderboard", icon: "trophy" },
   { href: "/venues", label: "Venues", icon: "pin" },
   { href: "/opportunities", label: "Opportunities", icon: "briefcase" },
   { href: "/tournament", label: "FC26 Tournament", icon: "gamepad" },
+];
+
+const YOU = [
+  { href: "/dashboard", label: "My Events", icon: "calendar" },
+  { href: "/profile/edit", label: "Settings", icon: "settings" },
+  { href: "mailto:support@linkupnaija.com", label: "Help", icon: "help" },
 ];
 
 export default function MobileNav({
@@ -68,7 +71,7 @@ export default function MobileNav({
   }
 
   return (
-    <div className="lg:hidden">
+    <div>
       <button
         type="button"
         onClick={() => setOpen(true)}
@@ -87,7 +90,7 @@ export default function MobileNav({
             <div
               onClick={() => setOpen(false)}
               aria-hidden
-              className={`fixed inset-0 z-[60] bg-black/40 transition-opacity duration-300 lg:hidden ${
+              className={`fixed inset-0 z-[60] bg-black/40 transition-opacity duration-300 ${
                 open ? "opacity-100" : "pointer-events-none opacity-0"
               }`}
             />
@@ -95,7 +98,7 @@ export default function MobileNav({
               role="dialog"
               aria-modal="true"
               aria-label="Menu"
-              className={`fixed left-0 top-0 z-[70] flex h-full w-[86%] max-w-sm flex-col bg-gray-50 shadow-2xl transition-transform duration-300 ease-out lg:hidden ${
+              className={`fixed left-0 top-0 z-[70] flex h-full w-[86%] max-w-sm flex-col bg-gray-50 shadow-2xl transition-transform duration-300 ease-out ${
                 open ? "translate-x-0" : "-translate-x-full"
               }`}
             >
@@ -143,6 +146,47 @@ export default function MobileNav({
                   </div>
                 )}
 
+                {/* Quick actions */}
+                <div className="mt-4 grid grid-cols-4 gap-2">
+                  {QUICK.map((q) => (
+                    <Link
+                      key={q.label}
+                      href={q.href}
+                      className="flex flex-col items-center gap-1.5 rounded-2xl bg-white py-3 shadow-sm transition hover:bg-brand-50"
+                    >
+                      <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand">
+                        <Icon name={q.icon} />
+                      </span>
+                      <span className="text-xs font-bold text-gray-800">{q.label}</span>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Discover */}
+                <Section title="Discover">
+                  <button
+                    type="button"
+                    onClick={openChat}
+                    className="flex w-full items-center gap-3 border-b border-gray-50 px-4 py-3.5 text-left text-[15px] font-semibold text-gray-800 transition hover:bg-gray-50"
+                  >
+                    <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand">
+                      <Icon name="sparkles" />
+                    </span>
+                    AI Assistant
+                  </button>
+                  {DISCOVER.map((m) => (
+                    <MenuRow key={m.label} href={m.href} label={m.label} icon={m.icon} />
+                  ))}
+                </Section>
+
+                {/* You */}
+                <Section title="You">
+                  {YOU.map((m) => (
+                    <MenuRow key={m.label} href={m.href} label={m.label} icon={m.icon} />
+                  ))}
+                  {isAdmin && <MenuRow href="/admin" label="Admin" icon="shield" />}
+                </Section>
+
                 {/* Appearance */}
                 <div className="mt-4 flex items-center justify-between rounded-2xl bg-white p-3 shadow-sm">
                   <span className="flex items-center gap-3 text-[15px] font-semibold text-gray-800">
@@ -154,70 +198,35 @@ export default function MobileNav({
                   <ThemeToggle />
                 </div>
 
-                {/* Menu list */}
-                <div className="mt-4 overflow-hidden rounded-2xl bg-white shadow-sm">
-                  {MENU.map((m) => (
-                    <MenuRow key={m.label} href={m.href} label={m.label} icon={m.icon} />
-                  ))}
-                  {isAdmin && (
-                    <MenuRow href="/admin" label="Admin" icon="shield" />
-                  )}
-                  {userId && (
-                    <form action="/auth/signout" method="post">
-                      <button
-                        type="submit"
-                        className="flex w-full items-center gap-3 px-4 py-3.5 text-left text-[15px] font-semibold text-red-600 transition hover:bg-red-50"
-                      >
-                        <span className="grid h-9 w-9 place-items-center rounded-full bg-red-50 text-red-500">
-                          <Icon name="logout" />
-                        </span>
-                        Log out
-                      </button>
-                    </form>
-                  )}
-                </div>
-
-                {/* Also from LinkUpNaija */}
-                <p className="mb-2 mt-6 px-1 text-sm font-bold text-gray-500">
-                  Also from LinkUpNaija
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {ALSO.map((a) =>
-                    a.action === "chat" ? (
-                      <button
-                        key={a.label}
-                        type="button"
-                        onClick={openChat}
-                        className="flex items-center gap-2 rounded-2xl bg-white p-3 text-left shadow-sm"
-                      >
-                        <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand">
-                          <Icon name={a.icon} />
-                        </span>
-                        <span className="text-sm font-semibold text-gray-800">
-                          {a.label}
-                        </span>
-                      </button>
-                    ) : (
-                      <Link
-                        key={a.label}
-                        href={a.href!}
-                        className="flex items-center gap-2 rounded-2xl bg-white p-3 shadow-sm"
-                      >
-                        <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand">
-                          <Icon name={a.icon} />
-                        </span>
-                        <span className="text-sm font-semibold text-gray-800">
-                          {a.label}
-                        </span>
-                      </Link>
-                    )
-                  )}
-                </div>
+                {userId && (
+                  <form action="/auth/signout" method="post" className="mt-3">
+                    <button
+                      type="submit"
+                      className="flex w-full items-center gap-3 rounded-2xl bg-white px-4 py-3.5 text-left text-[15px] font-semibold text-red-600 shadow-sm transition hover:bg-red-50"
+                    >
+                      <span className="grid h-9 w-9 place-items-center rounded-full bg-red-50 text-red-500">
+                        <Icon name="logout" />
+                      </span>
+                      Log out
+                    </button>
+                  </form>
+                )}
               </div>
             </aside>
           </>,
           document.body
         )}
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="mt-5">
+      <p className="mb-2 px-1 text-xs font-bold uppercase tracking-wide text-gray-400">
+        {title}
+      </p>
+      <div className="overflow-hidden rounded-2xl bg-white shadow-sm">{children}</div>
     </div>
   );
 }
