@@ -1,11 +1,22 @@
 import CountUp from "./anim/CountUp";
 
-export default function LandingStats({ eventsCount }: { eventsCount: number }) {
+// Honest, live platform stats — no inflated numbers. "States supported" is the
+// platform's coverage (all 36 + FCT), which is true regardless of where events
+// have happened so far; the rest come from the database.
+export default function LandingStats({
+  eventsCount,
+  membersCount,
+  categoriesCount,
+}: {
+  eventsCount: number;
+  membersCount: number;
+  categoriesCount: number;
+}) {
   const stats = [
-    { end: Math.max(eventsCount, 500), suffix: "+", label: "Events hosted" },
-    { end: 36, suffix: "", label: "States covered" },
-    { end: 20, suffix: "+", label: "Categories" },
-    { end: 2, prefix: "₦", suffix: "M", label: "Tournament prize" },
+    { end: eventsCount, suffix: "", label: "Events hosted" },
+    { end: membersCount, suffix: "", label: "Members" },
+    { end: 36, suffix: "", label: "States supported" },
+    { end: categoriesCount, suffix: "", label: "Event categories" },
   ];
 
   return (
@@ -15,7 +26,6 @@ export default function LandingStats({ eventsCount }: { eventsCount: number }) {
           <div key={s.label} className="text-center">
             <CountUp
               end={s.end}
-              prefix={s.prefix}
               suffix={s.suffix}
               className="block text-4xl font-extrabold text-brand sm:text-5xl"
             />

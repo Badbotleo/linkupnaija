@@ -10,21 +10,22 @@ import LandingStats from "@/components/LandingStats";
 import LoggedInHome from "@/components/home/LoggedInHome";
 import { getSessionUser } from "@/lib/supabase/auth";
 
-// The homepage hero/stats don't need to be real-time — cache the event count
+// The homepage hero/stats don't need to be real-time — cache the live counts
 // for 5 minutes so we don't hit the DB on every single landing-page view.
 // Uses a cookieless anon client (unstable_cache can't read request cookies).
-const getEventsCount = unstable_cache(
+const getLandingCounts = unstable_cache(
   async () => {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
-    const { count } = await supabase
-      .from("events")
-      .select("*", { count: "exact", head: true });
-    return count ?? 0;
+    const [{ count: events }, { count: members }] = await Promise.all([
+      supabase.from("events").select("*", { count: "exact", head: true }),
+      supabase.from("users").select("*", { count: "exact", head: true }),
+    ]);
+    return { events: events ?? 0, members: members ?? 0 };
   },
-  ["homepage-events-count"],
+  ["homepage-landing-counts"],
   { revalidate: 300 }
 );
 
@@ -120,8 +121,8 @@ export default async function HomePage() {
   const user = await getSessionUser();
   if (user) return <LoggedInHome userId={user.id} />;
 
-  const [eventsCount, popularSeries, heroEvents] = await Promise.all([
-    getEventsCount(),
+  const [counts, popularSeries, heroEvents] = await Promise.all([
+    getLandingCounts(),
     getPopularSeries(),
     getHeroEvents(),
   ]);
@@ -222,7 +223,11 @@ export default async function HomePage() {
       </section>
 
       {/* Floating stats */}
-      <LandingStats eventsCount={eventsCount} />
+      <LandingStats
+        eventsCount={counts.events}
+        membersCount={counts.members}
+        categoriesCount={EVENT_CATEGORIES.length}
+      />
 
       {/* Why LinkUpNaija */}
       <section className="container-page py-16">
