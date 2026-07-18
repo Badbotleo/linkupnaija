@@ -1,3 +1,4 @@
+import LineIcon from "@/components/ui/LineIcon";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
@@ -55,7 +56,7 @@ export default async function LivePage() {
     items.push({
       key: `e-${e.id}`,
       time: e.created_at,
-      icon: "🎉",
+      icon: "mic",
       text: `${e.host?.name ?? "A host"} is hosting ${e.title}`,
       href: `/events/${e.id}`,
     });
@@ -71,7 +72,7 @@ export default async function LivePage() {
     items.push({
       key: `r-${r.id}`,
       time: r.created_at,
-      icon: r.events.date >= today ? "🙌" : "✅",
+      icon: r.events.date >= today ? "users" : "check",
       text: `${r.users?.name ?? "Someone"} is going to ${r.events.title}`,
       href: `/events/${r.events.id}`,
     });
@@ -87,7 +88,7 @@ export default async function LivePage() {
     items.push({
       key: `p-${p.id}`,
       time: p.created_at,
-      icon: "💬",
+      icon: "chat",
       text: `${p.users?.name ?? "Someone"} posted in ${p.circles.name}`,
       href: `/circles/${p.circles.id}`,
     });
@@ -119,7 +120,7 @@ export default async function LivePage() {
                 className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-3.5 shadow-sm transition hover:border-brand/30"
               >
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-50 text-lg">
-                  {i.icon}
+                  <LineIcon name={i.icon} size={16} />
                 </span>
                 <span className="min-w-0 flex-1 text-sm text-gray-800">{i.text}</span>
                 <span className="shrink-0 text-xs text-gray-400">{ago(i.time)}</span>

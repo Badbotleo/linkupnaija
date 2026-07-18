@@ -29,7 +29,7 @@ export default function LandingStats({
               suffix={s.suffix}
               className="block text-4xl font-extrabold text-brand sm:text-5xl"
             />
-            <p className="mt-1 text-sm text-gray-500">{s.label}</p>
+            <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">{s.label}</p>
           </div>
         ))}
       </div>

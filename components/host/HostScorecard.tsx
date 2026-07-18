@@ -39,10 +39,10 @@ export default function HostScorecard({
       <dl className="mt-4 grid gap-3 sm:grid-cols-2">
         {rows.map((r) => (
           <div key={r.label} className="rounded-xl bg-gray-50 px-4 py-3">
-            <dt className="text-xs font-medium text-gray-500">
+            <dt className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
               {r.icon} {r.label}
             </dt>
-            <dd className="mt-0.5 font-bold text-gray-900">{r.value}</dd>
+            <dd className="mt-0.5 font-bold tabular-nums text-gray-900">{r.value}</dd>
           </div>
         ))}
       </dl>

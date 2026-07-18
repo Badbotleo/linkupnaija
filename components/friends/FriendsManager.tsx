@@ -7,6 +7,7 @@ import { toast } from "@/lib/toast";
 import Avatar from "../Avatar";
 import MessageButton from "../MessageButton";
 import ProBadge from "../ProBadge";
+import LineIcon from "../ui/LineIcon";
 import { isProActive } from "@/lib/pro";
 import type { FriendUser } from "@/lib/types";
 
@@ -348,7 +349,10 @@ function Row({
             {isProActive(user.is_pro, user.pro_expires_at) && <ProBadge size={14} />}
           </p>
           {user.state && (
-            <p className="truncate text-xs text-gray-500">📍 {user.state}</p>
+            <p className="flex items-center gap-1 truncate text-xs text-gray-500">
+              <LineIcon name="pin" size={12} className="shrink-0 text-gray-400" />
+              {user.state}
+            </p>
           )}
         </div>
       </Link>

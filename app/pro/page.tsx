@@ -1,3 +1,4 @@
+import LineIcon from "@/components/ui/LineIcon";
 import { createClient } from "@/lib/supabase/server";
 import GoProButton from "@/components/GoProButton";
 import { PRO_PRICE, FREE_REQUEST_LIMIT, isProActive } from "@/lib/pro";
@@ -13,27 +14,27 @@ export const metadata = {
 
 const BENEFITS = [
   {
-    emoji: "👀",
+    icon: "eye",
     title: "See who viewed your profile",
     text: "Know who's checking you out and never miss a potential connection.",
   },
   {
-    emoji: "⚡",
+    icon: "zap",
     title: "Early access to events",
     text: "Request to join events 24 hours before they go public.",
   },
   {
-    emoji: "♾️",
+    icon: "infinity",
     title: "Unlimited join requests",
     text: `Free members can send ${FREE_REQUEST_LIMIT} join requests a month. Pro members get unlimited.`,
   },
   {
-    emoji: "🚀",
+    icon: "trending",
     title: "Profile boost in search",
     text: "Your profile and requests rank higher so hosts notice you first.",
   },
   {
-    emoji: "💛",
+    icon: "star",
     title: "Gold Pro badge",
     text: "Stand out with a Pro badge on your profile that hosts trust.",
   },
@@ -81,8 +82,8 @@ export default async function ProPage() {
             key={b.title}
             className="flex items-start gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-card"
           >
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-amber-50 text-2xl">
-              {b.emoji}
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-500">
+              <LineIcon name={b.icon} size={20} />
             </span>
             <div>
               <h3 className="font-bold text-gray-900">{b.title}</h3>

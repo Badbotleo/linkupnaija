@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { AppNotification } from "@/lib/types";
 import EnablePush from "@/components/EnablePush";
+import LineIcon from "@/components/ui/LineIcon";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Notifications" };
@@ -47,7 +48,9 @@ export default async function NotificationsPage() {
 
       {items.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-16 text-center">
-          <p className="text-4xl">🔔</p>
+          <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-brand-50 text-brand">
+            <LineIcon name="bell" size={24} />
+          </span>
           <p className="mt-3 font-semibold text-gray-900">You&apos;re all caught up</p>
           <p className="mt-1 text-sm text-gray-500">
             New activity from your events and friends shows up here.
@@ -62,8 +65,8 @@ export default async function NotificationsPage() {
                   n.read ? "border-gray-100 bg-white" : "border-brand/20 bg-brand-50/40"
                 }`}
               >
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-50 text-lg">
-                  🔔
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-50 text-brand">
+                  <LineIcon name="bell" size={17} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm text-gray-800">{n.message}</p>

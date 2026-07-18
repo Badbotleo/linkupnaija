@@ -1,3 +1,4 @@
+import LineIcon from "@/components/ui/LineIcon";
 import Link from "next/link";
 import OpportunityHubs from "@/components/opportunities/OpportunityHubs";
 
@@ -35,7 +36,9 @@ export default function OpportunitiesPage() {
           className="mt-6 flex flex-col items-start gap-3 rounded-2xl border border-gray-100 bg-white p-6 shadow-card transition hover:-translate-y-0.5 hover:border-brand/30 sm:flex-row sm:items-center sm:justify-between"
         >
           <div>
-            <span className="text-4xl">🏢</span>
+            <span className="grid h-12 w-12 place-items-center rounded-xl bg-brand-50 text-brand">
+              <LineIcon name="building" size={24} />
+            </span>
             <h3 className="mt-3 text-lg font-extrabold text-gray-900">
               Corporate Events
             </h3>

@@ -220,8 +220,8 @@ export default async function PublicProfilePage({
 function Stat({ value, label }: { value: number; label: string }) {
   return (
     <div>
-      <p className="text-lg font-extrabold text-gray-900">{value}</p>
-      <p className="text-xs font-medium text-gray-500">{label}</p>
+      <p className="text-xl font-extrabold tabular-nums text-gray-900">{value}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{label}</p>
     </div>
   );
 }

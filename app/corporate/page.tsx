@@ -57,7 +57,7 @@ export default function CorporatePage() {
       <section className="text-white" style={{ backgroundColor: "#1A1040" }}>
         <div className="container-page py-16 text-center sm:py-20">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm font-semibold text-[#FAC775]">
-            🏢 For Business
+            For Business
           </span>
           <h1 className="mt-5 text-4xl font-extrabold tracking-tight sm:text-5xl">
             Plan unforgettable team events with LinkUpNaija
