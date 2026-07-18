@@ -19,8 +19,44 @@ body {
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-brand/40 disabled:cursor-not-allowed disabled:opacity-60;
   }
+  /* Liquid-glass CTA (iOS-style): translucent brand tint over a backdrop
+     blur, hairline light border and a specular top highlight. */
   .btn-primary {
-    @apply btn bg-brand text-white hover:bg-brand-600 active:bg-brand-700;
+    @apply btn rounded-full text-white;
+    background: linear-gradient(
+      160deg,
+      rgba(109, 99, 195, 0.82),
+      rgba(83, 74, 183, 0.66)
+    );
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    backdrop-filter: blur(18px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.38);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.45),
+      inset 0 -1px 1px rgba(17, 15, 37, 0.12),
+      0 6px 20px -6px rgba(83, 74, 183, 0.45);
+    text-shadow: 0 1px 2px rgba(17, 15, 37, 0.18);
+  }
+  .btn-primary:hover {
+    background: linear-gradient(
+      160deg,
+      rgba(109, 99, 195, 0.92),
+      rgba(83, 74, 183, 0.78)
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
+      inset 0 -1px 1px rgba(17, 15, 37, 0.12),
+      0 8px 24px -6px rgba(83, 74, 183, 0.55);
+  }
+  .btn-primary:active {
+    background: linear-gradient(
+      160deg,
+      rgba(83, 74, 183, 0.95),
+      rgba(67, 59, 146, 0.85)
+    );
+    box-shadow:
+      inset 0 1px 2px rgba(17, 15, 37, 0.25),
+      0 3px 10px -4px rgba(83, 74, 183, 0.4);
   }
   .btn-outline {
     @apply btn border border-brand/30 bg-white text-brand hover:bg-brand-50;
