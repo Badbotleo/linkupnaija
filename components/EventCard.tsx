@@ -57,17 +57,17 @@ export default function EventCard({
             <CategoryBadge category={event.category} className="shadow-sm" />
             {event.series_id && (
               <span className="rounded-full bg-brand/90 px-2.5 py-1 text-xs font-bold text-white shadow-sm">
-                🔄 Series
+                Series
               </span>
             )}
             {trending && (
               <span className="rounded-full bg-orange-500 px-2.5 py-1 text-xs font-bold text-white shadow-sm">
-                🔥 Trending
+                Trending
               </span>
             )}
             {event.is_corporate && (
               <span className="rounded-full bg-[#1A1040] px-2.5 py-1 text-xs font-bold text-white shadow-sm">
-                🏢 Corporate
+                Corporate
               </span>
             )}
           </div>

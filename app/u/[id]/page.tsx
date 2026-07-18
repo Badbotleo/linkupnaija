@@ -8,6 +8,7 @@ import AddFriendButton from "@/components/profile/AddFriendButton";
 import MessageButton from "@/components/MessageButton";
 import ReportButton from "@/components/ReportButton";
 import ProBadge from "@/components/ProBadge";
+import LineIcon from "@/components/ui/LineIcon";
 import { isProActive } from "@/lib/pro";
 import ProfilePhotos from "@/components/profile/ProfilePhotos";
 import HostScorecard from "@/components/host/HostScorecard";
@@ -146,7 +147,12 @@ export default async function PublicProfilePage({
             </span>
           )}
         </h1>
-        {profile.state && <p className="text-sm text-gray-500">📍 {profile.state}</p>}
+        {profile.state && (
+          <p className="flex items-center gap-1 text-sm text-gray-500">
+            <LineIcon name="pin" size={13} className="text-gray-400" />
+            {profile.state}
+          </p>
+        )}
         {badges.length > 0 && (
           <div className="mt-2">
             <HostBadges badges={badges} />
@@ -225,9 +231,22 @@ function AboutCard({ profile }: { profile: UserProfile }) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
       <ul className="space-y-3 text-sm text-gray-700">
-        {profile.bio && <li>💬 {profile.bio}</li>}
-        {profile.state && <li>📍 Lives in {profile.state}</li>}
-        <li>🗓️ Joined {formatEventDate(profile.created_at.slice(0, 10))}</li>
+        {profile.bio && (
+          <li className="flex items-start gap-2">
+            <LineIcon name="chat" size={15} className="mt-0.5 shrink-0 text-gray-400" />
+            {profile.bio}
+          </li>
+        )}
+        {profile.state && (
+          <li className="flex items-start gap-2">
+            <LineIcon name="pin" size={15} className="mt-0.5 shrink-0 text-gray-400" />
+            Lives in {profile.state}
+          </li>
+        )}
+        <li className="flex items-start gap-2">
+          <LineIcon name="calendar" size={15} className="mt-0.5 shrink-0 text-gray-400" />
+          Joined {formatEventDate(profile.created_at.slice(0, 10))}
+        </li>
       </ul>
       {hasSocials && (
         <div className="mt-4 border-t border-gray-100 pt-4">

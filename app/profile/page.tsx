@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import EventCover from "@/components/EventCover";
+import LineIcon from "@/components/ui/LineIcon";
 import SocialLinks from "@/components/SocialLinks";
 import ShareProfileButton from "@/components/profile/ShareProfileButton";
 import BannerUpload from "@/components/profile/BannerUpload";
@@ -101,7 +102,10 @@ export default async function ProfilePage({
           )}
         </h1>
         {profile?.state && (
-          <p className="text-sm text-gray-500">📍 {profile.state}</p>
+          <p className="flex items-center gap-1 text-sm text-gray-500">
+            <LineIcon name="pin" size={13} className="text-gray-400" />
+            {profile.state}
+          </p>
         )}
         {badges.length > 0 && (
           <div className="mt-2">
@@ -213,10 +217,10 @@ async function EventsTab({ userId }: { userId: string }) {
 
 function About({ profile }: { profile: UserProfile | null }) {
   const rows = [
-    profile?.bio && { icon: "💬", text: profile.bio },
-    profile?.state && { icon: "📍", text: `Lives in ${profile.state}` },
+    profile?.bio && { icon: "chat", text: profile.bio },
+    profile?.state && { icon: "pin", text: `Lives in ${profile.state}` },
     profile?.created_at && {
-      icon: "🗓️",
+      icon: "calendar",
       text: `Joined ${formatEventDate(profile.created_at.slice(0, 10))}`,
     },
   ].filter(Boolean) as { icon: string; text: string }[];
@@ -227,7 +231,9 @@ function About({ profile }: { profile: UserProfile | null }) {
       <ul className="space-y-3">
         {rows.map((r, i) => (
           <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
-            <span aria-hidden>{r.icon}</span>
+            <span className="mt-0.5 text-gray-400" aria-hidden>
+              <LineIcon name={r.icon} size={15} />
+            </span>
             <span>{r.text}</span>
           </li>
         ))}

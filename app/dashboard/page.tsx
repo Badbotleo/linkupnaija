@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LineIcon from "@/components/ui/LineIcon";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ProfileCard from "@/components/ProfileCard";
@@ -341,7 +342,7 @@ export default async function DashboardPage() {
           {myCircleRows.length > 0 && (
             <section>
               <h2 className="mb-3 text-lg font-bold text-gray-900">
-                ⭕ My Circles
+                My Circles
               </h2>
               <div className="space-y-2">
                 {myCircleRows.map(({ circle }) => {
@@ -375,7 +376,7 @@ export default async function DashboardPage() {
           {mySeries.length > 0 && (
             <section>
               <h2 className="mb-3 text-lg font-bold text-gray-900">
-                🔄 My Series
+                My Series
               </h2>
               <div className="space-y-2">
                 {mySeries.map((s) => (
@@ -417,11 +418,11 @@ export default async function DashboardPage() {
                           {e.title}
                         </p>
                         <p className="text-sm text-gray-500">
-                          📅 {formatEventDate(e.date)} · {formatEventTime(e.time)}
+                          {formatEventDate(e.date)} · {formatEventTime(e.time)}
                         </p>
                       </div>
                       <span className="shrink-0 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand">
-                        🔄 Series
+                        Series
                       </span>
                     </Link>
                   ))}
@@ -433,7 +434,7 @@ export default async function DashboardPage() {
           {recentPhotos.length > 0 && (
             <section>
               <h2 className="mb-3 text-lg font-bold text-gray-900">
-                📸 Recent memories
+                Recent memories
               </h2>
               <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
                 {recentPhotos.map((p) => (
@@ -493,8 +494,9 @@ export default async function DashboardPage() {
               ).length;
               return (
                 <EventRowCard key={e.id} event={e}>
-                  <span className="text-sm font-semibold text-gray-700">
-                    👥 {accepted} going
+                  <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-600">
+                    <LineIcon name="users" size={15} className="text-gray-400" />
+                    {accepted} going
                   </span>
                   {pendingCount > 0 && (
                     <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-700">
@@ -631,8 +633,9 @@ function EventRowCard({
           </span>
         </div>
         <p className="mt-1.5 truncate font-bold text-gray-900">{event.title}</p>
-        <p className="text-sm text-gray-500">
-          📅 {formatEventDate(event.date)} · {formatEventTime(event.time)}
+        <p className="flex items-center gap-1.5 text-sm text-gray-500">
+          <LineIcon name="calendar" size={14} className="shrink-0 text-gray-400" />
+          {formatEventDate(event.date)} · {formatEventTime(event.time)}
         </p>
       </div>
       <div className="flex items-center gap-2">{children}</div>
