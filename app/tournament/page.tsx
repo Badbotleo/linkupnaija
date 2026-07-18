@@ -10,9 +10,9 @@ import { formatNaira } from "@/lib/paystack";
 import { SITE_ORIGIN } from "@/lib/qr";
 
 export const metadata = {
-  title: "FC26 Tournament — Abuja",
+  title: "FC26 Tournament · Abuja",
   description:
-    "Abuja's first PS5 FC26 tournament. ₦2,000,000 prize, winner takes all. 40 players only — register for ₦10,000.",
+    "Abuja's first PS5 FC26 tournament. ₦2,000,000 prize, winner takes all. 40 players only. Register for ₦10,000.",
 };
 
 const DARK = "#0F0A2E";
@@ -28,7 +28,7 @@ const STEPS = [
 const RULES = [
   "1v1 knockout format.",
   "Best of three matches per round.",
-  "Standard FC26 settings — no custom teams, no house rules.",
+  "Standard FC26 settings: no custom teams, no house rules.",
   "No-shows forfeit their ₦10,000 registration fee.",
   "Pool fee (₦50,000) is refunded if the tournament is cancelled by the organizer.",
 ];
@@ -86,7 +86,7 @@ export default function TournamentPage() {
             href="#register"
             className="mt-10 rounded-xl bg-gradient-to-r from-[#534AB7] to-[#7F77DD] px-8 py-3.5 text-base font-bold text-white transition hover:opacity-90"
           >
-            Register Now — {formatNaira(TOURNAMENT.regFee)}
+            Register Now · {formatNaira(TOURNAMENT.regFee)}
           </a>
         </div>
       </section>
@@ -94,7 +94,7 @@ export default function TournamentPage() {
       {/* ===== DETAILS ===== */}
       <section className="container-page py-12">
         <div className="grid gap-4 sm:grid-cols-3">
-          <InfoCard borderColor="#534AB7" title="40 Players Only" sub="Limited spots — first come, first served" />
+          <InfoCard borderColor="#534AB7" title="40 Players Only" sub="Limited spots. First come, first served" />
           <InfoCard borderColor="#22C55E" title={`${formatNaira(TOURNAMENT.regFee)} Registration`} sub="Pay online to secure your spot" />
           <InfoCard borderColor={GOLD} title={`${formatNaira(TOURNAMENT.poolFee)} Pool Entry`} sub="Pay at the venue on the day" />
         </div>
@@ -108,7 +108,7 @@ export default function TournamentPage() {
         <div className="mt-6 grid gap-4 text-center sm:grid-cols-3">
           <Meta label="Format" value="1v1 Knockout · Best of Three" />
           <Meta label="Date" value="To be announced" />
-          <Meta label="Venue" value="Abuja — TBA" />
+          <Meta label="Venue" value="Abuja (TBA)" />
         </div>
 
         {/* Countdown (pass an ISO date string here once announced) */}
@@ -160,7 +160,7 @@ export default function TournamentPage() {
             Spread the word
           </p>
           <p className="mt-1 text-center text-sm text-white/60">
-            Print this on flyers — scan to register for the FC26 tournament.
+            Print this on flyers. Scan to register for the FC26 tournament.
           </p>
           <div className="mt-5">
             <QrCode

@@ -52,7 +52,7 @@ export default function TicketButton({
               {attendeeName ?? "Guest"}
             </p>
             <p className="mt-1 text-xs text-gray-400">
-              Show this at the door — the host scans it to check you in.
+              Show this at the door. The host scans it to check you in.
             </p>
             <button
               type="button"

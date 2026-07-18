@@ -170,7 +170,7 @@ export default function ManageRequests({
       {isPast && accepted.length > 0 && (
         <div className="mt-5 border-t border-gray-100 pt-4">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-            Check-in — who showed up?
+            Check-in: who showed up?
           </h3>
           <p className="mt-1 text-xs text-gray-400">
             This powers your attendance rate on your host scorecard.

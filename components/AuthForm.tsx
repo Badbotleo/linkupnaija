@@ -135,7 +135,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
       </button>
 
       <p className="text-center text-[12px] italic text-gray-500">
-        You&apos;ll be securely redirected to Google — then brought straight back
+        You&apos;ll be securely redirected to Google, then brought straight back
         to LinkUpNaija ✓
       </p>
 

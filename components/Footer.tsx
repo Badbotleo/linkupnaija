@@ -83,7 +83,7 @@ export default function Footer() {
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`${s.label} — ${s.handle}`}
+                  aria-label={`${s.label} · ${s.handle}`}
                   title={s.handle}
                   className="grid h-9 w-9 place-items-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:border-brand hover:text-brand"
                 >

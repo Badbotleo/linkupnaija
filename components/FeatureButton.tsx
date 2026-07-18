@@ -95,7 +95,7 @@ export default function FeatureButton({
       >
         {loading
           ? "Processing…"
-          : `★ Boost this event for 48 hours — ${formatNaira(FEATURE_PRICE)}`}
+          : `★ Boost this event for 48 hours · ${formatNaira(FEATURE_PRICE)}`}
       </button>
       <p className="mt-1.5 text-center text-xs text-gray-400">
         Boosted events show at the top of the feed.

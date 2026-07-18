@@ -74,7 +74,7 @@ const WHY_LINKUPNAIJA = [
   {
     emoji: "🤝",
     title: "Built for real connection",
-    text: "Not just parties. Family hangouts, friend meetups, book clubs, picnics — events that bring people closer together.",
+    text: "Not just parties. Family hangouts, friend meetups, book clubs, picnics. Events that bring people closer together.",
   },
   {
     emoji: "✅",
@@ -146,7 +146,7 @@ export default async function HomePage() {
             </p>
             <p className="mt-5 max-w-lg text-lg text-gray-600">
               From family picnics to friend reunions, book clubs to new
-              friendships — LinkUpNaija helps Nigerians build real connections,
+              friendships. LinkUpNaija helps Nigerians build real connections,
               not just attend events.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
@@ -246,7 +246,7 @@ export default async function HomePage() {
           Why LinkUpNaija
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-center text-gray-600">
-          More than an events app — a place to build genuine connections.
+          More than an events app. A place to build genuine connections.
         </p>
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {WHY_LINKUPNAIJA.map((item) => (
@@ -337,7 +337,7 @@ export default async function HomePage() {
             🔄 Recurring events near you
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-center text-gray-600">
-            Communities that meet again and again — subscribe and never miss one.
+            Communities that meet again and again. Subscribe and never miss one.
           </p>
           <div className="mt-10 grid gap-6 sm:grid-cols-3">
             {popularSeries.map(

@@ -65,7 +65,7 @@ function reminderEmailHtml(opts: {
     bodyHtml: `
       ${heading(`Hey ${firstName(opts.name)}, we've missed you 👋`)}
       ${paragraph(
-        "Nigerians are linking up on LinkUpNaija every week — hangouts, parties, picnics, game nights and more. Here's your nudge to jump back in and find your people."
+        "Nigerians are linking up on LinkUpNaija every week: hangouts, parties, picnics, game nights and more. Here's your nudge to jump back in and find your people."
       )}
       ${button(`${SITE_URL}/events`, "🔎 See what's happening")}
       ${button(`${SITE_URL}/host`, "🎤 Host your own")}

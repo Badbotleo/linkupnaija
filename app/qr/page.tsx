@@ -18,7 +18,7 @@ export default function QrPage() {
       </h1>
       <p className="mt-2 max-w-md text-gray-600">
         Print this on flyers, posters or business cards to bring people to
-        LinkUpNaija. The download is high-resolution (1000×1000) — perfect for
+        LinkUpNaija. The download is high-resolution (1000×1000), perfect for
         print.
       </p>
 

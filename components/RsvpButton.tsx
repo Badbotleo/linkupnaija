@@ -213,7 +213,7 @@ export default function RsvpButton({
       {status === "pending" && (
         <>
           <div className="rounded-xl bg-amber-50 px-4 py-3 text-center text-sm font-semibold text-amber-700">
-            ⏳ Request sent — waiting for the host to approve
+            ⏳ Request sent. Waiting for the host to approve
           </div>
           <button
             type="button"

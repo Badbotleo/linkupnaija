@@ -156,7 +156,7 @@ export default function CircleFeed({
       <div className="mt-5 space-y-4">
         {posts.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-12 text-center text-sm text-gray-500">
-            No posts yet — {isMember ? "be the first to share something!" : "join to start posting."}
+            No posts yet. {isMember ? "Be the first to share something!" : "Join to start posting."}
           </p>
         ) : (
           posts.map((post) => (

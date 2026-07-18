@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "LinkUpNaija — Nigeria's social events platform";
+export const alt = "LinkUpNaija · Nigeria's social events platform";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -66,7 +66,7 @@ export default function OpengraphImage() {
             maxWidth: 900,
           }}
         >
-          Nigeria&apos;s social events platform — clubbing, parties, picnics,
+          Nigeria&apos;s social events platform: clubbing, parties, picnics,
           book clubs & more across all 36 states.
         </div>
 

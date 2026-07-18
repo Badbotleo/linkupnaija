@@ -308,7 +308,7 @@ export default async function EventsPage({
         </p>
       ) : forYou && feedEvents.length === 0 ? (
         <p className="mt-8 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-12 text-center text-sm text-gray-500">
-          We don&apos;t have enough signal to recommend events yet — join a few
+          We don&apos;t have enough signal to recommend events yet. Join a few
           and check back!
         </p>
       ) : (

@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Sign up",
   description:
-    "Create a free LinkUpNaija account and never miss a vibe — join events across Nigeria or host your own.",
+    "Create a free LinkUpNaija account and never miss a vibe. Join events across Nigeria or host your own.",
 };
 
 export default async function SignupPage() {

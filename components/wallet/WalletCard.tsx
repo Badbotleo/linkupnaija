@@ -41,7 +41,7 @@ export default function WalletCard({
     setBusy(false);
     if (error) toast.error(error.message);
     else {
-      toast.success("Withdrawal requested — we'll process it shortly.");
+      toast.success("Withdrawal requested. We'll process it shortly.");
       router.refresh();
     }
   }

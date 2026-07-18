@@ -127,7 +127,7 @@ export default function ChatPanel({
       >
         {messages.length === 0 ? (
           <p className="m-auto text-center text-sm text-gray-400">
-            No messages yet — say hi to your fellow attendees! 👋
+            No messages yet. Say hi to your fellow attendees! 👋
           </p>
         ) : (
           messages.map((m) => {

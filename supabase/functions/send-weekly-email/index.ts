@@ -71,7 +71,7 @@ const TEMPLATES: Template[] = [
         bodyHtml: `
           ${heading(`New this week, ${firstName(c.name)} 👀`)}
           ${paragraph(
-            "People across Nigeria are linking up — hangouts, parties, picnics and game nights. Here's a quick look at what's coming up so you don't miss out."
+            "People across Nigeria are linking up: hangouts, parties, picnics and game nights. Here's a quick look at what's coming up so you don't miss out."
           )}
           ${button(`${SITE_URL}/events`, "🔎 Browse this week's events")}
           ${eventsBlock(c)}
@@ -90,7 +90,7 @@ const TEMPLATES: Template[] = [
         bodyHtml: `
           ${heading(`Ever thought about hosting, ${firstName(c.name)}?`)}
           ${paragraph(
-            "The best link-ups start with one person and an idea — a picnic, a game night, a book club, a small party. Setting one up on LinkUpNaija takes a couple of minutes, and you decide who joins."
+            "The best link-ups start with one person and an idea: a picnic, a game night, a book club, a small party. Setting one up on LinkUpNaija takes a couple of minutes, and you decide who joins."
           )}
           ${paragraph("You bring the vibe. We'll help you gather your people.")}
           ${button(`${SITE_URL}/host`, "🎤 Host an event")}
@@ -109,7 +109,7 @@ const TEMPLATES: Template[] = [
         bodyHtml: `
           ${heading(`Your people are waiting, ${firstName(c.name)} ⭕`)}
           ${paragraph(
-            "Circles are communities on LinkUpNaija built around a shared interest — a city, a hobby, a scene. Join one to meet regulars, chat, and hear about link-ups before anyone else."
+            "Circles are communities on LinkUpNaija built around a shared interest: a city, a hobby, a scene. Join one to meet regulars, chat, and hear about link-ups before anyone else."
           )}
           ${button(`${SITE_URL}/circles`, "⭕ Explore Circles")}
         `,

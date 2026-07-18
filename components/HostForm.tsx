@@ -208,7 +208,7 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
               <p className="mt-1 text-sm font-medium">
                 Tap to upload a cover image
               </p>
-              <p className="text-xs">Optional — JPG or PNG</p>
+              <p className="text-xs">Optional (JPG or PNG)</p>
             </div>
           )}
           {coverPreview && (
@@ -260,7 +260,7 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
         </div>
         {form.event_type === "private" && (
           <p className="mt-1.5 text-xs text-gray-400">
-            Private events don&apos;t appear in the public feed — share the event
+            Private events don&apos;t appear in the public feed. Share the event
             link directly with your guests.
           </p>
         )}

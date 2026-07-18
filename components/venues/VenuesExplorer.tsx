@@ -78,7 +78,7 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search a city or area — e.g. Lekki, Abuja, Ikeja…"
+          placeholder="Search a city or area, e.g. Lekki, Abuja, Ikeja…"
           className="input flex-1"
         />
         <button type="submit" className="btn-primary px-5">

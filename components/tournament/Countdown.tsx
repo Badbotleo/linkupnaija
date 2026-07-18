@@ -36,7 +36,7 @@ export default function Countdown({ date }: { date?: string | null }) {
   if (!date) {
     return (
       <div className="mx-auto mt-4 max-w-md rounded-xl border border-white/10 bg-white/5 px-5 py-4 text-center text-sm text-white/70">
-        ⏳ Announcing date soon — stay tuned
+        ⏳ Announcing date soon. Stay tuned
       </div>
     );
   }

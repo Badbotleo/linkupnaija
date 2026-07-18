@@ -42,7 +42,7 @@ export default function EnablePush() {
         <p className="font-bold text-gray-900">Never miss a link-up</p>
         <p className="text-sm text-gray-600">
           {status === "denied"
-            ? "Notifications are blocked — enable them for LinkUpNaija in your browser settings."
+            ? "Notifications are blocked. Enable them for LinkUpNaija in your browser settings."
             : "Get a ping when your event is starting, a request is approved, or something new drops near you."}
         </p>
       </div>

@@ -80,14 +80,14 @@ export default function JoinCircleButton({
   if (status === "active") {
     return (
       <button type="button" onClick={leave} disabled={busy} className="btn-outline w-full">
-        {busy ? "…" : "✓ Joined — Leave"}
+        {busy ? "…" : "✓ Joined · Leave"}
       </button>
     );
   }
   if (status === "pending") {
     return (
       <button type="button" onClick={leave} disabled={busy} className="btn-outline w-full">
-        {busy ? "…" : "Requested — Cancel"}
+        {busy ? "…" : "Requested · Cancel"}
       </button>
     );
   }

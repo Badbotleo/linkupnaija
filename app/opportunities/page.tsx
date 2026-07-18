@@ -4,7 +4,7 @@ import OpportunityHubs from "@/components/opportunities/OpportunityHubs";
 export const metadata = {
   title: "Opportunities",
   description:
-    "Grow your business with LinkUpNaija — list cars for hire, get booked as a photographer, or list your venue.",
+    "Grow your business with LinkUpNaija: list cars for hire, get booked as a photographer, or list your venue.",
 };
 
 export default function OpportunitiesPage() {
@@ -41,7 +41,7 @@ export default function OpportunitiesPage() {
             </h3>
             <p className="mt-1 text-sm text-gray-600">
               Plan unforgettable team outings, client entertainment and
-              retreats — we handle everything.
+              retreats. We handle everything.
             </p>
           </div>
           <span className="btn-primary shrink-0">For Business →</span>

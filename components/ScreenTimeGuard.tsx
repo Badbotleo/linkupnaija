@@ -61,7 +61,7 @@ export default function ScreenTimeGuard() {
         <h2 className="mt-5 text-3xl font-extrabold">Time to touch grass</h2>
         <p className="mt-3 text-lg text-white/80">
           You&apos;ve spent 5 hours on LinkUpNaija today. The best connections
-          happen in real life — go link up with your people! 💜
+          happen in real life. Go link up with your people! 💜
         </p>
         <div className="mt-8 flex flex-col gap-3">
           <a

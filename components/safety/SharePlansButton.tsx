@@ -60,7 +60,7 @@ export default function SharePlansButton({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       await record();
-      toast.success("Message copied — send it to your contact.");
+      toast.success("Message copied. Send it to your contact.");
     } catch {
       /* ignore */
     }
@@ -148,7 +148,7 @@ export default function SharePlansButton({
               </div>
               <p className="mt-3 text-xs text-gray-400">
                 Set an emergency contact in your profile to pre-fill this next
-                time. SMS auto-send isn&apos;t enabled yet — send via WhatsApp or
+                time. SMS auto-send isn&apos;t enabled yet. Send via WhatsApp or
                 copy the message.
               </p>
             </div>

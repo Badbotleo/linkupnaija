@@ -5,7 +5,7 @@ export default function VerifiedBadge({
 }) {
   return (
     <span
-      title="Socially verified — this person has linked at least one social account"
+      title="Socially verified: this person has linked at least one social account"
       className={`inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-bold text-brand ${className}`}
     >
       <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden>

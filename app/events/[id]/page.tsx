@@ -67,7 +67,7 @@ export async function generateMetadata({
   const title = event.title as string;
   const description =
     (event.description as string)?.slice(0, 150) ||
-    `A ${event.category} in ${event.state} — join it on LinkUpNaija.`;
+    `A ${event.category} in ${event.state}. Join it on LinkUpNaija.`;
   const cover = event.cover_image_url as string | null;
 
   return {
@@ -377,7 +377,7 @@ export default async function EventDetailPage({
                     </h2>
                     {attendeeCount === 0 ? (
                       <p className="mt-2 text-gray-500">
-                        No one yet — be the first to join! 🎈
+                        No one yet. Be the first to join! 🎈
                       </p>
                     ) : (
                       <AttendeeChips

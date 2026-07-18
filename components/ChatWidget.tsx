@@ -8,7 +8,7 @@ interface ChatMessage {
 }
 
 const GREETING =
-  "Hey! 👋 I'm the LinkUpNaija assistant. Tell me the kind of vibe you're after (e.g. \"chill picnic in Lagos this weekend\"), ask how the platform works, or get help writing your event — no wahala!";
+  "Hey! 👋 I'm the LinkUpNaija assistant. Tell me the kind of vibe you're after (e.g. \"chill picnic in Lagos this weekend\"), ask how the platform works, or get help writing your event. No wahala!";
 
 // Render text with markdown links [label](url) turned into clickable anchors.
 function renderContent(text: string) {

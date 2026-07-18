@@ -79,8 +79,8 @@ export default function EventsList({
         <EmptyState
           title={
             stateFilter
-              ? `No events here yet — be the first to host one in ${stateFilter}!`
-              : "No events here yet — be the first to host one!"
+              ? `No events here yet. Be the first to host one in ${stateFilter}!`
+              : "No events here yet. Be the first to host one!"
           }
           subtitle="Got a vibe in mind? Set it up in a couple of minutes and gather your people."
           cta

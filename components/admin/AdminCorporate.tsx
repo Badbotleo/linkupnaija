@@ -62,7 +62,7 @@ export default function AdminCorporate({
       .from("events")
       .insert({
         host_id: adminId,
-        title: `🏢 ${a.company_name} — Corporate Event`,
+        title: `🏢 ${a.company_name} · Corporate Event`,
         category: "Networking",
         description:
           a.requirements ||

@@ -21,41 +21,41 @@ export default function PrivacyPolicyPage() {
         <LegalList
           items={[
             <>
-              <strong>Account information</strong> — your name, email address,
+              <strong>Account information</strong>: your name, email address,
               state, profile photo, bio, phone number and social media links
               (Instagram, X/Twitter, Facebook) that you choose to provide.
             </>,
             <>
-              <strong>Event and RSVP data</strong> — events you host or request
+              <strong>Event and RSVP data</strong>: events you host or request
               to join, your attendance status, and group-chat messages for events
               you are part of.
             </>,
             <>
-              <strong>Reservation data</strong> — details you submit when
+              <strong>Reservation data</strong>: details you submit when
               requesting a venue reservation (event name, date, group size, event
               type, special requests and contact phone number).
             </>,
             <>
-              <strong>Payment information</strong> — when you pay for a ticket or
+              <strong>Payment information</strong>: when you pay for a ticket or
               boost an event, payments are processed by Paystack. We receive a
               transaction reference and amount, but{" "}
               <strong>we never collect or store your full card details</strong>.
             </>,
             <>
-              <strong>Reviews and ratings</strong> — ratings and reviews you leave
+              <strong>Reviews and ratings</strong>: ratings and reviews you leave
               for hosts after attending events.
             </>,
             <>
-              <strong>Usage and device data</strong> — basic technical
+              <strong>Usage and device data</strong>: basic technical
               information such as your browser type and interactions needed to
               operate and secure the service.
             </>,
             <>
-              <strong>Location searches</strong> — the cities or areas you search
+              <strong>Location searches</strong>: the cities or areas you search
               for when discovering venues (used to query map data).
             </>,
             <>
-              <strong>AI assistant messages</strong> — messages you send to our
+              <strong>AI assistant messages</strong>: messages you send to our
               in-app AI assistant, used to generate a response.
             </>,
           ]}
@@ -66,7 +66,7 @@ export default function PrivacyPolicyPage() {
         <LegalList
           items={[
             "To create and manage your account and profile.",
-            "To operate core features — hosting events, processing join requests, group chats, venue discovery and reservations.",
+            "To operate core features: hosting events, processing join requests, group chats, venue discovery and reservations.",
             "To process payments and record platform fees and commissions.",
             "To send transactional emails such as event reminders and account notifications.",
             "To show hosts the profiles of people requesting to join their events.",
@@ -109,22 +109,22 @@ export default function PrivacyPolicyPage() {
         <LegalList
           items={[
             <>
-              <strong>Supabase</strong> — authentication, database and file
+              <strong>Supabase</strong>: authentication, database and file
               storage (profile photos, event cover images).
             </>,
             <>
-              <strong>Paystack</strong> — payment processing.
+              <strong>Paystack</strong>: payment processing.
             </>,
             <>
-              <strong>Anthropic (Claude)</strong> — powers the AI assistant;
+              <strong>Anthropic (Claude)</strong>: powers the AI assistant;
               messages you send to it are processed to generate replies.
             </>,
             <>
-              <strong>Resend</strong> — delivery of reminder and notification
+              <strong>Resend</strong>: delivery of reminder and notification
               emails.
             </>,
             <>
-              <strong>OpenStreetMap, Overpass &amp; Nominatim</strong> — venue and
+              <strong>OpenStreetMap, Overpass &amp; Nominatim</strong>: venue and
               map data for the Venues feature.
             </>,
           ]}

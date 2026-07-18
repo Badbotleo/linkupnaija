@@ -82,7 +82,7 @@ Deno.serve(async () => {
           subject: "Haven't found your vibe yet? 👀",
           title: "Haven't found your vibe yet?",
           intro:
-            "There's always something happening on LinkUpNaija. Here are a few link-ups coming up — tap any to join in.",
+            "There's always something happening on LinkUpNaija. Here are a few link-ups coming up. Tap any to join in.",
           limit: 5,
         }))
           ? "sent"
@@ -302,7 +302,7 @@ async function sendHostNudge(user: {
     bodyHtml: `
       ${heading("Want to host your own event? 🎤")}
       ${paragraph(
-        `Hey ${clean(firstName(user.name))}, couldn't find the perfect link-up? Create your own — it's free and takes about 2 minutes.`
+        `Hey ${clean(firstName(user.name))}, couldn't find the perfect link-up? Create your own. It's free and takes about 2 minutes.`
       )}
       ${paragraph(
         "1. Give it a title and pick a vibe<br/>2. Set the date, time and location<br/>3. Share it and watch people join"

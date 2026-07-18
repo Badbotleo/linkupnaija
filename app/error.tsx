@@ -24,7 +24,7 @@ export default function Error({
         Something went wrong
       </h1>
       <p className="mt-2 max-w-md text-gray-600">
-        We hit a snag loading this page. It&apos;s usually temporary — try again
+        We hit a snag loading this page. It&apos;s usually temporary. Try again
         in a moment.
       </p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">

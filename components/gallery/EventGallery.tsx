@@ -153,7 +153,7 @@ export default function EventGallery({
           ) : (
             <div>
               <p className="mb-3 text-sm font-semibold text-gray-900">
-                {staged.length} photo{staged.length > 1 ? "s" : ""} selected — add
+                {staged.length} photo{staged.length > 1 ? "s" : ""} selected. Add
                 a caption (optional):
               </p>
               <div className="grid max-h-72 grid-cols-2 gap-3 overflow-y-auto sm:grid-cols-3">
@@ -477,12 +477,12 @@ async function shareCollage(photos: EventPhoto[], eventTitle: string) {
     a.href = url;
     a.download = "linkupnaija-memories.png";
     a.click();
-    toast.success("Collage downloaded — share it anywhere! 🖼️");
+    toast.success("Collage downloaded. Share it anywhere! 🖼️");
   } catch {
     // Tainted canvas / load failure — fall back to sharing the event link.
     try {
       await navigator.clipboard.writeText(window.location.href);
-      toast.success("Couldn't build the collage — event link copied instead.");
+      toast.success("Couldn't build the collage, so we copied the event link instead.");
     } catch {
       toast.error("Couldn't create the collage.");
     }

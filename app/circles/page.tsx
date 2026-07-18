@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Circles",
   description:
-    "Join LinkUpNaija Circles — community groups for foodies, book lovers, hikers, gamers and more across Nigeria.",
+    "Join LinkUpNaija Circles: community groups for foodies, book lovers, hikers, gamers and more across Nigeria.",
 };
 
 export default async function CirclesPage() {
@@ -28,7 +28,7 @@ export default async function CirclesPage() {
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900">Circles</h1>
           <p className="mt-1 text-gray-600">
-            Communities for the things you love — find your people.
+            Communities for the things you love. Find your people.
           </p>
         </div>
         <Link href="/circles/create" className="btn-primary self-start sm:self-auto">

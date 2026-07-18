@@ -159,7 +159,7 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
           <div className="mt-3 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center">
             <p className="text-3xl">🎈</p>
             <p className="mt-2 text-sm text-gray-500">
-              Nothing on your calendar yet — find a vibe near you.
+              Nothing on your calendar yet. Find a vibe near you.
             </p>
             <Link href="/events" className="btn-primary mt-4">
               Explore events

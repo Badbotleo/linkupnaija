@@ -15,9 +15,9 @@ import { createClient } from "@/lib/supabase/server";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-const TITLE = "LinkUpNaija — Find your people. Build real connections.";
+const TITLE = "LinkUpNaija · Find your people. Build real connections.";
 const DESCRIPTION =
-  "Nigeria's platform for real connection. Find family hangouts, friend reunions, picnics, book clubs, game nights and more near you — or host your own.";
+  "Nigeria's platform for real connection. Find family hangouts, friend reunions, picnics, book clubs, game nights and more near you, or host your own.";
 
 export const viewport: Viewport = {
   width: "device-width",

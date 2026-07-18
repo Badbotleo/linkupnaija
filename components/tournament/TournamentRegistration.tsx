@@ -123,7 +123,7 @@ export default function TournamentRegistration() {
             TOURNAMENT FULL
           </h3>
           <p className="mt-2 text-white/70">
-            All {TOURNAMENT.capacity} spots are taken. Join the waitlist —
+            All {TOURNAMENT.capacity} spots are taken. Join the waitlist:
             follow LinkUpNaija and we&apos;ll announce any openings.
           </p>
         </div>

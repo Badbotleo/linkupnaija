@@ -41,7 +41,7 @@ export default function SafetyCheckinButton({ eventId }: { eventId: string }) {
 
   return (
     <button type="button" onClick={checkIn} disabled={busy} className="btn-outline w-full">
-      {busy ? "…" : "✅ I'm safe — check in"}
+      {busy ? "…" : "✅ Check in as safe"}
     </button>
   );
 }

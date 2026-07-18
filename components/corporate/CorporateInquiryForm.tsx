@@ -98,14 +98,14 @@ export default function CorporateInquiryForm({
 
     setDone(true);
     setLoading(false);
-    toast.success("Request received — we'll be in touch shortly!");
+    toast.success("Request received. We'll be in touch shortly!");
   }
 
   if (done) {
     return (
       <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-card">
         <p className="text-4xl">🎉</p>
-        <h3 className="mt-3 text-xl font-bold text-gray-900">Thanks — we&apos;ve got it!</h3>
+        <h3 className="mt-3 text-xl font-bold text-gray-900">Thanks, we&apos;ve got it!</h3>
         <p className="mt-2 text-gray-600">
           Our team will reach out to {form.email} within one business day with a
           tailored proposal.

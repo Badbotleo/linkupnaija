@@ -33,7 +33,7 @@ export default function InterestPicker({
         <p className="text-xs text-gray-500">
           {remaining > 0
             ? `Pick ${remaining} more to continue`
-            : "Nice — pick as many as you like 🎉"}
+            : "Nice! Pick as many as you like 🎉"}
         </p>
       </div>
 

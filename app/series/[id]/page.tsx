@@ -138,7 +138,7 @@ export default async function SeriesPage({
           </h2>
           {upcoming.length === 0 ? (
             <p className="mt-2 text-sm text-gray-500">
-              No upcoming events scheduled right now — check back soon!
+              No upcoming events scheduled right now. Check back soon!
             </p>
           ) : (
             <div className="mt-3 grid gap-4 sm:grid-cols-2">

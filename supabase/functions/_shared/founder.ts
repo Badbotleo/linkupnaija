@@ -45,28 +45,28 @@ export function founderEmailHtml(opts: {
     tip(
       "🎤",
       "Host your first hangout",
-      `A picnic, game night or small party — it takes two minutes to set up. <a href="${SITE_URL}/host" style="color:#534AB7;font-weight:600;text-decoration:none">Host one →</a>`
+      `A picnic, game night or small party: it takes two minutes to set up. <a href="${SITE_URL}/host" style="color:#534AB7;font-weight:600;text-decoration:none">Host one →</a>`
     ) +
     tip(
       "🛡️",
       "Link up safely",
-      "Hosts approve every attendee and profiles are verified — meet in public, tell a friend, and trust your gut."
+      "Hosts approve every attendee and profiles are verified. Meet in public, tell a friend, and trust your gut."
     );
 
   return emailLayout({
     title: "A hello from the founder",
-    preheader: "Why I built LinkUpNaija — and how to get the most from it.",
+    preheader: "Why I built LinkUpNaija, and how to get the most from it.",
     unsubscribeUrl: opts.unsubscribeUrl,
     bodyHtml: `
       ${heading(`Hi ${firstName(opts.name)}, I'm Leo 👋`)}
       ${paragraph(
-        "I'm Divine Gabriel — everyone calls me Leo — the founder of LinkUpNaija. I wanted to say hello personally and thank you for joining."
+        "I'm Divine Gabriel (everyone calls me Leo), the founder of LinkUpNaija. I wanted to say hello personally and thank you for joining."
       )}
       ${paragraph(
-        "I built LinkUpNaija out of frustration: boring weekends, endless scrolling, and plans that fizzled out before anyone actually met up. I figured if I was tired of it, plenty of others were too — so I decided to fix it."
+        "I built LinkUpNaija out of frustration: boring weekends, endless scrolling, and plans that fizzled out before anyone actually met up. I figured if I was tired of it, plenty of others were too, so I decided to fix it."
       )}
       ${paragraph(
-        "The whole point is <strong>real connection</strong> — getting people off their screens and meeting in real life. That's it. Everything here is built to help you find your people and actually show up."
+        "The whole point is <strong>real connection</strong>: getting people off their screens and meeting in real life. That's it. Everything here is built to help you find your people and actually show up."
       )}
       ${paragraph("A few things that'll help you get started:")}
       ${tips}

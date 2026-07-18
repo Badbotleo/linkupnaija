@@ -114,7 +114,7 @@ export default function AdminModeration({
       action === "clear"
         ? null
         : window.prompt(
-            `${labels[action]} ${u.name ?? u.email} — reason (sent to the user):`,
+            `${labels[action]} ${u.name ?? u.email}. Reason (sent to the user):`,
             "Spam or misleading event listings"
           );
     if (action !== "clear" && reason === null) return; // cancelled
@@ -148,7 +148,7 @@ export default function AdminModeration({
         )
       );
       toast.success(
-        action === "clear" ? "Flags cleared ✅" : `User ${action === "warn" ? "warned" : action + "ed"} — they've been notified.`
+        action === "clear" ? "Flags cleared ✅" : `User ${action === "warn" ? "warned" : action + "ed"}. They've been notified.`
       );
       router.refresh();
     }
@@ -157,7 +157,7 @@ export default function AdminModeration({
 
   async function deleteEvent(e: ModEventRow) {
     const reason = window.prompt(
-      `Delete "${e.title}" — reason (sent to the host):`,
+      `Delete "${e.title}". Reason (sent to the host):`,
       "This event violates our terms of service"
     );
     if (reason === null) return; // cancelled
@@ -170,7 +170,7 @@ export default function AdminModeration({
     if (error) toast.error(error.message);
     else {
       setEvents((prev) => prev.filter((x) => x.id !== e.id));
-      toast.success("Event deleted — host notified.");
+      toast.success("Event deleted. Host notified.");
       router.refresh();
     }
     setBusy(null);
@@ -350,7 +350,7 @@ export default function AdminModeration({
         <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-card lg:col-span-2">
           <p className="text-sm font-bold text-gray-900">Recurring series</p>
           <p className="mt-0.5 text-xs text-gray-500">
-            Deleting a series keeps its events — they just stop recurring.
+            Deleting a series keeps its events. They just stop recurring.
           </p>
           <ul className="mt-3 divide-y divide-gray-50">
             {series.map((s) => (

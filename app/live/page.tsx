@@ -108,7 +108,7 @@ export default async function LivePage() {
 
       {items.length === 0 ? (
         <p className="mt-8 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-16 text-center text-sm text-gray-500">
-          Nothing happening yet — be the first to host or join an event!
+          Nothing happening yet. Be the first to host or join an event!
         </p>
       ) : (
         <ul className="mt-6 space-y-2">

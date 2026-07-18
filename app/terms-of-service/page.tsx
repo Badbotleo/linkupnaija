@@ -3,7 +3,7 @@ import { LegalShell, LegalSection, LegalList } from "@/components/legal/Legal";
 export const metadata = {
   title: "Terms of Service",
   description:
-    "The rules for using LinkUpNaija — accounts, events, venue reservations, payments, fees and acceptable conduct.",
+    "The rules for using LinkUpNaija: accounts, events, venue reservations, payments, fees and acceptable conduct.",
 };
 
 const UPDATED = "23 June 2026";
@@ -39,7 +39,7 @@ export default function TermsOfServicePage() {
         <LegalList
           items={[
             "Hosts are solely responsible for the events they create, including accuracy of details, safety, legality and conduct at the event.",
-            "Joining an event is a request, not a guarantee — hosts review and may accept or decline requests at their discretion.",
+            "Joining an event is a request, not a guarantee. Hosts review and may accept or decline requests at their discretion.",
             "Accepted attendees gain access to the event's private group chat. Use it respectfully.",
             "LinkUpNaija is a platform to connect people; we are not the organiser of, and are not responsible for, any user-hosted event.",
           ]}
@@ -67,7 +67,7 @@ export default function TermsOfServicePage() {
             "LinkUpNaija charges a platform fee of 10% on paid ticket sales.",
             "Hosts may pay ₦5,000 to boost an event for 48 hours; boosted events appear at the top of the feed with a Boost badge. Boost payments are non-refundable.",
             "For confirmed venue reservations, an agreed commission may apply, shown before confirmation.",
-            "Payments are processed by Paystack and are subject to its terms. Refunds, where applicable, are handled on a case-by-case basis — contact us with your transaction reference.",
+            "Payments are processed by Paystack and are subject to its terms. Refunds, where applicable, are handled on a case-by-case basis. Contact us with your transaction reference.",
             "You are responsible for any taxes applicable to amounts you earn as a host.",
           ]}
         />

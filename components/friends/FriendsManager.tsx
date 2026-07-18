@@ -276,7 +276,7 @@ export default function FriendsManager({
         </h2>
         {friends.length === 0 ? (
           <p className="text-sm text-gray-500">
-            No friends yet — search above to connect with people.
+            No friends yet. Search above to connect with people.
           </p>
         ) : (
           <ul className="grid gap-2 sm:grid-cols-2">

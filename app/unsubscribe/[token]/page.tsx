@@ -31,7 +31,7 @@ export default async function UnsubscribePage({
       <p className="mt-2 max-w-md text-gray-600">
         {ok
           ? "You won't receive the weekly digest anymore. You can re-enable it anytime from your email preferences."
-          : "We couldn't process that unsubscribe link. It may have expired — you can manage all your email preferences from your profile instead."}
+          : "We couldn't process that unsubscribe link. It may have expired. You can manage all your email preferences from your profile instead."}
       </p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <Link href="/profile/edit" className="btn-primary">

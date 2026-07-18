@@ -54,7 +54,7 @@ export default function FcPopup() {
         </span>
         <div className="min-w-0">
           <p className="text-sm font-bold leading-snug">
-            FC26 Tournament · Abuja — ₦2M prize
+            FC26 Tournament · Abuja · ₦2M prize
           </p>
           <Link
             href="/tournament"

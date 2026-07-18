@@ -100,7 +100,7 @@ export default function InstallAppBanner() {
               Get the LinkUpNaija app
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-300">
-              Fast, full-screen — right from your home screen
+              Fast and full-screen, right from your home screen
             </p>
           </div>
           <button
@@ -170,7 +170,7 @@ export default function InstallAppBanner() {
                 </span>
               </IosStep>
               <IosStep n={3}>
-                Tap <strong>Add</strong> — the app appears on your home screen
+                Tap <strong>Add</strong>, and the app appears on your home screen
                 🎉
               </IosStep>
             </ol>

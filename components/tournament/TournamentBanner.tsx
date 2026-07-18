@@ -72,7 +72,7 @@ export default function TournamentBanner() {
             One of many link-ups on LinkUpNaija
           </p>
           <p className="mt-0.5 text-base font-black tracking-wide">
-            🎮 FC26 TOURNAMENT — ABUJA
+            🎮 FC26 TOURNAMENT · ABUJA
           </p>
           <p className="mt-1 text-sm text-white/70">
             ₦2,000,000 Prize · 40 Players Only · ₦10K to register

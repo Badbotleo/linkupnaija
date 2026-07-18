@@ -1,9 +1,9 @@
 import CorporateInquiryForm from "@/components/corporate/CorporateInquiryForm";
 
 export const metadata = {
-  title: "For Business — Corporate Events",
+  title: "For Business · Corporate Events",
   description:
-    "Plan unforgettable team events with LinkUpNaija. Team outings, client entertainment, company picnics and retreats — we handle everything.",
+    "Plan unforgettable team events with LinkUpNaija. Team outings, client entertainment, company picnics and retreats. We handle everything.",
 };
 
 const PLANS = [
@@ -63,7 +63,7 @@ export default function CorporatePage() {
             Plan unforgettable team events with LinkUpNaija
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-[#DAD8F0]">
-            From team outings to client entertainment — we handle everything.
+            From team outings to client entertainment, we handle everything.
           </p>
           <a href="#quote" className="btn mt-8 inline-block bg-[#FAC775] px-6 py-3 text-base font-bold text-[#1A1040] hover:opacity-90">
             Get a quote →

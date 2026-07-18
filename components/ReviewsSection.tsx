@@ -178,7 +178,7 @@ export default function ReviewsSection({
       {/* Reviews list */}
       {reviews.length === 0 ? (
         <p className="mt-4 text-sm text-gray-500">
-          No reviews yet{canReview ? " — be the first!" : "."}
+          No reviews yet{canReview ? ". Be the first!" : "."}
         </p>
       ) : (
         <ul className="mt-4 space-y-3">

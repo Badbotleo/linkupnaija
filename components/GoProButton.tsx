@@ -109,7 +109,7 @@ export default function GoProButton({
         disabled={loading}
         className="btn w-full border border-amber-300 bg-gradient-to-r from-amber-400 to-yellow-500 px-6 py-3 text-base text-white hover:opacity-90 sm:w-auto"
       >
-        {loading ? "Processing…" : `★ Go Pro — ${formatNaira(PRO_PRICE)}/month`}
+        {loading ? "Processing…" : `★ Go Pro · ${formatNaira(PRO_PRICE)}/month`}
       </button>
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
     </div>

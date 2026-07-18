@@ -45,7 +45,7 @@ export default function PhoneVerify({
     const testCode = (data as { test_code?: string })?.test_code;
     if (testCode) {
       setCode(testCode);
-      toast.success(`Test mode — your code is ${testCode}`);
+      toast.success(`Test mode: your code is ${testCode}`);
     } else {
       toast.success("Code sent 📲");
     }
@@ -72,7 +72,7 @@ export default function PhoneVerify({
         📱 Verify your phone number
       </p>
       <p className="mt-0.5 text-xs text-gray-500">
-        A verified number builds trust — hosts approve verified guests faster.
+        A verified number builds trust. Hosts approve verified guests faster.
       </p>
 
       {step === "idle" ? (

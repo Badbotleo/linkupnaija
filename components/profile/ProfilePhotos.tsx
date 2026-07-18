@@ -71,7 +71,7 @@ export default function ProfilePhotos({
 
       {photos.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-14 text-center text-sm text-gray-500">
-          {editable ? "No photos yet — upload your first!" : "No photos shared yet."}
+          {editable ? "No photos yet. Upload your first!" : "No photos shared yet."}
         </p>
       ) : (
         <div className="grid grid-cols-3 gap-1.5">

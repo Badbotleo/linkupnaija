@@ -179,7 +179,7 @@ export function welcomeEmailHtml(opts: {
     bodyHtml: `
       ${heading(`Welcome to LinkUpNaija, ${firstName(opts.name)}! 🎉`)}
       ${paragraph(
-        "We're buzzing to have you. LinkUpNaija is where Nigerians find hangouts, parties, picnics, game nights and more — or host their own."
+        "We're buzzing to have you. LinkUpNaija is where Nigerians find hangouts, parties, picnics, game nights and more, or host their own."
       )}
       ${paragraph("Here's how to get started:")}
       ${button(`${SITE_URL}/events`, "🔎 Browse events")}

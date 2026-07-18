@@ -61,7 +61,7 @@ export default function LocationMatch() {
             data?.address?.city ?? data?.address?.town ?? ""
           );
           if (!state) {
-            toast.error("Couldn't match your area to a state — pick one manually.");
+            toast.error("Couldn't match your area to a state. Pick one manually.");
             setBusy(false);
             return;
           }
