@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
-import { EVENT_CATEGORIES, CATEGORY_STYLES } from "@/lib/constants";
+import { EVENT_CATEGORIES, CATEGORY_STYLES, categoryGradient } from "@/lib/constants";
 import FcPopup from "@/components/FcPopup";
 import EventCover from "@/components/EventCover";
 import { formatEventDate } from "@/lib/format";
@@ -195,24 +195,35 @@ export default async function HomePage() {
                 </Link>
               ))}
 
-              {/* Fill the grid to a full 2×2 with category shortcuts. */}
+              {/* Fill the grid to a full 2×2 with category shortcuts styled
+                  exactly like the event cards (gradient cover + text block),
+                  so the collage reads as one designed set. */}
               {EVENT_CATEGORIES.slice(0, Math.max(0, 4 - heroEvents.length)).map((cat, i) => {
-                const { emoji, badge } = CATEGORY_STYLES[cat];
+                const { emoji } = CATEGORY_STYLES[cat];
                 const idx = heroEvents.length + i;
                 return (
                   <Link
                     key={cat}
                     href={`/events?category=${encodeURIComponent(cat)}`}
-                    className={`flex flex-col justify-between rounded-2xl border border-gray-100 bg-white p-5 shadow-card transition hover:-translate-y-1 hover:shadow-xl ${
+                    className={`group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-xl ${
                       idx % 2 === 0 ? "sm:translate-y-5" : ""
                     }`}
                   >
-                    <span className={`grid h-12 w-12 place-items-center rounded-xl text-2xl ${badge}`}>
-                      {emoji}
-                    </span>
-                    <div className="mt-3">
-                      <p className="font-bold text-gray-900">{cat}</p>
-                      <p className="text-sm text-gray-500">Browse this vibe →</p>
+                    <div
+                      className={`flex h-32 w-full items-center justify-center bg-gradient-to-br ${categoryGradient(cat)}`}
+                    >
+                      <span className="text-4xl drop-shadow-sm" aria-hidden>
+                        {emoji}
+                      </span>
+                    </div>
+                    <div className="p-3.5">
+                      <span className="text-[11px] font-bold uppercase tracking-wide text-brand">
+                        Popular vibe
+                      </span>
+                      <p className="mt-1 text-sm font-bold leading-snug text-gray-900">
+                        {cat}
+                      </p>
+                      <p className="mt-1 text-xs text-gray-500">Browse events →</p>
                     </div>
                   </Link>
                 );
