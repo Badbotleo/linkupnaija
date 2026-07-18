@@ -91,7 +91,7 @@ export default async function LeaderboardPage({
             )}
           </p>
           <p className="text-xs text-gray-500">
-            ⭐ {Number(r.average_rating).toFixed(1)} · {r.total_events} events
+            <span className="text-amber-500">★</span> {Number(r.average_rating).toFixed(1)} · {r.total_events} events
             {r.host!.state ? ` · ${r.host!.state}` : ""}
           </p>
           {badges.length > 0 && (
@@ -106,14 +106,14 @@ export default async function LeaderboardPage({
 
   return (
     <div className="container-page max-w-2xl py-8">
-      <h1 className="text-3xl font-extrabold text-gray-900">🏆 Host leaderboard</h1>
+      <h1 className="text-3xl font-extrabold text-gray-900">Host leaderboard</h1>
       <p className="mt-1 text-gray-600">The most-loved hosts across Nigeria.</p>
 
       {/* Featured host of the week */}
       {featured && (
         <div className="mt-6 rounded-2xl border-2 border-[#FAC775] bg-amber-50/40 p-4">
           <p className="text-xs font-black uppercase tracking-wide text-amber-600">
-            ✨ Featured host of the week
+            Featured host of the week
           </p>
           <div className="mt-2">{card(featured)}</div>
         </div>
@@ -129,8 +129,8 @@ export default async function LeaderboardPage({
         </select>
         <select name="rating" defaultValue={searchParams.rating ?? ""} className="input cursor-pointer sm:max-w-[10rem]">
           <option value="">Any rating</option>
-          <option value="4">4.0+ ⭐</option>
-          <option value="4.5">4.5+ ⭐</option>
+          <option value="4">4.0+ stars</option>
+          <option value="4.5">4.5+ stars</option>
         </select>
         <button type="submit" className="btn-primary px-5">Apply</button>
       </form>

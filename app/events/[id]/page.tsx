@@ -15,6 +15,7 @@ import FriendPickerButton from "@/components/friends/FriendPickerButton";
 import SharePlansButton from "@/components/safety/SharePlansButton";
 import AddToCalendar from "@/components/AddToCalendar";
 import ReportButton from "@/components/ReportButton";
+import LineIcon from "@/components/ui/LineIcon";
 import TicketButton from "@/components/TicketButton";
 import SafetyCheckinButton from "@/components/safety/SafetyCheckinButton";
 import EventGallery from "@/components/gallery/EventGallery";
@@ -285,17 +286,17 @@ export default async function EventDetailPage({
             {featured && <FeaturedBadge />}
             {event.is_corporate && (
               <span className="inline-flex items-center gap-1 rounded-full bg-[#1A1040] px-2.5 py-1 text-xs font-bold text-white">
-                🏢 Corporate Event
+                Corporate Event
               </span>
             )}
             {event.event_type === "private" && (
               <span className="inline-flex items-center gap-1 rounded-full bg-gray-900 px-2.5 py-1 text-xs font-bold text-white">
-                🔒 Private Event
+                Private Event
               </span>
             )}
             <CategoryBadge category={event.category} />
             <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand">
-              📍 {event.state}
+              {event.state}
             </span>
             {event.price > 0 && (
               <span className="rounded-full bg-gray-900 px-2.5 py-1 text-xs font-bold text-white">
@@ -328,22 +329,22 @@ export default async function EventDetailPage({
                   <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-card">
                     <div className="grid gap-4 sm:grid-cols-2">
                       <Detail
-                        emoji="📅"
+                        icon="calendar"
                         label="Date"
                         value={formatEventDate(event.date)}
                       />
                       <Detail
-                        emoji="⏰"
+                        icon="clock"
                         label="Time"
                         value={formatEventTime(event.time)}
                       />
                       <Detail
-                        emoji="📍"
+                        icon="pin"
                         label="Location"
                         value={event.location}
                       />
                       <Detail
-                        emoji="👥"
+                        icon="users"
                         label="Attendees"
                         value={
                           event.max_attendees
@@ -616,18 +617,18 @@ function LockedChat({
 }
 
 function Detail({
-  emoji,
+  icon,
   label,
   value,
 }: {
-  emoji: string;
+  icon: string;
   label: string;
   value: string;
 }) {
   return (
     <div className="flex items-start gap-3">
-      <span className="text-xl" aria-hidden>
-        {emoji}
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-50 text-brand" aria-hidden>
+        <LineIcon name={icon} size={16} />
       </span>
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">

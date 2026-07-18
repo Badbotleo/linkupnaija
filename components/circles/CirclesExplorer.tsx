@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { EVENT_CATEGORIES, NIGERIAN_STATES } from "@/lib/constants";
 import { toast } from "@/lib/toast";
 import EventCover from "../EventCover";
+import LineIcon from "../ui/LineIcon";
 import type { Circle } from "@/lib/types";
 
 export default function CirclesExplorer({
@@ -118,7 +119,9 @@ export default function CirclesExplorer({
         </Section>
       ) : circles.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-16 text-center">
-          <p className="text-4xl">⭕</p>
+          <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-brand-50 text-brand">
+            <LineIcon name="circles" size={24} />
+          </span>
           <h2 className="mt-3 text-lg font-bold text-gray-900">
             No circles yet
           </h2>
@@ -132,14 +135,14 @@ export default function CirclesExplorer({
       ) : (
         <>
           {nearYou.length > 0 && (
-            <Section title="📍 Circles near you">
+            <Section title="Circles near you">
               <Grid>{nearYou.map(card)}</Grid>
             </Section>
           )}
-          <Section title="🔥 Popular circles">
+          <Section title="Popular circles">
             <Grid>{popular.map(card)}</Grid>
           </Section>
-          <Section title="✨ New circles">
+          <Section title="New circles">
             <Grid>{fresh.map(card)}</Grid>
           </Section>
         </>
@@ -190,14 +193,15 @@ function Card({
         </Link>
         <p className="mt-0.5 text-xs text-gray-500">
           {[circle.category, circle.state].filter(Boolean).join(" · ")}
-          {circle.is_private ? " · 🔒 Private" : ""}
+          {circle.is_private ? " · Private" : ""}
         </p>
         {circle.description && (
           <p className="mt-2 line-clamp-2 flex-1 text-sm text-gray-600">{circle.description}</p>
         )}
         <div className="mt-3 flex items-center justify-between">
-          <span className="text-xs font-semibold text-gray-500">
-            👥 {circle.member_count} {circle.member_count === 1 ? "member" : "members"}
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-gray-500">
+            <LineIcon name="users" size={13} className="text-gray-400" />
+            {circle.member_count} {circle.member_count === 1 ? "member" : "members"}
           </span>
           {status === "active" ? (
             <span className="text-sm font-semibold text-green-600">✓ Joined</span>
