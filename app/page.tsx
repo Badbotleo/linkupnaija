@@ -3,6 +3,8 @@ import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { EVENT_CATEGORIES, CATEGORY_STYLES } from "@/lib/constants";
 import FcPopup from "@/components/FcPopup";
+import EventCover from "@/components/EventCover";
+import { formatEventDate } from "@/lib/format";
 import Typewriter from "@/components/anim/Typewriter";
 import LandingStats from "@/components/LandingStats";
 import LoggedInHome from "@/components/home/LoggedInHome";
@@ -42,6 +44,28 @@ const getPopularSeries = unstable_cache(
     return data ?? [];
   },
   ["homepage-popular-series"],
+  { revalidate: 300 }
+);
+
+// A few real upcoming events for the hero collage — makes the landing feel
+// alive instead of showing static category placeholders.
+const getHeroEvents = unstable_cache(
+  async () => {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const today = new Date().toISOString().slice(0, 10);
+    const { data } = await supabase
+      .from("events")
+      .select("id, title, category, state, date, cover_image_url")
+      .eq("event_type", "general")
+      .gte("date", today)
+      .order("date", { ascending: true })
+      .limit(4);
+    return data ?? [];
+  },
+  ["homepage-hero-events"],
   { revalidate: 300 }
 );
 
@@ -96,9 +120,10 @@ export default async function HomePage() {
   const user = await getSessionUser();
   if (user) return <LoggedInHome userId={user.id} />;
 
-  const [eventsCount, popularSeries] = await Promise.all([
+  const [eventsCount, popularSeries, heroEvents] = await Promise.all([
     getEventsCount(),
     getPopularSeries(),
+    getHeroEvents(),
   ]);
 
   return (
@@ -134,24 +159,61 @@ export default async function HomePage() {
           </div>
 
           <div className="relative">
+            {/* Soft brand glow for depth behind the collage */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -inset-6 -z-10 rounded-[3rem] bg-gradient-to-tr from-brand-100/60 via-transparent to-amber-100/50 blur-2xl"
+            />
             <div className="grid grid-cols-2 gap-4">
-              {EVENT_CATEGORIES.slice(0, 4).map((cat, i) => {
+              {heroEvents.map((e, i) => (
+                <Link
+                  key={e.id}
+                  href={`/events/${e.id}`}
+                  className={`group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-xl ${
+                    i % 2 === 0 ? "sm:translate-y-5" : ""
+                  }`}
+                >
+                  <EventCover
+                    url={e.cover_image_url}
+                    category={e.category}
+                    title={e.title}
+                    className="h-32 w-full"
+                  />
+                  <div className="p-3.5">
+                    <span className="text-[11px] font-bold uppercase tracking-wide text-brand">
+                      {e.category}
+                    </span>
+                    <p className="mt-1 line-clamp-2 text-sm font-bold leading-snug text-gray-900">
+                      {e.title}
+                    </p>
+                    <p className="mt-1 truncate text-xs text-gray-500">
+                      {formatEventDate(e.date)}
+                      {e.state ? ` · ${e.state}` : ""}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+
+              {/* Fill the grid to a full 2×2 with category shortcuts. */}
+              {EVENT_CATEGORIES.slice(0, Math.max(0, 4 - heroEvents.length)).map((cat, i) => {
                 const { emoji, badge } = CATEGORY_STYLES[cat];
+                const idx = heroEvents.length + i;
                 return (
-                  <div
+                  <Link
                     key={cat}
-                    className={`rounded-2xl border border-gray-100 bg-white p-5 shadow-card ${
-                      i % 2 === 0 ? "translate-y-3" : ""
+                    href={`/events?category=${encodeURIComponent(cat)}`}
+                    className={`flex flex-col justify-between rounded-2xl border border-gray-100 bg-white p-5 shadow-card transition hover:-translate-y-1 hover:shadow-xl ${
+                      idx % 2 === 0 ? "sm:translate-y-5" : ""
                     }`}
                   >
-                    <span
-                      className={`grid h-12 w-12 place-items-center rounded-xl text-2xl ${badge}`}
-                    >
+                    <span className={`grid h-12 w-12 place-items-center rounded-xl text-2xl ${badge}`}>
                       {emoji}
                     </span>
-                    <p className="mt-3 font-bold text-gray-900">{cat}</p>
-                    <p className="text-sm text-gray-500">Find one near you</p>
-                  </div>
+                    <div className="mt-3">
+                      <p className="font-bold text-gray-900">{cat}</p>
+                      <p className="text-sm text-gray-500">Browse this vibe →</p>
+                    </div>
+                  </Link>
                 );
               })}
             </div>
