@@ -3,6 +3,7 @@ import CategoryBadge from "./CategoryBadge";
 import EventCover from "./EventCover";
 import FeaturedBadge, { isFeatured } from "./FeaturedBadge";
 import RatingSummary from "./RatingSummary";
+import LineIcon from "./ui/LineIcon";
 import HostBadges from "./host/HostBadges";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
@@ -89,7 +90,7 @@ export default function EventCard({
       <div className="flex flex-1 flex-col p-5 pt-4">
         {recommended && (
           <p className="mb-1 text-xs font-bold uppercase tracking-wide text-brand">
-            ✨ Recommended for you
+            Recommended for you
           </p>
         )}
         <div className="flex items-start justify-between gap-2">
@@ -115,13 +116,13 @@ export default function EventCard({
 
         <dl className="mt-4 space-y-1.5 text-sm text-gray-600">
           <div className="flex items-center gap-2">
-            <span aria-hidden>📅</span>
+            <LineIcon name="calendar" size={15} className="shrink-0 text-gray-400" />
             <span>
               {formatEventDate(event.date)} · {formatEventTime(event.time)}
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span aria-hidden>📍</span>
+            <LineIcon name="pin" size={15} className="shrink-0 text-gray-400" />
             <span className="line-clamp-1">{event.location}</span>
           </div>
         </dl>
@@ -162,12 +163,12 @@ export default function EventCard({
         <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
           {lowSpots ? (
             <span className="inline-flex animate-spot-pulse items-center gap-1.5 text-sm font-bold text-red-600">
-              <span aria-hidden>🔥</span>
+              <span className="h-1.5 w-1.5 rounded-full bg-red-500" aria-hidden />
               {spotsLeft} spot{spotsLeft === 1 ? "" : "s"} left
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-700">
-              <span aria-hidden>👥</span>
+            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-600">
+              <LineIcon name="users" size={15} className="text-gray-400" />
               {spotsLabel}
             </span>
           )}

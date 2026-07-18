@@ -30,7 +30,9 @@ const config: Config = {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
       },
       boxShadow: {
-        card: "0 4px 24px -8px rgba(83, 74, 183, 0.18)",
+        // Hairline fintech-style elevation: cards separate from the neutral
+        // page background via contrast, not big colored shadows.
+        card: "0 1px 2px rgba(17, 15, 37, 0.04), 0 1px 3px rgba(17, 15, 37, 0.06)",
       },
     },
   },

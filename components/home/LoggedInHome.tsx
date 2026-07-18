@@ -4,6 +4,7 @@ import EventCover from "@/components/EventCover";
 import CategoryBadge from "@/components/CategoryBadge";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { categoriesForInterests } from "@/lib/constants";
+import LineIcon from "@/components/ui/LineIcon";
 
 interface EventLite {
   id: string;
@@ -17,10 +18,10 @@ interface EventLite {
 }
 
 const QUICK_ACTIONS = [
-  { href: "/events", label: "Explore", emoji: "🔎" },
-  { href: "/host", label: "Host", emoji: "🎤" },
-  { href: "/circles", label: "Circles", emoji: "⭕" },
-  { href: "/friends", label: "Friends", emoji: "👥" },
+  { href: "/events", label: "Explore", icon: "search" },
+  { href: "/host", label: "Host", icon: "mic" },
+  { href: "/circles", label: "Circles", icon: "circles" },
+  { href: "/friends", label: "Friends", icon: "users" },
 ];
 
 function greeting() {
@@ -77,7 +78,7 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
     .slice(0, 4);
   const hostingIds = new Set(hosting.map((e) => e.id));
 
-  // ✨ Picked for you — upcoming events whose category matches the user's
+  // Picked for you — upcoming events whose category matches the user's
   // interests, soonest first. Events they already have are excluded.
   const forYouCategories = categoriesForInterests(profile?.interests ?? []);
   let forYou: EventLite[] = [];
@@ -137,8 +138,8 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
             href={a.href}
             className="flex flex-col items-center gap-1.5 rounded-2xl border border-gray-100 bg-white py-3.5 shadow-card transition hover:-translate-y-0.5 hover:border-brand/30"
           >
-            <span className="text-2xl" aria-hidden>
-              {a.emoji}
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand">
+              <LineIcon name={a.icon} />
             </span>
             <span className="text-xs font-bold text-gray-800">{a.label}</span>
           </Link>
@@ -149,7 +150,7 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
       <section className="mt-8">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-gray-900">
-            🗓️ Your upcoming events
+            Your upcoming events
           </h2>
           <Link href="/dashboard" className="text-sm font-semibold text-brand">
             See all →
@@ -157,7 +158,6 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
         </div>
         {upcoming.length === 0 ? (
           <div className="mt-3 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center">
-            <p className="text-3xl">🎈</p>
             <p className="mt-2 text-sm text-gray-500">
               Nothing on your calendar yet. Find a vibe near you.
             </p>
@@ -179,7 +179,7 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
         <section className="mt-8">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-gray-900">
-              ✨ Picked for you
+              Picked for you
             </h2>
             <Link href="/profile/edit" className="text-sm font-semibold text-brand">
               Edit interests →
@@ -200,7 +200,9 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
       {(!profile?.interests || profile.interests.length === 0) && (
         <section className="mt-8">
           <div className="flex flex-col items-center gap-3 rounded-2xl border border-brand/20 bg-brand-50 px-6 py-8 text-center sm:flex-row sm:text-left">
-            <span className="text-3xl" aria-hidden>✨</span>
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white text-brand">
+              <LineIcon name="sparkles" size={22} />
+            </span>
             <div className="flex-1">
               <h2 className="text-lg font-bold text-gray-900">
                 Get events picked just for you
@@ -222,7 +224,7 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
         <section className="mt-8">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-gray-900">
-              📍 Happening {profile?.state ? `in ${profile.state}` : "near you"}
+              Happening {profile?.state ? `in ${profile.state}` : "near you"}
             </h2>
             <Link href="/events" className="text-sm font-semibold text-brand">
               See all →
@@ -254,7 +256,7 @@ function EventTile({ event, hosting }: { event: EventLite; hosting?: boolean }) 
         />
         {hosting && (
           <span className="absolute left-2 top-2 rounded-full bg-brand px-2 py-0.5 text-[11px] font-bold text-white">
-            🎤 Hosting
+            Hosting
           </span>
         )}
       </div>
