@@ -48,6 +48,24 @@ const getPopularSeries = unstable_cache(
   { revalidate: 300 }
 );
 
+// Popular circles for the "Find your Circle" section.
+const getPopularCircles = unstable_cache(
+  async () => {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const { data } = await supabase
+      .from("circles")
+      .select("id, name, category, state, member_count, is_private")
+      .order("member_count", { ascending: false })
+      .limit(4);
+    return data ?? [];
+  },
+  ["homepage-popular-circles"],
+  { revalidate: 300 }
+);
+
 // A few real upcoming events for the hero collage — makes the landing feel
 // alive instead of showing static category placeholders.
 const getHeroEvents = unstable_cache(
@@ -121,10 +139,11 @@ export default async function HomePage() {
   const user = await getSessionUser();
   if (user) return <LoggedInHome userId={user.id} />;
 
-  const [counts, popularSeries, heroEvents] = await Promise.all([
+  const [counts, popularSeries, heroEvents, popularCircles] = await Promise.all([
     getLandingCounts(),
     getPopularSeries(),
     getHeroEvents(),
+    getPopularCircles(),
   ]);
 
   return (
@@ -319,6 +338,71 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Circles: communities, the brand moment mid-page */}
+      {popularCircles.length > 0 && (
+        <section
+          className="relative overflow-hidden"
+          style={{ background: "linear-gradient(150deg, #110F25 0%, #1A1040 60%, #221E49 100%)" }}
+        >
+          <div aria-hidden className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[#534AB7]/30 blur-[100px]" />
+          <div aria-hidden className="pointer-events-none absolute -bottom-28 -right-16 h-72 w-72 rounded-full bg-[#FAC775]/15 blur-[100px]" />
+          <div className="container-page relative py-16">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 className="text-3xl font-extrabold tracking-tight text-white">
+                  Find your <span className="text-[#FAC775]">Circle</span>
+                </h2>
+                <p className="mt-2 max-w-xl text-white/70">
+                  Communities built around what you love. Join one, meet the
+                  regulars, and never miss a link-up.
+                </p>
+              </div>
+              <Link
+                href="/circles"
+                className="btn self-start bg-[#FAC775] font-bold text-[#1A1040] hover:bg-[#fbd28e] sm:self-auto"
+              >
+                Explore Circles
+              </Link>
+            </div>
+
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {popularCircles.map(
+                (c: {
+                  id: string;
+                  name: string;
+                  category: string | null;
+                  state: string | null;
+                  member_count: number;
+                  is_private: boolean;
+                }) => (
+                  <Link
+                    key={c.id}
+                    href={`/circles/${c.id}`}
+                    className="group rounded-2xl bg-[#fff] p-5 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.5)] transition duration-200 hover:-translate-y-1"
+                  >
+                    <span
+                      className={`grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br text-lg font-extrabold text-white ${categoryGradient(c.category ?? "Networking")}`}
+                    >
+                      {c.name.charAt(0).toUpperCase()}
+                    </span>
+                    <p className="mt-3 truncate font-bold text-gray-900 group-hover:text-brand">
+                      {c.name}
+                    </p>
+                    <p className="mt-0.5 truncate text-xs text-gray-500">
+                      {[c.category, c.state].filter(Boolean).join(" · ") || "Community"}
+                      {c.is_private ? " · Private" : ""}
+                    </p>
+                    <p className="mt-3 text-sm font-semibold text-brand">
+                      {c.member_count} {c.member_count === 1 ? "member" : "members"} →
+                    </p>
+                  </Link>
+                )
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Recurring series */}
       {popularSeries.length > 0 && (
