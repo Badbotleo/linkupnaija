@@ -1,3 +1,4 @@
+import PageHero, { Gold } from "@/components/PageHero";
 import LineIcon from "@/components/ui/LineIcon";
 import { createClient } from "@/lib/supabase/server";
 import GoProButton from "@/components/GoProButton";
@@ -59,22 +60,18 @@ export default async function ProPage() {
   }
 
   return (
-    <div className="container-page max-w-3xl py-14">
-      <div className="text-center">
-        <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 px-3 py-1 text-sm font-bold text-white">
-          ★ LinkUpNaija Pro
-        </span>
-        <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
-          Link up like a Pro
-        </h1>
-        <p className="mt-4 text-lg text-gray-600">
-          Unlock the full LinkUpNaija experience for{" "}
-          <span className="font-bold text-gray-900">
-            {formatNaira(PRO_PRICE)}/month
-          </span>
-          .
-        </p>
-      </div>
+    <div>
+      <PageHero
+        chip="★ LinkUpNaija Pro"
+        title={<>Link up like a <Gold>Pro</Gold></>}
+        subtitle={
+          <>
+            Unlock the full LinkUpNaija experience for{" "}
+            <span className="font-bold text-white">{formatNaira(PRO_PRICE)}/month</span>.
+          </>
+        }
+      />
+      <div className="container-page max-w-3xl py-10">
 
       <div className="mt-10 space-y-3">
         {BENEFITS.map((b) => (
@@ -106,6 +103,7 @@ export default async function ProPage() {
             expiresAt={expiresAt}
           />
         </div>
+      </div>
       </div>
     </div>
   );

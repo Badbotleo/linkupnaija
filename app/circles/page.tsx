@@ -1,3 +1,4 @@
+import PageHero, { Gold } from "@/components/PageHero";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import CirclesExplorer from "@/components/circles/CirclesExplorer";
@@ -23,20 +24,19 @@ export default async function CirclesPage() {
   }
 
   return (
-    <div className="container-page py-10">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-extrabold text-gray-900">Circles</h1>
-          <p className="mt-1 text-gray-600">
-            Communities for the things you love. Find your people.
-          </p>
-        </div>
-        <Link href="/circles/create" className="btn-primary self-start sm:self-auto">
+    <div>
+      <PageHero
+        title={<>Find your <Gold>Circle</Gold></>}
+        subtitle="Communities for the things you love. Find your people."
+      >
+        <Link href="/circles/create" className="btn bg-[#FAC775] font-bold text-[#1A1040] hover:bg-[#fbd28e] mt-5">
           + Create a circle
         </Link>
-      </div>
+      </PageHero>
+      <div className="container-page py-8">
 
       <CirclesExplorer meId={user?.id ?? null} myState={myState} />
+      </div>
     </div>
   );
 }

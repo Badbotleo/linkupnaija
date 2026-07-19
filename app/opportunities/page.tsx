@@ -13,14 +13,16 @@ export default function OpportunitiesPage() {
     <div>
       {/* Hero */}
       <section
-        className="text-white"
-        style={{ backgroundColor: "#1A1040" }}
+        className="relative overflow-hidden text-white"
+        style={{ background: "linear-gradient(150deg, #110F25 0%, #1A1040 60%, #221E49 100%)" }}
       >
-        <div className="container-page py-16 text-center sm:py-20">
+        <div aria-hidden className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[#534AB7]/30 blur-[100px]" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-28 -right-16 h-72 w-72 rounded-full bg-[#FAC775]/15 blur-[100px]" />
+        <div className="container-page relative py-16 text-center sm:py-20">
           <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-            Grow your business with LinkUpNaija
+            Grow your business with <span className="text-[#FAC775]">LinkUpNaija</span>
           </h1>
-          <p className="mt-4 text-lg text-[#DAD8F0]">
+          <p className="mt-4 text-lg text-white/70">
             Connect with thousands of event-goers across Nigeria
           </p>
         </div>

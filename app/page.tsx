@@ -154,9 +154,9 @@ export default async function HomePage() {
               <Typewriter text="Link up. Hang out. Vibe." />
             </p>
             <p className="mt-5 max-w-lg text-lg leading-relaxed text-white/70">
-              From family picnics to friend reunions, book clubs to new
-              friendships. LinkUpNaija helps Nigerians build real connections,
-              not just attend events.
+              House parties, beach days, game nights, raves and everything in
+              between. LinkUpNaija is where young Nigerians pull up, vibe and
+              connect for real.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-3">
               <Link

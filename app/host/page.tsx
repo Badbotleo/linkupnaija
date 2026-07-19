@@ -1,3 +1,4 @@
+import PageHero, { Gold } from "@/components/PageHero";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import HostForm from "@/components/HostForm";
@@ -47,18 +48,16 @@ export default async function HostPage() {
   }
 
   return (
-    <div className="container-page max-w-2xl py-10">
-      <div className="text-center">
-        <h1 className="text-3xl font-extrabold text-gray-900">
-          Host a link-up 🎤
-        </h1>
-        <p className="mt-2 text-gray-600">
-          Set the vibe, pick a spot, and gather your people.
-        </p>
-      </div>
+    <div>
+      <PageHero
+        title={<>Host a <Gold>link-up</Gold></>}
+        subtitle="Set the vibe, pick a spot, and gather your people."
+      />
+      <div className="container-page max-w-2xl py-8">
 
       <div className="mt-8 rounded-2xl border border-gray-100 bg-white p-6 shadow-card sm:p-8">
         <HostForm hostState={profile?.state ?? null} />
+      </div>
       </div>
     </div>
   );

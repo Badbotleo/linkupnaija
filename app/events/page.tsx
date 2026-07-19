@@ -1,3 +1,4 @@
+import PageHero, { Gold } from "@/components/PageHero";
 import Link from "next/link";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
@@ -238,22 +239,17 @@ export default async function EventsPage({
   };
 
   return (
-    <div className="container-page py-10">
-      <TournamentBanner />
-
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-extrabold text-gray-900">
-            Upcoming link-ups
-          </h1>
-          <p className="mt-1 text-gray-600">
-            Find your next hangout across Nigeria.
-          </p>
-        </div>
-        <Link href="/host" className="btn-primary self-start sm:self-auto">
+    <div>
+      <PageHero
+        title={<>Upcoming <Gold>link-ups</Gold></>}
+        subtitle="Parties, hangouts and everything buzzing near you."
+      >
+        <Link href="/host" className="btn bg-[#FAC775] font-bold text-[#1A1040] hover:bg-[#fbd28e] mt-5">
           + Host an event
         </Link>
-      </div>
+      </PageHero>
+      <div className="container-page py-8">
+      <TournamentBanner />
 
       <div className="mt-6">
         <Suspense fallback={null}>
@@ -354,6 +350,7 @@ export default async function EventsPage({
           )}
         </>
       )}
+      </div>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import PageHero, { Gold } from "@/components/PageHero";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Avatar from "@/components/Avatar";
@@ -105,9 +106,12 @@ export default async function LeaderboardPage({
   };
 
   return (
-    <div className="container-page max-w-2xl py-8">
-      <h1 className="text-3xl font-extrabold text-gray-900">Host leaderboard</h1>
-      <p className="mt-1 text-gray-600">The most-loved hosts across Nigeria.</p>
+    <div>
+      <PageHero
+        title={<>Host <Gold>leaderboard</Gold></>}
+        subtitle="The most-loved hosts across Nigeria."
+      />
+      <div className="container-page max-w-2xl py-8">
 
       {/* Featured host of the week */}
       {featured && (
@@ -144,6 +148,7 @@ export default async function LeaderboardPage({
           {list.map((r, i) => card(r, i + 1))}
         </ol>
       )}
+      </div>
     </div>
   );
 }

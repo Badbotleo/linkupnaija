@@ -1,3 +1,4 @@
+import PageHero, { Gold } from "@/components/PageHero";
 import LineIcon from "@/components/ui/LineIcon";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
@@ -97,15 +98,21 @@ export default async function LivePage() {
   items.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
 
   return (
-    <div className="container-page max-w-2xl py-6">
-      <div className="flex items-center gap-2">
-        <span className="relative grid h-3 w-3 place-items-center">
-          <span className="absolute inset-0 animate-ping rounded-full bg-red-400" />
-          <span className="h-3 w-3 rounded-full bg-red-500" />
-        </span>
-        <h1 className="text-2xl font-extrabold text-gray-900">Live feed</h1>
-      </div>
-      <p className="mt-1 text-gray-600">See what&apos;s happening across LinkUpNaija right now.</p>
+    <div>
+      <PageHero
+        chip={
+          <>
+            <span className="relative grid h-2.5 w-2.5 place-items-center">
+              <span className="absolute inset-0 animate-ping rounded-full bg-red-400" />
+              <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
+            </span>
+            LIVE
+          </>
+        }
+        title={<>What&apos;s <Gold>buzzing</Gold> right now</>}
+        subtitle="Hosts, joins and posts across LinkUpNaija, as they happen."
+      />
+      <div className="container-page max-w-2xl py-6">
 
       {items.length === 0 ? (
         <p className="mt-8 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-16 text-center text-sm text-gray-500">
@@ -129,6 +136,7 @@ export default async function LivePage() {
           ))}
         </ul>
       )}
+      </div>
     </div>
   );
 }

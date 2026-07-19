@@ -1,3 +1,4 @@
+import PageHero, { Gold } from "@/components/PageHero";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import FriendsManager from "@/components/friends/FriendsManager";
@@ -19,14 +20,16 @@ export default async function FriendsPage() {
     .single();
 
   return (
-    <div className="container-page max-w-2xl py-10">
-      <h1 className="text-3xl font-extrabold text-gray-900">Friends</h1>
-      <p className="mt-1 text-gray-600">
-        Find people, accept requests, and build your circle on LinkUpNaija.
-      </p>
+    <div>
+      <PageHero
+        title={<>Your <Gold>people</Gold></>}
+        subtitle="Find friends, accept requests, and build your circle on LinkUpNaija."
+      />
+      <div className="container-page max-w-2xl py-8">
 
       <div className="mt-8">
         <FriendsManager meId={user.id} myState={me?.state ?? null} />
+      </div>
       </div>
     </div>
   );
