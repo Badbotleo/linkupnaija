@@ -19,44 +19,22 @@ body {
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-brand/40 disabled:cursor-not-allowed disabled:opacity-60;
   }
-  /* Liquid-glass CTA (iOS-style): translucent brand tint over a backdrop
-     blur, hairline light border and a specular top highlight. */
+  /* Crisp solid CTA (fintech style): subtle vertical gradient, hairline
+     darker edge and an inner top sheen. No blur, no translucency. */
   .btn-primary {
-    @apply btn rounded-full text-white;
-    background: linear-gradient(
-      160deg,
-      rgba(109, 99, 195, 0.82),
-      rgba(83, 74, 183, 0.66)
-    );
-    -webkit-backdrop-filter: blur(18px) saturate(180%);
-    backdrop-filter: blur(18px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.38);
+    @apply btn text-white;
+    background: linear-gradient(180deg, #6d63c3 0%, #534ab7 60%, #4c44a9 100%);
+    border: 1px solid #433b92;
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.45),
-      inset 0 -1px 1px rgba(17, 15, 37, 0.12),
-      0 6px 20px -6px rgba(83, 74, 183, 0.45);
-    text-shadow: 0 1px 2px rgba(17, 15, 37, 0.18);
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      0 1px 2px rgba(17, 15, 37, 0.18);
   }
   .btn-primary:hover {
-    background: linear-gradient(
-      160deg,
-      rgba(109, 99, 195, 0.92),
-      rgba(83, 74, 183, 0.78)
-    );
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.5),
-      inset 0 -1px 1px rgba(17, 15, 37, 0.12),
-      0 8px 24px -6px rgba(83, 74, 183, 0.55);
+    background: linear-gradient(180deg, #776ecb 0%, #5c53c0 60%, #534ab7 100%);
   }
   .btn-primary:active {
-    background: linear-gradient(
-      160deg,
-      rgba(83, 74, 183, 0.95),
-      rgba(67, 59, 146, 0.85)
-    );
-    box-shadow:
-      inset 0 1px 2px rgba(17, 15, 37, 0.25),
-      0 3px 10px -4px rgba(83, 74, 183, 0.4);
+    background: #433b92;
+    box-shadow: inset 0 2px 4px rgba(17, 15, 37, 0.3);
   }
   .btn-outline {
     @apply btn border border-brand/30 bg-white text-brand hover:bg-brand-50;
