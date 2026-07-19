@@ -129,75 +129,77 @@ export default async function HomePage() {
 
   return (
     <div>
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-brand-50 via-white to-white">
-        <div className="container-page grid items-center gap-10 py-16 lg:grid-cols-2 lg:py-24">
+      {/* Hero: bold navy color-block with a tilted polaroid collage */}
+      <section className="relative overflow-hidden" style={{ background: "linear-gradient(150deg, #110F25 0%, #1A1040 55%, #221E49 100%)" }}>
+        {/* Purple + gold glows */}
+        <div aria-hidden className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-[#534AB7]/30 blur-[110px]" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-40 -right-24 h-96 w-96 rounded-full bg-[#FAC775]/15 blur-[110px]" />
+
+        <div className="container-page relative grid items-center gap-12 py-16 lg:grid-cols-2 lg:py-24">
           <div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-brand-100 px-3 py-1 text-sm font-semibold text-brand">
-              🇳🇬 Nigeria&apos;s social events platform
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm font-semibold text-white">
+              <span aria-hidden className="flex overflow-hidden rounded-[3px]">
+                <span className="h-3 w-1.5 bg-[#008753]" />
+                <span className="h-3 w-1.5 bg-white" />
+                <span className="h-3 w-1.5 bg-[#008753]" />
+              </span>
+              Nigeria&apos;s social events platform
             </span>
-            <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-              Find your people.
+            <h1 className="mt-6 text-4xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-6xl">
+              Find your <span className="text-[#FAC775]">people</span>.
               <br />
               Build real connections.
             </h1>
-            <p className="mt-3 text-lg font-bold text-brand">
+            <p className="mt-4 text-lg font-bold text-[#AFA9EC]">
               <Typewriter text="Link up. Hang out. Vibe." />
             </p>
-            <p className="mt-5 max-w-lg text-lg text-gray-600">
+            <p className="mt-5 max-w-lg text-lg leading-relaxed text-white/70">
               From family picnics to friend reunions, book clubs to new
               friendships. LinkUpNaija helps Nigerians build real connections,
               not just attend events.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/events" className="btn-primary px-6 py-3 text-base">
+            <div className="mt-9 flex flex-wrap items-center gap-3">
+              <Link
+                href="/events"
+                className="btn bg-[#FAC775] px-7 py-3 text-base font-bold text-[#1A1040] shadow-[0_8px_24px_-8px_rgba(250,199,117,0.6)] hover:bg-[#fbd28e]"
+              >
                 Explore events
               </Link>
-              <Link href="/signup" className="btn-outline px-6 py-3 text-base">
+              <Link
+                href="/signup"
+                className="btn border border-white/25 px-7 py-3 text-base text-white hover:bg-white/10"
+              >
                 Join free
               </Link>
             </div>
           </div>
 
-          <div className="relative">
-            {/* Soft brand glow for depth behind the collage */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute -inset-6 -z-10 rounded-[3rem] bg-gradient-to-tr from-brand-100/60 via-transparent to-amber-100/50 blur-2xl"
-            />
-            <div className="grid grid-cols-2 gap-4">
+          {/* Polaroid collage: real event photos, hand-placed feel */}
+          <div className="relative mx-auto w-full max-w-md lg:max-w-none">
+            <div className="grid grid-cols-2 gap-5 px-2 py-4">
               {heroEvents.map((e, i) => (
                 <Link
                   key={e.id}
                   href={`/events/${e.id}`}
-                  className={`group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-xl ${
-                    i % 2 === 0 ? "sm:translate-y-5" : ""
+                  className={`group rounded-xl bg-[#fff] p-2 pb-3 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.5)] transition duration-200 hover:z-10 hover:rotate-0 hover:scale-[1.03] ${
+                    i % 2 === 0 ? "-rotate-2 sm:translate-y-4" : "rotate-2"
                   }`}
                 >
                   <EventCover
                     url={e.cover_image_url}
                     category={e.category}
                     title={e.title}
-                    className="h-32 w-full"
+                    className="h-32 w-full rounded-lg sm:h-36"
                   />
-                  <div className="p-3.5">
-                    <span className="text-[11px] font-bold uppercase tracking-wide text-brand">
-                      {e.category}
-                    </span>
-                    <p className="mt-1 line-clamp-2 text-sm font-bold leading-snug text-gray-900">
-                      {e.title}
-                    </p>
-                    <p className="mt-1 truncate text-xs text-gray-500">
-                      {formatEventDate(e.date)}
-                      {e.state ? ` · ${e.state}` : ""}
-                    </p>
-                  </div>
+                  <p className="mt-2 truncate px-1 text-sm font-bold text-gray-900">
+                    {e.title}
+                  </p>
+                  <p className="truncate px-1 text-xs text-gray-500">
+                    {formatEventDate(e.date)}
+                    {e.state ? ` · ${e.state}` : ""}
+                  </p>
                 </Link>
               ))}
-
-              {/* Fill the grid to a full 2×2 with category shortcuts styled
-                  exactly like the event cards (gradient cover + text block),
-                  so the collage reads as one designed set. */}
               {EVENT_CATEGORIES.slice(0, Math.max(0, 4 - heroEvents.length)).map((cat, i) => {
                 const { emoji } = CATEGORY_STYLES[cat];
                 const idx = heroEvents.length + i;
@@ -205,26 +207,15 @@ export default async function HomePage() {
                   <Link
                     key={cat}
                     href={`/events?category=${encodeURIComponent(cat)}`}
-                    className={`group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-xl ${
-                      idx % 2 === 0 ? "sm:translate-y-5" : ""
+                    className={`group rounded-xl bg-[#fff] p-2 pb-3 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.5)] transition duration-200 hover:z-10 hover:rotate-0 hover:scale-[1.03] ${
+                      idx % 2 === 0 ? "-rotate-2 sm:translate-y-4" : "rotate-2"
                     }`}
                   >
-                    <div
-                      className={`flex h-32 w-full items-center justify-center bg-gradient-to-br ${categoryGradient(cat)}`}
-                    >
-                      <span className="text-4xl drop-shadow-sm" aria-hidden>
-                        {emoji}
-                      </span>
+                    <div className={`flex h-32 w-full items-center justify-center rounded-lg bg-gradient-to-br sm:h-36 ${categoryGradient(cat)}`}>
+                      <span className="text-4xl drop-shadow-sm" aria-hidden>{emoji}</span>
                     </div>
-                    <div className="p-3.5">
-                      <span className="text-[11px] font-bold uppercase tracking-wide text-brand">
-                        Popular vibe
-                      </span>
-                      <p className="mt-1 text-sm font-bold leading-snug text-gray-900">
-                        {cat}
-                      </p>
-                      <p className="mt-1 text-xs text-gray-500">Browse events →</p>
-                    </div>
+                    <p className="mt-2 truncate px-1 text-sm font-bold text-gray-900">{cat}</p>
+                    <p className="truncate px-1 text-xs text-gray-500">Browse events →</p>
                   </Link>
                 );
               })}
@@ -306,26 +297,25 @@ export default async function HomePage() {
           <p className="mx-auto mt-3 max-w-xl text-center text-gray-600">
             Whatever your energy, there&apos;s a link-up for it.
           </p>
-          <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3">
-            {EVENT_CATEGORIES.map((cat) => {
-              const { emoji, badge } = CATEGORY_STYLES[cat];
-              return (
-                <Link
-                  key={cat}
-                  href={`/events?category=${encodeURIComponent(cat)}`}
-                  className="group flex flex-col items-center gap-3 rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-card transition hover:-translate-y-0.5 hover:border-brand/30"
-                >
-                  <span
-                    className={`grid h-14 w-14 place-items-center rounded-2xl text-3xl ${badge}`}
-                  >
-                    {emoji}
-                  </span>
-                  <span className="font-bold text-gray-900 group-hover:text-brand">
-                    {cat}
-                  </span>
-                </Link>
-              );
-            })}
+          {/* Two staggered scrolling rows of colored pills, not a tile wall. */}
+          <div className="no-scrollbar mt-10 space-y-3 overflow-x-auto pb-2">
+            {[EVENT_CATEGORIES.slice(0, 12), EVENT_CATEGORIES.slice(12)].map((row, r) => (
+              <div key={r} className={`flex w-max gap-3 ${r === 1 ? "pl-10" : ""}`}>
+                {row.map((cat) => {
+                  const { emoji, badge } = CATEGORY_STYLES[cat];
+                  return (
+                    <Link
+                      key={cat}
+                      href={`/events?category=${encodeURIComponent(cat)}`}
+                      className={`inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition hover:-translate-y-0.5 hover:shadow-md ${badge}`}
+                    >
+                      <span aria-hidden>{emoji}</span>
+                      {cat}
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -375,7 +365,8 @@ export default async function HomePage() {
 
       {/* CTA */}
       <section className="container-page py-16">
-        <div className="overflow-hidden rounded-3xl bg-brand px-8 py-14 text-center text-white">
+        <div className="relative overflow-hidden rounded-3xl px-8 py-14 text-center text-white" style={{ background: "linear-gradient(150deg, #1A1040 0%, #322C6E 100%)" }}>
+          <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#FAC775]/15 blur-[80px]" />
           <h2 className="text-3xl font-extrabold sm:text-4xl">
             Ready to link up?
           </h2>
@@ -386,7 +377,7 @@ export default async function HomePage() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
               href="/signup"
-              className="btn bg-white px-6 py-3 text-base text-brand hover:bg-brand-50"
+              className="btn bg-[#FAC775] px-6 py-3 text-base font-bold text-[#1A1040] hover:bg-[#fbd28e]"
             >
               Create your account
             </Link>
