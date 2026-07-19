@@ -26,6 +26,7 @@ export default async function CirclesPage() {
   return (
     <div>
       <PageHero
+        watermark="Circles"
         title={<>Find your <Gold>Circle</Gold></>}
         subtitle="Communities for the things you love. Find your people."
       >

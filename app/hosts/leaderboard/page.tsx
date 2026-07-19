@@ -108,6 +108,7 @@ export default async function LeaderboardPage({
   return (
     <div>
       <PageHero
+        watermark="Hosts"
         title={<>Host <Gold>leaderboard</Gold></>}
         subtitle="The most-loved hosts across Nigeria."
       />

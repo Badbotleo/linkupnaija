@@ -19,6 +19,7 @@ export default async function VenuesPage() {
   return (
     <div>
       <PageHero
+        watermark="Venues"
         title={<>Discover <Gold>venues</Gold></>}
         subtitle="Find the perfect spot for your next link-up, powered by OpenStreetMap."
       />

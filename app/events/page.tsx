@@ -241,6 +241,7 @@ export default async function EventsPage({
   return (
     <div>
       <PageHero
+        watermark="Events"
         title={<>Upcoming <Gold>link-ups</Gold></>}
         subtitle="Parties, hangouts and everything buzzing near you."
       >

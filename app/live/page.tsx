@@ -100,6 +100,7 @@ export default async function LivePage() {
   return (
     <div>
       <PageHero
+        watermark="Live"
         chip={
           <>
             <span className="relative grid h-2.5 w-2.5 place-items-center">

@@ -8,6 +8,7 @@ import { formatEventDate } from "@/lib/format";
 import Typewriter from "@/components/anim/Typewriter";
 import LandingStats from "@/components/LandingStats";
 import LoggedInHome from "@/components/home/LoggedInHome";
+import LineIcon from "@/components/ui/LineIcon";
 import { getSessionUser } from "@/lib/supabase/auth";
 
 // The homepage hero/stats don't need to be real-time — cache the live counts
@@ -88,33 +89,6 @@ const getHeroEvents = unstable_cache(
   { revalidate: 300 }
 );
 
-const WHY_LINKUPNAIJA = [
-  {
-    emoji: "🤝",
-    title: "Built for real connection",
-    text: "Not just parties. Family hangouts, friend meetups, book clubs, picnics. Events that bring people closer together.",
-  },
-  {
-    emoji: "✅",
-    title: "Vetted, safe gatherings",
-    text: "Hosts approve every attendee. Verified profiles. No randos, no wahala.",
-  },
-  {
-    emoji: "👨‍👩‍👧‍👦",
-    title: "For everyone, not just nightlife",
-    text: "Whether you're planning a family outing or meeting new friends who share your interests, there's a place for you here.",
-  },
-  {
-    emoji: "💬",
-    title: "Connect before you meet",
-    text: "Private group chats let you get to know your fellow attendees before the event even starts.",
-  },
-  {
-    emoji: "🇳🇬",
-    title: "Made for Nigeria, by Nigerians",
-    text: "We understand the culture, the cities, and what brings Nigerians together.",
-  },
-];
 
 const HOW_IT_WORKS = [
   {
@@ -250,29 +224,105 @@ export default async function HomePage() {
         categoriesCount={EVENT_CATEGORIES.length}
       />
 
-      {/* Why LinkUpNaija */}
+      {/* Why LinkUpNaija: feature bento */}
       <section className="container-page py-16">
-        <h2 className="text-center text-3xl font-extrabold text-gray-900">
-          Why LinkUpNaija
+        <h2 className="text-center text-3xl font-extrabold tracking-tight text-gray-900">
+          Everything you need to pull up
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-center text-gray-600">
-          More than an events app. A place to build genuine connections.
+          From finding the vibe to getting home safe, the whole link-up is
+          handled.
         </p>
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {WHY_LINKUPNAIJA.map((item) => (
-            <div
-              key={item.title}
-              className="rounded-2xl border border-gray-100 bg-white p-6 shadow-card"
-            >
-              <span className="grid h-12 w-12 place-items-center rounded-xl bg-brand-50 text-2xl">
-                {item.emoji}
-              </span>
-              <h3 className="mt-4 text-lg font-bold text-gray-900">
-                {item.title}
-              </h3>
-              <p className="mt-1.5 text-gray-600">{item.text}</p>
+
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Safety: the flagship tile */}
+          <div
+            className="relative overflow-hidden rounded-2xl p-6 text-white sm:col-span-2 lg:row-span-2"
+            style={{ background: "linear-gradient(150deg, #1A1040 0%, #322C6E 100%)" }}
+          >
+            <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[#FAC775]/15 blur-[70px]" />
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-white/10 text-[#FAC775]">
+              <LineIcon name="shield" size={22} />
+            </span>
+            <h3 className="mt-4 text-xl font-extrabold">
+              Safety isn&apos;t a feature. It&apos;s the point.
+            </h3>
+            <p className="mt-2 leading-relaxed text-white/70">
+              Hosts approve every guest, so no randos. Profiles carry phone
+              verification. Share your plans with a trusted contact before you
+              go, check in safe after, and report anything off in two taps.
+            </p>
+            <ul className="mt-4 space-y-1.5 text-sm text-white/80">
+              <li className="flex items-center gap-2">
+                <LineIcon name="check" size={14} className="text-[#FAC775]" /> Host-approved guest lists
+              </li>
+              <li className="flex items-center gap-2">
+                <LineIcon name="check" size={14} className="text-[#FAC775]" /> Verified profiles
+              </li>
+              <li className="flex items-center gap-2">
+                <LineIcon name="check" size={14} className="text-[#FAC775]" /> Share-my-plans + safety check-ins
+              </li>
+            </ul>
+          </div>
+
+          <Bento icon="ticket" title="Your ticket is a QR code">
+            No printouts, no wahala. Your pass lives on your phone and the host
+            scans you in at the door in seconds.
+          </Bento>
+
+          <Bento icon="chat" title="Chat before you arrive">
+            Every event has a group chat, so you know the vibe and the people
+            before you walk in. Never pull up cold.
+          </Bento>
+
+          <Bento icon="sparkles" title="A feed picked for you">
+            Tell us what you&apos;re into once. Your homepage fills with parties,
+            hangouts and link-ups that match your vibe and your state.
+          </Bento>
+
+          <Bento icon="zap" title="Money, handled">
+            Paid tickets through Paystack, a wallet for refunds and credits, and
+            automatic payouts when you host. Naira-native, end to end.
+          </Bento>
+
+          {/* Host reputation: gold tile */}
+          <div className="relative overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-6 sm:col-span-2">
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-amber-100 text-amber-600">
+              <LineIcon name="trophy" size={22} />
+            </span>
+            <h3 className="mt-4 text-lg font-extrabold text-gray-900">
+              Hosting builds your name
+            </h3>
+            <p className="mt-1.5 max-w-lg text-gray-600">
+              Ratings, attendance and safety scores roll into a public host
+              scorecard. Earn badges, climb the leaderboard, get featured. Great
+              hosts get seen.
+            </p>
+            <Link href="/hosts/leaderboard" className="mt-3 inline-block text-sm font-bold text-amber-600 hover:underline">
+              See the leaderboard →
+            </Link>
+          </div>
+
+          <Bento icon="bell" title="Never miss it">
+            Push notifications, email reminders and one-tap add-to-calendar.
+            If you said you&apos;d be there, we make sure you remember.
+          </Bento>
+
+          {/* Nigeria strip */}
+          <div className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-card sm:col-span-2 lg:col-span-3">
+            <span aria-hidden className="flex shrink-0 overflow-hidden rounded">
+              <span className="h-8 w-4 bg-[#008753]" />
+              <span className="h-8 w-4 bg-white ring-1 ring-inset ring-gray-100" />
+              <span className="h-8 w-4 bg-[#008753]" />
+            </span>
+            <div>
+              <h3 className="font-extrabold text-gray-900">Made for Nigeria, by Nigerians</h3>
+              <p className="text-sm text-gray-600">
+                All 36 states + FCT, naira payments, and a team that knows what
+                brings us together.
+              </p>
             </div>
-          ))}
+          </div>
         </div>
       </section>
 
@@ -476,6 +526,26 @@ export default async function HomePage() {
       </section>
 
       <FcPopup />
+    </div>
+  );
+}
+
+function Bento({
+  icon,
+  title,
+  children,
+}: {
+  icon: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-card">
+      <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-50 text-brand">
+        <LineIcon name={icon} size={22} />
+      </span>
+      <h3 className="mt-4 text-lg font-extrabold text-gray-900">{title}</h3>
+      <p className="mt-1.5 text-sm leading-relaxed text-gray-600">{children}</p>
     </div>
   );
 }

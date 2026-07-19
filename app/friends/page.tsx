@@ -22,6 +22,7 @@ export default async function FriendsPage() {
   return (
     <div>
       <PageHero
+        watermark="People"
         title={<>Your <Gold>people</Gold></>}
         subtitle="Find friends, accept requests, and build your circle on LinkUpNaija."
       />
