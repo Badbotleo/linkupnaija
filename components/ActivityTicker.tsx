@@ -157,7 +157,7 @@ export default function ActivityTicker() {
 
   return (
     <div
-      className="fixed bottom-24 left-4 right-4 z-40 sm:left-auto sm:right-5 sm:w-[22rem]"
+      className="fixed bottom-36 left-4 right-4 z-40 sm:left-auto sm:right-5 sm:w-[22rem] lg:bottom-24"
       role="status"
       aria-live="polite"
     >
