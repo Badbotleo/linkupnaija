@@ -583,42 +583,69 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Recurring series */}
+      {/* Recurring series: the regulars */}
       {popularSeries.length > 0 && (
         <section className="container-page py-16">
-          <h2 className="text-center text-3xl font-extrabold text-gray-900">
-            🔄 Recurring events near you
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-center text-gray-600">
-            Communities that meet again and again. Subscribe and never miss one.
-          </p>
-          <div className="mt-10 grid gap-6 sm:grid-cols-3">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-500">
+                The regulars
+              </p>
+              <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                Link-ups that keep coming back
+              </h2>
+              <p className="mt-2 max-w-xl text-gray-600">
+                Weekly game nights, monthly picnics, the ones everyone plans
+                their month around. Subscribe once and never miss a beat.
+              </p>
+            </div>
+            <Link href="/events?series=1" className="btn-outline self-start sm:self-auto">
+              All series
+            </Link>
+          </div>
+
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {popularSeries.map(
               (s: {
                 id: string;
                 title: string;
                 category: string | null;
                 state: string | null;
+                frequency: string | null;
+                cover_image_url: string | null;
                 subscriber_count: number;
               }) => (
                 <Link
                   key={s.id}
                   href={`/series/${s.id}`}
-                  className="flex flex-col rounded-2xl border border-gray-100 bg-white p-6 shadow-card transition hover:-translate-y-0.5 hover:border-brand/30"
+                  className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-xl"
                 >
-                  <span className="inline-flex w-fit items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand">
-                    🔄 Series
-                  </span>
-                  <h3 className="mt-3 text-lg font-bold text-gray-900">
-                    {s.title}
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    {[s.category, s.state].filter(Boolean).join(" · ")}
-                  </p>
-                  <p className="mt-3 text-sm font-semibold text-brand">
-                    {s.subscriber_count}{" "}
-                    {s.subscriber_count === 1 ? "follower" : "followers"} →
-                  </p>
+                  <div className="relative">
+                    <EventCover
+                      url={s.cover_image_url}
+                      category={s.category ?? "Networking"}
+                      title={s.title}
+                      className="h-40 w-full transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                    {/* Frequency ribbon */}
+                    <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-[#FAC775] px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-[#1A1040]">
+                      <LineIcon name="clock" size={12} />
+                      {s.frequency ?? "Recurring"}
+                    </span>
+                    <h3 className="absolute inset-x-4 bottom-3 text-lg font-extrabold leading-tight text-white drop-shadow">
+                      {s.title}
+                    </h3>
+                  </div>
+                  <div className="flex items-center justify-between p-4">
+                    <p className="truncate text-xs font-medium text-gray-500">
+                      {[s.category, s.state].filter(Boolean).join(" · ") || "Community"}
+                    </p>
+                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand">
+                      <LineIcon name="users" size={13} />
+                      {s.subscriber_count}
+                    </span>
+                  </div>
                 </Link>
               )
             )}
