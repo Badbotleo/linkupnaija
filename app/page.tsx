@@ -90,23 +90,6 @@ const getHeroEvents = unstable_cache(
 );
 
 
-const HOW_IT_WORKS = [
-  {
-    emoji: "🔎",
-    title: "Find your vibe",
-    text: "Browse hangouts, parties, picnics and more happening in your state.",
-  },
-  {
-    emoji: "🙌",
-    title: "Join the link-up",
-    text: "Tap join to RSVP and see who else is pulling up. No stress.",
-  },
-  {
-    emoji: "🎤",
-    title: "Or host your own",
-    text: "Got a vibe in mind? Create an event and gather your people.",
-  },
-];
 
 export default async function HomePage() {
   // Signed-in members get a personalised home instead of re-reading the pitch.
@@ -326,34 +309,80 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* How it works */}
+      {/* How it works: numbered journey */}
       <section className="container-page py-16">
-        <h2 className="text-center text-3xl font-extrabold text-gray-900">
-          How it works
-        </h2>
-        <p className="mx-auto mt-3 max-w-xl text-center text-gray-600">
-          Three steps to never having a boring weekend again.
+        <p className="text-center text-xs font-black uppercase tracking-[0.25em] text-amber-500">
+          The playbook
         </p>
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {HOW_IT_WORKS.map((step, i) => (
-            <div
-              key={step.title}
-              className="rounded-2xl border border-gray-100 bg-white p-6 shadow-card"
-            >
-              <div className="flex items-center gap-3">
-                <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-50 text-2xl">
-                  {step.emoji}
+        <h2 className="mt-2 text-center text-3xl font-extrabold tracking-tight text-gray-900">
+          Three moves. One link-up.
+        </h2>
+
+        <div className="relative mt-12">
+          {/* Dashed journey line behind the cards (desktop) */}
+          <div
+            aria-hidden
+            className="absolute left-[12%] right-[12%] top-10 hidden border-t-2 border-dashed border-brand-200 md:block"
+          />
+          <div className="grid gap-10 md:grid-cols-3 md:gap-6">
+            {[
+              {
+                n: "01",
+                icon: "search",
+                tilt: "md:-rotate-1",
+                title: "Scout the vibe",
+                text: "Open Explore and see what's moving: parties, game nights, beach days, whatever your city is on this week.",
+              },
+              {
+                n: "02",
+                icon: "users",
+                tilt: "md:rotate-1 md:translate-y-4",
+                title: "Pull up with people",
+                text: "Tap join, get the host's yes, and land in the group chat before you land at the venue. Zero awkward entrances.",
+              },
+              {
+                n: "03",
+                icon: "mic",
+                tilt: "md:-rotate-1",
+                title: "Run your own",
+                text: "Got the idea? Set it up in two minutes, approve your guests, and watch your host name grow.",
+              },
+            ].map((s) => (
+              <div
+                key={s.n}
+                className={`relative rounded-2xl border border-gray-100 bg-white p-6 pt-7 shadow-card transition duration-200 hover:rotate-0 hover:shadow-xl ${s.tilt}`}
+              >
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute -top-5 right-4 select-none text-7xl font-black leading-none tracking-tighter text-transparent"
+                  style={{ WebkitTextStroke: "1.5px #DAD8F0" }}
+                >
+                  {s.n}
                 </span>
-                <span className="text-sm font-bold text-brand">
-                  Step {i + 1}
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand text-white shadow-sm">
+                  <LineIcon name={s.icon} size={20} />
                 </span>
+                <h3 className="mt-4 text-lg font-extrabold text-gray-900">
+                  {s.title}
+                </h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-gray-600">
+                  {s.text}
+                </p>
               </div>
-              <h3 className="mt-4 text-lg font-bold text-gray-900">
-                {step.title}
-              </h3>
-              <p className="mt-1.5 text-gray-600">{step.text}</p>
-            </div>
-          ))}
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-12 flex flex-col items-center gap-3">
+          <p className="text-sm font-semibold text-gray-500">
+            No long thing. Your first link-up is minutes away.
+          </p>
+          <Link
+            href="/events"
+            className="btn bg-[#FAC775] px-7 py-3 text-base font-bold text-[#1A1040] shadow-[0_8px_24px_-8px_rgba(250,199,117,0.6)] hover:bg-[#fbd28e]"
+          >
+            Find a link-up
+          </Link>
         </div>
       </section>
 
