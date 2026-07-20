@@ -58,9 +58,9 @@ const getPopularCircles = unstable_cache(
     );
     const { data } = await supabase
       .from("circles")
-      .select("id, name, category, state, member_count, is_private")
+      .select("id, name, category, state, member_count, is_private, description, cover_image_url")
       .order("member_count", { ascending: false })
-      .limit(4);
+      .limit(5);
     return data ?? [];
   },
   ["homepage-popular-circles"],
@@ -418,35 +418,79 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Circles: communities, the brand moment mid-page */}
+      {/* Circles: editorial featured + grid on navy */}
       {popularCircles.length > 0 && (
         <section
           className="relative overflow-hidden"
           style={{ background: "linear-gradient(150deg, #110F25 0%, #1A1040 60%, #221E49 100%)" }}
         >
+          <div aria-hidden className="pointer-events-none absolute inset-0 opacity-50" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
           <div aria-hidden className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[#534AB7]/30 blur-[100px]" />
           <div aria-hidden className="pointer-events-none absolute -bottom-28 -right-16 h-72 w-72 rounded-full bg-[#FAC775]/15 blur-[100px]" />
+          <span aria-hidden className="pointer-events-none absolute -bottom-6 right-2 select-none text-[6rem] font-black uppercase leading-none tracking-tighter text-transparent sm:text-[9rem]" style={{ WebkitTextStroke: "1px rgba(255,255,255,0.07)" }}>
+            Circles
+          </span>
+
           <div className="container-page relative py-16">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h2 className="text-3xl font-extrabold tracking-tight text-white">
+                <p className="text-xs font-black uppercase tracking-[0.25em] text-[#FAC775]">
+                  Your community
+                </p>
+                <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
                   Find your <span className="text-[#FAC775]">Circle</span>
                 </h2>
                 <p className="mt-2 max-w-xl text-white/70">
                   Communities built around what you love. Join one, meet the
-                  regulars, and never miss a link-up.
+                  regulars, and hear about link-ups before anyone else.
                 </p>
               </div>
               <Link
                 href="/circles"
                 className="btn self-start bg-[#FAC775] font-bold text-[#1A1040] hover:bg-[#fbd28e] sm:self-auto"
               >
-                Explore Circles
+                Explore all Circles
               </Link>
             </div>
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {popularCircles.map(
+            <div className="mt-8 grid gap-4 lg:grid-cols-3">
+              {/* Featured circle */}
+              {(() => {
+                const f = popularCircles[0];
+                const grad = categoryGradient(f.category ?? "Networking");
+                return (
+                  <Link
+                    href={`/circles/${f.id}`}
+                    className="group relative flex min-h-[15rem] flex-col justify-end overflow-hidden rounded-3xl p-6 shadow-[0_16px_48px_-12px_rgba(0,0,0,0.6)] lg:row-span-2 lg:min-h-full"
+                  >
+                    {f.cover_image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={f.cover_image_url} alt="" className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+                    ) : (
+                      <div className={`absolute inset-0 bg-gradient-to-br ${grad}`} />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10" />
+                    <div className="relative">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FAC775] px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-[#1A1040]">
+                        ★ Biggest circle
+                      </span>
+                      <h3 className="mt-3 text-2xl font-extrabold text-white">{f.name}</h3>
+                      {f.description && (
+                        <p className="mt-1 line-clamp-2 max-w-md text-sm text-white/80">{f.description}</p>
+                      )}
+                      <div className="mt-3 flex items-center gap-3 text-sm font-semibold text-white">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur">
+                          <LineIcon name="users" size={15} /> {f.member_count} members
+                        </span>
+                        <span className="opacity-0 transition group-hover:opacity-100">Join the vibe →</span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })()}
+
+              {/* Remaining circles */}
+              {popularCircles.slice(1, 5).map(
                 (c: {
                   id: string;
                   name: string;
@@ -458,23 +502,28 @@ export default async function HomePage() {
                   <Link
                     key={c.id}
                     href={`/circles/${c.id}`}
-                    className="group rounded-2xl bg-[#fff] p-5 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.5)] transition duration-200 hover:-translate-y-1"
+                    className="group flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur transition duration-200 hover:bg-white/[0.12]"
                   >
                     <span
-                      className={`grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br text-lg font-extrabold text-white ${categoryGradient(c.category ?? "Networking")}`}
+                      className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-gradient-to-br text-lg font-extrabold text-white shadow-sm ${categoryGradient(c.category ?? "Networking")}`}
                     >
                       {c.name.charAt(0).toUpperCase()}
                     </span>
-                    <p className="mt-3 truncate font-bold text-gray-900 group-hover:text-brand">
-                      {c.name}
-                    </p>
-                    <p className="mt-0.5 truncate text-xs text-gray-500">
-                      {[c.category, c.state].filter(Boolean).join(" · ") || "Community"}
-                      {c.is_private ? " · Private" : ""}
-                    </p>
-                    <p className="mt-3 text-sm font-semibold text-brand">
-                      {c.member_count} {c.member_count === 1 ? "member" : "members"} →
-                    </p>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-bold text-white">
+                        {c.name}
+                        {c.is_private && (
+                          <span className="ml-1.5 align-middle text-[10px] font-semibold uppercase tracking-wide text-white/50">Private</span>
+                        )}
+                      </p>
+                      <p className="truncate text-xs text-white/60">
+                        {[c.category, c.state].filter(Boolean).join(" · ") || "Community"}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-right text-xs font-bold text-[#FAC775]">
+                      {c.member_count}
+                      <span className="block text-[10px] font-semibold uppercase tracking-wide text-white/50">members</span>
+                    </span>
                   </Link>
                 )
               )}
@@ -482,6 +531,57 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      {/* Venues: reserve the perfect spot */}
+      <section className="bg-gray-50 py-16">
+        <div className="container-page">
+          <div className="grid items-center gap-10 lg:grid-cols-2">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-500">
+                Book the spot
+              </p>
+              <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                Reserve the perfect venue
+              </h2>
+              <p className="mt-3 max-w-lg text-gray-600">
+                Scoping a lounge for the squad or a hall for the big one? Discover
+                clubs, restaurants, rooftops and event spaces near you and send a
+                reservation request through LinkUpNaija, no endless DMs.
+              </p>
+              <ul className="mt-5 space-y-2 text-sm font-medium text-gray-700">
+                <li className="flex items-center gap-2"><LineIcon name="pin" size={16} className="text-brand" /> Real spots across all 36 states + FCT</li>
+                <li className="flex items-center gap-2"><LineIcon name="check" size={16} className="text-brand" /> Request a date and party size in-app</li>
+                <li className="flex items-center gap-2"><LineIcon name="chat" size={16} className="text-brand" /> Track your reservation, no phone tag</li>
+              </ul>
+              <Link href="/venues" className="btn-primary mt-7 px-6 py-3 text-base">
+                Discover venues
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { label: "Clubs & Lounges", grad: "from-purple-500 to-indigo-600", tilt: "sm:-rotate-2" },
+                { label: "Restaurants", grad: "from-rose-500 to-red-600", tilt: "sm:rotate-2 sm:translate-y-4" },
+                { label: "Rooftops & Bars", grad: "from-amber-400 to-orange-500", tilt: "sm:-rotate-2" },
+                { label: "Event Halls", grad: "from-teal-400 to-cyan-500", tilt: "sm:rotate-2" },
+              ].map((v) => (
+                <Link
+                  key={v.label}
+                  href="/venues"
+                  className={`group relative flex h-32 flex-col justify-end overflow-hidden rounded-2xl p-4 shadow-card transition duration-200 hover:rotate-0 hover:shadow-xl sm:h-40 ${v.tilt}`}
+                >
+                  <div className={`absolute inset-0 bg-gradient-to-br ${v.grad}`} />
+                  <div className="absolute inset-0 bg-black/10" />
+                  <span className="relative grid h-9 w-9 place-items-center rounded-lg bg-white/20 text-white backdrop-blur">
+                    <LineIcon name="pin" size={18} />
+                  </span>
+                  <p className="relative mt-2 font-bold text-white drop-shadow">{v.label}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Recurring series */}
       {popularSeries.length > 0 && (
