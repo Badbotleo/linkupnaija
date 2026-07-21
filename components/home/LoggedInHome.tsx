@@ -119,38 +119,52 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
     .slice(0, 4);
 
   return (
-    <div className="container-page max-w-3xl py-8">
-      {/* Greeting */}
-      <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">
-        {greeting()}, {firstName} 👋
-      </h1>
-      <p className="mt-1 text-gray-600">
-        {upcoming.length > 0
-          ? "Here's what's coming up for you."
-          : "Ready for your next link-up?"}
-      </p>
+    <div className="container-page max-w-4xl py-6 sm:py-8">
+      {/* Greeting hero */}
+      <section
+        className="relative overflow-hidden rounded-3xl p-6 text-white sm:p-8"
+        style={{ background: "linear-gradient(150deg, #110F25 0%, #1A1040 60%, #221E49 100%)" }}
+      >
+        <div aria-hidden className="pointer-events-none absolute inset-0 opacity-60" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
+        <div aria-hidden className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-[#534AB7]/40 blur-[90px]" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-20 -right-10 h-56 w-56 rounded-full bg-[#FAC775]/15 blur-[90px]" />
 
-      {/* Quick actions */}
-      <div className="mt-5 grid grid-cols-4 gap-3">
-        {QUICK_ACTIONS.map((a) => (
-          <Link
-            key={a.label}
-            href={a.href}
-            className="flex flex-col items-center gap-1.5 rounded-2xl border border-gray-100 bg-white py-3.5 shadow-card transition hover:-translate-y-0.5 hover:border-brand/30"
-          >
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand">
-              <LineIcon name={a.icon} />
-            </span>
-            <span className="text-xs font-bold text-gray-800">{a.label}</span>
-          </Link>
-        ))}
-      </div>
+        <div className="relative">
+          <p className="text-xs font-black uppercase tracking-[0.25em] text-[#FAC775]">
+            {greeting()}
+          </p>
+          <h1 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">
+            Hey <span className="text-[#FAC775]">{firstName}</span>, ready to link up?
+          </h1>
+          <p className="mt-1.5 text-sm text-white/70">
+            {upcoming.length > 0
+              ? `You've got ${upcoming.length} link-up${upcoming.length === 1 ? "" : "s"} on your calendar.`
+              : "Your calendar's clear. Let's fix that."}
+          </p>
+
+          {/* Quick actions as glass tiles */}
+          <div className="mt-5 grid grid-cols-4 gap-2 sm:gap-3">
+            {QUICK_ACTIONS.map((a) => (
+              <Link
+                key={a.label}
+                href={a.href}
+                className="flex flex-col items-center gap-1.5 rounded-2xl border border-white/10 bg-white/[0.07] py-3 backdrop-blur transition hover:bg-white/[0.14]"
+              >
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-[#FAC775]">
+                  <LineIcon name={a.icon} />
+                </span>
+                <span className="text-xs font-bold text-white">{a.label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Your upcoming events */}
       <section className="mt-8">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900">
-            Your upcoming events
+          <h2 className="text-xl font-extrabold tracking-tight text-gray-900">
+            Your <span className="text-brand">line-up</span>
           </h2>
           <Link href="/dashboard" className="text-sm font-semibold text-brand">
             See all →
@@ -178,16 +192,18 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
       {forYou.length > 0 && (
         <section className="mt-8">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-gray-900">
-              Picked for you
-            </h2>
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-500">
+                Your taste
+              </p>
+              <h2 className="mt-1 text-xl font-extrabold tracking-tight text-gray-900">
+                Picked for <span className="text-brand">you</span>
+              </h2>
+            </div>
             <Link href="/profile/edit" className="text-sm font-semibold text-brand">
               Edit interests →
             </Link>
           </div>
-          <p className="mt-0.5 text-sm text-gray-500">
-            Based on what you&apos;re into.
-          </p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {forYou.map((e) => (
               <EventTile key={e.id} event={e} />
@@ -223,7 +239,8 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
       {nearby.length > 0 && (
         <section className="mt-8">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-gray-900">
+            <h2 className="flex items-center gap-2 text-xl font-extrabold tracking-tight text-gray-900">
+              <LineIcon name="pin" size={18} className="text-brand" />
               Happening {profile?.state ? `in ${profile.state}` : "near you"}
             </h2>
             <Link href="/events" className="text-sm font-semibold text-brand">
