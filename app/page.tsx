@@ -653,6 +653,76 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* Explore the whole platform */}
+      <section className="bg-gray-50 py-16">
+        <div className="container-page">
+          <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-500">
+            Beyond the party
+          </p>
+          <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+            There&apos;s a whole platform here
+          </h2>
+          <p className="mt-2 max-w-xl text-gray-600">
+            LinkUpNaija is more than events. Tap in.
+          </p>
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Featured: FC26 tournament */}
+            <Link
+              href="/tournament"
+              className="group relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 text-white shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-xl sm:col-span-2 lg:col-span-1 lg:row-span-2"
+              style={{ background: "linear-gradient(150deg, #1A1040 0%, #322C6E 100%)" }}
+            >
+              <div aria-hidden className="pointer-events-none absolute -right-14 -top-14 h-44 w-44 rounded-full bg-[#FAC775]/20 blur-[60px]" />
+              <div className="relative">
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-white/10 text-[#FAC775]">
+                  <LineIcon name="gamepad" size={22} />
+                </span>
+                <span className="mt-4 inline-block rounded-full bg-[#FAC775] px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-[#1A1040]">
+                  Now on
+                </span>
+                <h3 className="mt-3 text-2xl font-extrabold leading-tight">
+                  FC26 Tournament
+                </h3>
+                <p className="mt-1 text-white/70">
+                  <span className="font-bold text-[#FAC775]">₦2,000,000</span> prize.
+                  40 players. Abuja.
+                </p>
+              </div>
+              <span className="relative mt-6 text-sm font-bold text-[#FAC775]">
+                Register now →
+              </span>
+            </Link>
+
+            {[
+              { href: "/live", icon: "activity", title: "Live feed", text: "See who's hosting and joining right now." },
+              { href: "/hosts/leaderboard", icon: "trophy", title: "Host leaderboard", text: "Nigeria's most-loved hosts, ranked." },
+              { href: "/opportunities", icon: "briefcase", title: "Opportunities", text: "List your car, venue or services and get booked." },
+              { href: "/corporate", icon: "building", title: "For Business", text: "Team outings and corporate events, handled." },
+              { href: "/pro", icon: "star", title: "Go Pro", text: "See who viewed you, early access, gold badge." },
+            ].map((f) => (
+              <Link
+                key={f.href}
+                href={f.href}
+                className="group flex items-start gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-card transition duration-200 hover:-translate-y-1 hover:border-brand/30 hover:shadow-xl"
+              >
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand">
+                  <LineIcon name={f.icon} size={20} />
+                </span>
+                <div className="min-w-0">
+                  <h3 className="font-extrabold text-gray-900 group-hover:text-brand">
+                    {f.title}
+                  </h3>
+                  <p className="mt-0.5 text-sm leading-relaxed text-gray-600">
+                    {f.text}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="container-page py-16">
         <div className="relative overflow-hidden rounded-3xl px-8 py-14 text-center text-white" style={{ background: "linear-gradient(150deg, #1A1040 0%, #322C6E 100%)" }}>
