@@ -3,6 +3,7 @@ import Image from "next/image";
 import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { EVENT_CATEGORIES, CATEGORY_STYLES, categoryGradient } from "@/lib/constants";
+import { categoryPhoto } from "@/lib/category-photos";
 import FcPopup from "@/components/FcPopup";
 import EventCover from "@/components/EventCover";
 import { formatEventDate } from "@/lib/format";
@@ -458,18 +459,13 @@ export default async function HomePage() {
               {/* Featured circle */}
               {(() => {
                 const f = popularCircles[0];
-                const grad = categoryGradient(f.category ?? "Networking");
                 return (
                   <Link
                     href={`/circles/${f.id}`}
                     className="group relative flex min-h-[15rem] flex-col justify-end overflow-hidden rounded-3xl p-6 shadow-[0_16px_48px_-12px_rgba(0,0,0,0.6)] lg:row-span-2 lg:min-h-full"
                   >
-                    {f.cover_image_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={f.cover_image_url} alt="" className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105" />
-                    ) : (
-                      <div className={`absolute inset-0 bg-gradient-to-br ${grad}`} />
-                    )}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={f.cover_image_url ?? categoryPhoto(f.category)} alt="" className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10" />
                     <div className="relative">
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FAC775] px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-[#1A1040]">
@@ -499,16 +495,16 @@ export default async function HomePage() {
                   state: string | null;
                   member_count: number;
                   is_private: boolean;
+                  cover_image_url: string | null;
                 }) => (
                   <Link
                     key={c.id}
                     href={`/circles/${c.id}`}
                     className="group flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur transition duration-200 hover:bg-white/[0.12]"
                   >
-                    <span
-                      className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-gradient-to-br text-lg font-extrabold text-white shadow-sm ${categoryGradient(c.category ?? "Networking")}`}
-                    >
-                      {c.name.charAt(0).toUpperCase()}
+                    <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl shadow-sm">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={c.cover_image_url ?? categoryPhoto(c.category)} alt="" className="absolute inset-0 h-full w-full object-cover" />
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-bold text-white">

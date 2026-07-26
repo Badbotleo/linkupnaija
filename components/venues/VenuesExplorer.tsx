@@ -150,44 +150,52 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
             return (
               <div
                 key={v.id}
-                className="flex flex-col rounded-2xl border border-gray-100 bg-white p-5 shadow-card"
+                className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-xl"
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-xl" aria-hidden>
-                    {cat?.emoji ?? "📍"}
-                  </span>
-                  <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand">
-                    {v.category}
+                <Link href={`/venues/${v.id}`} className="relative block h-32">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={cat?.photo ?? "/venues/restaurants.jpg"}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                  <span className="absolute bottom-2.5 left-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-bold text-gray-800 backdrop-blur">
+                    {cat?.emoji ?? "📍"} {v.category}
                   </span>
                   {v.stars ? (
-                    <span className="text-xs font-semibold text-amber-500">
+                    <span className="absolute right-3 top-2.5 rounded-full bg-black/45 px-2 py-0.5 text-xs font-semibold text-amber-300 backdrop-blur">
                       {"★".repeat(Math.min(5, Math.round(v.stars)))}
                     </span>
                   ) : null}
-                </div>
-                <Link
-                  href={`/venues/${v.id}`}
-                  className="mt-2 line-clamp-2 font-bold text-gray-900 hover:text-brand"
-                >
-                  {v.name}
                 </Link>
-                {v.address && (
-                  <p className="mt-1 line-clamp-2 text-sm text-gray-500">
-                    📍 {v.address}
-                  </p>
-                )}
-                <p className="mt-1 text-sm text-gray-400">
-                  {dist < 1
-                    ? `${Math.round(dist * 1000)} m away`
-                    : `${dist.toFixed(1)} km away`}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setModalVenue(v)}
-                  className="btn-primary mt-4 w-full py-2"
-                >
-                  Request Reservation
-                </button>
+                <div className="flex flex-1 flex-col p-4">
+                  <div className="flex-1">
+                    <Link
+                      href={`/venues/${v.id}`}
+                      className="line-clamp-2 font-bold text-gray-900 hover:text-brand"
+                    >
+                      {v.name}
+                    </Link>
+                    {v.address && (
+                      <p className="mt-1 line-clamp-2 text-sm text-gray-500">
+                        {v.address}
+                      </p>
+                    )}
+                    <p className="mt-1 text-sm text-gray-400">
+                      {dist < 1
+                        ? `${Math.round(dist * 1000)} m away`
+                        : `${dist.toFixed(1)} km away`}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setModalVenue(v)}
+                    className="btn-primary mt-4 w-full py-2"
+                  >
+                    Request Reservation
+                  </button>
+                </div>
               </div>
             );
           })}

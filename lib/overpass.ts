@@ -19,29 +19,31 @@ export interface Venue {
 export interface VenueCategory {
   key: string;
   emoji: string;
+  photo: string; // stock photo for venue cards (public/venues)
   filters: [string, string][]; // OSM key/value pairs
 }
 
 export const VENUE_CATEGORIES: VenueCategory[] = [
-  { key: "Clubs", emoji: "🪩", filters: [["amenity", "nightclub"]] },
-  { key: "Restaurants", emoji: "🍽️", filters: [["amenity", "restaurant"]] },
-  { key: "Cinemas", emoji: "🎬", filters: [["amenity", "cinema"]] },
-  { key: "Parks", emoji: "🌳", filters: [["leisure", "park"]] },
+  { key: "Clubs", emoji: "🪩", photo: "/venues/clubs.jpg", filters: [["amenity", "nightclub"]] },
+  { key: "Restaurants", emoji: "🍽️", photo: "/venues/restaurants.jpg", filters: [["amenity", "restaurant"]] },
+  { key: "Cinemas", emoji: "🎬", photo: "/venues/cinemas.jpg", filters: [["amenity", "cinema"]] },
+  { key: "Parks", emoji: "🌳", photo: "/venues/parks.jpg", filters: [["leisure", "park"]] },
   {
     key: "Bars",
     emoji: "🍺",
+    photo: "/venues/rooftops.jpg",
     filters: [
       ["amenity", "bar"],
       ["amenity", "pub"],
     ],
   },
-  { key: "Gyms", emoji: "🏋️", filters: [["leisure", "fitness_centre"]] },
-  { key: "Bowling", emoji: "🎳", filters: [["leisure", "bowling_alley"]] },
-  { key: "Karaoke", emoji: "🎤", filters: [["amenity", "karaoke_box"]] },
-  { key: "Museums", emoji: "🏛️", filters: [["tourism", "museum"]] },
-  { key: "Beaches", emoji: "🏖️", filters: [["natural", "beach"]] },
-  { key: "Stadiums", emoji: "🏟️", filters: [["leisure", "stadium"]] },
-  { key: "Hotels", emoji: "🏨", filters: [["tourism", "hotel"]] },
+  { key: "Gyms", emoji: "🏋️", photo: "/venues/gyms.jpg", filters: [["leisure", "fitness_centre"]] },
+  { key: "Bowling", emoji: "🎳", photo: "/venues/bowling.jpg", filters: [["leisure", "bowling_alley"]] },
+  { key: "Karaoke", emoji: "🎤", photo: "/venues/karaoke.jpg", filters: [["amenity", "karaoke_box"]] },
+  { key: "Museums", emoji: "🏛️", photo: "/venues/museums.jpg", filters: [["tourism", "museum"]] },
+  { key: "Beaches", emoji: "🏖️", photo: "/venues/beaches.jpg", filters: [["natural", "beach"]] },
+  { key: "Stadiums", emoji: "🏟️", photo: "/venues/stadiums.jpg", filters: [["leisure", "stadium"]] },
+  { key: "Hotels", emoji: "🏨", photo: "/venues/hotels.jpg", filters: [["tourism", "hotel"]] },
 ];
 
 export const DEFAULT_CENTER = { lat: 6.5244, lng: 3.3792, label: "Lagos" }; // Lagos
