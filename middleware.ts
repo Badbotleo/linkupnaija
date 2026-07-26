@@ -4,15 +4,6 @@ import { updateSession } from "@/lib/supabase/middleware";
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
-  // Canonical host: 301 www → apex. Auth cookies are host-only, so keeping
-  // everyone on one host prevents OAuth/PKCE sessions being stranded on www.
-  const host = request.headers.get("host") ?? "";
-  if (host.startsWith("www.")) {
-    const url = request.nextUrl.clone();
-    url.host = host.slice(4);
-    return NextResponse.redirect(url, 301);
-  }
-
   // Resilience: if Supabase falls back to the Site URL (often "/") and appends
   // the OAuth ?code=, forward it to the callback so the session is exchanged
   // instead of the user landing logged-out on the homepage.
