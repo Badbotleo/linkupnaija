@@ -27,6 +27,7 @@ const DISCOVER = [
 
 const YOU = [
   { href: "/dashboard", label: "My Events", icon: "calendar" },
+  { href: "/refer", label: "Invite & earn ₦500", icon: "gift" },
   { href: "/profile/edit", label: "Settings", icon: "settings" },
   { href: "mailto:support@linkupnaija.com", label: "Help", icon: "help" },
 ];
@@ -260,6 +261,7 @@ function Icon({ name }: { name: string }) {
     help: "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z",
     shield: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
     logout: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9",
+    gift: "M20 12v10H4V12M2 7h20v5H2V7zM12 22V7M12 7s-2-5-5-5-2.5 5 0 5h5zM12 7s2-5 5-5 2.5 5 0 5h-5z",
     sparkles: "M12 3l1.9 4.6L18.5 9.5 13.9 11.4 12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z",
     pin: "M12 21s7-6.4 7-11a7 7 0 1 0-14 0c0 4.6 7 11 7 11zM12 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
     briefcase: "M20 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2",

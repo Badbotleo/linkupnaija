@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { EVENT_CATEGORIES, CATEGORY_STYLES, categoryGradient } from "@/lib/constants";
@@ -560,18 +561,24 @@ export default async function HomePage() {
 
             <div className="grid grid-cols-2 gap-4">
               {[
-                { label: "Clubs & Lounges", grad: "from-purple-500 to-indigo-600", tilt: "sm:-rotate-2" },
-                { label: "Restaurants", grad: "from-rose-500 to-red-600", tilt: "sm:rotate-2 sm:translate-y-4" },
-                { label: "Rooftops & Bars", grad: "from-amber-400 to-orange-500", tilt: "sm:-rotate-2" },
-                { label: "Event Halls", grad: "from-teal-400 to-cyan-500", tilt: "sm:rotate-2" },
+                { label: "Clubs & Lounges", img: "/venues/clubs.jpg", tilt: "sm:-rotate-2" },
+                { label: "Restaurants", img: "/venues/restaurants.jpg", tilt: "sm:rotate-2 sm:translate-y-4" },
+                { label: "Rooftops & Bars", img: "/venues/rooftops.jpg", tilt: "sm:-rotate-2" },
+                { label: "Cinemas", img: "/venues/cinemas.jpg", tilt: "sm:rotate-2" },
               ].map((v) => (
                 <Link
                   key={v.label}
                   href="/venues"
                   className={`group relative flex h-32 flex-col justify-end overflow-hidden rounded-2xl p-4 shadow-card transition duration-200 hover:rotate-0 hover:shadow-xl sm:h-40 ${v.tilt}`}
                 >
-                  <div className={`absolute inset-0 bg-gradient-to-br ${v.grad}`} />
-                  <div className="absolute inset-0 bg-black/10" />
+                  <Image
+                    src={v.img}
+                    alt={v.label}
+                    fill
+                    sizes="(min-width: 640px) 300px, 50vw"
+                    className="object-cover transition duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10" />
                   <span className="relative grid h-9 w-9 place-items-center rounded-lg bg-white/20 text-white backdrop-blur">
                     <LineIcon name="pin" size={18} />
                   </span>
@@ -700,6 +707,7 @@ export default async function HomePage() {
               { href: "/opportunities", icon: "briefcase", title: "Opportunities", text: "List your car, venue or services and get booked." },
               { href: "/corporate", icon: "building", title: "For Business", text: "Team outings and corporate events, handled." },
               { href: "/pro", icon: "star", title: "Go Pro", text: "See who viewed you, early access, gold badge." },
+              { href: "/refer", icon: "gift", title: "Invite & earn", text: "Give ₦500, get ₦500 when a friend joins." },
             ].map((f) => (
               <Link
                 key={f.href}
