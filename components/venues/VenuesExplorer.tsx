@@ -13,6 +13,15 @@ import {
 } from "@/lib/overpass";
 import ReservationModal from "./ReservationModal";
 
+// Stable per-venue pick from the category's photo pool, so a grid of the
+// same category shows varied covers but each venue keeps its photo.
+function venuePhoto(pool: string[] | undefined, id: string) {
+  const photos = pool && pool.length > 0 ? pool : ["/venues/restaurants.jpg"];
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return photos[h % photos.length];
+}
+
 const VenuesMap = dynamic(() => import("./VenuesMap"), {
   ssr: false,
   loading: () => (
@@ -132,14 +141,37 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
 
         {!loading && venues.length === 0 && !error && (
           <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-14 text-center">
-            <p className="text-4xl">🗺️</p>
+            <p className="text-4xl">🚀</p>
             <h3 className="mt-3 text-lg font-bold text-gray-900">
-              No venues found here
+              {category} in {center.label} — coming soon
             </h3>
             <p className="mx-auto mt-1 max-w-sm text-sm text-gray-500">
-              We couldn&apos;t find venues matching that search. Try a different
-              area or category.
+              We haven&apos;t mapped {category.toLowerCase()} around here yet,
+              but new spots land every week. Meanwhile, try another vibe:
             </p>
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              {category !== "Restaurants" && (
+                <button
+                  type="button"
+                  onClick={() => setCategory("Restaurants")}
+                  className="btn-outline"
+                >
+                  🍽️ Try Restaurants
+                </button>
+              )}
+              {center.label !== DEFAULT_CENTER.label && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("");
+                    setCenter(DEFAULT_CENTER);
+                  }}
+                  className="btn-primary"
+                >
+                  Explore Lagos instead
+                </button>
+              )}
+            </div>
           </div>
         )}
 
@@ -155,7 +187,7 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
                 <Link href={`/venues/${v.id}`} className="relative block h-32">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={cat?.photo ?? "/venues/restaurants.jpg"}
+                    src={venuePhoto(cat?.photos, v.id)}
                     alt=""
                     className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
                   />
