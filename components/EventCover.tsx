@@ -1,7 +1,7 @@
 import Image from "next/image";
-import { categoryGradient, categoryStyle } from "@/lib/constants";
+import { categoryPhoto } from "@/lib/category-photos";
 
-// Event cover image, or a category-colored gradient placeholder when none.
+// Event cover image, or a stock photo matching the category when none.
 // `className` controls size (e.g. "h-40 w-full") and is applied to a relative
 // wrapper so the optimized <Image fill> can cover it.
 //
@@ -67,16 +67,17 @@ export default function EventCover({
     );
   }
 
-  const { emoji } = categoryStyle(category);
   return (
-    <div
-      className={`flex items-center justify-center bg-gradient-to-br ${categoryGradient(
-        category
-      )} ${className}`}
-    >
-      <span className="text-5xl drop-shadow-sm" aria-hidden>
-        {emoji}
-      </span>
+    <div className={`relative overflow-hidden ${className}`}>
+      <Image
+        src={categoryPhoto(category)}
+        alt={title}
+        fill
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        className="object-cover"
+        priority={priority}
+        loading={priority ? undefined : "lazy"}
+      />
     </div>
   );
 }

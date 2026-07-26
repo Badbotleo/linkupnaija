@@ -2,9 +2,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
-import { EVENT_CATEGORIES, CATEGORY_STYLES, categoryGradient } from "@/lib/constants";
+import { EVENT_CATEGORIES, CATEGORY_STYLES } from "@/lib/constants";
 import { categoryPhoto } from "@/lib/category-photos";
-import FcPopup from "@/components/FcPopup";
+
+// Polaroid slots when there aren't enough real events with covers — lead with
+// the vibes our core audience actually searches for, not the category list's
+// family-first ordering.
+const HERO_FALLBACK_CATEGORIES = ["Party", "Game Night", "Beach Day", "Concert"];
 import EventCover from "@/components/EventCover";
 import { formatEventDate } from "@/lib/format";
 import Typewriter from "@/components/anim/Typewriter";
@@ -178,8 +182,7 @@ export default async function HomePage() {
                   </p>
                 </Link>
               ))}
-              {EVENT_CATEGORIES.slice(0, Math.max(0, 4 - heroEvents.length)).map((cat, i) => {
-                const { emoji } = CATEGORY_STYLES[cat];
+              {HERO_FALLBACK_CATEGORIES.slice(0, Math.max(0, 4 - heroEvents.length)).map((cat, i) => {
                 const idx = heroEvents.length + i;
                 return (
                   <Link
@@ -189,8 +192,9 @@ export default async function HomePage() {
                       idx % 2 === 0 ? "-rotate-2 sm:translate-y-4" : "rotate-2"
                     }`}
                   >
-                    <div className={`flex h-32 w-full items-center justify-center rounded-lg bg-gradient-to-br sm:h-36 ${categoryGradient(cat)}`}>
-                      <span className="text-4xl drop-shadow-sm" aria-hidden>{emoji}</span>
+                    <div className="relative h-32 w-full overflow-hidden rounded-lg sm:h-36">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={categoryPhoto(cat)} alt={cat} className="absolute inset-0 h-full w-full object-cover" />
                     </div>
                     <p className="mt-2 truncate px-1 text-sm font-bold text-gray-900">{cat}</p>
                     <p className="truncate px-1 text-xs text-gray-500">Browse events →</p>
@@ -755,7 +759,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <FcPopup />
+      {/* FcPopup intentionally removed (2026-07-26): the tournament popup was
+          disrupting UX. The FC26 card in the explore section covers it. */}
     </div>
   );
 }
