@@ -5,7 +5,7 @@ export const QR_BRAND = "#534AB7";
 // Canonical production origin — used for print/marketing QR codes (/qr,
 // tournament, opportunities) so a scanned flyer always points at the live site,
 // regardless of the environment the page was rendered in.
-export const SITE_ORIGIN = "https://linkupnaija.com";
+export const SITE_ORIGIN = "https://www.linkupnaija.com";
 
 // The LinkUpNaija pin mark on a white badge, as an SVG data URI. Sits in the
 // centre of a QR code (excavated, ~20% width → ~4% area, well within the safe

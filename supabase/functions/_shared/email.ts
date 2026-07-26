@@ -8,7 +8,7 @@ export const BRAND_DARK = "#3F3893";
 export const FROM =
   Deno.env.get("REMINDER_FROM") ?? "LinkUpNaija <support@linkupnaija.com>";
 export const SITE_URL = (
-  Deno.env.get("SITE_URL") ?? "https://linkupnaija.com"
+  Deno.env.get("SITE_URL") ?? "https://www.linkupnaija.com"
 ).replace(/\/+$/, "");
 
 export function escapeHtml(s: string): string {
