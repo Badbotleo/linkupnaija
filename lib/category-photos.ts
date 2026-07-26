@@ -1,6 +1,8 @@
 // Stock photo per event/circle category — fallback art for cards that have
 // no uploaded cover, so nothing renders as a flat gradient or letter tile.
-// Files live in public/venues and public/circles.
+// Every photo shows a GROUP of people (3+), because the whole product is
+// about linking up with others — a solo or empty-room shot sells the wrong
+// idea. Files live in public/venues and public/circles.
 const PHOTOS: Record<string, string> = {
   "Family Hangout": "/venues/parks.jpg",
   "Friend Reunion": "/circles/party.jpg",
@@ -8,8 +10,8 @@ const PHOTOS: Record<string, string> = {
   "Book Club": "/circles/bookclub.jpg",
   "Game Night": "/circles/gamenight.jpg",
   "Board Games": "/circles/gamenight.jpg",
-  Dinner: "/circles/dinner.jpg",
-  "Food Festival": "/circles/dinner.jpg",
+  Dinner: "/venues/restaurants.jpg",
+  "Food Festival": "/venues/restaurants-2.jpg",
   Networking: "/circles/networking.jpg",
   "Paint and Sip": "/venues/museums.jpg",
   Hiking: "/circles/hiking.jpg",
