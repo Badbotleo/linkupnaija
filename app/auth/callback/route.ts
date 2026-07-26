@@ -7,9 +7,14 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const redirect = searchParams.get("redirect") ?? "/login?verified=1";
 
-  // Prefer the configured public site URL (the request origin can resolve to
-  // localhost behind a proxy/load balancer), falling back to the origin.
-  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? origin).replace(
+  // Redirect on the SAME host the callback landed on — the auth cookies
+  // (PKCE verifier before the exchange, session after it) are host-only, so
+  // hopping to another host (www vs apex) strands the session. Behind a
+  // proxy the request origin can resolve to localhost, so prefer the
+  // forwarded host when present.
+  const fwdHost = request.headers.get("x-forwarded-host");
+  const fwdProto = request.headers.get("x-forwarded-proto") ?? "https";
+  const baseUrl = (fwdHost ? `${fwdProto}://${fwdHost}` : origin).replace(
     /\/+$/,
     ""
   );
@@ -50,7 +55,8 @@ export async function GET(request: Request) {
       }
       return NextResponse.redirect(`${baseUrl}${destination}`);
     }
+    console.error("auth callback: code exchange failed", error?.message);
   }
 
-  return NextResponse.redirect(`${baseUrl}/login`);
+  return NextResponse.redirect(`${baseUrl}/login?error=auth`);
 }

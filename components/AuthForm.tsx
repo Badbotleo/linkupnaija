@@ -19,7 +19,11 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    searchParams.get("error") === "auth"
+      ? "Sign-in didn't complete. Please try again."
+      : null
+  );
 
   // Success banner shown on the login page right after email verification.
   const justVerified = mode === "login" && searchParams.get("verified") === "1";
@@ -31,11 +35,10 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
 
   async function signInWithGoogle() {
     setError(null);
-    // Use the configured site URL so the callback is deterministic and matches
-    // the Supabase redirect allowlist; fall back to the current origin locally.
-    const base = (
-      process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin
-    ).replace(/\/+$/, "");
+    // Must stay same-origin: the PKCE code-verifier cookie is host-only, so
+    // sending the callback to a different host (www vs apex) breaks the
+    // exchange. All our hosts are in the Supabase redirect allowlist.
+    const base = window.location.origin.replace(/\/+$/, "");
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
