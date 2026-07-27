@@ -19,6 +19,11 @@ const PATHS: Record<string, string> = {
   gamepad: "M6 12h4m-2-2v4M15 11h.01M18 13h.01M17.32 5H6.68a4 4 0 0 0-3.97 3.5l-.8 6A3 3 0 0 0 4.88 18c1 0 1.5-.5 2-1l1.3-1.3a2 2 0 0 1 1.4-.6h4.84a2 2 0 0 1 1.4.6l1.3 1.3c.5.5 1 1 2 1a3 3 0 0 0 2.97-3.5l-.8-6A4 4 0 0 0 17.32 5z",
   activity: "M22 12h-4l-3 9L9 3l-3 9H2",
   gift: "M20 12v10H4V12M2 7h20v5H2V7zM12 22V7M12 7s-2-5-5-5-2.5 5 0 5h5zM12 7s2-5 5-5 2.5 5 0 5h-5z",
+  heart:
+    "M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 1 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z",
+  more: "M12 12h.01M19 12h.01M5 12h.01",
+  image:
+    "M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM8.5 11.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM22 15l-5-5L7 19",
   check: "M20 6 9 17l-5-5",
   eye: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
   zap: "M13 2 3 14h9l-1 8 10-12h-9l1-8z",
@@ -36,17 +41,20 @@ export default function LineIcon({
   name,
   size = 18,
   className = "",
+  filled = false,
 }: {
   name: keyof typeof PATHS | string;
   size?: number;
   className?: string;
+  /** Solid version of the same glyph — used for "liked" states. */
+  filled?: boolean;
 }) {
   return (
     <svg
       viewBox="0 0 24 24"
       width={size}
       height={size}
-      fill="none"
+      fill={filled ? "currentColor" : "none"}
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
