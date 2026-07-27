@@ -1,4 +1,4 @@
-import PageHero, { Gold } from "@/components/PageHero";
+import AppHeader from "@/components/AppHeader";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Avatar from "@/components/Avatar";
@@ -107,14 +107,12 @@ export default async function LeaderboardPage({
 
   return (
     <div>
-      <PageHero
-        watermark="Hosts"
-        icon="trophy"
-        eyebrow="Hall of fame"
-        title={<>Host <Gold>leaderboard</Gold></>}
-        subtitle="The most-loved hosts across Nigeria."
+      <AppHeader
+        title={"Host leaderboard"}
+        subtitle={<>Nigeria&rsquo;s most-loved hosts, ranked</>}
+        back
       />
-      <div className="container-page max-w-2xl py-8">
+      <div className="container-page max-w-2xl py-5">
 
       {/* Featured host of the week */}
       {featured && (

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/image";
+import { SITE_ORIGIN } from "@/lib/qr";
 import { formatEventDate, formatEventTime, timeAgo } from "@/lib/format";
 import { toast } from "@/lib/toast";
 import Avatar from "../Avatar";
@@ -13,7 +14,9 @@ import type { CirclePost, CirclePostComment } from "@/lib/types";
 
 const POST_SELECT =
   "*, author:users!circle_posts_user_id_fkey(name, avatar_url), " +
-  "event:events!circle_posts_event_id_fkey(id, title, date, time, location, state, category, cover_image_url)";
+  "event:events!circle_posts_event_id_fkey(id, title, date, time, location, state, category, cover_image_url), " +
+  "original:circle_posts!circle_posts_repost_of_fkey(id, content, image_url, created_at, user_id, " +
+  "repost_count, author:users!circle_posts_user_id_fkey(name, avatar_url))";
 
 const EVENT_LINK = /\/events\/([0-9a-fA-F-]{36})/;
 
@@ -31,6 +34,7 @@ export default function CircleFeed({
   const supabase = createClient();
   const [posts, setPosts] = useState<CirclePost[]>([]);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+  const [repostedIds, setRepostedIds] = useState<Set<string>>(new Set());
   const [content, setContent] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [posting, setPosting] = useState(false);
@@ -58,12 +62,20 @@ export default function CircleFeed({
     setPosts((data ?? []) as unknown as CirclePost[]);
 
     if (meId) {
-      const [{ data: likes }, { data: profile }] = await Promise.all([
+      const [{ data: likes }, { data: profile }, { data: mine }] = await Promise.all([
         supabase.from("circle_post_likes").select("post_id").eq("user_id", meId),
         supabase.from("users").select("name, avatar_url").eq("id", meId).single(),
+        supabase
+          .from("circle_posts")
+          .select("repost_of")
+          .eq("user_id", meId)
+          .not("repost_of", "is", null),
       ]);
       setLikedIds(new Set((likes ?? []).map((l: { post_id: string }) => l.post_id)));
       setMe(profile ?? null);
+      setRepostedIds(
+        new Set((mine ?? []).map((r: { repost_of: string }) => r.repost_of))
+      );
     }
   }, [circleId, meId, supabase]);
 
@@ -128,6 +140,47 @@ export default function CircleFeed({
     } else {
       await supabase.from("circle_post_likes").insert({ post_id: post.id, user_id: meId });
     }
+  }
+
+  // Repost = a new row pointing at the original, so it inherits likes,
+  // comments and RLS. Reposting a repost targets the original, like X does.
+  async function toggleRepost(post: CirclePost) {
+    if (!meId) return;
+    const targetId = post.repost_of ?? post.id;
+    const on = repostedIds.has(targetId);
+
+    setRepostedIds((prev) => {
+      const n = new Set(prev);
+      if (on) n.delete(targetId);
+      else n.add(targetId);
+      return n;
+    });
+
+    if (on) {
+      await supabase
+        .from("circle_posts")
+        .delete()
+        .eq("user_id", meId)
+        .eq("repost_of", targetId);
+      toast.success("Repost removed");
+    } else {
+      const { error } = await supabase.from("circle_posts").insert({
+        circle_id: circleId,
+        user_id: meId,
+        repost_of: targetId,
+      });
+      if (error) {
+        setRepostedIds((prev) => {
+          const n = new Set(prev);
+          n.delete(targetId);
+          return n;
+        });
+        toast.error("Could not repost.");
+        return;
+      }
+      toast.success("Reposted to the circle");
+    }
+    await load();
   }
 
   async function deletePost(id: string) {
@@ -209,11 +262,14 @@ export default function CircleFeed({
             <PostCard
               key={post.id}
               post={post}
+              circleId={circleId}
               meId={meId}
               isAdmin={isAdmin}
               isMember={isMember}
               liked={likedIds.has(post.id)}
+              reposted={repostedIds.has(post.repost_of ?? post.id)}
               onLike={() => toggleLike(post)}
+              onRepost={() => toggleRepost(post)}
               onDelete={() => deletePost(post.id)}
               onPin={() => togglePin(post)}
             />
@@ -226,20 +282,26 @@ export default function CircleFeed({
 
 function PostCard({
   post,
+  circleId,
   meId,
   isAdmin,
   isMember,
   liked,
+  reposted,
   onLike,
+  onRepost,
   onDelete,
   onPin,
 }: {
   post: CirclePost;
+  circleId: string;
   meId: string | null;
   isAdmin: boolean;
   isMember: boolean;
   liked: boolean;
+  reposted: boolean;
   onLike: () => void;
+  onRepost: () => void;
   onDelete: () => void;
   onPin: () => void;
 }) {
@@ -282,32 +344,61 @@ function PostCard({
   const top = (comments ?? []).filter((c) => !c.parent_id);
   const repliesOf = (id: string) => (comments ?? []).filter((c) => c.parent_id === id);
 
-  const handle = (post.author?.name ?? "member").toLowerCase().replace(/[^a-z0-9]+/g, "");
+  // A repost row carries no body of its own — render the original's author and
+  // content, with a "X reposted" line above, exactly like X.
+  const src = post.repost_of && post.original ? post.original : post;
+  const shown = {
+    name: src.author?.name ?? "Member",
+    avatar: src.author?.avatar_url ?? null,
+    content: src.content,
+    image: src.image_url,
+    created_at: src.created_at,
+  };
+  const handle = shown.name.toLowerCase().replace(/[^a-z0-9]+/g, "");
+
+  async function share() {
+    const url = `${SITE_ORIGIN}/circles/${circleId}#post-${post.id}`;
+    const text = shown.content?.slice(0, 120) ?? "Check out this post on LinkUpNaija";
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "LinkUpNaija", text, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied");
+    } catch {
+      /* user dismissed the share sheet — nothing to report */
+    }
+  }
 
   return (
-    <article className="px-4 py-3 transition hover:bg-gray-50/70">
+    <article id={`post-${post.id}`} className="px-4 py-3 transition hover:bg-gray-50/70">
       {post.pinned && (
         <p className="mb-1.5 flex items-center gap-1.5 pl-[52px] text-xs font-semibold text-gray-500">
           <LineIcon name="pin" size={13} /> Pinned
         </p>
       )}
+      {post.repost_of && (
+        <p className="mb-1.5 flex items-center gap-1.5 pl-[52px] text-xs font-semibold text-gray-500">
+          <LineIcon name="repost" size={13} />
+          {post.user_id === meId ? "You" : post.author?.name ?? "Someone"} reposted
+        </p>
+      )}
       <div className="flex gap-3">
-        <Avatar name={post.author?.name ?? null} url={post.author?.avatar_url ?? null} size="sm" />
+        <Avatar name={shown.name} url={shown.avatar} size="sm" />
 
         <div className="min-w-0 flex-1">
           {/* Name · @handle · when — one line, like X */}
           <div className="flex items-center gap-1 text-[15px] leading-tight">
-            <span className="truncate font-bold text-gray-900">
-              {post.author?.name ?? "Member"}
-            </span>
+            <span className="truncate font-bold text-gray-900">{shown.name}</span>
             <span className="truncate text-gray-500">@{handle}</span>
             <span className="text-gray-400">·</span>
             <time
-              dateTime={post.created_at}
-              title={formatEventDate(post.created_at.slice(0, 10))}
+              dateTime={shown.created_at}
+              title={formatEventDate(shown.created_at.slice(0, 10))}
               className="shrink-0 text-gray-500"
             >
-              {timeAgo(post.created_at)}
+              {timeAgo(shown.created_at)}
             </time>
 
             {(isAdmin || canDelete) && (
@@ -344,16 +435,16 @@ function PostCard({
             )}
           </div>
 
-          {post.content && (
+          {shown.content && (
             <p className="mt-1 whitespace-pre-wrap break-words text-[15px] leading-normal text-gray-900">
-              {post.content}
+              {shown.content}
             </p>
           )}
 
-          {post.image_url && (
+          {shown.image && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={post.image_url}
+              src={shown.image}
               alt=""
               loading="lazy"
               className="mt-2.5 max-h-[30rem] w-full rounded-2xl border border-gray-100 object-cover"
@@ -401,6 +492,25 @@ function PostCard({
 
             <button
               type="button"
+              onClick={onRepost}
+              disabled={!meId || !isMember}
+              aria-pressed={reposted}
+              aria-label={reposted ? "Undo repost" : "Repost"}
+              title={reposted ? "Undo repost" : "Repost to this circle"}
+              className={`group inline-flex items-center gap-0.5 transition disabled:opacity-50 ${
+                reposted ? "text-emerald-600" : "text-gray-500 hover:text-emerald-600"
+              }`}
+            >
+              <span className="grid h-8 w-8 place-items-center rounded-full transition group-hover:bg-emerald-500/10">
+                <LineIcon name="repost" size={17} />
+              </span>
+              <span className="text-[13px] font-medium tabular-nums">
+                {src.repost_count > 0 ? src.repost_count : ""}
+              </span>
+            </button>
+
+            <button
+              type="button"
               onClick={onLike}
               disabled={!meId}
               aria-pressed={liked}
@@ -417,7 +527,17 @@ function PostCard({
               </span>
             </button>
 
-            <span aria-hidden className="w-8" />
+            <button
+              type="button"
+              onClick={share}
+              aria-label="Share post"
+              title="Share"
+              className="group inline-flex items-center text-gray-500 transition hover:text-brand"
+            >
+              <span className="grid h-8 w-8 place-items-center rounded-full transition group-hover:bg-brand/10">
+                <LineIcon name="share" size={17} />
+              </span>
+            </button>
           </div>
 
           {showComments && (

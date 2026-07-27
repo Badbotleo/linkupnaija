@@ -1,6 +1,7 @@
 import LineIcon from "@/components/ui/LineIcon";
 import Link from "next/link";
 import OpportunityHubs from "@/components/opportunities/OpportunityHubs";
+import AppHeader from "@/components/AppHeader";
 
 export const metadata = {
   title: "Opportunities",
@@ -11,25 +12,14 @@ export const metadata = {
 export default function OpportunitiesPage() {
   return (
     <div>
-      {/* Hero */}
-      <section
-        className="relative overflow-hidden text-white"
-        style={{ background: "linear-gradient(150deg, #110F25 0%, #1A1040 60%, #221E49 100%)" }}
-      >
-        <div aria-hidden className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[#534AB7]/30 blur-[100px]" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-28 -right-16 h-72 w-72 rounded-full bg-[#FAC775]/15 blur-[100px]" />
-        <div className="container-page relative py-16 text-center sm:py-20">
-          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-            Grow your business with <span className="text-[#FAC775]">LinkUpNaija</span>
-          </h1>
-          <p className="mt-4 text-lg text-white/70">
-            Connect with thousands of event-goers across Nigeria
-          </p>
-        </div>
-      </section>
+      <AppHeader
+        title="Opportunities"
+        subtitle="List your car, venue or services and get booked"
+        back
+      />
 
       {/* Hubs */}
-      <section className="container-page py-12">
+      <section className="container-page py-8">
         <OpportunityHubs />
 
         {/* Corporate */}

@@ -12,6 +12,7 @@ import {
   type Venue,
 } from "@/lib/overpass";
 import ReservationModal from "./ReservationModal";
+import LineIcon from "../ui/LineIcon";
 
 // Stable per-venue pick from the category's photo pool, so a grid of the
 // same category shows varied covers but each venue keeps its photo.
@@ -39,6 +40,16 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [modalVenue, setModalVenue] = useState<Venue | null>(null);
+  const [mapOpen, setMapOpen] = useState(true);
+
+  // Remember whether the map was folded away.
+  useEffect(() => {
+    const saved = localStorage.getItem("venues:mapOpen");
+    if (saved !== null) setMapOpen(saved === "1");
+  }, []);
+  useEffect(() => {
+    localStorage.setItem("venues:mapOpen", mapOpen ? "1" : "0");
+  }, [mapOpen]);
 
   const load = useCallback(
     async (lat: number, lng: number, cat: string) => {
@@ -120,9 +131,45 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
         ))}
       </div>
 
-      {/* Map */}
+      {/* Map — foldable, because on a phone it eats the whole screen before
+          you ever reach the list. Choice sticks between visits. */}
       <div className="mt-6">
-        <VenuesMap center={center} venues={venues} />
+        <button
+          type="button"
+          onClick={() => setMapOpen((v) => !v)}
+          aria-expanded={mapOpen}
+          aria-controls="venues-map"
+          className="flex w-full items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-white px-4 py-3 text-left shadow-card transition hover:border-brand/30"
+        >
+          <span className="flex items-center gap-2.5">
+            <span className="grid h-8 w-8 place-items-center rounded-full bg-brand-50 text-brand">
+              <LineIcon name="pin" size={16} />
+            </span>
+            <span>
+              <span className="block text-sm font-bold text-gray-900">Map view</span>
+              <span className="block text-xs text-gray-500">
+                {mapOpen ? "Tap to hide the map" : `${venues.length} pin${venues.length === 1 ? "" : "s"} near ${center.label}`}
+              </span>
+            </span>
+          </span>
+          <span
+            aria-hidden
+            className={`shrink-0 text-gray-400 transition-transform duration-300 ${mapOpen ? "rotate-180" : ""}`}
+          >
+            <LineIcon name="chevronDown" size={18} />
+          </span>
+        </button>
+
+        <div
+          id="venues-map"
+          className={`grid transition-all duration-300 ease-out ${
+            mapOpen ? "mt-3 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+          }`}
+        >
+          <div className="overflow-hidden">
+            <VenuesMap center={center} venues={venues} />
+          </div>
+        </div>
       </div>
 
       {error && (

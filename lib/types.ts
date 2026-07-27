@@ -290,8 +290,21 @@ export interface CirclePost {
   event_id: string | null;
   pinned: boolean;
   like_count: number;
+  repost_count: number;
+  /** Set when this row is a repost of another post. */
+  repost_of: string | null;
   created_at: string;
   author: { name: string | null; avatar_url: string | null } | null;
+  /** The original post, joined when repost_of is set. */
+  original?: {
+    id: string;
+    content: string | null;
+    image_url: string | null;
+    created_at: string;
+    user_id: string;
+    repost_count: number;
+    author: { name: string | null; avatar_url: string | null } | null;
+  } | null;
   event?: Pick<
     EventRow,
     "id" | "title" | "date" | "time" | "location" | "state" | "category" | "cover_image_url"

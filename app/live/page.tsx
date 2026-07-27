@@ -1,4 +1,4 @@
-import PageHero, { Gold } from "@/components/PageHero";
+import AppHeader from "@/components/AppHeader";
 import LineIcon from "@/components/ui/LineIcon";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
@@ -99,20 +99,10 @@ export default async function LivePage() {
 
   return (
     <div>
-      <PageHero
-        watermark="Live"
-        icon="activity"
-        chip={
-          <>
-            <span className="relative grid h-2.5 w-2.5 place-items-center">
-              <span className="absolute inset-0 animate-ping rounded-full bg-red-400" />
-              <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-            </span>
-            LIVE
-          </>
-        }
-        title={<>What&apos;s <Gold>buzzing</Gold> right now</>}
-        subtitle="Hosts, joins and posts across LinkUpNaija, as they happen."
+      <AppHeader
+        title={"Live"}
+        subtitle={<>What&rsquo;s happening across LinkUpNaija right now</>}
+        meta={[{ icon: "activity", label: `${items.length} update${items.length === 1 ? "" : "s"}` }]}
       />
       <div className="container-page max-w-2xl py-6">
 

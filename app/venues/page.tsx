@@ -1,4 +1,4 @@
-import PageHero, { Gold } from "@/components/PageHero";
+import AppHeader from "@/components/AppHeader";
 import { createClient } from "@/lib/supabase/server";
 import VenuesExplorer from "@/components/venues/VenuesExplorer";
 
@@ -18,16 +18,13 @@ export default async function VenuesPage() {
 
   return (
     <div>
-      <PageHero
-        watermark="Venues"
-        icon="pin"
-        eyebrow="Book the spot"
-        title={<>Discover <Gold>venues</Gold></>}
-        subtitle="Find the perfect spot for your next link-up, powered by OpenStreetMap."
+      <AppHeader
+        title={"Venues"}
+        subtitle={<>Find the perfect spot for your next link-up</>}
       />
-      <div className="container-page py-8">
+      <div className="container-page py-5">
 
-      <div className="mt-8">
+      <div>
         <VenuesExplorer isLoggedIn={!!user} />
       </div>
       </div>

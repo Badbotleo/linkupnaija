@@ -1,4 +1,4 @@
-import PageHero, { Gold } from "@/components/PageHero";
+import AppHeader from "@/components/AppHeader";
 import LineIcon from "@/components/ui/LineIcon";
 import { createClient } from "@/lib/supabase/server";
 import GoProButton from "@/components/GoProButton";
@@ -61,17 +61,10 @@ export default async function ProPage() {
 
   return (
     <div>
-      <PageHero
-        watermark="Pro"
-        icon="star"
-        chip="★ LinkUpNaija Pro"
-        title={<>Link up like a <Gold>Pro</Gold></>}
-        subtitle={
-          <>
-            Unlock the full LinkUpNaija experience for{" "}
-            <span className="font-bold text-white">{formatNaira(PRO_PRICE)}/month</span>.
-          </>
-        }
+      <AppHeader
+        title={"LinkUpNaija Pro"}
+        subtitle={<>Stand out, see more, get in first</>}
+        back
       />
       <div className="container-page max-w-3xl py-10">
 

@@ -1,4 +1,4 @@
-import PageHero, { Gold } from "@/components/PageHero";
+import AppHeader from "@/components/AppHeader";
 import Link from "next/link";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
@@ -240,18 +240,12 @@ export default async function EventsPage({
 
   return (
     <div>
-      <PageHero
-        watermark="Events"
-        icon="calendar"
-        eyebrow="Explore"
-        title={<>Upcoming <Gold>link-ups</Gold></>}
-        subtitle="Parties, hangouts and everything buzzing near you."
-      >
-        <Link href="/host" className="btn bg-[#FAC775] font-bold text-[#1A1040] hover:bg-[#fbd28e] mt-5">
-          + Host an event
-        </Link>
-      </PageHero>
-      <div className="container-page py-8">
+      <AppHeader
+        title={"Events"}
+        subtitle={<>Parties, hangouts and everything buzzing near you</>}
+        action={<Link href="/host" className="btn-primary rounded-full px-4 py-2 text-sm">Host</Link>}
+      />
+      <div className="container-page py-5">
       <TournamentBanner />
 
       <div className="mt-6">

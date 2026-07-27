@@ -1,4 +1,4 @@
-import PageHero, { Gold } from "@/components/PageHero";
+import AppHeader from "@/components/AppHeader";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import HostForm from "@/components/HostForm";
@@ -49,16 +49,14 @@ export default async function HostPage() {
 
   return (
     <div>
-      <PageHero
-        watermark="Host"
-        icon="mic"
-        eyebrow="Create"
-        title={<>Host a <Gold>link-up</Gold></>}
-        subtitle="Set the vibe, pick a spot, and gather your people."
+      <AppHeader
+        title={"Host a link-up"}
+        subtitle={<>Set the vibe, pick a spot, gather your people</>}
+        back
       />
-      <div className="container-page max-w-2xl py-8">
+      <div className="container-page max-w-2xl py-5">
 
-      <div className="mt-8 rounded-2xl border border-gray-100 bg-white p-6 shadow-card sm:p-8">
+      <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-card sm:p-8">
         <HostForm hostState={profile?.state ?? null} />
       </div>
       </div>

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import PageHero, { Gold } from "@/components/PageHero";
+import AppHeader from "@/components/AppHeader";
 import ReferralCard from "@/components/referral/ReferralCard";
 
 export const dynamic = "force-dynamic";
@@ -56,16 +56,10 @@ export default async function ReferPage() {
 
   return (
     <div>
-      <PageHero
-        watermark="Invite"
-        icon="gift"
-        eyebrow="Invite & earn"
-        title={
-          <>
-            Bring your people, <Gold>get paid</Gold>
-          </>
-        }
-        subtitle="Every friend who joins with your link earns you both ₦500 wallet credit."
+      <AppHeader
+        title={"Invite & earn"}
+        subtitle={<>₦500 for them, ₦500 for you</>}
+        back
       />
       <div className="container-page max-w-2xl py-8">
         <ReferralCard

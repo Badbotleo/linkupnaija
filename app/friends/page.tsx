@@ -1,4 +1,4 @@
-import PageHero, { Gold } from "@/components/PageHero";
+import AppHeader from "@/components/AppHeader";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import FriendsManager from "@/components/friends/FriendsManager";
@@ -21,16 +21,13 @@ export default async function FriendsPage() {
 
   return (
     <div>
-      <PageHero
-        watermark="People"
-        icon="users"
-        eyebrow="Your network"
-        title={<>Your <Gold>people</Gold></>}
-        subtitle="Find friends, accept requests, and build your circle on LinkUpNaija."
+      <AppHeader
+        title={"People"}
+        subtitle={<>Friends, requests and people you might know</>}
       />
-      <div className="container-page max-w-2xl py-8">
+      <div className="container-page max-w-2xl py-5">
 
-      <div className="mt-8">
+      <div>
         <FriendsManager meId={user.id} myState={me?.state ?? null} />
       </div>
       </div>
