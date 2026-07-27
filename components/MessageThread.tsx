@@ -211,7 +211,7 @@ export default function MessageThread({
           type="submit"
           disabled={!draft.trim()}
           aria-label="Send message"
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand text-white transition hover:bg-brand-dark disabled:opacity-40"
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand text-white transition hover:bg-brand-600 disabled:opacity-40"
         >
           <LineIcon name="send" size={18} />
         </button>

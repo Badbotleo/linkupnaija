@@ -120,43 +120,34 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
 
   return (
     <div className="container-page max-w-4xl py-6 sm:py-8">
-      {/* Greeting hero */}
-      <section
-        className="relative overflow-hidden rounded-3xl p-6 text-white sm:p-8"
-        style={{ background: "linear-gradient(150deg, #110F25 0%, #1A1040 60%, #221E49 100%)" }}
-      >
-        <div aria-hidden className="pointer-events-none absolute inset-0 opacity-60" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
-        <div aria-hidden className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-[#534AB7]/40 blur-[90px]" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-20 -right-10 h-56 w-56 rounded-full bg-[#FAC775]/15 blur-[90px]" />
+      {/* Greeting — app style: type sits on the page, not inside a navy card,
+          and the shortcuts are a row of round icon buttons like a phone home. */}
+      <section>
+        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-brand">
+          {greeting()}
+        </p>
+        <h1 className="mt-1.5 text-[26px] font-extrabold leading-tight tracking-[-0.03em] text-gray-900 sm:text-[30px]">
+          Hey <span className="text-brand">{firstName}</span>, ready to link up?
+        </h1>
+        <p className="mt-1 text-sm text-gray-500">
+          {upcoming.length > 0
+            ? `You've got ${upcoming.length} link-up${upcoming.length === 1 ? "" : "s"} on your calendar.`
+            : "Your calendar's clear. Let's fix that."}
+        </p>
 
-        <div className="relative">
-          <p className="text-xs font-black uppercase tracking-[0.25em] text-[#FAC775]">
-            {greeting()}
-          </p>
-          <h1 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">
-            Hey <span className="text-[#FAC775]">{firstName}</span>, ready to link up?
-          </h1>
-          <p className="mt-1.5 text-sm text-white/70">
-            {upcoming.length > 0
-              ? `You've got ${upcoming.length} link-up${upcoming.length === 1 ? "" : "s"} on your calendar.`
-              : "Your calendar's clear. Let's fix that."}
-          </p>
-
-          {/* Quick actions as glass tiles */}
-          <div className="mt-5 grid grid-cols-4 gap-2 sm:gap-3">
-            {QUICK_ACTIONS.map((a) => (
-              <Link
-                key={a.label}
-                href={a.href}
-                className="flex flex-col items-center gap-1.5 rounded-2xl border border-white/10 bg-white/[0.07] py-3 backdrop-blur transition hover:bg-white/[0.14]"
-              >
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-[#FAC775]">
-                  <LineIcon name={a.icon} />
-                </span>
-                <span className="text-xs font-bold text-white">{a.label}</span>
-              </Link>
-            ))}
-          </div>
+        <div className="no-scrollbar -mx-4 mt-5 flex gap-5 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+          {QUICK_ACTIONS.map((a) => (
+            <Link
+              key={a.label}
+              href={a.href}
+              className="group flex shrink-0 flex-col items-center gap-2"
+            >
+              <span className="grid h-[58px] w-[58px] place-items-center rounded-2xl bg-white text-brand shadow-card ring-1 ring-gray-100 transition group-hover:-translate-y-0.5 group-hover:text-brand-600 group-hover:shadow-md group-active:scale-95">
+                <LineIcon name={a.icon} size={23} />
+              </span>
+              <span className="text-xs font-bold text-gray-700">{a.label}</span>
+            </Link>
+          ))}
         </div>
       </section>
 
