@@ -13,6 +13,18 @@ import {
 } from "@/lib/overpass";
 import ReservationModal from "./ReservationModal";
 import LineIcon from "../ui/LineIcon";
+import { createClient } from "@/lib/supabase/client";
+
+interface PartnerVenue {
+  id: string;
+  name: string;
+  category: string;
+  address: string | null;
+  state: string | null;
+  image_url: string | null;
+  description: string | null;
+  price_range: string | null;
+}
 
 // Stable per-venue pick from the category's photo pool, so a grid of the
 // same category shows varied covers but each venue keeps its photo.
@@ -41,6 +53,19 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
   const [error, setError] = useState<string | null>(null);
   const [modalVenue, setModalVenue] = useState<Venue | null>(null);
   const [mapOpen, setMapOpen] = useState(true);
+  // Venues we've actually onboarded — real photos and details, shown above the
+  // OpenStreetMap results for the same category.
+  const [partners, setPartners] = useState<PartnerVenue[]>([]);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("venues")
+      .select("id, name, category, address, state, image_url, description, price_range")
+      .eq("is_active", true)
+      .order("is_featured", { ascending: false })
+      .then(({ data }) => setPartners((data ?? []) as PartnerVenue[]));
+  }, []);
 
   // Remember whether the map was folded away.
   useEffect(() => {
@@ -176,6 +201,71 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
         <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
           {error}
         </p>
+      )}
+
+      {/* Onboarded partners for this category — real photos, real details */}
+      {partners.filter((p) => p.category === category).length > 0 && (
+        <div className="mt-6">
+          <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-amber-100 text-amber-600">
+              <LineIcon name="star" size={13} filled />
+            </span>
+            Partner venues
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {partners
+              .filter((p) => p.category === category)
+              .map((p) => (
+                <div
+                  key={p.id}
+                  className="group flex flex-col overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-xl"
+                >
+                  <div className="relative h-32">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={p.image_url ?? venuePhoto(VENUE_CATEGORIES.find((c) => c.key === p.category)?.photos, p.id)}
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                    <span className="absolute left-3 top-2.5 rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[#1A1040]">
+                      Partner
+                    </span>
+                  </div>
+                  <div className="flex flex-1 flex-col p-4">
+                    <p className="font-bold text-gray-900">{p.name}</p>
+                    {p.address && (
+                      <p className="mt-1 line-clamp-2 text-sm text-gray-500">{p.address}</p>
+                    )}
+                    {p.description && (
+                      <p className="mt-1 line-clamp-2 text-sm text-gray-600">{p.description}</p>
+                    )}
+                    {p.price_range && (
+                      <p className="mt-1 text-sm font-semibold text-brand">{p.price_range}</p>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setModalVenue({
+                          id: `partner-${p.id}`,
+                          osmType: "node",
+                          osmId: 0,
+                          name: p.name,
+                          category: p.category,
+                          lat: center.lat,
+                          lng: center.lng,
+                          address: p.address ?? "",
+                        })
+                      }
+                      className="btn-primary mt-4 w-full py-2"
+                    >
+                      Request Reservation
+                    </button>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
       )}
 
       {/* List */}
