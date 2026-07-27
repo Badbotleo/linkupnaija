@@ -90,17 +90,38 @@ export default function CircleFeed({
 
     let imageUrl: string | null = null;
     if (imageFile) {
-      const optimized = await compressImage(imageFile, { maxDimension: 1600 });
-      const path = `${meId}/post-${Date.now()}.jpg`;
-      const { error: upErr } = await supabase.storage
-        .from("event-covers")
-        .upload(path, optimized, { upsert: true, cacheControl: "3600" });
-      if (upErr) {
-        toast.error("Image upload failed.");
+      try {
+        const optimized = await compressImage(imageFile, { maxDimension: 1600 });
+        // Compression falls back to the original file for formats the browser
+        // can't decode (HEIC from an iPhone, for one), so derive the extension
+        // and content type from what we're ACTUALLY uploading — writing a HEIC
+        // to a ".jpg" path stored it fine but rendered broken for everyone.
+        const type = optimized.type || "image/jpeg";
+        const ext = (type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+        const path = `${meId}/post-${Date.now()}.${ext}`;
+
+        const { error: upErr } = await supabase.storage
+          .from("event-covers")
+          .upload(path, optimized, {
+            upsert: true,
+            cacheControl: "3600",
+            contentType: type,
+          });
+        if (upErr) {
+          console.error("circle post image upload failed:", upErr);
+          toast.error(upErr.message || "Image upload failed.");
+          setPosting(false);
+          return;
+        }
+        imageUrl = supabase.storage.from("event-covers").getPublicUrl(path).data.publicUrl;
+      } catch (err) {
+        // Without this the promise rejected and the form stayed stuck on
+        // "Posting…" with no explanation.
+        console.error("circle post image error:", err);
+        toast.error("Couldn't process that image. Try another photo.");
         setPosting(false);
         return;
       }
-      imageUrl = supabase.storage.from("event-covers").getPublicUrl(path).data.publicUrl;
     }
 
     const eventMatch = content.match(EVENT_LINK);
@@ -226,17 +247,16 @@ export default function CircleFeed({
               )}
 
               <div className="mt-2 flex items-center justify-between border-t border-gray-50 pt-2">
-                <label
-                  className="grid h-9 w-9 cursor-pointer place-items-center rounded-full text-brand transition hover:bg-brand/10"
-                  title="Add photo"
-                >
-                  <LineIcon name="image" size={19} />
-                  <span className="sr-only">Add photo</span>
+                {/* Labelled, not a bare glyph — an icon-only control here left
+                    people unable to find how to attach a photo at all. */}
+                <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-bold text-brand transition hover:bg-brand/10">
+                  <LineIcon name="image" size={18} />
+                  Photo
                   <input
                     type="file"
                     accept="image/*"
                     onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-                    className="hidden"
+                    className="sr-only"
                   />
                 </label>
                 <button
