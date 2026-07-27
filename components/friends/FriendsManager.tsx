@@ -196,24 +196,33 @@ export default function FriendsManager({
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       {/* Search */}
       <section>
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search people by name or email…"
-          className="input"
-          aria-label="Search people"
-        />
+        <div className="relative">
+          <LineIcon
+            name="search"
+            size={17}
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search people by name or email…"
+            className="input rounded-full pl-11"
+            aria-label="Search people"
+          />
+        </div>
         {results !== null && (
           <div className="mt-4">
             {searching ? (
               <p className="text-sm text-gray-400">Searching…</p>
             ) : results.length === 0 ? (
-              <p className="text-sm text-gray-500">No people found.</p>
+              <p className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-center text-sm text-gray-500">
+                No one matched &ldquo;{query.trim()}&rdquo;.
+              </p>
             ) : (
-              <ul className="space-y-2">
+              <ul className="grid gap-2 sm:grid-cols-2">
                 {results.map((u) => (
                   <Row key={u.id} user={u} action={<ActionButton user={u} />} />
                 ))}
@@ -223,19 +232,19 @@ export default function FriendsManager({
         )}
       </section>
 
-      {/* Incoming requests */}
-      <section>
-        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
-          Friend requests
-          {incoming.length > 0 && (
-            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700">
+      {/* Incoming requests — surfaced as a highlighted card, since it's the
+          only section on this page that needs a decision from the user. */}
+      {incoming.length > 0 && (
+        <section className="rounded-2xl border border-amber-200 bg-amber-50/60 p-4">
+          <h2 className="mb-3 flex items-center gap-2 text-base font-extrabold text-gray-900">
+            <span className="grid h-7 w-7 place-items-center rounded-full bg-amber-400/25 text-amber-700">
+              <LineIcon name="users" size={15} />
+            </span>
+            Friend requests
+            <span className="rounded-full bg-amber-400/30 px-2 py-0.5 text-xs font-bold text-amber-800">
               {incoming.length}
             </span>
-          )}
-        </h2>
-        {incoming.length === 0 ? (
-          <p className="text-sm text-gray-500">No pending requests.</p>
-        ) : (
+          </h2>
           <ul className="space-y-2">
             {incoming.map(({ connId, user }) => (
               <Row
@@ -264,21 +273,31 @@ export default function FriendsManager({
               />
             ))}
           </ul>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* Friends */}
       <section>
-        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
+        <h2 className="mb-3 flex items-center gap-2 text-lg font-extrabold tracking-tight text-gray-900">
+          <span className="grid h-7 w-7 place-items-center rounded-full bg-brand-50 text-brand">
+            <LineIcon name="users" size={15} />
+          </span>
           Your friends
-          <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-bold text-gray-600">
+          <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-bold text-gray-600 tabular-nums">
             {friends.length}
           </span>
         </h2>
         {friends.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            No friends yet. Search above to connect with people.
-          </p>
+          <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center">
+            <span className="mx-auto grid h-11 w-11 place-items-center rounded-full bg-white text-brand shadow-sm">
+              <LineIcon name="users" size={20} />
+            </span>
+            <p className="mt-3 font-bold text-gray-900">No friends yet</p>
+            <p className="mx-auto mt-1 max-w-xs text-sm text-gray-500">
+              Search above, or add someone from the suggestions below — you&apos;ll
+              see when they&apos;re going to the same link-ups as you.
+            </p>
+          </div>
         ) : (
           <ul className="grid gap-2 sm:grid-cols-2">
             {friends.map((u) => (
@@ -303,19 +322,24 @@ export default function FriendsManager({
 
       {/* Suggestions */}
       <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900">People you might know</h2>
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-gray-900">
+            <span className="grid h-7 w-7 place-items-center rounded-full bg-brand-50 text-brand">
+              <LineIcon name="sparkles" size={15} />
+            </span>
+            People you might know
+          </h2>
           <button
             type="button"
             onClick={() => loadSuggestions(relations)}
-            className="text-sm font-semibold text-brand hover:underline"
+            className="shrink-0 text-sm font-semibold text-brand hover:underline"
           >
-            ↻ Refresh
+            Refresh
           </button>
         </div>
         {suggestions.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            No suggestions right now. Check back later!
+          <p className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-8 text-center text-sm text-gray-500">
+            No suggestions right now. Check back later.
           </p>
         ) : (
           <ul className="grid gap-2 sm:grid-cols-2">
@@ -337,12 +361,12 @@ function Row({
   action: React.ReactNode;
 }) {
   return (
-    <li className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm">
+    <li className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm transition hover:border-brand/30 hover:shadow-md">
       <Link
         href={`/u/${user.id}`}
         className="flex min-w-0 flex-1 items-center gap-3"
       >
-        <Avatar name={user.name} url={user.avatar_url} size="sm" />
+        <Avatar name={user.name} url={user.avatar_url} size="md" />
         <div className="min-w-0">
           <p className="flex items-center gap-1 font-semibold text-gray-900 hover:text-brand">
             <span className="truncate">{user.name ?? "LinkUpNaija member"}</span>

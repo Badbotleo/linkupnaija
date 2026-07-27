@@ -63,6 +63,7 @@ export default async function ProPage() {
     <div>
       <PageHero
         watermark="Pro"
+        icon="star"
         chip="★ LinkUpNaija Pro"
         title={<>Link up like a <Gold>Pro</Gold></>}
         subtitle={

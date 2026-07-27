@@ -58,6 +58,8 @@ export default async function ReferPage() {
     <div>
       <PageHero
         watermark="Invite"
+        icon="gift"
+        eyebrow="Invite & earn"
         title={
           <>
             Bring your people, <Gold>get paid</Gold>

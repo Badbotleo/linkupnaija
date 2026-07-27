@@ -51,6 +51,8 @@ export default async function HostPage() {
     <div>
       <PageHero
         watermark="Host"
+        icon="mic"
+        eyebrow="Create"
         title={<>Host a <Gold>link-up</Gold></>}
         subtitle="Set the vibe, pick a spot, and gather your people."
       />
