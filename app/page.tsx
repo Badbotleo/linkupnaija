@@ -1,31 +1,47 @@
 import Link from "next/link";
-import Image from "next/image";
 import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { EVENT_CATEGORIES, CATEGORY_STYLES } from "@/lib/constants";
 import { categoryPhoto } from "@/lib/category-photos";
-
-// Polaroid slots when there aren't enough real events with covers — lead with
-// the vibes our core audience actually searches for, not the category list's
-// family-first ordering.
-const HERO_FALLBACK_CATEGORIES = ["Party", "Game Night", "Beach Day", "Concert"];
 import EventCover from "@/components/EventCover";
 import { formatEventDate } from "@/lib/format";
-import Typewriter from "@/components/anim/Typewriter";
 import LandingStats from "@/components/LandingStats";
 import LoggedInHome from "@/components/home/LoggedInHome";
+import Rail from "@/components/home/Rail";
 import LineIcon from "@/components/ui/LineIcon";
 import { getSessionUser } from "@/lib/supabase/auth";
 
-// The homepage hero/stats don't need to be real-time — cache the live counts
-// for 5 minutes so we don't hit the DB on every single landing-page view.
-// Uses a cookieless anon client (unstable_cache can't read request cookies).
+// Vibes our core audience actually searches for, leading the chip row.
+const TOP_CATEGORIES = [
+  "Party", "Game Night", "Beach Day", "Concert", "Clubbing",
+  "Dinner", "Hiking", "Karaoke", "Bowling", "Pool Party",
+];
+
+const VENUE_TYPES = [
+  { label: "Clubs & Lounges", img: "/venues/clubs.jpg" },
+  { label: "Restaurants", img: "/venues/restaurants.jpg" },
+  { label: "Rooftops & Bars", img: "/venues/rooftops.jpg" },
+  { label: "Cinemas", img: "/venues/cinemas.jpg" },
+];
+
+// What the platform actually does for you — the marketing, delivered as cards
+// in a shelf rather than a full-screen pitch section.
+const PROMISES = [
+  { icon: "shield", title: "Hosts approve every guest", text: "No randos. You see who's coming before you go." },
+  { icon: "ticket", title: "Your ticket is a QR code", text: "Pay in-app, get scanned at the door. No printouts." },
+  { icon: "chat", title: "Group chat before you arrive", text: "Every link-up has one, so you never pull up cold." },
+  { icon: "users", title: "Built around your taste", text: "Pick what you're into and the feed shapes itself." },
+];
+
+const cache = () =>
+  createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
 const getLandingCounts = unstable_cache(
   async () => {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const supabase = cache();
     const [{ count: events }, { count: members }] = await Promise.all([
       supabase.from("events").select("*", { count: "exact", head: true }),
       supabase.from("users").select("*", { count: "exact", head: true }),
@@ -36,751 +52,403 @@ const getLandingCounts = unstable_cache(
   { revalidate: 300 }
 );
 
-// Popular recurring series for the "Recurring events near you" section.
 const getPopularSeries = unstable_cache(
   async () => {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-    const { data } = await supabase
+    const { data } = await cache()
       .from("event_series")
       .select("id, title, category, state, frequency, cover_image_url, subscriber_count")
       .order("subscriber_count", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(3);
+      .limit(8);
     return data ?? [];
   },
   ["homepage-popular-series"],
   { revalidate: 300 }
 );
 
-// Popular circles for the "Find your Circle" section.
 const getPopularCircles = unstable_cache(
   async () => {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-    const { data } = await supabase
+    const { data } = await cache()
       .from("circles")
       .select("id, name, category, state, member_count, is_private, description, cover_image_url")
       .order("member_count", { ascending: false })
-      .limit(5);
+      .limit(8);
     return data ?? [];
   },
   ["homepage-popular-circles"],
   { revalidate: 300 }
 );
 
-// A few real upcoming events for the hero collage — makes the landing feel
-// alive instead of showing static category placeholders.
-const getHeroEvents = unstable_cache(
+// Real upcoming events fill the shelves — the page leads with what's actually
+// on, not with a pitch about what could be on.
+const getUpcomingEvents = unstable_cache(
   async () => {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
     const today = new Date().toISOString().slice(0, 10);
-    const { data } = await supabase
+    const { data } = await cache()
       .from("events")
-      .select("id, title, category, state, date, cover_image_url")
+      .select("id, title, category, state, location, date, price, cover_image_url")
       .eq("event_type", "general")
       .gte("date", today)
       .order("date", { ascending: true })
-      .limit(4);
+      .limit(12);
     return data ?? [];
   },
-  ["homepage-hero-events"],
+  ["homepage-upcoming-events"],
   { revalidate: 300 }
 );
 
+interface EventRow {
+  id: string;
+  title: string;
+  category: string;
+  state: string | null;
+  location: string | null;
+  date: string;
+  price: number | null;
+  cover_image_url: string | null;
+}
 
+const CARD = "w-[72vw] max-w-[268px] shrink-0 snap-start sm:w-[268px]";
 
 export default async function HomePage() {
   // Signed-in members get a personalised home instead of re-reading the pitch.
   const user = await getSessionUser();
   if (user) return <LoggedInHome userId={user.id} />;
 
-  const [counts, popularSeries, heroEvents, popularCircles] = await Promise.all([
+  const [counts, series, events, circles] = await Promise.all([
     getLandingCounts(),
     getPopularSeries(),
-    getHeroEvents(),
+    getUpcomingEvents(),
     getPopularCircles(),
   ]);
+  const upcoming = events as EventRow[];
 
   return (
-    <div>
-      {/* Hero: bold navy color-block with a tilted polaroid collage */}
-      <section className="relative overflow-hidden" style={{ background: "linear-gradient(150deg, #110F25 0%, #1A1040 55%, #221E49 100%)" }}>
-        {/* Purple + gold glows */}
-        <div aria-hidden className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-[#534AB7]/30 blur-[110px]" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-40 -right-24 h-96 w-96 rounded-full bg-[#FAC775]/15 blur-[110px]" />
+    <div className="pb-12">
+      {/* ---------------------------------------------------------------- */}
+      {/* Top: who we are in one line, then straight into search + browsing */}
+      {/* ---------------------------------------------------------------- */}
+      <section className="container-page pt-6">
+        <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-brand">
+          <span aria-hidden className="flex overflow-hidden rounded-[3px]">
+            <span className="block h-3 w-1.5 bg-[#008753]" />
+            <span className="block h-3 w-1.5 bg-white" />
+            <span className="block h-3 w-1.5 bg-[#008753]" />
+          </span>
+          Nigeria&apos;s social events platform
+        </p>
 
-        <div className="container-page relative grid items-center gap-12 py-16 lg:grid-cols-2 lg:py-24">
-          <div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm font-semibold text-white">
-              <span aria-hidden className="flex overflow-hidden rounded-[3px]">
-                <span className="h-3 w-1.5 bg-[#008753]" />
-                <span className="h-3 w-1.5 bg-white" />
-                <span className="h-3 w-1.5 bg-[#008753]" />
+        <h1 className="mt-2 text-[30px] font-extrabold leading-[1.05] tracking-[-0.035em] text-gray-900 sm:text-[38px]">
+          Find your <span className="text-brand">people</span>.
+        </h1>
+        <p className="mt-1.5 max-w-lg text-[15px] leading-relaxed text-gray-500">
+          House parties, beach days, game nights and raves — see what&apos;s
+          actually happening near you this week.
+        </p>
+
+        {/* Search opens the explore screen, the way tapping search in an app does */}
+        <Link
+          href="/events"
+          className="mt-4 flex items-center gap-2.5 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-[15px] text-gray-400 shadow-card transition hover:border-brand/40"
+        >
+          <LineIcon name="search" size={18} className="shrink-0 text-gray-400" />
+          Search link-ups near you
+        </Link>
+      </section>
+
+      {/* Category chips */}
+      <div className="no-scrollbar mt-3 flex snap-x gap-2 overflow-x-auto px-4 pb-1 sm:px-6 lg:px-8">
+        {TOP_CATEGORIES.map((c) => (
+          <Link
+            key={c}
+            href={`/events?category=${encodeURIComponent(c)}`}
+            className="shrink-0 snap-start whitespace-nowrap rounded-full border border-gray-200 bg-white px-3.5 py-2 text-sm font-bold text-gray-700 transition hover:border-brand hover:text-brand"
+          >
+            {CATEGORY_STYLES[c as keyof typeof CATEGORY_STYLES]?.emoji} {c}
+          </Link>
+        ))}
+        <Link
+          href="/events"
+          className="shrink-0 snap-start whitespace-nowrap rounded-full bg-gray-900 px-3.5 py-2 text-sm font-bold text-white"
+        >
+          All vibes
+        </Link>
+      </div>
+
+      {/* ---------------------------------------------------------------- */}
+      {/* Featured card                                                     */}
+      {/* ---------------------------------------------------------------- */}
+      <section className="container-page mt-6">
+        <Link
+          href="/tournament"
+          className="group relative flex min-h-[190px] flex-col justify-end overflow-hidden rounded-3xl p-5 text-white shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-xl sm:min-h-[220px] sm:p-6"
+          style={{ background: "linear-gradient(150deg, #1A1040 0%, #322C6E 100%)" }}
+        >
+          <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-[#FAC775]/25 blur-[70px]" />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 opacity-50"
+            style={{
+              backgroundImage: "radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px)",
+              backgroundSize: "20px 20px",
+            }}
+          />
+          <div className="relative">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FAC775] px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-[#1A1040]">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#1A1040] opacity-60" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#1A1040]" />
               </span>
-              Nigeria&apos;s social events platform
+              Now on
             </span>
-            <h1 className="mt-6 text-4xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Find your <span className="text-[#FAC775]">people</span>.
-              <br />
-              Build real connections.
-            </h1>
-            <p className="mt-4 text-lg font-bold text-[#AFA9EC]">
-              <Typewriter text="Link up. Hang out. Vibe." />
+            <h2 className="mt-3 text-[26px] font-extrabold leading-tight tracking-tight sm:text-3xl">
+              FC26 Tournament
+            </h2>
+            <p className="mt-1 text-[15px] text-white/75">
+              <span className="font-bold text-[#FAC775]">&#8358;2,000,000</span> prize
+              pool · 40 players · Abuja
             </p>
-            <p className="mt-5 max-w-lg text-lg leading-relaxed text-white/70">
-              House parties, beach days, game nights, raves and everything in
-              between. LinkUpNaija is where young Nigerians pull up, vibe and
-              connect for real.
-            </p>
-            <div className="mt-9 flex flex-wrap items-center gap-3">
-              <Link
-                href="/events"
-                className="btn bg-[#FAC775] px-7 py-3 text-base font-bold text-[#1A1040] shadow-[0_8px_24px_-8px_rgba(250,199,117,0.6)] hover:bg-[#fbd28e]"
-              >
-                Explore events
-              </Link>
-              <Link
-                href="/signup"
-                className="btn border border-white/25 px-7 py-3 text-base text-white hover:bg-white/10"
-              >
-                Join free
-              </Link>
-            </div>
+            <span className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-[#FAC775]">
+              Register now
+              <LineIcon name="chevronRight" size={14} />
+            </span>
           </div>
+        </Link>
+      </section>
 
-          {/* Polaroid collage: real event photos, hand-placed feel */}
-          <div className="relative mx-auto w-full max-w-md lg:max-w-none">
-            <div className="grid grid-cols-2 gap-5 px-2 py-4">
-              {heroEvents.map((e, i) => (
-                <Link
-                  key={e.id}
-                  href={`/events/${e.id}`}
-                  className={`group rounded-xl bg-[#fff] p-2 pb-3 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.5)] transition duration-200 hover:z-10 hover:rotate-0 hover:scale-[1.03] ${
-                    i % 2 === 0 ? "-rotate-2 sm:translate-y-4" : "rotate-2"
-                  }`}
-                >
+      {/* ---------------------------------------------------------------- */}
+      {/* Shelves                                                           */}
+      {/* ---------------------------------------------------------------- */}
+      <Rail
+        title="Happening soon"
+        subtitle={
+          upcoming.length > 0
+            ? "Real link-ups you can join today"
+            : "Nothing on the calendar yet — start something"
+        }
+        href="/events"
+      >
+        {/* A content-led home is thin when there's no content, so the empty
+            case sells hosting rather than leaving a gap. */}
+        {upcoming.length === 0 && (
+          <Link href="/host" className={`${CARD} group`}>
+            <div className="flex h-[188px] flex-col justify-end rounded-2xl border border-dashed border-brand/30 bg-brand-50 p-4 transition group-hover:border-brand/60">
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-white text-brand shadow-sm">
+                <LineIcon name="mic" size={19} />
+              </span>
+              <p className="mt-3 font-extrabold leading-snug text-gray-900">
+                Host the first one
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-gray-600">
+                Set it up in two minutes and your people get notified.
+              </p>
+            </div>
+          </Link>
+        )}
+        {upcoming.slice(0, 8).map((e) => (
+            <Link key={e.id} href={`/events/${e.id}`} className={`${CARD} group`}>
+              <div className="overflow-hidden rounded-2xl bg-white shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
+                <div className="relative">
                   <EventCover
                     url={e.cover_image_url}
                     category={e.category}
                     title={e.title}
-                    className="h-32 w-full rounded-lg sm:h-36"
+                    className="h-36 w-full"
                   />
-                  <p className="mt-2 truncate px-1 text-sm font-bold text-gray-900">
+                  <span className="absolute left-2.5 top-2.5 rounded-full bg-white/92 px-2 py-0.5 text-[11px] font-black text-gray-800 backdrop-blur">
+                    {e.price && e.price > 0 ? `₦${e.price.toLocaleString("en-NG")}` : "Free"}
+                  </span>
+                </div>
+                <div className="p-3">
+                  <p className="truncate font-bold text-gray-900 group-hover:text-brand">
                     {e.title}
                   </p>
-                  <p className="truncate px-1 text-xs text-gray-500">
+                  <p className="mt-0.5 truncate text-xs text-gray-500">
                     {formatEventDate(e.date)}
-                    {e.state ? ` · ${e.state}` : ""}
-                  </p>
-                </Link>
-              ))}
-              {HERO_FALLBACK_CATEGORIES.slice(0, Math.max(0, 4 - heroEvents.length)).map((cat, i) => {
-                const idx = heroEvents.length + i;
-                return (
-                  <Link
-                    key={cat}
-                    href={`/events?category=${encodeURIComponent(cat)}`}
-                    className={`group rounded-xl bg-[#fff] p-2 pb-3 shadow-[0_12px_32px_-8px_rgba(0,0,0,0.5)] transition duration-200 hover:z-10 hover:rotate-0 hover:scale-[1.03] ${
-                      idx % 2 === 0 ? "-rotate-2 sm:translate-y-4" : "rotate-2"
-                    }`}
-                  >
-                    <div className="relative h-32 w-full overflow-hidden rounded-lg sm:h-36">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={categoryPhoto(cat)} alt={cat} className="absolute inset-0 h-full w-full object-cover" />
-                    </div>
-                    <p className="mt-2 truncate px-1 text-sm font-bold text-gray-900">{cat}</p>
-                    <p className="truncate px-1 text-xs text-gray-500">Browse events →</p>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Floating stats */}
-      <LandingStats
-        eventsCount={counts.events}
-        membersCount={counts.members}
-        categoriesCount={EVENT_CATEGORIES.length}
-      />
-
-      {/* Why LinkUpNaija: feature bento */}
-      <section className="container-page py-16">
-        <h2 className="text-center text-3xl font-extrabold tracking-tight text-gray-900">
-          Everything you need to pull up
-        </h2>
-        <p className="mx-auto mt-3 max-w-xl text-center text-gray-600">
-          From finding the vibe to getting home safe, the whole link-up is
-          handled.
-        </p>
-
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Safety: the flagship tile */}
-          <div
-            className="relative overflow-hidden rounded-2xl p-6 text-white sm:col-span-2 lg:row-span-2"
-            style={{ background: "linear-gradient(150deg, #1A1040 0%, #322C6E 100%)" }}
-          >
-            <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[#FAC775]/15 blur-[70px]" />
-            <span className="grid h-11 w-11 place-items-center rounded-xl bg-white/10 text-[#FAC775]">
-              <LineIcon name="shield" size={22} />
-            </span>
-            <h3 className="mt-4 text-xl font-extrabold">
-              Safety isn&apos;t a feature. It&apos;s the point.
-            </h3>
-            <p className="mt-2 leading-relaxed text-white/70">
-              Hosts approve every guest, so no randos. Profiles carry phone
-              verification. Share your plans with a trusted contact before you
-              go, check in safe after, and report anything off in two taps.
-            </p>
-            <ul className="mt-4 space-y-1.5 text-sm text-white/80">
-              <li className="flex items-center gap-2">
-                <LineIcon name="check" size={14} className="text-[#FAC775]" /> Host-approved guest lists
-              </li>
-              <li className="flex items-center gap-2">
-                <LineIcon name="check" size={14} className="text-[#FAC775]" /> Verified profiles
-              </li>
-              <li className="flex items-center gap-2">
-                <LineIcon name="check" size={14} className="text-[#FAC775]" /> Share-my-plans + safety check-ins
-              </li>
-            </ul>
-          </div>
-
-          <Bento icon="ticket" title="Your ticket is a QR code">
-            No printouts, no wahala. Your pass lives on your phone and the host
-            scans you in at the door in seconds.
-          </Bento>
-
-          <Bento icon="chat" title="Chat before you arrive">
-            Every event has a group chat, so you know the vibe and the people
-            before you walk in. Never pull up cold.
-          </Bento>
-
-          <Bento icon="sparkles" title="A feed picked for you">
-            Tell us what you&apos;re into once. Your homepage fills with parties,
-            hangouts and link-ups that match your vibe and your state.
-          </Bento>
-
-          <Bento icon="zap" title="Money, handled">
-            Paid tickets through Paystack, a wallet for refunds and credits, and
-            automatic payouts when you host. Naira-native, end to end.
-          </Bento>
-
-          {/* Host reputation: gold tile */}
-          <div className="relative overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-6 sm:col-span-2">
-            <span className="grid h-11 w-11 place-items-center rounded-xl bg-amber-100 text-amber-600">
-              <LineIcon name="trophy" size={22} />
-            </span>
-            <h3 className="mt-4 text-lg font-extrabold text-gray-900">
-              Hosting builds your name
-            </h3>
-            <p className="mt-1.5 max-w-lg text-gray-600">
-              Ratings, attendance and safety scores roll into a public host
-              scorecard. Earn badges, climb the leaderboard, get featured. Great
-              hosts get seen.
-            </p>
-            <Link href="/hosts/leaderboard" className="mt-3 inline-block text-sm font-bold text-amber-600 hover:underline">
-              See the leaderboard →
-            </Link>
-          </div>
-
-          <Bento icon="bell" title="Never miss it">
-            Push notifications, email reminders and one-tap add-to-calendar.
-            If you said you&apos;d be there, we make sure you remember.
-          </Bento>
-
-          {/* Nigeria strip */}
-          <div className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-card sm:col-span-2 lg:col-span-3">
-            <span aria-hidden className="flex shrink-0 overflow-hidden rounded">
-              <span className="h-8 w-4 bg-[#008753]" />
-              <span className="h-8 w-4 bg-white ring-1 ring-inset ring-gray-100" />
-              <span className="h-8 w-4 bg-[#008753]" />
-            </span>
-            <div>
-              <h3 className="font-extrabold text-gray-900">Made for Nigeria, by Nigerians</h3>
-              <p className="text-sm text-gray-600">
-                All 36 states + FCT, naira payments, and a team that knows what
-                brings us together.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How it works: numbered journey */}
-      <section className="container-page py-16">
-        <p className="text-center text-xs font-black uppercase tracking-[0.25em] text-amber-500">
-          The playbook
-        </p>
-        <h2 className="mt-2 text-center text-3xl font-extrabold tracking-tight text-gray-900">
-          Three moves. One link-up.
-        </h2>
-
-        <div className="relative mt-12">
-          {/* Dashed journey line behind the cards (desktop) */}
-          <div
-            aria-hidden
-            className="absolute left-[12%] right-[12%] top-10 hidden border-t-2 border-dashed border-brand-200 md:block"
-          />
-          <div className="grid gap-10 md:grid-cols-3 md:gap-6">
-            {[
-              {
-                n: "01",
-                icon: "search",
-                tilt: "md:-rotate-1",
-                title: "Scout the vibe",
-                text: "Open Explore and see what's moving: parties, game nights, beach days, whatever your city is on this week.",
-              },
-              {
-                n: "02",
-                icon: "users",
-                tilt: "md:rotate-1 md:translate-y-4",
-                title: "Pull up with people",
-                text: "Tap join, get the host's yes, and land in the group chat before you land at the venue. Zero awkward entrances.",
-              },
-              {
-                n: "03",
-                icon: "mic",
-                tilt: "md:-rotate-1",
-                title: "Run your own",
-                text: "Got the idea? Set it up in two minutes, approve your guests, and watch your host name grow.",
-              },
-            ].map((s) => (
-              <div
-                key={s.n}
-                className={`relative rounded-2xl border border-gray-100 bg-white p-6 pt-7 shadow-card transition duration-200 hover:rotate-0 hover:shadow-xl ${s.tilt}`}
-              >
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute -top-5 right-4 select-none text-7xl font-black leading-none tracking-tighter text-transparent"
-                  style={{ WebkitTextStroke: "1.5px #DAD8F0" }}
-                >
-                  {s.n}
-                </span>
-                <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand text-white shadow-sm">
-                  <LineIcon name={s.icon} size={20} />
-                </span>
-                <h3 className="mt-4 text-lg font-extrabold text-gray-900">
-                  {s.title}
-                </h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-gray-600">
-                  {s.text}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-12 flex flex-col items-center gap-3">
-          <p className="text-sm font-semibold text-gray-500">
-            No long thing. Your first link-up is minutes away.
-          </p>
-          <Link
-            href="/events"
-            className="btn bg-[#FAC775] px-7 py-3 text-base font-bold text-[#1A1040] shadow-[0_8px_24px_-8px_rgba(250,199,117,0.6)] hover:bg-[#fbd28e]"
-          >
-            Find a link-up
-          </Link>
-        </div>
-      </section>
-
-      {/* Categories */}
-      <section className="bg-gray-50 py-16">
-        <div className="container-page">
-          <h2 className="text-center text-3xl font-extrabold text-gray-900">
-            Pick your vibe
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-center text-gray-600">
-            Whatever your energy, there&apos;s a link-up for it.
-          </p>
-          {/* Two staggered scrolling rows of colored pills, not a tile wall. */}
-          <div className="no-scrollbar mt-10 space-y-3 overflow-x-auto pb-2">
-            {[EVENT_CATEGORIES.slice(0, 12), EVENT_CATEGORIES.slice(12)].map((row, r) => (
-              <div key={r} className={`flex w-max gap-3 ${r === 1 ? "pl-10" : ""}`}>
-                {row.map((cat) => {
-                  const { emoji, badge } = CATEGORY_STYLES[cat];
-                  return (
-                    <Link
-                      key={cat}
-                      href={`/events?category=${encodeURIComponent(cat)}`}
-                      className={`inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition hover:-translate-y-0.5 hover:shadow-md ${badge}`}
-                    >
-                      <span aria-hidden>{emoji}</span>
-                      {cat}
-                    </Link>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Circles: editorial featured + grid on navy */}
-      {popularCircles.length > 0 && (
-        <section
-          className="relative overflow-hidden"
-          style={{ background: "linear-gradient(150deg, #110F25 0%, #1A1040 60%, #221E49 100%)" }}
-        >
-          <div aria-hidden className="pointer-events-none absolute inset-0 opacity-50" style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
-          <div aria-hidden className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[#534AB7]/30 blur-[100px]" />
-          <div aria-hidden className="pointer-events-none absolute -bottom-28 -right-16 h-72 w-72 rounded-full bg-[#FAC775]/15 blur-[100px]" />
-          <span aria-hidden className="pointer-events-none absolute -bottom-6 right-2 select-none text-[6rem] font-black uppercase leading-none tracking-tighter text-transparent sm:text-[9rem]" style={{ WebkitTextStroke: "1px rgba(255,255,255,0.07)" }}>
-            Circles
-          </span>
-
-          <div className="container-page relative py-16">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.25em] text-[#FAC775]">
-                  Your community
-                </p>
-                <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                  Find your <span className="text-[#FAC775]">Circle</span>
-                </h2>
-                <p className="mt-2 max-w-xl text-white/70">
-                  Communities built around what you love. Join one, meet the
-                  regulars, and hear about link-ups before anyone else.
-                </p>
-              </div>
-              <Link
-                href="/circles"
-                className="btn self-start bg-[#FAC775] font-bold text-[#1A1040] hover:bg-[#fbd28e] sm:self-auto"
-              >
-                Explore all Circles
-              </Link>
-            </div>
-
-            <div className="mt-8 grid gap-4 lg:grid-cols-3">
-              {/* Featured circle */}
-              {(() => {
-                const f = popularCircles[0];
-                return (
-                  <Link
-                    href={`/circles/${f.id}`}
-                    className="group relative flex min-h-[15rem] flex-col justify-end overflow-hidden rounded-3xl p-6 shadow-[0_16px_48px_-12px_rgba(0,0,0,0.6)] lg:row-span-2 lg:min-h-full"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={f.cover_image_url ?? categoryPhoto(f.category)} alt="" className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10" />
-                    <div className="relative">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FAC775] px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-[#1A1040]">
-                        ★ Biggest circle
-                      </span>
-                      <h3 className="mt-3 text-2xl font-extrabold text-white">{f.name}</h3>
-                      {f.description && (
-                        <p className="mt-1 line-clamp-2 max-w-md text-sm text-white/80">{f.description}</p>
-                      )}
-                      <div className="mt-3 flex items-center gap-3 text-sm font-semibold text-white">
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur">
-                          <LineIcon name="users" size={15} /> {f.member_count} members
-                        </span>
-                        <span className="opacity-0 transition group-hover:opacity-100">Join the vibe →</span>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })()}
-
-              {/* Remaining circles */}
-              {popularCircles.slice(1, 5).map(
-                (c: {
-                  id: string;
-                  name: string;
-                  category: string | null;
-                  state: string | null;
-                  member_count: number;
-                  is_private: boolean;
-                  cover_image_url: string | null;
-                }) => (
-                  <Link
-                    key={c.id}
-                    href={`/circles/${c.id}`}
-                    className="group flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur transition duration-200 hover:bg-white/[0.12]"
-                  >
-                    <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl shadow-sm">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={c.cover_image_url ?? categoryPhoto(c.category)} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-bold text-white">
-                        {c.name}
-                        {c.is_private && (
-                          <span className="ml-1.5 align-middle text-[10px] font-semibold uppercase tracking-wide text-white/50">Private</span>
-                        )}
-                      </p>
-                      <p className="truncate text-xs text-white/60">
-                        {[c.category, c.state].filter(Boolean).join(" · ") || "Community"}
-                      </p>
-                    </div>
-                    <span className="shrink-0 text-right text-xs font-bold text-[#FAC775]">
-                      {c.member_count}
-                      <span className="block text-[10px] font-semibold uppercase tracking-wide text-white/50">members</span>
-                    </span>
-                  </Link>
-                )
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Venues: reserve the perfect spot */}
-      <section className="bg-gray-50 py-16">
-        <div className="container-page">
-          <div className="grid items-center gap-10 lg:grid-cols-2">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-500">
-                Book the spot
-              </p>
-              <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                Reserve the perfect venue
-              </h2>
-              <p className="mt-3 max-w-lg text-gray-600">
-                Scoping a lounge for the squad or a hall for the big one? Discover
-                clubs, restaurants, rooftops and event spaces near you and send a
-                reservation request through LinkUpNaija, no endless DMs.
-              </p>
-              <ul className="mt-5 space-y-2 text-sm font-medium text-gray-700">
-                <li className="flex items-center gap-2"><LineIcon name="pin" size={16} className="text-brand" /> Real spots across all 36 states + FCT</li>
-                <li className="flex items-center gap-2"><LineIcon name="check" size={16} className="text-brand" /> Request a date and party size in-app</li>
-                <li className="flex items-center gap-2"><LineIcon name="chat" size={16} className="text-brand" /> Track your reservation, no phone tag</li>
-              </ul>
-              <Link href="/venues" className="btn-primary mt-7 px-6 py-3 text-base">
-                Discover venues
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { label: "Clubs & Lounges", img: "/venues/clubs.jpg", tilt: "sm:-rotate-2" },
-                { label: "Restaurants", img: "/venues/restaurants.jpg", tilt: "sm:rotate-2 sm:translate-y-4" },
-                { label: "Rooftops & Bars", img: "/venues/rooftops.jpg", tilt: "sm:-rotate-2" },
-                { label: "Cinemas", img: "/venues/cinemas.jpg", tilt: "sm:rotate-2" },
-              ].map((v) => (
-                <Link
-                  key={v.label}
-                  href="/venues"
-                  className={`group relative flex h-32 flex-col justify-end overflow-hidden rounded-2xl p-4 shadow-card transition duration-200 hover:rotate-0 hover:shadow-xl sm:h-40 ${v.tilt}`}
-                >
-                  <Image
-                    src={v.img}
-                    alt={v.label}
-                    fill
-                    sizes="(min-width: 640px) 300px, 50vw"
-                    className="object-cover transition duration-300 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10" />
-                  <span className="relative grid h-9 w-9 place-items-center rounded-lg bg-white/20 text-white backdrop-blur">
-                    <LineIcon name="pin" size={18} />
-                  </span>
-                  <p className="relative mt-2 font-bold text-white drop-shadow">{v.label}</p>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Recurring series: the regulars */}
-      {popularSeries.length > 0 && (
-        <section className="container-page py-16">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-500">
-                The regulars
-              </p>
-              <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                Link-ups that keep coming back
-              </h2>
-              <p className="mt-2 max-w-xl text-gray-600">
-                Weekly game nights, monthly picnics, the ones everyone plans
-                their month around. Subscribe once and never miss a beat.
-              </p>
-            </div>
-            <Link href="/events?series=1" className="btn-outline self-start sm:self-auto">
-              All series
-            </Link>
-          </div>
-
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {popularSeries.map(
-              (s: {
-                id: string;
-                title: string;
-                category: string | null;
-                state: string | null;
-                frequency: string | null;
-                cover_image_url: string | null;
-                subscriber_count: number;
-              }) => (
-                <Link
-                  key={s.id}
-                  href={`/series/${s.id}`}
-                  className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-xl"
-                >
-                  <div className="relative">
-                    <EventCover
-                      url={s.cover_image_url}
-                      category={s.category ?? "Networking"}
-                      title={s.title}
-                      className="h-40 w-full transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                    {/* Frequency ribbon */}
-                    <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-[#FAC775] px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-[#1A1040]">
-                      <LineIcon name="clock" size={12} />
-                      {s.frequency ?? "Recurring"}
-                    </span>
-                    <h3 className="absolute inset-x-4 bottom-3 text-lg font-extrabold leading-tight text-white drop-shadow">
-                      {s.title}
-                    </h3>
-                  </div>
-                  <div className="flex items-center justify-between p-4">
-                    <p className="truncate text-xs font-medium text-gray-500">
-                      {[s.category, s.state].filter(Boolean).join(" · ") || "Community"}
-                    </p>
-                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand">
-                      <LineIcon name="users" size={13} />
-                      {s.subscriber_count}
-                    </span>
-                  </div>
-                </Link>
-              )
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Explore the whole platform */}
-      <section className="bg-gray-50 py-16">
-        <div className="container-page">
-          <p className="text-xs font-black uppercase tracking-[0.25em] text-amber-500">
-            Beyond the party
-          </p>
-          <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-            There&apos;s a whole platform here
-          </h2>
-          <p className="mt-2 max-w-xl text-gray-600">
-            LinkUpNaija is more than events. Tap in.
-          </p>
-
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Featured: FC26 tournament */}
-            <Link
-              href="/tournament"
-              className="group relative flex flex-col justify-between overflow-hidden rounded-2xl p-6 text-white shadow-card transition duration-200 hover:-translate-y-1 hover:shadow-xl sm:col-span-2 lg:col-span-1 lg:row-span-2"
-              style={{ background: "linear-gradient(150deg, #1A1040 0%, #322C6E 100%)" }}
-            >
-              <div aria-hidden className="pointer-events-none absolute -right-14 -top-14 h-44 w-44 rounded-full bg-[#FAC775]/20 blur-[60px]" />
-              <div className="relative">
-                <span className="grid h-11 w-11 place-items-center rounded-xl bg-white/10 text-[#FAC775]">
-                  <LineIcon name="gamepad" size={22} />
-                </span>
-                <span className="mt-4 inline-block rounded-full bg-[#FAC775] px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-[#1A1040]">
-                  Now on
-                </span>
-                <h3 className="mt-3 text-2xl font-extrabold leading-tight">
-                  FC26 Tournament
-                </h3>
-                <p className="mt-1 text-white/70">
-                  <span className="font-bold text-[#FAC775]">₦2,000,000</span> prize.
-                  40 players. Abuja.
-                </p>
-              </div>
-              <span className="relative mt-6 text-sm font-bold text-[#FAC775]">
-                Register now →
-              </span>
-            </Link>
-
-            {[
-              { href: "/live", icon: "activity", title: "Live feed", text: "See who's hosting and joining right now." },
-              { href: "/hosts/leaderboard", icon: "trophy", title: "Host leaderboard", text: "Nigeria's most-loved hosts, ranked." },
-              { href: "/opportunities", icon: "briefcase", title: "Opportunities", text: "List your car, venue or services and get booked." },
-              { href: "/corporate", icon: "building", title: "For Business", text: "Team outings and corporate events, handled." },
-              { href: "/pro", icon: "star", title: "Go Pro", text: "See who viewed you, early access, gold badge." },
-              { href: "/refer", icon: "gift", title: "Invite & earn", text: "Give ₦500, get ₦500 when a friend joins." },
-            ].map((f) => (
-              <Link
-                key={f.href}
-                href={f.href}
-                className="group flex items-start gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-card transition duration-200 hover:-translate-y-1 hover:border-brand/30 hover:shadow-xl"
-              >
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand">
-                  <LineIcon name={f.icon} size={20} />
-                </span>
-                <div className="min-w-0">
-                  <h3 className="font-extrabold text-gray-900 group-hover:text-brand">
-                    {f.title}
-                  </h3>
-                  <p className="mt-0.5 text-sm leading-relaxed text-gray-600">
-                    {f.text}
+                    {e.location ? ` · ${e.location}` : e.state ? ` · ${e.state}` : ""}
                   </p>
                 </div>
+              </div>
+            </Link>
+        ))}
+      </Rail>
+
+      {circles.length > 0 && (
+        <Rail
+          title="Circles to join"
+          subtitle="Communities built around what you love"
+          href="/circles"
+        >
+          {circles.map((c: {
+            id: string; name: string; category: string | null; state: string | null;
+            member_count: number; cover_image_url: string | null;
+          }) => (
+            <Link key={c.id} href={`/circles/${c.id}`} className={`${CARD} group`}>
+              <div className="relative h-[148px] overflow-hidden rounded-2xl shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={c.cover_image_url ?? categoryPhoto(c.category)}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-3 text-white">
+                  <p className="truncate font-bold">{c.name}</p>
+                  <p className="mt-0.5 flex items-center gap-1.5 text-xs text-white/75">
+                    <LineIcon name="users" size={12} />
+                    {c.member_count} member{c.member_count === 1 ? "" : "s"}
+                    {c.state ? ` · ${c.state}` : ""}
+                  </p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </Rail>
+      )}
+
+      <Rail
+        title="Book the spot"
+        subtitle="Clubs, restaurants, rooftops and cinemas near you"
+        href="/venues"
+      >
+        {VENUE_TYPES.map((v) => (
+          <Link key={v.label} href="/venues" className={`${CARD} group`}>
+            <div className="relative h-[132px] overflow-hidden rounded-2xl shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={v.img}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent" />
+              <p className="absolute inset-x-0 bottom-0 p-3 font-bold text-white">
+                {v.label}
+              </p>
+            </div>
+          </Link>
+        ))}
+      </Rail>
+
+      {series.length > 0 && (
+        <Rail
+          title="The regulars"
+          subtitle="Link-ups that keep coming back"
+          href="/events?series=1"
+        >
+          {series.map((s: {
+            id: string; title: string; category: string | null; state: string | null;
+            frequency: string | null; cover_image_url: string | null; subscriber_count: number;
+          }) => (
+            <Link key={s.id} href={`/series/${s.id}`} className={`${CARD} group`}>
+              <div className="relative h-[132px] overflow-hidden rounded-2xl shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={s.cover_image_url ?? categoryPhoto(s.category)}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+                <span className="absolute left-2.5 top-2.5 rounded-full bg-[#FAC775] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[#1A1040]">
+                  {s.frequency ?? "Recurring"}
+                </span>
+                <div className="absolute inset-x-0 bottom-0 p-3 text-white">
+                  <p className="truncate font-bold">{s.title}</p>
+                  <p className="mt-0.5 truncate text-xs text-white/75">
+                    {s.subscriber_count} subscriber{s.subscriber_count === 1 ? "" : "s"}
+                    {s.state ? ` · ${s.state}` : ""}
+                  </p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </Rail>
+      )}
+
+      {/* The pitch, as a shelf rather than a full-screen section */}
+      <Rail title="Why LinkUpNaija" subtitle="What you get every time you pull up">
+        {PROMISES.map((p) => (
+          <div
+            key={p.title}
+            className={`${CARD} rounded-2xl border border-gray-100 bg-white p-4 shadow-card`}
+          >
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-50 text-brand">
+              <LineIcon name={p.icon} size={19} />
+            </span>
+            <p className="mt-3 font-extrabold leading-snug text-gray-900">{p.title}</p>
+            <p className="mt-1 text-sm leading-relaxed text-gray-600">{p.text}</p>
+          </div>
+        ))}
+      </Rail>
+
+      {/* More of the platform */}
+      <Rail title="More on LinkUpNaija" subtitle="Beyond the party">
+        {[
+          { href: "/live", icon: "activity", title: "Live feed", text: "Who's hosting and joining right now" },
+          { href: "/hosts/leaderboard", icon: "trophy", title: "Host leaderboard", text: "Nigeria's most-loved hosts" },
+          { href: "/opportunities", icon: "briefcase", title: "Opportunities", text: "List your car, venue or services" },
+          { href: "/refer", icon: "gift", title: "Invite & earn", text: "Give ₦500, get ₦500" },
+          { href: "/pro", icon: "star", title: "Go Pro", text: "Early access and a gold badge" },
+        ].map((f) => (
+          <Link
+            key={f.href}
+            href={f.href}
+            className={`${CARD} group rounded-2xl border border-gray-100 bg-white p-4 shadow-card transition duration-200 hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-lg`}
+          >
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-50 text-brand">
+              <LineIcon name={f.icon} size={19} />
+            </span>
+            <p className="mt-3 font-extrabold text-gray-900 group-hover:text-brand">
+              {f.title}
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-gray-600">{f.text}</p>
+          </Link>
+        ))}
+      </Rail>
+
+      {/* Honest live numbers */}
+      <div className="mt-8">
+        <LandingStats
+          eventsCount={counts.events}
+          membersCount={counts.members}
+          categoriesCount={EVENT_CATEGORIES.length}
+        />
+      </div>
+
+      {/* ---------------------------------------------------------------- */}
+      {/* Sign-up card                                                      */}
+      {/* ---------------------------------------------------------------- */}
+      <section className="container-page mt-8">
+        <div
+          className="relative overflow-hidden rounded-3xl px-6 py-8 text-center text-white sm:px-10 sm:py-10"
+          style={{ background: "linear-gradient(150deg, #110F25 0%, #1A1040 60%, #221E49 100%)" }}
+        >
+          <div aria-hidden className="pointer-events-none absolute -left-20 -top-20 h-60 w-60 rounded-full bg-[#534AB7]/40 blur-[90px]" />
+          <div aria-hidden className="pointer-events-none absolute -bottom-24 -right-14 h-60 w-60 rounded-full bg-[#FAC775]/15 blur-[90px]" />
+          <div className="relative">
+            <h2 className="text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">
+              Your next link-up is <span className="text-[#FAC775]">minutes away</span>.
+            </h2>
+            <p className="mx-auto mt-2 max-w-md text-[15px] text-white/70">
+              Free to join. Hosts approve every guest, so you always know who
+              you&apos;re pulling up with.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Link
+                href="/signup"
+                className="btn rounded-full bg-[#FAC775] px-6 py-3 font-bold text-[#1A1040] hover:bg-[#fbd28e]"
+              >
+                Join free
               </Link>
-            ))}
+              <Link
+                href="/events"
+                className="btn rounded-full border border-white/25 px-6 py-3 font-bold text-white hover:bg-white/10"
+              >
+                Browse first
+              </Link>
+            </div>
           </div>
         </div>
       </section>
-
-      {/* CTA */}
-      <section className="container-page py-16">
-        <div className="relative overflow-hidden rounded-3xl px-8 py-14 text-center text-white" style={{ background: "linear-gradient(150deg, #1A1040 0%, #322C6E 100%)" }}>
-          <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#FAC775]/15 blur-[80px]" />
-          <h2 className="text-3xl font-extrabold sm:text-4xl">
-            Ready to link up?
-          </h2>
-          <p className="mx-auto mt-3 max-w-lg text-brand-100">
-            Join thousands of Nigerians finding their next hangout. It&apos;s
-            free and takes 30 seconds.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link
-              href="/signup"
-              className="btn bg-[#FAC775] px-6 py-3 text-base font-bold text-[#1A1040] hover:bg-[#fbd28e]"
-            >
-              Create your account
-            </Link>
-            <Link
-              href="/events"
-              className="btn border border-white/40 px-6 py-3 text-base text-white hover:bg-white/10"
-            >
-              Browse events
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* FcPopup intentionally removed (2026-07-26): the tournament popup was
-          disrupting UX. The FC26 card in the explore section covers it. */}
-    </div>
-  );
-}
-
-function Bento({
-  icon,
-  title,
-  children,
-}: {
-  icon: string;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-card">
-      <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-50 text-brand">
-        <LineIcon name={icon} size={22} />
-      </span>
-      <h3 className="mt-4 text-lg font-extrabold text-gray-900">{title}</h3>
-      <p className="mt-1.5 text-sm leading-relaxed text-gray-600">{children}</p>
     </div>
   );
 }
