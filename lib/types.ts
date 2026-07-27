@@ -287,6 +287,7 @@ export interface CirclePost {
   user_id: string;
   content: string | null;
   image_url: string | null;
+  video_url: string | null;
   event_id: string | null;
   pinned: boolean;
   like_count: number;
@@ -300,6 +301,7 @@ export interface CirclePost {
     id: string;
     content: string | null;
     image_url: string | null;
+    video_url: string | null;
     created_at: string;
     user_id: string;
     repost_count: number;

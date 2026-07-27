@@ -12,13 +12,23 @@ import EventCover from "../EventCover";
 import LineIcon from "../ui/LineIcon";
 import type { CirclePost, CirclePostComment } from "@/lib/types";
 
+// NOTE: the original post of a repost is fetched in a SECOND query rather than
+// embedded. PostgREST cannot embed a self-referencing foreign key, and asking
+// it to made this whole select fail — which silently broke the entire feed.
 const POST_SELECT =
   "*, author:users!circle_posts_user_id_fkey(name, avatar_url), " +
-  "event:events!circle_posts_event_id_fkey(id, title, date, time, location, state, category, cover_image_url), " +
-  "original:circle_posts!circle_posts_repost_of_fkey(id, content, image_url, created_at, user_id, " +
-  "repost_count, author:users!circle_posts_user_id_fkey(name, avatar_url))";
+  "event:events!circle_posts_event_id_fkey(id, title, date, time, location, state, category, cover_image_url)";
+
+const ORIGINAL_SELECT =
+  "id, content, image_url, video_url, created_at, user_id, repost_count, " +
+  "author:users!circle_posts_user_id_fkey(name, avatar_url)";
 
 const EVENT_LINK = /\/events\/([0-9a-fA-F-]{36})/;
+
+// Phone clips get big fast; reject early with a clear number rather than
+// letting a 200MB upload crawl and fail.
+const MAX_VIDEO_MB = 50;
+const MAX_VIDEO_BYTES = MAX_VIDEO_MB * 1024 * 1024;
 
 export default function CircleFeed({
   circleId,
@@ -36,30 +46,57 @@ export default function CircleFeed({
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [repostedIds, setRepostedIds] = useState<Set<string>>(new Set());
   const [content, setContent] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [posting, setPosting] = useState(false);
   const [me, setMe] = useState<{ name: string | null; avatar_url: string | null } | null>(null);
 
   // Local preview for the composer, revoked when the pick changes.
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   useEffect(() => {
-    if (!imageFile) {
+    if (!mediaFile) {
       setPreviewUrl(null);
       return;
     }
-    const url = URL.createObjectURL(imageFile);
+    const url = URL.createObjectURL(mediaFile);
     setPreviewUrl(url);
     return () => URL.revokeObjectURL(url);
-  }, [imageFile]);
+  }, [mediaFile]);
 
   const load = useCallback(async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("circle_posts")
       .select(POST_SELECT)
       .eq("circle_id", circleId)
       .order("pinned", { ascending: false })
       .order("created_at", { ascending: false });
-    setPosts((data ?? []) as unknown as CirclePost[]);
+
+    if (error) {
+      console.error("circle feed load failed:", error);
+      toast.error("Couldn't load the feed.");
+      return;
+    }
+
+    let rows = (data ?? []) as unknown as CirclePost[];
+
+    // Attach the originals for any reposts, in one extra round trip.
+    const originIds = Array.from(
+      new Set(rows.map((p) => p.repost_of).filter(Boolean) as string[])
+    );
+    if (originIds.length > 0) {
+      const { data: origins } = await supabase
+        .from("circle_posts")
+        .select(ORIGINAL_SELECT)
+        .in("id", originIds);
+      const byId = new Map(
+        ((origins ?? []) as unknown as NonNullable<CirclePost["original"]>[]).map(
+          (o) => [o.id, o]
+        )
+      );
+      rows = rows.map((p) =>
+        p.repost_of ? { ...p, original: byId.get(p.repost_of) ?? null } : p
+      );
+    }
+    setPosts(rows);
 
     if (meId) {
       const [{ data: likes }, { data: profile }, { data: mine }] = await Promise.all([
@@ -85,40 +122,59 @@ export default function CircleFeed({
 
   async function submitPost(e: React.FormEvent) {
     e.preventDefault();
-    if (!meId || (!content.trim() && !imageFile)) return;
+    if (!meId || (!content.trim() && !mediaFile)) return;
     setPosting(true);
 
     let imageUrl: string | null = null;
-    if (imageFile) {
+    let videoUrl: string | null = null;
+
+    if (mediaFile) {
       try {
-        const optimized = await compressImage(imageFile, { maxDimension: 1600 });
+        const isVideo = mediaFile.type.startsWith("video/");
+
+        if (isVideo && mediaFile.size > MAX_VIDEO_BYTES) {
+          toast.error(
+            `That clip is ${(mediaFile.size / 1024 / 1024).toFixed(0)}MB. Keep videos under ${MAX_VIDEO_MB}MB.`
+          );
+          setPosting(false);
+          return;
+        }
+
+        // Images get resized; videos upload as-is.
+        const file = isVideo
+          ? mediaFile
+          : await compressImage(mediaFile, { maxDimension: 1600 });
+
         // Compression falls back to the original file for formats the browser
         // can't decode (HEIC from an iPhone, for one), so derive the extension
         // and content type from what we're ACTUALLY uploading — writing a HEIC
         // to a ".jpg" path stored it fine but rendered broken for everyone.
-        const type = optimized.type || "image/jpeg";
-        const ext = (type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+        const type = file.type || (isVideo ? "video/mp4" : "image/jpeg");
+        const ext = (type.split("/")[1] || (isVideo ? "mp4" : "jpg")).replace("jpeg", "jpg");
         const path = `${meId}/post-${Date.now()}.${ext}`;
 
         const { error: upErr } = await supabase.storage
           .from("event-covers")
-          .upload(path, optimized, {
+          .upload(path, file, {
             upsert: true,
             cacheControl: "3600",
             contentType: type,
           });
         if (upErr) {
-          console.error("circle post image upload failed:", upErr);
-          toast.error(upErr.message || "Image upload failed.");
+          console.error("circle post upload failed:", upErr);
+          toast.error(upErr.message || "Upload failed.");
           setPosting(false);
           return;
         }
-        imageUrl = supabase.storage.from("event-covers").getPublicUrl(path).data.publicUrl;
+
+        const url = supabase.storage.from("event-covers").getPublicUrl(path).data.publicUrl;
+        if (isVideo) videoUrl = url;
+        else imageUrl = url;
       } catch (err) {
         // Without this the promise rejected and the form stayed stuck on
         // "Posting…" with no explanation.
-        console.error("circle post image error:", err);
-        toast.error("Couldn't process that image. Try another photo.");
+        console.error("circle post media error:", err);
+        toast.error("Couldn't process that file. Try another one.");
         setPosting(false);
         return;
       }
@@ -130,12 +186,13 @@ export default function CircleFeed({
       user_id: meId,
       content: content.trim() || null,
       image_url: imageUrl,
+      video_url: videoUrl,
       event_id: eventMatch ? eventMatch[1] : null,
     });
     if (error) toast.error(error.message);
     else {
       setContent("");
-      setImageFile(null);
+      setMediaFile(null);
       await load();
     }
     setPosting(false);
@@ -233,12 +290,21 @@ export default function CircleFeed({
 
               {previewUrl && (
                 <div className="relative mt-2 overflow-hidden rounded-2xl border border-gray-100">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={previewUrl} alt="" className="max-h-72 w-full object-cover" />
+                  {mediaFile?.type.startsWith("video/") ? (
+                    <video
+                      src={previewUrl}
+                      controls
+                      playsInline
+                      className="max-h-72 w-full bg-black object-contain"
+                    />
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={previewUrl} alt="" className="max-h-72 w-full object-cover" />
+                  )}
                   <button
                     type="button"
-                    onClick={() => setImageFile(null)}
-                    aria-label="Remove photo"
+                    onClick={() => setMediaFile(null)}
+                    aria-label="Remove attachment"
                     className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-black/65 text-white backdrop-blur transition hover:bg-black/80"
                   >
                     ✕
@@ -247,21 +313,33 @@ export default function CircleFeed({
               )}
 
               <div className="mt-2 flex items-center justify-between border-t border-gray-50 pt-2">
-                {/* Labelled, not a bare glyph — an icon-only control here left
-                    people unable to find how to attach a photo at all. */}
-                <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-bold text-brand transition hover:bg-brand/10">
-                  <LineIcon name="image" size={18} />
-                  Photo
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-                    className="sr-only"
-                  />
-                </label>
+                {/* Labelled, not bare glyphs — an icon-only control here left
+                    people unable to find how to attach anything at all. */}
+                <div className="flex items-center gap-1">
+                  <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-bold text-brand transition hover:bg-brand/10">
+                    <LineIcon name="image" size={18} />
+                    Photo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setMediaFile(e.target.files?.[0] ?? null)}
+                      className="sr-only"
+                    />
+                  </label>
+                  <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-bold text-brand transition hover:bg-brand/10">
+                    <LineIcon name="video" size={18} />
+                    Video
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={(e) => setMediaFile(e.target.files?.[0] ?? null)}
+                      className="sr-only"
+                    />
+                  </label>
+                </div>
                 <button
                   type="submit"
-                  disabled={posting || (!content.trim() && !imageFile)}
+                  disabled={posting || (!content.trim() && !mediaFile)}
                   className="btn-primary rounded-full px-5 py-2 text-sm disabled:opacity-40"
                 >
                   {posting ? "Posting…" : "Post"}
@@ -372,6 +450,7 @@ function PostCard({
     avatar: src.author?.avatar_url ?? null,
     content: src.content,
     image: src.image_url,
+    video: src.video_url,
     created_at: src.created_at,
   };
   const handle = shown.name.toLowerCase().replace(/[^a-z0-9]+/g, "");
@@ -468,6 +547,16 @@ function PostCard({
               alt=""
               loading="lazy"
               className="mt-2.5 max-h-[30rem] w-full rounded-2xl border border-gray-100 object-cover"
+            />
+          )}
+
+          {shown.video && (
+            <video
+              src={shown.video}
+              controls
+              playsInline
+              preload="metadata"
+              className="mt-2.5 max-h-[30rem] w-full rounded-2xl border border-gray-100 bg-black"
             />
           )}
 
