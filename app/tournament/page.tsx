@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LogoMark } from "@/components/Logo";
+import LineIcon from "@/components/ui/LineIcon";
 import PsSymbols from "@/components/tournament/PsSymbols";
 import TournamentRegistration from "@/components/tournament/TournamentRegistration";
 import SlotCounter from "@/components/tournament/SlotCounter";
@@ -55,57 +55,79 @@ export default function TournamentPage() {
         />
         <PsSymbols />
 
-        <div className="container-page relative py-6">
-          <Link href="/" className="inline-flex items-center gap-2" aria-label="LinkUpNaija home">
-            <LogoMark size={32} />
-            <span className="text-lg font-extrabold">
-              LinkUp<span style={{ color: "#7F77DD" }}>Naija</span>
-            </span>
+        {/* Screen bar. No brand lockup here — the global navbar already carries
+            it, and two wordmarks stacked read as a broken page. */}
+        <div className="container-page relative flex items-center gap-3 py-4">
+          <Link
+            href="/"
+            aria-label="Back to LinkUpNaija"
+            className="-ml-1.5 grid h-9 w-9 shrink-0 place-items-center rounded-full text-white/70 transition hover:bg-white/10 hover:text-white"
+          >
+            <LineIcon name="chevronLeft" size={20} />
           </Link>
+          <span className="text-sm font-bold text-white/60">Tournament</span>
+          <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-[#FAC775] px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-[#0F0A2E]">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0F0A2E] opacity-60" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#0F0A2E]" />
+            </span>
+            Now on
+          </span>
         </div>
 
-        <div className="container-page relative flex flex-col items-center py-12 text-center sm:py-20">
-          <span className="rounded-full border border-[#FAC775]/50 bg-[#FAC775]/10 px-3 py-1 text-xs font-bold tracking-widest text-[#FAC775]">
-            WINNER TAKES ALL
-          </span>
-          <h1 className="mt-5 text-5xl font-black tracking-tight sm:text-7xl">
-            FC26 TOURNAMENT
+        {/* Title block — left-aligned like a screen, not a centred billboard */}
+        <div className="container-page relative pb-8 pt-1">
+          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#FAC775]">
+            Winner takes all
+          </p>
+          <h1 className="mt-2 text-[34px] font-black leading-[1.02] tracking-tight sm:text-5xl">
+            FC26 Tournament
           </h1>
-          <p className="mt-3 text-lg text-white/70">
+          <p className="mt-1.5 text-white/60">
             Abuja&apos;s first PS5 FC26 tournament
           </p>
 
-          <p className="mt-8 text-sm font-bold uppercase tracking-widest text-white/50">
-            Prize pool
-          </p>
-          <p className="text-6xl font-black sm:text-8xl" style={{ color: GOLD }}>
-            <SlotCounter value={TOURNAMENT.prize} />
-          </p>
-
-          <a
-            href="#register"
-            className="mt-10 rounded-xl bg-gradient-to-r from-[#534AB7] to-[#7F77DD] px-8 py-3.5 text-base font-bold text-white transition hover:opacity-90"
-          >
-            Register Now · {formatNaira(TOURNAMENT.regFee)}
-          </a>
+          {/* Prize as a card you could tap in an app, not a full-bleed splash */}
+          <div className="mt-5 rounded-3xl border border-white/10 bg-white/[0.06] p-5 backdrop-blur">
+            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-white/45">
+              Prize pool
+            </p>
+            <p className="mt-1 text-[44px] font-black leading-none sm:text-6xl" style={{ color: GOLD }}>
+              <SlotCounter value={TOURNAMENT.prize} />
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {[
+                `${formatNaira(TOURNAMENT.regFee)} to register`,
+                "40 players only",
+                "1v1 knockout",
+              ].map((t) => (
+                <span
+                  key={t}
+                  className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-white/80"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
       {/* ===== DETAILS ===== */}
-      <section className="container-page py-12">
-        <div className="grid gap-4 sm:grid-cols-3">
+      <section className="container-page py-8">
+        <div className="grid gap-3 sm:grid-cols-3">
           <InfoCard borderColor="#534AB7" title="40 Players Only" sub="Limited spots. First come, first served" />
           <InfoCard borderColor="#22C55E" title={`${formatNaira(TOURNAMENT.regFee)} Registration`} sub="Pay online to secure your spot" />
           <InfoCard borderColor={GOLD} title={`${formatNaira(TOURNAMENT.poolFee)} Pool Entry`} sub="Pay at the venue on the day" />
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-4 flex flex-wrap gap-3">
           <span className="rounded-full bg-white/10 px-4 py-2 text-sm font-bold">
             Total per player: {formatNaira(TOURNAMENT.totalPerPlayer)}
           </span>
         </div>
 
-        <div className="mt-6 grid gap-4 text-center sm:grid-cols-3">
+        <div className="mt-5 grid gap-4 sm:grid-cols-3">
           <Meta label="Format" value="1v1 Knockout · Best of Three" />
           <Meta label="Date" value="To be announced" />
           <Meta label="Venue" value="Abuja (TBA)" />
@@ -116,9 +138,9 @@ export default function TournamentPage() {
       </section>
 
       {/* ===== HOW TO ENTER ===== */}
-      <section className="container-page py-12">
-        <h2 className="text-center text-3xl font-black">How to enter</h2>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="container-page py-8">
+        <h2 className="text-[19px] font-extrabold tracking-tight">How to enter</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((s) => (
             <div
               key={s.n}
@@ -138,13 +160,13 @@ export default function TournamentPage() {
       </section>
 
       {/* ===== REGISTER ===== */}
-      <section id="register" className="container-page max-w-xl py-12">
-        <h2 className="text-center text-3xl font-black">Secure your spot</h2>
-        <p className="mt-2 text-center text-white/60">
+      <section id="register" className="container-page max-w-xl py-8">
+        <h2 className="text-[19px] font-extrabold tracking-tight">Secure your spot</h2>
+        <p className="mt-1 text-sm text-white/60">
           Pay {formatNaira(TOURNAMENT.regFee)} online to register. The{" "}
           {formatNaira(TOURNAMENT.poolFee)} pool entry is paid at the venue.
         </p>
-        <div className="mt-8">
+        <div className="mt-4">
           <TournamentRegistration />
         </div>
 
@@ -175,28 +197,45 @@ export default function TournamentPage() {
       </section>
 
       {/* ===== RULES ===== */}
-      <section className="container-page max-w-2xl py-12">
-        <h2 className="text-center text-3xl font-black">Rules</h2>
-        <ul className="mt-6 space-y-3">
+      <section className="container-page max-w-2xl py-8">
+        <h2 className="text-[19px] font-extrabold tracking-tight">Rules</h2>
+        <ul className="mt-4 space-y-2.5">
           {RULES.map((r) => (
-            <li key={r} className="flex items-start gap-3">
-              <span style={{ color: GOLD }} aria-hidden>
-                ▸
-              </span>
-              <span className="text-white/80">{r}</span>
+            <li key={r} className="flex items-start gap-2.5">
+              <LineIcon
+                name="check"
+                size={15}
+                className="mt-0.5 shrink-0 text-[#FAC775]"
+              />
+              <span className="text-sm leading-relaxed text-white/80">{r}</span>
             </li>
           ))}
         </ul>
-
-        <div className="mt-10 text-center">
-          <Link href="/" className="text-sm text-white/50 hover:text-white">
-            ← Back to LinkUpNaija
-          </Link>
-        </div>
       </section>
 
       {/* green flag accent strip */}
       <div className="h-1.5 w-full" style={{ backgroundColor: "#008753" }} />
+
+      {/* Sticky action bar — one primary action, always in thumb reach, the way
+          a native event screen keeps "Register" pinned. */}
+      <div className="sticky bottom-0 z-30 border-t border-white/10 bg-[#0F0A2E]/92 pb-[env(safe-area-inset-bottom)] backdrop-blur-md">
+        <div className="container-page flex items-center gap-3 py-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-white/45">
+              Prize pool
+            </p>
+            <p className="truncate text-lg font-black leading-tight" style={{ color: GOLD }}>
+              {formatNaira(TOURNAMENT.prize)}
+            </p>
+          </div>
+          <a
+            href="#register"
+            className="shrink-0 rounded-full bg-gradient-to-r from-[#534AB7] to-[#7F77DD] px-6 py-3 text-sm font-bold text-white transition hover:opacity-90"
+          >
+            Register · {formatNaira(TOURNAMENT.regFee)}
+          </a>
+        </div>
+      </div>
     </div>
   );
 }
@@ -210,13 +249,16 @@ function InfoCard({
   title: string;
   sub: string;
 }) {
+  // Left-aligned with a colour rail rather than a centred outlined billboard.
   return (
-    <div
-      className="rounded-2xl border-2 bg-[#1A1040] p-6 text-center"
-      style={{ borderColor }}
-    >
-      <p className="text-xl font-extrabold">{title}</p>
-      <p className="mt-1 text-sm text-white/60">{sub}</p>
+    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] p-4 pl-5">
+      <span
+        aria-hidden
+        className="absolute inset-y-0 left-0 w-1"
+        style={{ backgroundColor: borderColor }}
+      />
+      <p className="font-extrabold leading-snug">{title}</p>
+      <p className="mt-0.5 text-sm leading-relaxed text-white/60">{sub}</p>
     </div>
   );
 }
