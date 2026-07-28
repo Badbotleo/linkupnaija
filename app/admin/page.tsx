@@ -7,6 +7,7 @@ import AdminReservations from "@/components/admin/AdminReservations";
 import AdminExpiredEvents from "@/components/admin/AdminExpiredEvents";
 import AdminMessages from "@/components/admin/AdminMessages";
 import AdminVenues from "@/components/admin/AdminVenues";
+import AdminRides from "@/components/admin/AdminRides";
 import AdminPayouts from "@/components/admin/AdminPayouts";
 import AdminWalletCredit from "@/components/admin/AdminWalletCredit";
 import AdminTournament from "@/components/admin/AdminTournament";
@@ -481,6 +482,12 @@ export default async function AdminPage() {
           💰 Credit a wallet
         </h2>
         <AdminWalletCredit users={messageUsers} />
+      </section>
+
+      {/* Ride requests */}
+      <section className="mt-10">
+        <h2 className="mb-3 text-lg font-bold text-gray-900">Ride requests</h2>
+        <AdminRides />
       </section>
 
       {/* Onboarded venues */}

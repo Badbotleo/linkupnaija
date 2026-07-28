@@ -21,6 +21,7 @@ const DISCOVER = [
   { href: "/live", label: "Live feed", icon: "activity" },
   { href: "/hosts/leaderboard", label: "Host leaderboard", icon: "trophy" },
   { href: "/venues", label: "Venues", icon: "pin" },
+  { href: "/rides", label: "Hail a car", icon: "car" },
   { href: "/opportunities", label: "Opportunities", icon: "briefcase" },
   { href: "/tournament", label: "FC26 Tournament", icon: "gamepad" },
 ];
@@ -264,6 +265,7 @@ function Icon({ name }: { name: string }) {
     gift: "M20 12v10H4V12M2 7h20v5H2V7zM12 22V7M12 7s-2-5-5-5-2.5 5 0 5h5zM12 7s2-5 5-5 2.5 5 0 5h-5z",
     sparkles: "M12 3l1.9 4.6L18.5 9.5 13.9 11.4 12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z",
     pin: "M12 21s7-6.4 7-11a7 7 0 1 0-14 0c0 4.6 7 11 7 11zM12 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
+    car: "M5 17H3v-4l2-5h14l2 5v4h-2M5 17a2 2 0 1 0 4 0M5 17h10m4 0a2 2 0 1 1-4 0M7 8h10",
     briefcase: "M20 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2",
     gamepad: "M6 12h4m-2-2v4M15 11h.01M18 13h.01M17.32 5H6.68a4 4 0 0 0-3.97 3.5l-.8 6A3 3 0 0 0 4.88 18c1 0 1.5-.5 2-1l1.3-1.3a2 2 0 0 1 1.4-.6h4.84a2 2 0 0 1 1.4.6l1.3 1.3c.5.5 1 1 2 1a3 3 0 0 0 2.97-3.5l-.8-6A4 4 0 0 0 17.32 5z",
   };
