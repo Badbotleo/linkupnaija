@@ -71,21 +71,15 @@ export async function generateMetadata({
     `A ${event.category} in ${event.state}. Join it on LinkUpNaija.`;
   const cover = event.cover_image_url as string | null;
 
+  // The images themselves come from opengraph-image.tsx alongside this file,
+  // which renders a branded card for EVERY event — Next injects those tags, so
+  // listing `images` here would override them with a bare photo.
+  void cover;
   return {
     title,
     description,
-    openGraph: {
-      title,
-      description,
-      type: "article",
-      ...(cover ? { images: [{ url: cover }] } : {}),
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      ...(cover ? { images: [cover] } : {}),
-    },
+    openGraph: { title, description, type: "article" },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 

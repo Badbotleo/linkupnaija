@@ -120,13 +120,19 @@ export default function RsvpButton({
       }
     }
 
-    const { error } = await supabase.from("rsvps").insert({
-      event_id: eventId,
-      user_id: user.id,
-      status: "pending",
-      paid: price > 0,
-      payment_reference: paymentReference ?? (walletUsed > 0 ? "wallet" : null),
-    });
+    // Upsert, not insert: cancelling deletes the row but a DECLINED request
+    // leaves it behind, so asking again used to hit the (event_id, user_id)
+    // unique constraint instead of re-opening the request.
+    const { error } = await supabase.from("rsvps").upsert(
+      {
+        event_id: eventId,
+        user_id: user.id,
+        status: "pending",
+        paid: price > 0,
+        payment_reference: paymentReference ?? (walletUsed > 0 ? "wallet" : null),
+      },
+      { onConflict: "event_id,user_id" }
+    );
     if (error) {
       setError(error.message);
       setLoading(false);
