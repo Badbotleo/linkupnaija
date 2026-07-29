@@ -91,3 +91,11 @@ drop trigger if exists on_ride_status_change on public.ride_requests;
 create trigger on_ride_status_change
   after update on public.ride_requests
   for each row execute function public.handle_ride_status_change();
+-- Ride-hailing upgrade: store the route and the quote we showed the rider, so
+-- the fare on screen is the fare in the record.
+alter table public.ride_requests add column if not exists pickup_lat  double precision;
+alter table public.ride_requests add column if not exists pickup_lng  double precision;
+alter table public.ride_requests add column if not exists dropoff_lat double precision;
+alter table public.ride_requests add column if not exists dropoff_lng double precision;
+alter table public.ride_requests add column if not exists distance_km numeric(6,2);
+alter table public.ride_requests add column if not exists estimated_fare integer;

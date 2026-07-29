@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppHeader from "@/components/AppHeader";
-import RideRequestForm from "@/components/rides/RideRequestForm";
+import RideHailer from "@/components/rides/RideHailer";
 
 export const dynamic = "force-dynamic";
 
@@ -35,12 +35,8 @@ export default async function RidesPage() {
           { icon: "check", label: "Fare before you pay" },
         ]}
       />
-      <div className="container-page max-w-2xl py-5">
-        <RideRequestForm
-          meId={user.id}
-          myState={me?.state ?? null}
-          myPhone={me?.phone ?? null}
-        />
+      <div className="mx-auto max-w-2xl sm:px-4 sm:py-4">
+        <RideHailer meId={user.id} myPhone={me?.phone ?? null} />
       </div>
     </div>
   );
