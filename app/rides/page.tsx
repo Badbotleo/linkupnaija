@@ -11,7 +11,11 @@ export const metadata = {
     "Request a car to your next link-up. Sedans, SUVs, buses and luxury rides from vetted LinkUpNaija partners.",
 };
 
-export default async function RidesPage() {
+export default async function RidesPage({
+  searchParams,
+}: {
+  searchParams: { to?: string; event?: string; title?: string };
+}) {
   const supabase = createClient();
   const {
     data: { user },
@@ -36,7 +40,12 @@ export default async function RidesPage() {
         ]}
       />
       <div className="mx-auto max-w-2xl sm:px-4 sm:py-4">
-        <RideHailer meId={user.id} myPhone={me?.phone ?? null} />
+        <RideHailer
+          meId={user.id}
+          myPhone={me?.phone ?? null}
+          presetTo={searchParams.to ?? null}
+          presetEventTitle={searchParams.title ?? null}
+        />
       </div>
     </div>
   );

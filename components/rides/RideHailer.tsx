@@ -60,16 +60,21 @@ const STATUS: Record<string, { label: string; cls: string }> = {
 export default function RideHailer({
   meId,
   myPhone,
+  presetTo,
+  presetEventTitle,
 }: {
   meId: string;
   myPhone: string | null;
+  /** Destination prefilled from an event page ("Hail a ride to this event"). */
+  presetTo?: string | null;
+  presetEventTitle?: string | null;
 }) {
   const supabase = createClient();
 
   const [from, setFrom] = useState<Point | null>(null);
   const [to, setTo] = useState<Point | null>(null);
   const [fromText, setFromText] = useState("");
-  const [toText, setToText] = useState("");
+  const [toText, setToText] = useState(presetTo ?? "");
   const [locating, setLocating] = useState<"from" | "to" | null>(null);
 
   const [vehicle, setVehicle] = useState<VehicleClass>(VEHICLE_CLASSES[0]);
@@ -102,6 +107,15 @@ export default function RideHailer({
   useEffect(() => {
     load();
   }, [load]);
+
+  // Resolve the destination handed over from an event page.
+  useEffect(() => {
+    if (!presetTo) return;
+    (async () => {
+      const p = await geocode(presetTo);
+      if (p) setTo(p);
+    })();
+  }, [presetTo]);
 
   // Rides a paddy has added you to, still awaiting your answer.
   const loadInvites = useCallback(async () => {
@@ -271,6 +285,15 @@ export default function RideHailer({
 
   return (
     <div>
+      {presetEventTitle && (
+        <div className="mb-3 flex items-center gap-2.5 rounded-2xl border border-brand/25 bg-brand-50 px-4 py-3 sm:mx-0">
+          <LineIcon name="calendar" size={16} className="shrink-0 text-brand" />
+          <p className="min-w-0 text-sm text-gray-700">
+            Ride to <span className="font-bold text-gray-900">{presetEventTitle}</span>
+          </p>
+        </div>
+      )}
+
       {/* Paddy invited you to their ride */}
       {invites.length > 0 && (
         <div className="mb-3 space-y-2 px-4 sm:px-0">

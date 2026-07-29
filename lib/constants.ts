@@ -69,6 +69,18 @@ export const EVENT_CATEGORIES = [
   "Pool Party",
   "Clubbing",
   "Party",
+  "Owambe",
+  "Afrobeats Night",
+  "Brunch",
+  "Rooftop Party",
+  "Live Music",
+  "Open Mic",
+  "Tech Meetup",
+  "Fitness",
+  "Road Trip",
+  "Birthday",
+  "Detty December",
+  "Volunteering",
 ] as const;
 
 export type EventCategory = (typeof EVENT_CATEGORIES)[number];
@@ -228,6 +240,18 @@ export const CATEGORY_STYLES: Record<
   "Food Festival": { badge: "bg-red-100 text-red-700", emoji: "🍢" },
   "Paint and Sip": { badge: "bg-pink-100 text-pink-700", emoji: "🎨" },
   Networking: { badge: "bg-slate-100 text-slate-700", emoji: "🤝" },
+  "Owambe": { badge: "bg-amber-100 text-amber-800", emoji: "💃" },
+  "Afrobeats Night": { badge: "bg-fuchsia-100 text-fuchsia-700", emoji: "🎶" },
+  "Brunch": { badge: "bg-orange-100 text-orange-700", emoji: "🥞" },
+  "Rooftop Party": { badge: "bg-sky-100 text-sky-700", emoji: "🌆" },
+  "Live Music": { badge: "bg-rose-100 text-rose-700", emoji: "🎸" },
+  "Open Mic": { badge: "bg-violet-100 text-violet-700", emoji: "🎙️" },
+  "Tech Meetup": { badge: "bg-slate-100 text-slate-700", emoji: "💻" },
+  "Fitness": { badge: "bg-lime-100 text-lime-700", emoji: "🏋️" },
+  "Road Trip": { badge: "bg-cyan-100 text-cyan-700", emoji: "🚐" },
+  "Birthday": { badge: "bg-pink-100 text-pink-700", emoji: "🎂" },
+  "Detty December": { badge: "bg-red-100 text-red-700", emoji: "🎊" },
+  "Volunteering": { badge: "bg-emerald-100 text-emerald-700", emoji: "🤲" },
 };
 
 export function categoryStyle(category: string) {
@@ -264,6 +288,18 @@ export const CATEGORY_GRADIENTS: Record<EventCategory, string> = {
   "Food Festival": "from-red-500 to-orange-600",
   "Paint and Sip": "from-pink-500 to-rose-500",
   Networking: "from-slate-500 to-gray-600",
+  "Owambe": "from-amber-400 to-orange-500",
+  "Afrobeats Night": "from-fuchsia-500 to-purple-600",
+  "Brunch": "from-orange-300 to-amber-400",
+  "Rooftop Party": "from-sky-500 to-indigo-500",
+  "Live Music": "from-rose-500 to-pink-600",
+  "Open Mic": "from-violet-500 to-purple-600",
+  "Tech Meetup": "from-slate-500 to-gray-700",
+  "Fitness": "from-lime-500 to-green-600",
+  "Road Trip": "from-cyan-500 to-teal-600",
+  "Birthday": "from-pink-400 to-rose-500",
+  "Detty December": "from-red-500 to-rose-600",
+  "Volunteering": "from-emerald-500 to-green-600",
 };
 
 export function categoryGradient(category: string) {

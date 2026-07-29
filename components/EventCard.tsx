@@ -1,4 +1,5 @@
 import Link from "next/link";
+import CardActions from "./events/CardActions";
 import CategoryBadge from "./CategoryBadge";
 import EventCover from "./EventCover";
 import FeaturedBadge, { isFeatured } from "./FeaturedBadge";
@@ -179,31 +180,13 @@ export default function EventCard({
       </div>
       </Link>
 
-      {/* Facebook-style reaction row */}
-      <div className="flex border-t border-gray-100">
-        <Reaction href={`/events/${event.id}`} icon="star" label="Interested" />
-        <Reaction href={`/events/${event.id}`} icon="check" label="Going" />
-        <Reaction href={`/events/${event.id}`} icon="share" label="Share" />
-      </div>
+      {/* Reactions act in place — no trip into the event page */}
+      <CardActions
+        eventId={event.id}
+        eventTitle={event.title}
+        price={event.price ?? 0}
+      />
     </div>
   );
 }
 
-function Reaction({ href, icon, label }: { href: string; icon: string; label: string }) {
-  const paths: Record<string, string> = {
-    star: "M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7L12 2z",
-    check: "M20 6 9 17l-5-5",
-    share: "M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v13",
-  };
-  return (
-    <Link
-      href={href}
-      className="flex flex-1 items-center justify-center gap-1.5 py-2.5 text-sm font-semibold text-gray-500 transition hover:bg-brand-50 hover:text-brand"
-    >
-      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-        <path d={paths[icon]} />
-      </svg>
-      {label}
-    </Link>
-  );
-}

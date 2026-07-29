@@ -514,6 +514,20 @@ export default async function EventDetailPage({
                     />
                   </div>
 
+                  {/* Ride to the venue — prefilled with this event's address
+                      so the rider only picks their pick-up point. */}
+                  <div className="mt-3">
+                    <Link
+                      href={`/rides?to=${encodeURIComponent(
+                        [event.location, event.state].filter(Boolean).join(", ")
+                      )}&event=${event.id}&title=${encodeURIComponent(event.title)}`}
+                      className="btn-outline flex w-full items-center justify-center gap-2"
+                    >
+                      <LineIcon name="car" size={17} />
+                      Hail a ride to this event
+                    </Link>
+                  </div>
+
                   {/* QR ticket for accepted attendees — scan at the door. */}
                   {myStatus === "accepted" && myRsvpId && (
                     <div className="mt-3">

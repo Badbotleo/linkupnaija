@@ -27,6 +27,18 @@ const PHOTOS: Record<string, string> = {
   "Pool Party": "/venues/hotels.jpg",
   Clubbing: "/venues/clubs.jpg",
   Party: "/circles/party.jpg",
+  "Owambe": "/circles/party.jpg",
+  "Afrobeats Night": "/circles/concert.jpg",
+  "Brunch": "/venues/restaurants-2.jpg",
+  "Rooftop Party": "/venues/rooftops.jpg",
+  "Live Music": "/circles/concert.jpg",
+  "Open Mic": "/venues/karaoke.jpg",
+  "Tech Meetup": "/circles/networking.jpg",
+  "Fitness": "/venues/gyms.jpg",
+  "Road Trip": "/circles/hiking.jpg",
+  "Birthday": "/circles/party.jpg",
+  "Detty December": "/circles/party.jpg",
+  "Volunteering": "/circles/networking.jpg",
 };
 
 export function categoryPhoto(category: string | null | undefined): string {
