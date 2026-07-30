@@ -172,7 +172,7 @@ export default async function EventsPage({
     if (friendIds.length) {
       const { data: fr } = await supabase
         .from("rsvps")
-        .select("event_id, users(name, avatar_url)")
+        .select("event_id, users!rsvps_user_id_fkey(name, avatar_url)")
         .eq("status", "accepted")
         .in("user_id", friendIds)
         .in("event_id", feedEvents.map((e) => e.id));

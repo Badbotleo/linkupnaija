@@ -35,7 +35,7 @@ export default async function LivePage() {
       .limit(15),
     supabase
       .from("rsvps")
-      .select("id, created_at, status, users(name), events(id, title, event_type, date)")
+      .select("id, created_at, status, users!rsvps_user_id_fkey(name), events(id, title, event_type, date)")
       .eq("status", "accepted")
       .order("created_at", { ascending: false })
       .limit(25),

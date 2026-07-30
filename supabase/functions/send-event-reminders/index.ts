@@ -71,7 +71,7 @@ Deno.serve(async () => {
   for (const event of (events ?? []) as EventRow[]) {
     const { data: attendees } = await supabase
       .from("rsvps")
-      .select("users(email, name)")
+      .select("users!rsvps_user_id_fkey(email, name)")
       .eq("event_id", event.id)
       .eq("status", "accepted");
 

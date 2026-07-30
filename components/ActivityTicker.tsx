@@ -47,7 +47,7 @@ export default function ActivityTicker() {
       const [{ data: rsvps }, { data: events }] = await Promise.all([
         supabase
           .from("rsvps")
-          .select("users(name), events(id, title, state)")
+          .select("users!rsvps_user_id_fkey(name), events(id, title, state)")
           .eq("status", "accepted")
           .order("created_at", { ascending: false })
           .limit(10),
