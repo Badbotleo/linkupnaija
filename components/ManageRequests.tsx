@@ -45,12 +45,21 @@ export default function ManageRequests({
   async function setStatus(id: string, status: "accepted" | "declined") {
     setBusyId(id);
     setError(null);
-    const { error } = await supabase
+    // .select() matters: without it an update that matches NO rows — which is
+    // what a row-level-security refusal looks like — comes back with no error
+    // and no data, so the click silently did nothing.
+    const { data, error } = await supabase
       .from("rsvps")
       .update({ status })
-      .eq("id", id);
+      .eq("id", id)
+      .select("id, status");
+
     if (error) {
       setError(error.message);
+    } else if (!data || data.length === 0) {
+      setError(
+        "That request couldn't be updated — it may have been cancelled, or you may no longer be the host. Refresh and try again."
+      );
     } else {
       if (status === "accepted") confettiGold();
       setRequests((prev) =>
