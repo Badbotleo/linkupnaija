@@ -21,7 +21,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(
     searchParams.get("error") === "auth"
-      ? "Sign-in didn't complete. Please try again."
+      ? "Google sign-in didn't complete — some mobile networks block it. Try \u201cEmail me a sign-in code\u201d below."
       : null
   );
 
@@ -32,6 +32,54 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
   // so warn users who opened the link there.
   const [inApp, setInApp] = useState(false);
   useEffect(() => setInApp(isInAppBrowser()), []);
+
+  // Email-code sign-in. The OAuth round trip has to cross accounts.google.com
+  // AND the Supabase auth host; some Nigerian mobile networks (MTN especially)
+  // break somewhere in that chain. This path is two plain API calls to one
+  // host, with no redirect to lose.
+  const [otpMode, setOtpMode] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [otpBusy, setOtpBusy] = useState(false);
+
+  async function sendCode() {
+    const addr = email.trim();
+    if (!addr) return;
+    setOtpBusy(true);
+    setError(null);
+    const { error } = await supabase.auth.signInWithOtp({
+      email: addr,
+      options: {
+        // Signing up and signing in share this path, so let it create the user.
+        shouldCreateUser: true,
+        emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirect)}`,
+      },
+    });
+    if (error) setError(error.message);
+    else setOtpSent(true);
+    setOtpBusy(false);
+  }
+
+  async function verifyCode() {
+    setOtpBusy(true);
+    setError(null);
+    const { error } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token: otpCode.trim(),
+      type: "email",
+    });
+    if (error) {
+      setError(
+        error.message.toLowerCase().includes("expired")
+          ? "That code has expired. Tap Resend for a new one."
+          : "That code didn't match. Check it and try again."
+      );
+      setOtpBusy(false);
+      return;
+    }
+    router.push(redirect);
+    router.refresh();
+  }
 
   async function signInWithGoogle() {
     setError(null);
@@ -141,6 +189,86 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
         You&apos;ll be securely redirected to Google, then brought straight back
         to LinkUpNaija ✓
       </p>
+
+      {/* Code sign-in needs no redirect to Google at all — two plain requests,
+          which is what survives a weak mobile connection. */}
+      {!otpSent ? (
+        <button
+          type="button"
+          onClick={() => setOtpMode((v) => !v)}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
+        >
+          ✉️ Email me a sign-in code
+        </button>
+      ) : null}
+
+      {otpMode && (
+        <div className="rounded-xl border border-brand/25 bg-brand-50 p-3">
+          {!otpSent ? (
+            <>
+              <p className="text-xs leading-relaxed text-gray-600">
+                Works on any network — we email you a 6-digit code, no Google
+                redirect needed.
+              </p>
+              <div className="mt-2 flex gap-2">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@email.com"
+                  inputMode="email"
+                  autoComplete="email"
+                  className="input flex-1"
+                  aria-label="Email for sign-in code"
+                />
+                <button
+                  type="button"
+                  onClick={sendCode}
+                  disabled={otpBusy || !email.trim()}
+                  className="btn-primary shrink-0 px-4 disabled:opacity-50"
+                >
+                  {otpBusy ? "Sending…" : "Send"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-xs leading-relaxed text-gray-600">
+                We sent a 6-digit code to <strong>{email}</strong>. Enter it
+                below — you never need to open the link.
+              </p>
+              <div className="mt-2 flex gap-2">
+                <input
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="123456"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  className="input flex-1 text-center text-lg font-bold tracking-[0.3em]"
+                  aria-label="Sign-in code"
+                />
+                <button
+                  type="button"
+                  onClick={verifyCode}
+                  disabled={otpBusy || otpCode.length < 6}
+                  className="btn-primary shrink-0 px-4 disabled:opacity-50"
+                >
+                  {otpBusy ? "…" : "Verify"}
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={sendCode}
+                disabled={otpBusy}
+                className="mt-2 text-xs font-semibold text-brand hover:underline disabled:opacity-50"
+              >
+                Resend code
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       <div className="flex items-center gap-3">
         <span className="h-px flex-1 bg-gray-200" />
