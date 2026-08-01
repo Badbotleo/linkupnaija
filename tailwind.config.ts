@@ -25,8 +25,22 @@ const config: Config = {
           800: "#221E49",
           900: "#110F25",
         },
+        // Nigerian flag green. The brand stays purple/gold, so green is a
+        // national accent — flag marks, "local" and verified signals — never a
+        // second primary competing with the CTA colour.
         naija: {
+          DEFAULT: "#008753",
           green: "#008753",
+          50: "#E6F4ED",
+          100: "#C2E5D5",
+          200: "#8ACDB0",
+          300: "#4FB489",
+          400: "#1E9B69",
+          500: "#008753",
+          600: "#006E44",
+          700: "#005534",
+          800: "#003D26",
+          900: "#002417",
         },
       },
       fontFamily: {

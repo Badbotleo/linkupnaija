@@ -1,5 +1,6 @@
 import Link from "next/link";
 import LineIcon from "../ui/LineIcon";
+import AutoScroll from "./AutoScroll";
 
 // Horizontally scrolling shelf — the App Store / Spotify pattern. Cards bleed
 // to the screen edge and snap, which is what makes a page read as an app
@@ -9,12 +10,15 @@ export default function Rail({
   subtitle,
   href,
   seeAll = "See all",
+  auto = false,
   children,
 }: {
   title: string;
   subtitle?: string;
   href?: string;
   seeAll?: string;
+  /** Drift the shelf along on its own until the visitor touches it. */
+  auto?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -39,11 +43,15 @@ export default function Rail({
         )}
       </div>
 
-      <div className="no-scrollbar mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 sm:px-6 lg:px-8">
-        {children}
-        {/* trailing spacer so the last card clears the edge */}
-        <span aria-hidden className="w-1 shrink-0" />
-      </div>
+      {auto ? (
+        <AutoScroll>{children}</AutoScroll>
+      ) : (
+        <div className="no-scrollbar mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 sm:px-6 lg:px-8">
+          {children}
+          {/* trailing spacer so the last card clears the edge */}
+          <span aria-hidden className="w-1 shrink-0" />
+        </div>
+      )}
     </section>
   );
 }

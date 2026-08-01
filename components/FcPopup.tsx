@@ -6,6 +6,7 @@ import Link from "next/link";
 const KEY = "fc26_dismissed_at";
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const SHOW_AFTER_MS = 12_000; // let people read the page first
+const AUTO_HIDE_MS = 5_000;  // then get out of the way on its own
 
 // Compact, low-key promo toast for the FC26 tournament. Deliberately small:
 // it should feel like a nudge, not a takeover.
@@ -19,8 +20,15 @@ export default function FcPopup() {
     } catch {
       // ignore storage errors
     }
-    const t = setTimeout(() => setShow(true), SHOW_AFTER_MS);
-    return () => clearTimeout(t);
+    // Show, then retire itself — a promo that lingers reads as an ad.
+    // Auto-hide does NOT write the dismissed flag, so it can appear again
+    // next visit; only an explicit close silences it for the week.
+    const show = setTimeout(() => setShow(true), SHOW_AFTER_MS);
+    const hide = setTimeout(() => setShow(false), SHOW_AFTER_MS + AUTO_HIDE_MS);
+    return () => {
+      clearTimeout(show);
+      clearTimeout(hide);
+    };
   }, []);
 
   function dismiss() {

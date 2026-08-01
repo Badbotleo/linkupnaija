@@ -131,9 +131,9 @@ export default async function HomePage() {
       <section className="container-page pt-6">
         <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-brand">
           <span aria-hidden className="flex overflow-hidden rounded-[3px]">
-            <span className="block h-3 w-1.5 bg-[#008753]" />
+            <span className="block h-3 w-1.5 bg-naija" />
             <span className="block h-3 w-1.5 bg-white" />
-            <span className="block h-3 w-1.5 bg-[#008753]" />
+            <span className="block h-3 w-1.5 bg-naija" />
           </span>
           Nigeria&apos;s social events platform
         </p>
@@ -221,6 +221,7 @@ export default async function HomePage() {
       {/* ---------------------------------------------------------------- */}
       <Rail
         title="Happening soon"
+        auto
         subtitle={
           upcoming.length > 0
             ? "Real link-ups you can join today"
@@ -276,6 +277,7 @@ export default async function HomePage() {
       {circles.length > 0 && (
         <Rail
           title="Circles to join"
+        auto
           subtitle="Communities built around what you love"
           href="/circles"
         >
@@ -308,6 +310,7 @@ export default async function HomePage() {
 
       <Rail
         title="Book the spot"
+        auto
         subtitle="Clubs, restaurants, rooftops and cinemas near you"
         href="/venues"
       >
@@ -332,6 +335,7 @@ export default async function HomePage() {
       {series.length > 0 && (
         <Rail
           title="The regulars"
+        auto
           subtitle="Link-ups that keep coming back"
           href="/events?series=1"
         >

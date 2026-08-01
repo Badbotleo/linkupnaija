@@ -45,7 +45,17 @@ export function LogoMark({
 
 export function Wordmark({ className = "" }: { className?: string }) {
   return (
-    <span className={`font-extrabold tracking-tight ${className}`}>
+    <span className={`relative font-extrabold tracking-tight ${className}`}>
+      {/* naija-flag-rule: a green–white–green hairline under the mark, so the
+          flag shows up in the brand itself rather than only in a chip. */}
+      <span
+        aria-hidden
+        className="absolute -bottom-1 left-0 right-0 flex h-[3px] overflow-hidden rounded-full opacity-90"
+      >
+        <span className="h-full flex-1 bg-naija" />
+        <span className="h-full flex-1 bg-white" />
+        <span className="h-full flex-1 bg-naija" />
+      </span>
       <span className="text-[#1A1040] dark:text-white">Link</span>
       <span className="text-brand dark:text-[#7F77DD]">Up</span>
       <span className="text-[#1A1040] dark:text-white">Naija</span>
