@@ -8,6 +8,7 @@ import { formatEventDate } from "@/lib/format";
 import LandingStats from "@/components/LandingStats";
 import LoggedInHome from "@/components/home/LoggedInHome";
 import Rail from "@/components/home/Rail";
+import ScreenTour from "@/components/home/ScreenTour";
 import LineIcon from "@/components/ui/LineIcon";
 import { getSessionUser } from "@/lib/supabase/auth";
 
@@ -216,6 +217,8 @@ export default async function HomePage() {
         </Link>
       </section>
 
+      <ScreenTour />
+
       {/* ---------------------------------------------------------------- */}
       {/* Shelves                                                           */}
       {/* ---------------------------------------------------------------- */}
@@ -277,7 +280,7 @@ export default async function HomePage() {
       {circles.length > 0 && (
         <Rail
           title="Circles to join"
-        auto
+          auto
           subtitle="Communities built around what you love"
           href="/circles"
         >
@@ -335,7 +338,7 @@ export default async function HomePage() {
       {series.length > 0 && (
         <Rail
           title="The regulars"
-        auto
+          auto
           subtitle="Link-ups that keep coming back"
           href="/events?series=1"
         >
