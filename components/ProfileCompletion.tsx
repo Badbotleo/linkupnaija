@@ -83,7 +83,7 @@ export default function ProfileCompletion({
               item.done ? (
                 <span
                   key={item.label}
-                  className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700"
+                  className="inline-flex items-center gap-1 rounded-full bg-naija-50 px-2.5 py-1 text-xs font-semibold text-naija-700"
                 >
                   <span className="animate-bounce-in" aria-hidden>
                     ✓

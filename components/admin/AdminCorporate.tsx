@@ -106,7 +106,7 @@ export default function AdminCorporate({
 
   return (
     <div>
-      <div className="mb-4 inline-flex items-center gap-2 rounded-xl bg-green-50 px-4 py-2 text-sm font-bold text-green-700">
+      <div className="mb-4 inline-flex items-center gap-2 rounded-xl bg-naija-50 px-4 py-2 text-sm font-bold text-naija-700">
         💰 Collected: ₦{revenue.toLocaleString()}
       </div>
 

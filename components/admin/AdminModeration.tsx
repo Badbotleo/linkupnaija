@@ -46,7 +46,7 @@ export interface ModReportRow {
 }
 
 const STATUS_CHIP: Record<ModerationStatus, string> = {
-  active: "bg-green-100 text-green-700",
+  active: "bg-naija-100 text-naija-700",
   warned: "bg-amber-100 text-amber-700",
   restricted: "bg-orange-100 text-orange-700",
   blocked: "bg-red-100 text-red-700",

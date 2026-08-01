@@ -92,7 +92,7 @@ export default function WalletCard({
                   </div>
                   <span
                     className={`shrink-0 text-sm font-bold ${
-                      t.type === "credit" ? "text-green-600" : "text-gray-700"
+                      t.type === "credit" ? "text-naija-600" : "text-gray-700"
                     }`}
                   >
                     {t.type === "credit" ? "+" : "−"}

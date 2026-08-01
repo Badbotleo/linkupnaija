@@ -163,7 +163,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {justVerified && (
-        <p className="rounded-lg bg-green-50 px-3 py-2 text-sm font-medium text-green-700">
+        <p className="rounded-lg bg-naija-50 px-3 py-2 text-sm font-medium text-naija-700">
           ✅ Email verified! Please log in.
         </p>
       )}

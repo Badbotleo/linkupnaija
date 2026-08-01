@@ -607,10 +607,10 @@ function PostCard({
               aria-label={reposted ? "Undo repost" : "Repost"}
               title={reposted ? "Undo repost" : "Repost to this circle"}
               className={`group inline-flex items-center gap-0.5 transition disabled:opacity-50 ${
-                reposted ? "text-emerald-600" : "text-gray-500 hover:text-emerald-600"
+                reposted ? "text-naija-600" : "text-gray-500 hover:text-naija-600"
               }`}
             >
-              <span className="grid h-8 w-8 place-items-center rounded-full transition group-hover:bg-emerald-500/10">
+              <span className="grid h-8 w-8 place-items-center rounded-full transition group-hover:bg-naija/10">
                 <LineIcon name="repost" size={17} />
               </span>
               <span className="text-[13px] font-medium tabular-nums">

@@ -660,7 +660,7 @@ function EventRowCard({
 
 function StatusPill({ status }: { status: RsvpStatus }) {
   const map: Record<RsvpStatus, string> = {
-    accepted: "bg-green-100 text-green-700",
+    accepted: "bg-naija-100 text-naija-700",
     pending: "bg-amber-100 text-amber-700",
     declined: "bg-red-100 text-red-700",
   };

@@ -89,7 +89,7 @@ export default function AddFriendButton({
   }
 
   if (rel === "friends")
-    return <span className="flex-1 rounded-full bg-green-50 py-2 text-center text-sm font-semibold text-green-600">✓ Friends</span>;
+    return <span className="flex-1 rounded-full bg-naija-50 py-2 text-center text-sm font-semibold text-naija-600">✓ Friends</span>;
   if (rel === "outgoing")
     return <span className="flex-1 rounded-full bg-gray-100 py-2 text-center text-sm font-medium text-gray-500">Requested</span>;
   if (rel === "incoming")

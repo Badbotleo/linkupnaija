@@ -204,7 +204,7 @@ function Card({
             {circle.member_count} {circle.member_count === 1 ? "member" : "members"}
           </span>
           {status === "active" ? (
-            <span className="text-sm font-semibold text-green-600">✓ Joined</span>
+            <span className="text-sm font-semibold text-naija-600">✓ Joined</span>
           ) : status === "pending" ? (
             <span className="text-sm font-medium text-gray-400">Requested</span>
           ) : canJoin ? (

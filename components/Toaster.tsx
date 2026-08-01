@@ -6,7 +6,7 @@ import { subscribeToasts, type ToastItem } from "@/lib/toast";
 
 const STYLES: Record<ToastItem["type"], { bar: string; ring: string; icon: string }> =
   {
-    success: { bar: "bg-green-500", ring: "border-green-200", icon: "✅" },
+    success: { bar: "bg-naija", ring: "border-naija-200", icon: "✅" },
     error: { bar: "bg-red-500", ring: "border-red-200", icon: "⚠️" },
     info: { bar: "bg-brand", ring: "border-brand/30", icon: "💜" },
   };

@@ -117,7 +117,7 @@ export default function AdminOpportunities({
                         <span
                           className={`rounded-full px-2.5 py-1 text-xs font-bold ${
                             o.status === "approved"
-                              ? "bg-green-100 text-green-700"
+                              ? "bg-naija-100 text-naija-700"
                               : "bg-red-100 text-red-700"
                           }`}
                         >

@@ -95,7 +95,7 @@ export default async function ProfilePage({
           {profile?.phone_verified && (
             <span
               title="Verified phone number"
-              className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700"
+              className="inline-flex items-center gap-1 rounded-full bg-naija-100 px-2 py-0.5 text-xs font-bold text-naija-700"
             >
               ✓ Verified
             </span>

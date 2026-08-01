@@ -169,7 +169,7 @@ export default function FriendsManager({
   function ActionButton({ user }: { user: FriendUser }) {
     const rel = relations.get(user.id);
     if (rel?.status === "accepted")
-      return <span className="text-sm font-semibold text-green-600">✓ Friends</span>;
+      return <span className="text-sm font-semibold text-naija-600">✓ Friends</span>;
     if (rel?.status === "pending" && rel.direction === "out")
       return <span className="text-sm font-medium text-gray-400">Requested</span>;
     if (rel?.status === "pending" && rel.direction === "in")

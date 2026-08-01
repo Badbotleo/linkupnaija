@@ -33,7 +33,7 @@ export default function SafetyCheckinButton({ eventId }: { eventId: string }) {
 
   if (done) {
     return (
-      <p className="rounded-xl bg-green-50 px-4 py-2.5 text-center text-sm font-semibold text-green-700">
+      <p className="rounded-xl bg-naija-50 px-4 py-2.5 text-center text-sm font-semibold text-naija-700">
         ✅ Checked in safe
       </p>
     );

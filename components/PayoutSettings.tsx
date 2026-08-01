@@ -164,7 +164,7 @@ export default function PayoutSettings({
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
-        {msg && <p className="text-sm text-green-700">{msg}</p>}
+        {msg && <p className="text-sm text-naija-700">{msg}</p>}
 
         <div className="flex flex-col gap-2 sm:flex-row">
           <button

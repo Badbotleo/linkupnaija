@@ -166,8 +166,8 @@ export default function ActivityTicker() {
         style={{ backgroundColor: "#1A1040" }}
       >
         <span className="relative flex h-2 w-2 shrink-0">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-naija-400 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-naija" />
         </span>
         <span
           key={index}

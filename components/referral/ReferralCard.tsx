@@ -76,8 +76,8 @@ export default function ReferralCard({
           <p className="text-2xl font-extrabold text-brand">{referralCount}</p>
           <p className="text-xs font-medium text-gray-500">People joined</p>
         </div>
-        <div className="rounded-xl bg-green-50 p-4 text-center">
-          <p className="text-2xl font-extrabold text-green-600">
+        <div className="rounded-xl bg-naija-50 p-4 text-center">
+          <p className="text-2xl font-extrabold text-naija-600">
             {formatNaira(totalEarned)}
           </p>
           <p className="text-xs font-medium text-gray-500">Total earned</p>

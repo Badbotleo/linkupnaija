@@ -202,7 +202,7 @@ export default function RsvpButton({
     <div className="space-y-2">
       {status === "accepted" && (
         <>
-          <div className="rounded-xl bg-green-50 px-4 py-3 text-center text-sm font-semibold text-green-700">
+          <div className="rounded-xl bg-naija-50 px-4 py-3 text-center text-sm font-semibold text-naija-700">
             ✓ You&apos;re going! See you there 🎉
           </div>
           <button

@@ -117,7 +117,7 @@ export default function TournamentPage() {
       <section className="container-page py-8">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <InfoCard borderColor="#534AB7" title="40 Players Only" sub="Limited spots. First come, first served" />
-          <InfoCard borderColor="#22C55E" title={`${formatNaira(TOURNAMENT.regFee)} Registration`} sub="Pay online to secure your spot" />
+          <InfoCard borderColor="#008753" title={`${formatNaira(TOURNAMENT.regFee)} Registration`} sub="Pay online to secure your spot" />
           <InfoCard borderColor={GOLD} title={`${formatNaira(TOURNAMENT.poolFee)} Pool Entry`} sub="Pay at the venue on the day" />
         </div>
 

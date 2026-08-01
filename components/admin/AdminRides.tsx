@@ -117,7 +117,7 @@ export default function AdminRides() {
                 <p className="mt-1 text-sm italic text-gray-500">“{r.notes}”</p>
               )}
               {r.quoted_price != null && (
-                <p className="mt-1 text-sm font-bold text-emerald-700">
+                <p className="mt-1 text-sm font-bold text-naija-700">
                   Fare: ₦{r.quoted_price.toLocaleString("en-NG")}
                 </p>
               )}
@@ -125,7 +125,7 @@ export default function AdminRides() {
             <span
               className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${
                 r.status === "confirmed"
-                  ? "bg-emerald-100 text-emerald-700"
+                  ? "bg-naija-100 text-naija-700"
                   : "bg-amber-100 text-amber-700"
               }`}
             >

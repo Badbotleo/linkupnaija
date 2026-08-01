@@ -22,9 +22,9 @@ export default function PhoneVerify({
 
   if (verified) {
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-3">
+      <div className="flex items-center gap-2 rounded-xl border border-naija-200 bg-naija-50 px-4 py-3">
         <span className="text-lg" aria-hidden>✅</span>
-        <p className="text-sm font-semibold text-green-700">
+        <p className="text-sm font-semibold text-naija-700">
           Your phone number is verified
         </p>
       </div>

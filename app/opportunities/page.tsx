@@ -26,7 +26,7 @@ export default function OpportunitiesPage() {
               key={c}
               className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-bold text-gray-700"
             >
-              <LineIcon name="check" size={13} className="text-emerald-600" />
+              <LineIcon name="check" size={13} className="text-naija-600" />
               {c}
             </span>
           ))}

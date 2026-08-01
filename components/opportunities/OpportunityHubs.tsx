@@ -44,7 +44,7 @@ export default function OpportunityHubs() {
                   <LineIcon
                     name="check"
                     size={14}
-                    className="mt-0.5 shrink-0 text-emerald-600"
+                    className="mt-0.5 shrink-0 text-naija-600"
                   />
                   {b}
                 </li>

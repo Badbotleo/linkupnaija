@@ -259,7 +259,13 @@ export default async function HomePage() {
                     title={e.title}
                     className="h-36 w-full"
                   />
-                  <span className="absolute left-2.5 top-2.5 rounded-full bg-white/92 px-2 py-0.5 text-[11px] font-black text-gray-800 backdrop-blur">
+                  <span
+                    className={`absolute left-2.5 top-2.5 rounded-full px-2 py-0.5 text-[11px] font-black backdrop-blur ${
+                      e.price && e.price > 0
+                        ? "bg-white/92 text-gray-800"
+                        : "bg-naija text-white"
+                    }`}
+                  >
                     {e.price && e.price > 0 ? `₦${e.price.toLocaleString("en-NG")}` : "Free"}
                   </span>
                 </div>

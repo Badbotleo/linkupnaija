@@ -159,7 +159,7 @@ export default function ReviewsSection({
 
           {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
           {done && (
-            <p className="mt-2 text-sm text-green-700">Thanks for your review! 🙏</p>
+            <p className="mt-2 text-sm text-naija-700">Thanks for your review! 🙏</p>
           )}
           <button
             type="submit"

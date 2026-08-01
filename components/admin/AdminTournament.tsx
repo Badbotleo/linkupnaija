@@ -51,7 +51,7 @@ export default function AdminTournament({
           <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-bold text-gray-700">
             {registrations.length} registered ({paidCount} paid)
           </span>
-          <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-bold text-green-700">
+          <span className="rounded-full bg-naija-100 px-3 py-1 text-sm font-bold text-naija-700">
             Collected: {formatNaira(collected)}
           </span>
         </div>
@@ -97,7 +97,7 @@ export default function AdminTournament({
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-bold ${
                         r.paid
-                          ? "bg-green-100 text-green-700"
+                          ? "bg-naija-100 text-naija-700"
                           : "bg-amber-100 text-amber-700"
                       }`}
                     >

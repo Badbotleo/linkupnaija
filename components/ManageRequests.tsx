@@ -251,7 +251,7 @@ function CompactList({
   emptyText: string;
   onSelect: (userId: string) => void;
 }) {
-  const dot = tone === "green" ? "bg-green-500" : "bg-red-400";
+  const dot = tone === "green" ? "bg-naija" : "bg-red-400";
   return (
     <div className="mt-5 border-t border-gray-100 pt-4">
       <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400">
