@@ -2,6 +2,8 @@ import Link from "next/link";
 import LineIcon from "@/components/ui/LineIcon";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import AppHeader from "@/components/AppHeader";
+import QuickActions from "@/components/dashboard/QuickActions";
 import ProfileCard from "@/components/ProfileCard";
 import ProfileCompletion from "@/components/ProfileCompletion";
 import UserMessages from "@/components/UserMessages";
@@ -276,8 +278,20 @@ export default async function DashboardPage() {
     : [];
 
   return (
-    <div className="container-page py-10">
-      <h1 className="text-3xl font-extrabold text-gray-900">Your dashboard</h1>
+    <div>
+      <AppHeader
+        title={p?.name ? `Hi, ${p.name.split(" ")[0]}` : "Your dashboard"}
+        subtitle="Everything you're part of, in one place"
+        action={
+          <Link href="/host" className="btn-primary rounded-full px-4 py-2 text-sm">
+            Host
+          </Link>
+        }
+      />
+
+      <div className="container-page py-5">
+      {/* The six things people open this screen to do, one tap from the top. */}
+      <QuickActions />
 
       {p && (
         <div className="mt-6">
@@ -564,6 +578,7 @@ export default async function DashboardPage() {
             ))}
           </Section>
         </div>
+      </div>
       </div>
     </div>
   );

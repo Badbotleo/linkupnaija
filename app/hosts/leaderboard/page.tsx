@@ -83,7 +83,12 @@ export default async function LeaderboardPage({
             {rank}
           </span>
         )}
-        <Avatar name={r.host!.name} url={r.host!.avatar_url} size="md" />
+        <Avatar
+          name={r.host!.name}
+          url={r.host!.avatar_url}
+          seed={r.host!.id}
+          size="md"
+        />
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-1 font-bold text-gray-900">
             <span className="truncate">{r.host!.name ?? "Host"}</span>

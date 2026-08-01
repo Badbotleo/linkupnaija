@@ -27,6 +27,7 @@ export default function AutoScroll({
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let raf = 0;
+    let pos = el.scrollLeft;
     let paused = false;
     let visible = true;
     let idle: ReturnType<typeof setTimeout> | null = null;
@@ -35,7 +36,11 @@ export default function AutoScroll({
     const hold = () => {
       paused = true;
       if (idle) clearTimeout(idle);
-      idle = setTimeout(() => (paused = false), 2500);
+      idle = setTimeout(() => {
+        // Pick up from wherever they left it, not where we last were.
+        pos = el.scrollLeft;
+        paused = false;
+      }, 2500);
     };
 
     const io = new IntersectionObserver(
@@ -48,7 +53,8 @@ export default function AutoScroll({
       if (!paused && visible && el.scrollWidth > el.clientWidth + 4) {
         const end = el.scrollWidth - el.clientWidth;
         // Loop back to the start rather than stalling at the end.
-        el.scrollLeft = el.scrollLeft >= end - 1 ? 0 : el.scrollLeft + speed;
+        pos = pos >= end - 1 ? 0 : pos + speed;
+        el.scrollLeft = pos;
       }
       raf = requestAnimationFrame(step);
     };
@@ -68,7 +74,9 @@ export default function AutoScroll({
   return (
     <div
       ref={ref}
-      className="no-scrollbar mt-3 flex snap-x gap-3 overflow-x-auto px-4 pb-1 sm:px-6 lg:px-8"
+      // No scroll-snap here: proximity snapping drags a sub-pixel drift
+      // straight back to the nearest card, so the shelf never advances.
+      className="no-scrollbar mt-3 flex gap-3 overflow-x-auto px-4 pb-1 sm:px-6 lg:px-8"
     >
       {children}
       <span aria-hidden className="w-1 shrink-0" />

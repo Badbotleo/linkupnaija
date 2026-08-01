@@ -1,6 +1,7 @@
 import Image from "next/image";
+import GeneratedAvatar from "./ui/GeneratedAvatar";
 
-// User avatar with graceful fallback to the first initial.
+// User avatar with graceful fallback to a drawn character.
 // Uses the optimized Next <Image> for user-uploaded Supabase storage URLs.
 
 const SIZES = {
@@ -13,12 +14,14 @@ export default function Avatar({
   name,
   url,
   size = "md",
+  seed,
 }: {
   name: string | null;
   url: string | null;
   size?: keyof typeof SIZES;
+  /** Stable per-person value (a user id) so the drawn face never changes. */
+  seed?: string | null;
 }) {
-  const initial = (name ?? "?").charAt(0).toUpperCase();
   const { cls, px } = SIZES[size];
   const wrap = `${cls} shrink-0 overflow-hidden rounded-full`;
 
@@ -35,12 +38,13 @@ export default function Avatar({
     );
   }
 
+  // No photo — draw them one. `seed` prefers a stable id when the caller has
+  // one; falling back to the name keeps two "Chidi"s looking alike, which is
+  // still better than two identical purple letters.
   return (
-    <span
-      className={`${wrap} grid place-items-center bg-brand font-bold text-white`}
-      aria-hidden
-    >
-      {initial}
+    <span className={wrap} title={name ?? undefined}>
+      <GeneratedAvatar seed={seed ?? name ?? "?"} className="h-full w-full" />
+      <span className="sr-only">{name ?? "User"}</span>
     </span>
   );
 }
