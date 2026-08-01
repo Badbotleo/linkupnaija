@@ -285,7 +285,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      <div className="mt-6 grid gap-8 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Profile summary + wallet + referrals */}
         <div className="space-y-6 lg:col-span-1">
           {p && (

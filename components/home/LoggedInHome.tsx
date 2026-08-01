@@ -171,7 +171,7 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
             </Link>
           </div>
         ) : (
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {upcoming.map((e) => (
               <EventTile key={e.id} event={e} hosting={hostingIds.has(e.id)} />
             ))}
@@ -195,7 +195,7 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
               Edit interests →
             </Link>
           </div>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {forYou.map((e) => (
               <EventTile key={e.id} event={e} />
             ))}
@@ -238,7 +238,7 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
               See all →
             </Link>
           </div>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {nearby.map((e) => (
               <EventTile key={e.id} event={e} />
             ))}

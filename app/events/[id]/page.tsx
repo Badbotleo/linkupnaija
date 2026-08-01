@@ -267,13 +267,13 @@ export default async function EventDetailPage({
           url={event.cover_image_url}
           category={event.category}
           title={event.title}
-          className="h-64 w-full sm:h-80"
+          className="h-80 w-full sm:h-[26rem]"
           priority
           fit="contain"
         />
       </div>
 
-      <div className="mt-6 grid gap-8 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Main */}
         <div className="lg:col-span-2">
           <div className="flex flex-wrap items-center gap-2">
@@ -321,7 +321,7 @@ export default async function EventDetailPage({
               details={
                 <div className="space-y-8">
                   <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-card">
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <Detail
                         icon="calendar"
                         label="Date"

@@ -281,7 +281,7 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
         />
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="category" className="label">
             Category
@@ -326,7 +326,7 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
         </div>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="date" className="label">
             Date
@@ -370,7 +370,7 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
         />
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="max_attendees" className="label">
             Max attendees{" "}

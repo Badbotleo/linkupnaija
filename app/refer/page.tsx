@@ -69,7 +69,7 @@ export default async function ReferPage() {
           referredNames={referredNames}
         />
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
           {STEPS.map((s, i) => (
             <div
               key={s.title}

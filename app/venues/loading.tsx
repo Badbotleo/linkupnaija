@@ -7,7 +7,7 @@ export default function VenuesLoading() {
       <SkeletonBox className="mt-2 h-4 w-80" />
       <SkeletonBox className="mt-6 h-11 w-full" />
       <SkeletonBox className="mt-6 h-[360px] w-full rounded-2xl" />
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <VenueCardSkeleton key={i} />
         ))}

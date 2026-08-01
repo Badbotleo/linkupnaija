@@ -4,7 +4,7 @@ export default function DashboardLoading() {
   return (
     <div className="container-page py-10">
       <SkeletonBox className="h-8 w-48" />
-      <div className="mt-6 grid gap-8 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-card lg:col-span-1">
           <ProfileSkeleton />
         </div>

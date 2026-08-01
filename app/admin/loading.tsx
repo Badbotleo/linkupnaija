@@ -10,7 +10,7 @@ export default function AdminLoading() {
       <SkeletonBox className="mt-2 h-4 w-48" />
 
       {/* Stat cards */}
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}

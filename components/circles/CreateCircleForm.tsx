@@ -105,7 +105,7 @@ export default function CreateCircleForm({ userState }: { userState: string | nu
         />
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="category" className="label">Category</label>
           <select id="category" required value={category} onChange={(e) => setCategory(e.target.value)} className="input cursor-pointer">

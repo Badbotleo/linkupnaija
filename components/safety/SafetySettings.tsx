@@ -41,7 +41,7 @@ export default function SafetySettings({
         you attend events, so someone you trust always knows where you are.
       </p>
 
-      <form onSubmit={save} className="mt-5 grid gap-4 sm:grid-cols-2">
+      <form onSubmit={save} className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="ec_name" className="label">
             Contact name

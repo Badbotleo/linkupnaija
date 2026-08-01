@@ -115,7 +115,7 @@ export default function TournamentPage() {
 
       {/* ===== DETAILS ===== */}
       <section className="container-page py-8">
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <InfoCard borderColor="#534AB7" title="40 Players Only" sub="Limited spots. First come, first served" />
           <InfoCard borderColor="#22C55E" title={`${formatNaira(TOURNAMENT.regFee)} Registration`} sub="Pay online to secure your spot" />
           <InfoCard borderColor={GOLD} title={`${formatNaira(TOURNAMENT.poolFee)} Pool Entry`} sub="Pay at the venue on the day" />
@@ -127,7 +127,7 @@ export default function TournamentPage() {
           </span>
         </div>
 
-        <div className="mt-5 grid gap-4 sm:grid-cols-3">
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Meta label="Format" value="1v1 Knockout · Best of Three" />
           <Meta label="Date" value="To be announced" />
           <Meta label="Venue" value="Abuja (TBA)" />
@@ -140,7 +140,7 @@ export default function TournamentPage() {
       {/* ===== HOW TO ENTER ===== */}
       <section className="container-page py-8">
         <h2 className="text-[19px] font-extrabold tracking-tight">How to enter</h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((s) => (
             <div
               key={s.n}

@@ -222,7 +222,7 @@ export default function FriendsManager({
                 No one matched &ldquo;{query.trim()}&rdquo;.
               </p>
             ) : (
-              <ul className="grid gap-2 sm:grid-cols-2">
+              <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {results.map((u) => (
                   <Row key={u.id} user={u} action={<ActionButton user={u} />} />
                 ))}
@@ -299,7 +299,7 @@ export default function FriendsManager({
             </p>
           </div>
         ) : (
-          <ul className="grid gap-2 sm:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {friends.map((u) => (
               <Row
                 key={u.id}
@@ -342,7 +342,7 @@ export default function FriendsManager({
             No suggestions right now. Check back later.
           </p>
         ) : (
-          <ul className="grid gap-2 sm:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {suggestions.map((u) => (
               <Row key={u.id} user={u} action={<ActionButton user={u} />} />
             ))}

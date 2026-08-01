@@ -281,7 +281,7 @@ async function HostedEvents({ userId }: { userId: string }) {
       </p>
     );
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {events.map((e) => (
         <Link key={e.id} href={`/events/${e.id}`} className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:border-brand/30">
           <EventCover url={e.cover_image_url} category={e.category} title={e.title} className="h-28 w-full" />

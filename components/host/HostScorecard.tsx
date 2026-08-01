@@ -36,7 +36,7 @@ export default function HostScorecard({
           <HostBadges badges={badges} />
         </div>
       )}
-      <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+      <dl className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {rows.map((r) => (
           <div key={r.label} className="rounded-xl bg-gray-50 px-4 py-3">
             <dt className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">

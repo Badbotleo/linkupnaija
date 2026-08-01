@@ -43,7 +43,7 @@ export default function AdminWalletCredit({
       onSubmit={submit}
       className="rounded-2xl border border-gray-100 bg-white p-5 shadow-card"
     >
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label className="block">
           <span className="label">User</span>
           <select

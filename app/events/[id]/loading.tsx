@@ -5,7 +5,7 @@ export default function EventDetailLoading() {
     <div className="container-page py-10">
       <SkeletonBox className="h-4 w-32" />
       <SkeletonBox className="mt-4 h-52 w-full rounded-2xl sm:h-72" />
-      <div className="mt-6 grid gap-8 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <SkeletonBox className="h-8 w-3/4" />
           <SkeletonBox className="h-4 w-full" />

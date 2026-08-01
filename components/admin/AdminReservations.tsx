@@ -104,7 +104,7 @@ function ReservationRow({
         </span>
       </div>
 
-      <dl className="mt-4 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+      <dl className="mt-4 grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
         <Detail label="Requested by" value={r.users?.name ?? "—"} />
         <Detail label="Email" value={r.users?.email ?? "—"} />
         <Detail

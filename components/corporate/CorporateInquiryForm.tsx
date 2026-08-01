@@ -118,7 +118,7 @@ export default function CorporateInquiryForm({
     <form onSubmit={submit} className="space-y-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-card sm:p-8">
       <h3 className="text-xl font-bold text-gray-900">Get a quote</h3>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Company name" required>
           <input required value={form.company_name} onChange={(e) => set("company_name", e.target.value)} className="input" />
         </Field>

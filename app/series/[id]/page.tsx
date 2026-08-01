@@ -100,7 +100,7 @@ export default async function SeriesPage({
         ← Back to events
       </Link>
 
-      <div className="mt-4 grid gap-8 lg:grid-cols-3">
+      <div className="mt-4 grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Main */}
         <div className="lg:col-span-2">
           <div className="overflow-hidden rounded-2xl shadow-card">
@@ -141,7 +141,7 @@ export default async function SeriesPage({
               No upcoming events scheduled right now. Check back soon!
             </p>
           ) : (
-            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+            <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {upcoming.map((e) => (
                 <Link
                   key={e.id}
@@ -172,7 +172,7 @@ export default async function SeriesPage({
               <h2 className="mt-8 text-lg font-bold text-gray-900">
                 Past events ({past.length})
               </h2>
-              <div className="mt-3 grid gap-4 sm:grid-cols-3">
+              <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
                 {past.map((e) => {
                   const thumb = pastThumbs.get(e.id);
                   return (

@@ -76,7 +76,7 @@ export default function CorporatePage() {
         <h2 className="text-center text-3xl font-extrabold text-gray-900">
           Plans for every team
         </h2>
-        <div className="mt-10 grid gap-6 lg:grid-cols-3">
+        <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
           {PLANS.map((plan) => (
             <div
               key={plan.name}

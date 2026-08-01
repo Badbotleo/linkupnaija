@@ -201,7 +201,7 @@ export default function AdminModeration({
   ).slice(0, 8);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* User reports — most urgent, full width */}
       {reports.length > 0 && (
         <div className="rounded-2xl border border-red-100 bg-red-50/50 p-4 shadow-card lg:col-span-2">

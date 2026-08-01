@@ -212,7 +212,7 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
             </span>
             Partner venues
           </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {partners
               .filter((p) => p.category === category)
               .map((p) => (
@@ -312,7 +312,7 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
           </div>
         )}
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {venues.map((v) => {
             const dist = distanceKm(center.lat, center.lng, v.lat, v.lng);
             const cat = VENUE_CATEGORIES.find((c) => c.key === v.category);

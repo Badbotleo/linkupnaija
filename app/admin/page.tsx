@@ -313,7 +313,7 @@ export default async function AdminPage() {
       <p className="mt-1 text-gray-600">Platform overview at a glance.</p>
 
       {/* Stats */}
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
           <div
             key={s.label}
@@ -509,7 +509,7 @@ export default async function AdminPage() {
         <AdminMessages adminId={user.id} users={messageUsers} />
       </section>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-2">
+      <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-2">
         {/* Recent signups */}
         <section>
           <h2 className="mb-3 text-lg font-bold text-gray-900">Recent signups</h2>

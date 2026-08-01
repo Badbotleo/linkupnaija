@@ -195,7 +195,7 @@ async function EventsTab({ userId }: { userId: string }) {
   if (events.length === 0)
     return <Empty text="No events hosted yet." cta={{ href: "/host", label: "Host an event" }} />;
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {events.map((e) => (
         <Link
           key={e.id}

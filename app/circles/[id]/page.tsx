@@ -95,7 +95,7 @@ export default async function CirclePage({ params }: { params: { id: string } })
         />
       </div>
 
-      <div className="mt-4 grid gap-8 lg:grid-cols-3">
+      <div className="mt-4 grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Feed */}
         <div className="lg:col-span-2">
           <div className="flex flex-wrap items-center gap-2">

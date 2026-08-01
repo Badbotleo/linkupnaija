@@ -52,7 +52,7 @@ export default function VenueDetail({
         <SkeletonBox className="h-6 w-28 rounded-full" />
         <SkeletonBox className="mt-3 h-9 w-2/3" />
         <SkeletonBox className="mt-2 h-4 w-1/2" />
-        <div className="mt-6 grid gap-8 lg:grid-cols-3">
+        <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
           <SkeletonBox className="h-[360px] rounded-2xl lg:col-span-2" />
           <SkeletonBox className="h-48 rounded-2xl" />
         </div>
@@ -96,7 +96,7 @@ export default function VenueDetail({
         <p className="mt-1 text-gray-600">📍 {venue.address}</p>
       )}
 
-      <div className="mt-6 grid gap-8 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <VenuesMap
             center={{ lat: venue.lat, lng: venue.lng }}

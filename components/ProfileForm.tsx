@@ -142,7 +142,7 @@ export default function ProfileForm({
         </div>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="name" className="label">
             Full name
@@ -220,7 +220,7 @@ export default function ProfileForm({
         <InterestPicker selected={interests} onChange={setInterests} />
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="instagram" className="label">
             Instagram username
@@ -253,7 +253,7 @@ export default function ProfileForm({
         </div>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="facebook" className="label">
             Facebook profile URL

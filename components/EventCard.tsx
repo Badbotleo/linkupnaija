@@ -52,7 +52,8 @@ export default function EventCard({
           category={event.category}
           title={event.title}
           className="h-40 w-full transition-transform duration-300 group-hover:scale-105"
-        />
+        fit="contain"
+          />
         <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
           <div className="flex flex-wrap gap-1.5">
             <CategoryBadge category={event.category} className="shadow-sm" />
