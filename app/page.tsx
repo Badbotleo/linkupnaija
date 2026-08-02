@@ -441,7 +441,11 @@ export default async function HomePage() {
       )}
 
       {/* The pitch, as a shelf rather than a full-screen section */}
-      <Rail title="Why LinkUpNaija" subtitle="What you get every time you pull up">
+      <Rail
+        title="Why LinkUpNaija"
+        auto
+        subtitle="What you get every time you pull up"
+      >
         {PROMISES.map((p) => (
           <div
             key={p.title}
@@ -457,7 +461,7 @@ export default async function HomePage() {
       </Rail>
 
       {/* More of the platform */}
-      <Rail title="More on LinkUpNaija" subtitle="Beyond the party">
+      <Rail title="More on LinkUpNaija" auto subtitle="Beyond the party">
         {[
           { href: "/live", icon: "activity", title: "Live feed", text: "Who's hosting and joining right now" },
           { href: "/hosts/leaderboard", icon: "trophy", title: "Host leaderboard", text: "Nigeria's most-loved hosts" },
