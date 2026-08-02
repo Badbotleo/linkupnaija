@@ -148,17 +148,17 @@ export default function ActivityTicker() {
 
   return (
     <div
-      className="fixed bottom-36 left-4 right-4 z-40 sm:left-auto sm:right-5 sm:w-[22rem] lg:bottom-24"
+      className="fixed bottom-36 left-3 z-40 w-[min(17rem,calc(100vw-1.5rem))] sm:left-auto sm:right-5 sm:w-[19rem] lg:bottom-24"
       role="status"
       aria-live="polite"
     >
       <div
-        className="flex items-center gap-2 rounded-full border border-brand/30 px-4 py-2.5 text-sm text-white shadow-lg"
+        className="flex items-center gap-1.5 rounded-full border border-brand/30 px-3 py-1.5 text-xs text-white shadow-lg"
         style={{ backgroundColor: "#1A1040" }}
       >
-        <span className="relative flex h-2 w-2 shrink-0">
+        <span className="relative flex h-1.5 w-1.5 shrink-0">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-naija-400 opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-naija" />
+          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-naija" />
         </span>
         <span
           key={index}
@@ -170,7 +170,7 @@ export default function ActivityTicker() {
           type="button"
           onClick={dismiss}
           aria-label="Dismiss activity feed"
-          className="shrink-0 text-white/50 transition hover:text-white"
+          className="shrink-0 text-[11px] text-white/50 transition hover:text-white"
         >
           ✕
         </button>

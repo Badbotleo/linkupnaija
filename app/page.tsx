@@ -8,6 +8,7 @@ import { formatEventDate, formatPriceRange } from "@/lib/format";
 import LandingStats from "@/components/LandingStats";
 import LoggedInHome from "@/components/home/LoggedInHome";
 import Rail from "@/components/home/Rail";
+import SwipeDeck from "@/components/home/SwipeDeck";
 import ScreenTour from "@/components/home/ScreenTour";
 import LineIcon from "@/components/ui/LineIcon";
 import { getSessionUser } from "@/lib/supabase/auth";
@@ -135,6 +136,38 @@ interface EventRow {
 }
 
 const CARD = "w-[72vw] max-w-[268px] shrink-0 snap-start sm:w-[268px]";
+
+// Decks carry their own heading — Rail draws one, SwipeDeck deliberately
+// doesn't, so it can be dropped anywhere.
+function DeckHeading({
+  title,
+  subtitle,
+  href,
+}: {
+  title: string;
+  subtitle: string;
+  href?: string;
+}) {
+  return (
+    <div className="container-page mt-7 flex items-end justify-between gap-3">
+      <div className="min-w-0">
+        <h2 className="text-[19px] font-extrabold tracking-[-0.02em] text-gray-900">
+          {title}
+        </h2>
+        <p className="mt-0.5 text-[13px] text-gray-500">{subtitle}</p>
+      </div>
+      {href && (
+        <Link
+          href={href}
+          className="shrink-0 whitespace-nowrap text-sm font-bold text-brand transition hover:opacity-70"
+        >
+          See all
+          <LineIcon name="chevronRight" size={13} className="ml-0.5 inline align-[-1px]" />
+        </Link>
+      )}
+    </div>
+  );
+}
 
 export default async function HomePage() {
   // Signed-in members get a personalised home instead of re-reading the pitch.
@@ -310,56 +343,75 @@ export default async function HomePage() {
       </Rail>
 
       {circles.length > 0 && (
-        <Rail
-          title="Circles to join"
-          auto
-          subtitle="Communities built around what you love"
-          href="/circles"
-        >
-          {circles.map((c: {
-            id: string; name: string; category: string | null; state: string | null;
-            member_count: number; cover_image_url: string | null;
-          }) => (
-            <Link key={c.id} href={`/circles/${c.id}`} className={`${CARD} group`}>
-              <div className="relative h-[148px] overflow-hidden rounded-2xl shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
+        <>
+          <DeckHeading
+            title="Circles to join"
+            subtitle="Swipe through communities built around what you love"
+            href="/circles"
+          />
+          {/* Full-bleed photo card, the way a dating deck reads: one circle at
+              a time, big enough to actually see who's in it. */}
+          <SwipeDeck className="h-[336px]">
+            {circles.map((c: {
+              id: string; name: string; category: string | null; state: string | null;
+              member_count: number; cover_image_url: string | null;
+            }) => (
+              <Link
+                key={c.id}
+                href={`/circles/${c.id}`}
+                className="group relative block h-full overflow-hidden rounded-3xl shadow-card transition duration-200 group-hover:shadow-lg"
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={c.cover_image_url ?? categoryPhoto(c.category)}
                   alt=""
-                  className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                  className="absolute inset-0 h-full w-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-3 text-white">
-                  <p className="truncate font-bold">{c.name}</p>
-                  <p className="mt-0.5 flex items-center gap-1.5 text-xs text-white/75">
-                    <LineIcon name="users" size={12} />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
+
+                {c.category && (
+                  <span className="absolute left-4 top-4 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-black text-gray-900 backdrop-blur">
+                    {c.category}
+                  </span>
+                )}
+
+                <div className="absolute inset-x-0 bottom-0 p-5 text-white">
+                  <p className="text-[22px] font-extrabold leading-tight">
+                    {c.name}
+                  </p>
+                  <p className="mt-1.5 flex items-center gap-1.5 text-sm text-white/80">
+                    <LineIcon name="users" size={14} />
                     {c.member_count} member{c.member_count === 1 ? "" : "s"}
                     {c.state ? ` · ${c.state}` : ""}
                   </p>
+                  <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-bold text-gray-900">
+                    Join the circle
+                    <LineIcon name="chevronRight" size={13} />
+                  </span>
                 </div>
-              </div>
-            </Link>
-          ))}
-        </Rail>
+              </Link>
+            ))}
+          </SwipeDeck>
+        </>
       )}
 
-      <Rail
+      <DeckHeading
         title="Book the spot"
-        auto
         subtitle={
           partnerVenues.length > 0
-            ? "Real spots on LinkUpNaija — reserve in a tap"
-            : "Clubs, restaurants, rooftops and cinemas near you"
+            ? "Swipe through real spots on LinkUpNaija"
+            : "Swipe through clubs, restaurants, rooftops and cinemas"
         }
         href="/venues"
-      >
+      />
+      <SwipeDeck className="h-[336px]">
         {/* Real onboarded venues when we have them; the stock category tiles
             are only a fallback for an empty venues table. */}
         {partnerVenues.length > 0
           ? (partnerVenues as VenueRow[]).map((v) => (
-              <Link key={v.id} href="/venues" className={`${CARD} group`}>
-                <div className="overflow-hidden rounded-2xl bg-white shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
-                  <div className="relative aspect-[4/3] w-full">
+              <Link key={v.id} href="/venues" className="group block h-full">
+                <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-card transition duration-200 group-hover:shadow-lg">
+                  <div className="relative min-h-0 flex-1">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={v.image_url!}
@@ -370,15 +422,15 @@ export default async function HomePage() {
                       {v.category}
                     </span>
                   </div>
-                  <div className="p-3">
-                    <p className="truncate font-bold text-gray-900 group-hover:text-brand">
+                  <div className="shrink-0 p-4">
+                    <p className="truncate font-extrabold text-gray-900 group-hover:text-brand">
                       {v.name}
                     </p>
-                    <p className="mt-0.5 truncate text-xs text-gray-500">
+                    <p className="mt-0.5 truncate text-[13px] text-gray-500">
                       {v.address ?? v.state ?? "Nigeria"}
                     </p>
                     {formatPriceRange(v.price_range) && (
-                      <p className="mt-1 truncate text-xs font-bold text-naija-700">
+                      <p className="mt-1 truncate text-[13px] font-bold text-naija-700">
                         {formatPriceRange(v.price_range)}
                       </p>
                     )}
@@ -387,8 +439,8 @@ export default async function HomePage() {
               </Link>
             ))
           : VENUE_TYPES.map((v) => (
-              <Link key={v.label} href="/venues" className={`${CARD} group`}>
-                <div className="relative h-[132px] overflow-hidden rounded-2xl shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
+              <Link key={v.label} href="/venues" className="group block h-full">
+                <div className="relative h-full overflow-hidden rounded-3xl shadow-card transition duration-200 group-hover:shadow-lg">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={v.img}
@@ -396,13 +448,13 @@ export default async function HomePage() {
                     className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent" />
-                  <p className="absolute inset-x-0 bottom-0 p-3 font-bold text-white">
+                  <p className="absolute inset-x-0 bottom-0 p-4 text-lg font-extrabold text-white">
                     {v.label}
                   </p>
                 </div>
               </Link>
             ))}
-      </Rail>
+      </SwipeDeck>
 
       {series.length > 0 && (
         <Rail
@@ -441,27 +493,32 @@ export default async function HomePage() {
       )}
 
       {/* The pitch, as a shelf rather than a full-screen section */}
-      <Rail
+      <DeckHeading
         title="Why LinkUpNaija"
-        auto
-        subtitle="What you get every time you pull up"
-      >
+        subtitle="Swipe through — what you get every time you pull up"
+      />
+      <SwipeDeck className="h-[212px]">
         {PROMISES.map((p) => (
           <div
             key={p.title}
-            className={`${CARD} rounded-2xl border border-gray-100 bg-white p-4 shadow-card`}
+            className="flex h-full flex-col justify-center rounded-3xl border border-gray-100 bg-white p-6 shadow-card"
           >
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-50 text-brand">
-              <LineIcon name={p.icon} size={19} />
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-brand-50 text-brand">
+              <LineIcon name={p.icon} size={22} />
             </span>
-            <p className="mt-3 font-extrabold leading-snug text-gray-900">{p.title}</p>
-            <p className="mt-1 text-sm leading-relaxed text-gray-600">{p.text}</p>
+            <p className="mt-4 text-lg font-extrabold leading-snug text-gray-900">
+              {p.title}
+            </p>
+            <p className="mt-1.5 text-[15px] leading-relaxed text-gray-600">
+              {p.text}
+            </p>
           </div>
         ))}
-      </Rail>
+      </SwipeDeck>
 
       {/* More of the platform */}
-      <Rail title="More on LinkUpNaija" auto subtitle="Beyond the party">
+      <DeckHeading title="More on LinkUpNaija" subtitle="Swipe through — beyond the party" />
+      <SwipeDeck className="h-[212px]">
         {[
           { href: "/live", icon: "activity", title: "Live feed", text: "Who's hosting and joining right now" },
           { href: "/hosts/leaderboard", icon: "trophy", title: "Host leaderboard", text: "Nigeria's most-loved hosts" },
@@ -473,18 +530,18 @@ export default async function HomePage() {
           <Link
             key={f.href}
             href={f.href}
-            className={`${CARD} group rounded-2xl border border-gray-100 bg-white p-4 shadow-card transition duration-200 hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-lg`}
+            className="group flex h-full flex-col justify-center rounded-3xl border border-gray-100 bg-white p-6 shadow-card transition duration-200 hover:border-brand/30 hover:shadow-lg"
           >
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-50 text-brand">
-              <LineIcon name={f.icon} size={19} />
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-brand-50 text-brand">
+              <LineIcon name={f.icon} size={22} />
             </span>
-            <p className="mt-3 font-extrabold text-gray-900 group-hover:text-brand">
+            <p className="mt-4 text-lg font-extrabold text-gray-900 group-hover:text-brand">
               {f.title}
             </p>
-            <p className="mt-1 text-sm leading-relaxed text-gray-600">{f.text}</p>
+            <p className="mt-1.5 text-[15px] leading-relaxed text-gray-600">{f.text}</p>
           </Link>
         ))}
-      </Rail>
+      </SwipeDeck>
 
       {/* Honest live numbers */}
       <div className="mt-8">
