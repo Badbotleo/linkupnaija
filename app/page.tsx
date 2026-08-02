@@ -12,6 +12,7 @@ import SwipeDeck from "@/components/home/SwipeDeck";
 import ScreenTour from "@/components/home/ScreenTour";
 import LineIcon from "@/components/ui/LineIcon";
 import { getSessionUser } from "@/lib/supabase/auth";
+import { getVisitorState } from "@/lib/visitor-geo";
 
 // Vibes our core audience actually searches for, leading the chip row.
 const TOP_CATEGORIES = [
@@ -137,6 +138,9 @@ interface EventRow {
 
 const CARD = "w-[72vw] max-w-[268px] shrink-0 snap-start sm:w-[268px]";
 
+// Where the FC26 tournament actually is.
+const TOURNAMENT_STATE = "FCT - Abuja";
+
 // Decks carry their own heading — Rail draws one, SwipeDeck deliberately
 // doesn't, so it can be dropped anywhere.
 function DeckHeading({
@@ -182,6 +186,18 @@ export default async function HomePage() {
     getPartnerVenues(),
   ]);
   const upcoming = events as EventRow[];
+
+  // The featured slot is for something the visitor could actually turn up to.
+  // FC26 is an Abuja event, so it only runs for Abuja; everyone else gets the
+  // soonest link-up in their own state. When the edge can't place someone
+  // (local dev, VPN, non-Vercel host) we show neither rather than defaulting
+  // to "everyone sees Abuja" — that's the behaviour this replaces.
+  const visitorState = getVisitorState();
+  const featureFc26 = visitorState === TOURNAMENT_STATE;
+  const localFeature =
+    !featureFc26 && visitorState
+      ? upcoming.find((e) => e.state === visitorState) ?? null
+      : null;
 
   return (
     <div className="pb-12">
@@ -236,8 +252,9 @@ export default async function HomePage() {
       </div>
 
       {/* ---------------------------------------------------------------- */}
-      {/* Featured: FC26 tournament                                         */}
+      {/* Featured — location aware                                         */}
       {/* ---------------------------------------------------------------- */}
+      {featureFc26 && (
       <section className="container-page mt-6">
         <Link
           href="/tournament"
@@ -311,6 +328,53 @@ export default async function HomePage() {
           </div>
         </Link>
       </section>
+      )}
+
+      {/* Not in Abuja — feature the soonest thing happening where they are. */}
+      {localFeature && (
+        <section className="container-page mt-6">
+          <Link
+            href={`/events/${localFeature.id}`}
+            className="group relative block min-h-[210px] overflow-hidden rounded-3xl text-white shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-xl sm:min-h-[240px]"
+          >
+            <div className="absolute inset-0">
+              <EventCover
+                url={localFeature.cover_image_url}
+                category={localFeature.category}
+                title={localFeature.title}
+                className="h-full w-full"
+              />
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#120B2E] via-[#120B2E]/70 to-[#120B2E]/25" />
+
+            <div className="relative flex min-h-[210px] flex-col justify-end p-5 sm:min-h-[240px] sm:p-7">
+              <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-[#FAC775] px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-[#1A1040]">
+                <span aria-hidden className="flex overflow-hidden rounded-[2px]">
+                  <span className="block h-2.5 w-1 bg-naija" />
+                  <span className="block h-2.5 w-1 bg-white" />
+                  <span className="block h-2.5 w-1 bg-naija" />
+                </span>
+                Near you in {visitorState}
+              </span>
+              <h2 className="mt-3 text-[24px] font-extrabold leading-tight tracking-[-0.02em] sm:text-[30px]">
+                {localFeature.title}
+              </h2>
+              <p className="mt-1 text-[15px] text-white/75">
+                {formatEventDate(localFeature.date)}
+                {localFeature.location ? ` · ${localFeature.location}` : ""}
+                {" · "}
+                {localFeature.price && localFeature.price > 0
+                  ? `₦${localFeature.price.toLocaleString("en-NG")}`
+                  : "Free"}
+              </p>
+              <span className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-white px-5 py-2.5 text-sm font-black text-gray-900">
+                See the link-up
+                <LineIcon name="chevronRight" size={14} />
+              </span>
+            </div>
+          </Link>
+        </section>
+      )}
 
       <ScreenTour />
 
