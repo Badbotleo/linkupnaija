@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { createClient } from "@supabase/supabase-js";
 import { categoryPhoto } from "@/lib/category-photos";
 import { SITE_ORIGIN } from "@/lib/qr";
+import { LOGO_MARK_DATA_URI } from "@/lib/logo-svg";
 
 /**
  * A 1080×1080 Instagram post for an event: the event's own cover art under
@@ -123,17 +124,25 @@ export async function GET(
         >
           {/* Brand lockup, top */}
           <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={LOGO_MARK_DATA_URI}
+              alt=""
+              width={62}
+              height={62}
+              style={{ width: 62, height: 62 }}
+            />
             <div
               style={{
                 display: "flex",
-                width: 62,
-                height: 62,
-                borderRadius: 31,
-                backgroundColor: "#534AB7",
+                gap: 0,
+                letterSpacing: "-0.02em",
+                fontSize: 42,
+                fontWeight: 800,
+                color: "#fff",
               }}
-            />
-            <div style={{ display: "flex", fontSize: 42, fontWeight: 800, color: "#fff" }}>
-              LinkUp<span style={{ color: "#7F77DD" }}>Naija</span>
+            >
+              Link<span style={{ color: "#7F77DD" }}>Up</span>Naija
             </div>
           </div>
 

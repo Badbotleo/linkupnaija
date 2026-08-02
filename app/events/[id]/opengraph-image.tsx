@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { createClient } from "@supabase/supabase-js";
 import { categoryPhoto } from "@/lib/category-photos";
 import { SITE_ORIGIN } from "@/lib/qr";
+import { LOGO_MARK_DATA_URI } from "@/lib/logo-svg";
 
 // Rich link preview: every shared event unfurls with its cover art, title,
 // date and location — the way an Instagram or WhatsApp link does. Events with
@@ -86,17 +87,25 @@ export default async function OgImage({ params }: { params: { id: string } }) {
         >
           {/* Brand + category */}
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={LOGO_MARK_DATA_URI}
+              alt=""
+              width={40}
+              height={40}
+              style={{ width: 40, height: 40 }}
+            />
             <div
               style={{
                 display: "flex",
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: "#534AB7",
+                gap: 0,
+                letterSpacing: "-0.02em",
+                fontSize: 26,
+                fontWeight: 800,
+                color: "#fff",
               }}
-            />
-            <div style={{ display: "flex", fontSize: 26, fontWeight: 800, color: "#fff" }}>
-              LinkUp<span style={{ color: "#7F77DD" }}>Naija</span>
+            >
+              Link<span style={{ color: "#7F77DD" }}>Up</span>Naija
             </div>
             <div
               style={{
