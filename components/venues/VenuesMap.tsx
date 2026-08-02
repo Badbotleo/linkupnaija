@@ -7,12 +7,27 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Venue } from "@/lib/overpass";
 
-const PIN_SVG = `<svg width="30" height="30" viewBox="0 0 24 24" fill="#534AB7" stroke="white" stroke-width="1.5" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.6" fill="white" stroke="none"/></svg>`;
+const pinSvg = (fill: string) =>
+  `<svg width="30" height="30" viewBox="0 0 24 24" fill="${fill}" stroke="white" stroke-width="1.5" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.6" fill="white" stroke="none"/></svg>`;
 
-function makeIcon(delayMs: number, ripple: boolean) {
+const PIN_SVG = pinSvg("#534AB7");
+// Venues we've onboarded get the gold pin, so a partner reads as a partner on
+// the map the same way it does in the list.
+const PARTNER_PIN_SVG = pinSvg("#FAC775");
+
+export interface PartnerPin {
+  id: string;
+  name: string;
+  category: string;
+  address: string | null;
+  lat: number;
+  lng: number;
+}
+
+function makeIcon(delayMs: number, ripple: boolean, svg: string = PIN_SVG) {
   const html = ripple
-    ? `<div style="position:relative"><span class="pin-ripple-ring"></span>${PIN_SVG}</div>`
-    : `<div class="pin-drop" style="animation-delay:${delayMs}ms">${PIN_SVG}</div>`;
+    ? `<div style="position:relative"><span class="pin-ripple-ring"></span>${svg}</div>`
+    : `<div class="pin-drop" style="animation-delay:${delayMs}ms">${svg}</div>`;
   return L.divIcon({
     className: "",
     html,
@@ -43,12 +58,16 @@ function FlyToSelected({ venue }: { venue: Venue | null }) {
 export default function VenuesMap({
   center,
   venues,
+  partners = [],
   zoom = 13,
   height = "360px",
   showPreview = true,
 }: {
   center: { lat: number; lng: number };
+  /** OpenStreetMap results, already stripped of anything we've onboarded. */
   venues: Venue[];
+  /** Onboarded venues, pinned in gold. */
+  partners?: PartnerPin[];
   zoom?: number;
   height?: string;
   showPreview?: boolean;
@@ -62,6 +81,7 @@ export default function VenuesMap({
     return m;
   }, [venues]);
   const rippleIcon = useMemo(() => makeIcon(0, true), []);
+  const partnerIcon = useMemo(() => makeIcon(0, false, PARTNER_PIN_SVG), []);
 
   return (
     <div
@@ -80,6 +100,26 @@ export default function VenuesMap({
         />
         <Recenter lat={center.lat} lng={center.lng} />
         <FlyToSelected venue={selected} />
+        {partners.map((p) => (
+          <Marker
+            key={`partner-${p.id}`}
+            position={[p.lat, p.lng]}
+            icon={partnerIcon}
+            eventHandlers={{
+              click: () =>
+                setSelected({
+                  id: p.id,
+                  osmType: "node",
+                  osmId: 0,
+                  name: p.name,
+                  category: p.category,
+                  lat: p.lat,
+                  lng: p.lng,
+                  address: p.address ?? "",
+                }),
+            }}
+          />
+        ))}
         {venues.map((v) => (
           <Marker
             key={v.id}

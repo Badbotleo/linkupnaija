@@ -14,6 +14,8 @@ import {
 import ReservationModal from "./ReservationModal";
 import LineIcon from "../ui/LineIcon";
 import { createClient } from "@/lib/supabase/client";
+import { mergePartnersWithOsm } from "@/lib/venue-match";
+import { formatPriceRange } from "@/lib/format";
 
 interface PartnerVenue {
   id: string;
@@ -24,6 +26,8 @@ interface PartnerVenue {
   image_url: string | null;
   description: string | null;
   price_range: string | null;
+  lat: number | null;
+  lng: number | null;
 }
 
 // Stable per-venue pick from the category's photo pool, so a grid of the
@@ -33,6 +37,49 @@ function venuePhoto(pool: string[] | undefined, id: string) {
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
   return photos[h % photos.length];
+}
+
+// "Request Reservation" said the same flat thing at a nightclub and a cinema.
+// Ask for what you'd actually ask for at that kind of place.
+const CTA_COPY: Record<string, string> = {
+  Restaurants: "Book a table",
+  "Cafés": "Book a table",
+  Clubs: "Reserve a table",
+  Bars: "Reserve a table",
+  Hotels: "Check availability",
+  Cinemas: "Reserve seats",
+  Bowling: "Book a lane",
+  Karaoke: "Book a room",
+  Gyms: "Book a session",
+  Golf: "Book a tee time",
+  Camping: "Book a pitch",
+  "Event Centres": "Enquire about dates",
+  Stadiums: "Enquire about dates",
+};
+const ctaLabel = (category: string) => CTA_COPY[category] ?? "Reserve your spot";
+
+function ReserveButton({
+  category,
+  onClick,
+}: {
+  category: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group/cta mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand to-brand-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition duration-200 hover:shadow-lg hover:brightness-[1.08] active:scale-[0.98]"
+    >
+      <LineIcon name="calendar" size={15} />
+      {ctaLabel(category)}
+      <LineIcon
+        name="chevronRight"
+        size={13}
+        className="transition-transform duration-200 group-hover/cta:translate-x-0.5"
+      />
+    </button>
+  );
 }
 
 const VenuesMap = dynamic(() => import("./VenuesMap"), {
@@ -61,7 +108,7 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
     const supabase = createClient();
     supabase
       .from("venues")
-      .select("id, name, category, address, state, image_url, description, price_range")
+      .select("id, name, category, address, state, image_url, description, price_range, lat, lng")
       .eq("is_active", true)
       .order("is_featured", { ascending: false })
       .then(({ data }) => setPartners((data ?? []) as PartnerVenue[]));
@@ -115,6 +162,13 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
     }
     setCenter(place); // triggers load via effect
   }
+
+  const categoryPartners = partners.filter((p) => p.category === category);
+  // A venue we've onboarded was also coming back from OpenStreetMap, so it
+  // rendered twice — once as a partner card, once as a plain pin. The partner
+  // claims its twin and inherits its coordinates (partner rows have no lat/lng
+  // of their own), so it gets a pin instead of a duplicate.
+  const { osmOnly, located } = mergePartnersWithOsm(categoryPartners, venues);
 
   return (
     <div>
@@ -173,7 +227,11 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
             <span>
               <span className="block text-sm font-bold text-gray-900">Map view</span>
               <span className="block text-xs text-gray-500">
-                {mapOpen ? "Tap to hide the map" : `${venues.length} pin${venues.length === 1 ? "" : "s"} near ${center.label}`}
+                {mapOpen
+                  ? "Tap to hide the map"
+                  : `${osmOnly.length + located.length} pin${
+                      osmOnly.length + located.length === 1 ? "" : "s"
+                    } near ${center.label}`}
               </span>
             </span>
           </span>
@@ -192,7 +250,7 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
           }`}
         >
           <div className="overflow-hidden">
-            <VenuesMap center={center} venues={venues} />
+            <VenuesMap center={center} venues={osmOnly} partners={located} />
           </div>
         </div>
       </div>
@@ -204,7 +262,7 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
       )}
 
       {/* Onboarded partners for this category — real photos, real details */}
-      {partners.filter((p) => p.category === category).length > 0 && (
+      {categoryPartners.length > 0 && (
         <div className="mt-6">
           <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
             <span className="grid h-6 w-6 place-items-center rounded-full bg-amber-100 text-amber-600">
@@ -213,14 +271,12 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
             Partner venues
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {partners
-              .filter((p) => p.category === category)
-              .map((p) => (
+            {categoryPartners.map((p) => (
                 <div
                   key={p.id}
                   className="group flex flex-col overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-xl"
                 >
-                  <div className="relative h-32">
+                  <div className="relative aspect-[4/3] w-full">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={p.image_url ?? venuePhoto(VENUE_CATEGORIES.find((c) => c.key === p.category)?.photos, p.id)}
@@ -240,11 +296,13 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
                     {p.description && (
                       <p className="mt-1 line-clamp-2 text-sm text-gray-600">{p.description}</p>
                     )}
-                    {p.price_range && (
-                      <p className="mt-1 text-sm font-semibold text-brand">{p.price_range}</p>
+                    {formatPriceRange(p.price_range) && (
+                      <p className="mt-1 text-sm font-bold text-naija-700">
+                        {formatPriceRange(p.price_range)}
+                      </p>
                     )}
-                    <button
-                      type="button"
+                    <ReserveButton
+                      category={p.category}
                       onClick={() =>
                         setModalVenue({
                           id: `partner-${p.id}`,
@@ -252,18 +310,15 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
                           osmId: 0,
                           name: p.name,
                           category: p.category,
-                          lat: center.lat,
-                          lng: center.lng,
+                          lat: p.lat ?? center.lat,
+                          lng: p.lng ?? center.lng,
                           address: p.address ?? "",
                         })
                       }
-                      className="btn-primary mt-4 w-full py-2"
-                    >
-                      Request Reservation
-                    </button>
+                    />
                   </div>
                 </div>
-              ))}
+            ))}
           </div>
         </div>
       )}
@@ -273,10 +328,10 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
         <h2 className="mb-3 text-lg font-bold text-gray-900">
           {loading
             ? "Finding venues…"
-            : `${venues.length} ${category.toLowerCase()} nearby`}
+            : `${osmOnly.length} ${category.toLowerCase()} nearby`}
         </h2>
 
-        {!loading && venues.length === 0 && !error && (
+        {!loading && osmOnly.length === 0 && categoryPartners.length === 0 && !error && (
           <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-14 text-center">
             <p className="text-4xl">🚀</p>
             <h3 className="mt-3 text-lg font-bold text-gray-900">
@@ -313,7 +368,7 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
         )}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {venues.map((v) => {
+          {osmOnly.map((v) => {
             const dist = distanceKm(center.lat, center.lng, v.lat, v.lng);
             const cat = VENUE_CATEGORIES.find((c) => c.key === v.category);
             return (
@@ -321,7 +376,7 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
                 key={v.id}
                 className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-xl"
               >
-                <Link href={`/venues/${v.id}`} className="relative block h-32">
+                <Link href={`/venues/${v.id}`} className="relative block aspect-[4/3] w-full">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={venuePhoto(cat?.photos, v.id)}
@@ -357,13 +412,10 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
                         : `${dist.toFixed(1)} km away`}
                     </p>
                   </div>
-                  <button
-                    type="button"
+                  <ReserveButton
+                    category={v.category}
                     onClick={() => setModalVenue(v)}
-                    className="btn-primary mt-4 w-full py-2"
-                  >
-                    Request Reservation
-                  </button>
+                  />
                 </div>
               </div>
             );

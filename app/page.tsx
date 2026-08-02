@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { EVENT_CATEGORIES, CATEGORY_STYLES } from "@/lib/constants";
 import { categoryPhoto } from "@/lib/category-photos";
 import EventCover from "@/components/EventCover";
-import { formatEventDate } from "@/lib/format";
+import { formatEventDate, formatPriceRange } from "@/lib/format";
 import LandingStats from "@/components/LandingStats";
 import LoggedInHome from "@/components/home/LoggedInHome";
 import Rail from "@/components/home/Rail";
@@ -67,6 +67,21 @@ const getPopularSeries = unstable_cache(
   { revalidate: 300 }
 );
 
+const getPartnerVenues = unstable_cache(
+  async () => {
+    const { data } = await cache()
+      .from("venues")
+      .select("id, name, category, state, address, image_url, price_range")
+      .eq("is_active", true)
+      .not("image_url", "is", null)
+      .order("is_featured", { ascending: false })
+      .limit(10);
+    return data ?? [];
+  },
+  ["homepage-partner-venues"],
+  { revalidate: 300 }
+);
+
 const getPopularCircles = unstable_cache(
   async () => {
     const { data } = await cache()
@@ -98,6 +113,16 @@ const getUpcomingEvents = unstable_cache(
   { revalidate: 300 }
 );
 
+interface VenueRow {
+  id: string;
+  name: string;
+  category: string;
+  state: string | null;
+  address: string | null;
+  image_url: string | null;
+  price_range: string | null;
+}
+
 interface EventRow {
   id: string;
   title: string;
@@ -116,11 +141,12 @@ export default async function HomePage() {
   const user = await getSessionUser();
   if (user) return <LoggedInHome userId={user.id} />;
 
-  const [counts, series, events, circles] = await Promise.all([
+  const [counts, series, events, circles, partnerVenues] = await Promise.all([
     getLandingCounts(),
     getPopularSeries(),
     getUpcomingEvents(),
     getPopularCircles(),
+    getPartnerVenues(),
   ]);
   const upcoming = events as EventRow[];
 
@@ -320,25 +346,62 @@ export default async function HomePage() {
       <Rail
         title="Book the spot"
         auto
-        subtitle="Clubs, restaurants, rooftops and cinemas near you"
+        subtitle={
+          partnerVenues.length > 0
+            ? "Real spots on LinkUpNaija — reserve in a tap"
+            : "Clubs, restaurants, rooftops and cinemas near you"
+        }
         href="/venues"
       >
-        {VENUE_TYPES.map((v) => (
-          <Link key={v.label} href="/venues" className={`${CARD} group`}>
-            <div className="relative h-[132px] overflow-hidden rounded-2xl shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={v.img}
-                alt=""
-                className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent" />
-              <p className="absolute inset-x-0 bottom-0 p-3 font-bold text-white">
-                {v.label}
-              </p>
-            </div>
-          </Link>
-        ))}
+        {/* Real onboarded venues when we have them; the stock category tiles
+            are only a fallback for an empty venues table. */}
+        {partnerVenues.length > 0
+          ? (partnerVenues as VenueRow[]).map((v) => (
+              <Link key={v.id} href="/venues" className={`${CARD} group`}>
+                <div className="overflow-hidden rounded-2xl bg-white shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
+                  <div className="relative aspect-[4/3] w-full">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={v.image_url!}
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                    />
+                    <span className="absolute left-2.5 top-2.5 rounded-full bg-[#FAC775] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[#1A1040]">
+                      {v.category}
+                    </span>
+                  </div>
+                  <div className="p-3">
+                    <p className="truncate font-bold text-gray-900 group-hover:text-brand">
+                      {v.name}
+                    </p>
+                    <p className="mt-0.5 truncate text-xs text-gray-500">
+                      {v.address ?? v.state ?? "Nigeria"}
+                    </p>
+                    {formatPriceRange(v.price_range) && (
+                      <p className="mt-1 truncate text-xs font-bold text-naija-700">
+                        {formatPriceRange(v.price_range)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            ))
+          : VENUE_TYPES.map((v) => (
+              <Link key={v.label} href="/venues" className={`${CARD} group`}>
+                <div className="relative h-[132px] overflow-hidden rounded-2xl shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={v.img}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent" />
+                  <p className="absolute inset-x-0 bottom-0 p-3 font-bold text-white">
+                    {v.label}
+                  </p>
+                </div>
+              </Link>
+            ))}
       </Rail>
 
       {series.length > 0 && (

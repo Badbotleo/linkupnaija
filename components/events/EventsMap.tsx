@@ -6,6 +6,8 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { STATE_COORDS, NIGERIA_CENTER } from "@/lib/geo";
+import { CATEGORY_STYLES } from "@/lib/constants";
+import { formatEventDate } from "@/lib/format";
 
 export interface MapEvent {
   id: string;
@@ -15,13 +17,39 @@ export interface MapEvent {
   date: string;
 }
 
-function countIcon(n: number) {
-  return L.divIcon({
-    className: "",
-    html: `<div style="display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#534AB7;color:#fff;font-weight:800;font-size:13px;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)">${n}</div>`,
-    iconSize: [34, 34],
-    iconAnchor: [17, 17],
+// A bare purple number told you a state had events but nothing about what
+// they were. The marker now leads with the vibe — the emoji of whatever
+// category dominates that state — and keeps the count as a badge.
+function eventIcon(n: number, emoji: string) {
+  const html = `
+    <div style="position:relative;width:42px;height:42px">
+      <div style="display:grid;place-items:center;width:42px;height:42px;border-radius:50%;
+                  background:#fff;font-size:19px;line-height:1;
+                  border:3px solid #534AB7;box-shadow:0 3px 8px rgba(26,16,64,.35)">${emoji}</div>
+      ${
+        n > 1
+          ? `<span style="position:absolute;top:-4px;right:-4px;min-width:19px;height:19px;padding:0 4px;
+                 display:grid;place-items:center;border-radius:10px;background:#008753;color:#fff;
+                 font-size:11px;font-weight:800;border:2px solid #fff">${n}</span>`
+          : ""
+      }
+    </div>`;
+  return L.divIcon({ className: "", html, iconSize: [42, 42], iconAnchor: [21, 21] });
+}
+
+/** The category most represented in a state — what that pin should look like. */
+function dominantEmoji(list: MapEvent[]): string {
+  const counts = new Map<string, number>();
+  for (const e of list) counts.set(e.category, (counts.get(e.category) ?? 0) + 1);
+  let best = "";
+  let bestN = 0;
+  counts.forEach((n, cat) => {
+    if (n > bestN) {
+      best = cat;
+      bestN = n;
+    }
   });
+  return CATEGORY_STYLES[best as keyof typeof CATEGORY_STYLES]?.emoji ?? "📍";
 }
 
 // Discovery map: events clustered per Nigerian state (events have no exact
@@ -52,7 +80,11 @@ export default function EventsMap({ events }: { events: MapEvent[] }) {
         {Array.from(byState.entries()).map(([state, list]) => {
           const c = STATE_COORDS[state];
           return (
-            <Marker key={state} position={[c.lat, c.lng]} icon={countIcon(list.length)}>
+            <Marker
+              key={state}
+              position={[c.lat, c.lng]}
+              icon={eventIcon(list.length, dominantEmoji(list))}
+            >
               <Popup>
                 <div style={{ minWidth: 180 }}>
                   <p style={{ margin: "0 0 6px", fontWeight: 700, color: "#1A1040" }}>
@@ -64,14 +96,26 @@ export default function EventsMap({ events }: { events: MapEvent[] }) {
                       href={`/events/${e.id}`}
                       style={{
                         display: "block",
-                        padding: "4px 0",
+                        padding: "5px 0",
                         color: "#534AB7",
                         fontWeight: 600,
                         fontSize: 13,
                         textDecoration: "none",
                       }}
                     >
+                      {CATEGORY_STYLES[e.category as keyof typeof CATEGORY_STYLES]
+                        ?.emoji ?? "📍"}{" "}
                       {e.title}
+                      <span
+                        style={{
+                          display: "block",
+                          color: "#6B7280",
+                          fontWeight: 500,
+                          fontSize: 11,
+                        }}
+                      >
+                        {formatEventDate(e.date)}
+                      </span>
                     </Link>
                   ))}
                 </div>

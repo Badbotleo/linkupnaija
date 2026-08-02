@@ -7,6 +7,13 @@ import { createClient } from "@/lib/supabase/client";
 import { NIGERIAN_STATES } from "@/lib/constants";
 import { isInAppBrowser } from "@/lib/webview";
 
+// Supabase generates the emailed code, and its length is a project-level
+// Auth setting — this project currently sends 8 digits. Accept the whole
+// supported range rather than hard-coding one length and locking people out
+// the next time that setting changes.
+const OTP_MIN = 6;
+const OTP_MAX = 8;
+
 export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -234,24 +241,24 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
           ) : (
             <>
               <p className="text-xs leading-relaxed text-gray-600">
-                We sent a 6-digit code to <strong>{email}</strong>. Enter it
+                We sent a sign-in code to <strong>{email}</strong>. Enter it
                 below — you never need to open the link.
               </p>
               <div className="mt-2 flex gap-2">
                 <input
                   value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  placeholder="123456"
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, OTP_MAX))}
+                  placeholder="12345678"
                   inputMode="numeric"
                   autoComplete="one-time-code"
-                  maxLength={6}
+                  maxLength={OTP_MAX}
                   className="input flex-1 text-center text-lg font-bold tracking-[0.3em]"
                   aria-label="Sign-in code"
                 />
                 <button
                   type="button"
                   onClick={verifyCode}
-                  disabled={otpBusy || otpCode.length < 6}
+                  disabled={otpBusy || otpCode.length < OTP_MIN}
                   className="btn-primary shrink-0 px-4 disabled:opacity-50"
                 >
                   {otpBusy ? "…" : "Verify"}

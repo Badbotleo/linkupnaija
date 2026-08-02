@@ -27,8 +27,8 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     emoji: "🪩",
     tint: "from-purple-100 to-purple-50 text-purple-800",
     categories: [
-      "Clubbing", "Party", "Owambe", "Afrobeats Night", "Rooftop Party",
-      "Pool Party", "Detty December", "Birthday",
+      "Clubbing", "Party", "Afrobeats Night", "Rooftop Party", "Pool Party",
+      "Detty December", "Day Party", "Silent Disco",
     ],
   },
   {
@@ -37,7 +37,10 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     hint: "Eat, sip, repeat",
     emoji: "🍽️",
     tint: "from-rose-100 to-rose-50 text-rose-800",
-    categories: ["Dinner", "Brunch", "Food Festival", "Paint and Sip", "Picnic"],
+    categories: [
+      "Dinner", "Brunch", "Food Festival", "Paint and Sip", "Picnic",
+      "Wine Tasting",
+    ],
   },
   {
     key: "chill",
@@ -47,7 +50,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     tint: "from-teal-100 to-teal-50 text-teal-800",
     categories: [
       "Family Hangout", "Friend Reunion", "Game Night", "Board Games",
-      "Book Club", "Cinema", "Sports Viewing",
+      "Book Club", "Cinema", "Sports Viewing", "Trivia Night", "Spa Day",
     ],
   },
   {
@@ -56,7 +59,10 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     hint: "Beach, hikes, gym",
     emoji: "🏝️",
     tint: "from-naija-100 to-naija-50 text-naija-800",
-    categories: ["Beach Day", "Hiking", "Yoga", "Fitness", "Road Trip", "Bowling"],
+    categories: [
+      "Beach Day", "Hiking", "Yoga", "Fitness", "Road Trip", "Bowling",
+      "Camping", "Boat Cruise", "Go-Karting",
+    ],
   },
   {
     key: "stage",
@@ -65,7 +71,8 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     emoji: "🎤",
     tint: "from-amber-100 to-amber-50 text-amber-800",
     categories: [
-      "Concert", "Live Music", "Comedy Night", "Karaoke", "Open Mic", "Art Gallery",
+      "Concert", "Live Music", "Comedy Night", "Karaoke", "Open Mic",
+      "Art Gallery", "Fashion Show",
     ],
   },
   {
@@ -75,6 +82,14 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     emoji: "🤝",
     tint: "from-blue-100 to-blue-50 text-blue-800",
     categories: ["Networking", "Tech Meetup", "Volunteering"],
+  },
+  {
+    key: "celebrate",
+    label: "Celebrations",
+    hint: "Somebody's big day",
+    emoji: "🎉",
+    tint: "from-pink-100 to-pink-50 text-pink-800",
+    categories: ["Owambe", "Birthday", "Baby Shower", "Graduation Party"],
   },
 ];
 

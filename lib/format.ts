@@ -41,3 +41,30 @@ export function formatEventTime(time: string): string {
   const hour12 = hour % 12 === 0 ? 12 : hour % 12;
   return `${hour12}:${m ?? "00"} ${period}`;
 }
+
+/**
+ * Venue prices are free text an admin typed, so the real rows look like
+ * "5000-50000", " ₦20,000–80,000" and "Free Entry". Normalise every amount to
+ * a proper naira figure without destroying the words around it.
+ *
+ * Returns null for empty input and passes non-numeric text ("Free Entry")
+ * straight through, so we never stamp ₦ on something that isn't a price.
+ */
+export function formatPriceRange(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const text = raw.trim().replace(/\s+/g, " ");
+  if (!text) return null;
+  if (!/\d/.test(text)) return text;
+
+  return (
+    text
+      // Any amount, whether or not the admin bothered with the ₦ or commas.
+      .replace(
+        /₦?\s?(\d[\d,]*)/g,
+        (_m, n: string) =>
+          `₦${Number(n.replace(/,/g, "")).toLocaleString("en-NG")}`
+      )
+      // Hyphen / en dash / em dash between two amounts reads as a range.
+      .replace(/\s*[–—-]\s*/g, " – ")
+  );
+}

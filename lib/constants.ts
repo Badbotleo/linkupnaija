@@ -81,6 +81,17 @@ export const EVENT_CATEGORIES = [
   "Birthday",
   "Detty December",
   "Volunteering",
+  "Camping",
+  "Boat Cruise",
+  "Day Party",
+  "Silent Disco",
+  "Trivia Night",
+  "Wine Tasting",
+  "Spa Day",
+  "Go-Karting",
+  "Fashion Show",
+  "Baby Shower",
+  "Graduation Party",
 ] as const;
 
 export type EventCategory = (typeof EVENT_CATEGORIES)[number];
@@ -252,6 +263,17 @@ export const CATEGORY_STYLES: Record<
   "Birthday": { badge: "bg-pink-100 text-pink-700", emoji: "🎂" },
   "Detty December": { badge: "bg-red-100 text-red-700", emoji: "🎊" },
   "Volunteering": { badge: "bg-emerald-100 text-emerald-700", emoji: "🤲" },
+  "Camping": { badge: "bg-lime-100 text-lime-700", emoji: "⛺" },
+  "Boat Cruise": { badge: "bg-sky-100 text-sky-700", emoji: "🛥️" },
+  "Day Party": { badge: "bg-yellow-100 text-yellow-700", emoji: "☀️" },
+  "Silent Disco": { badge: "bg-violet-100 text-violet-700", emoji: "🎧" },
+  "Trivia Night": { badge: "bg-indigo-100 text-indigo-700", emoji: "🧠" },
+  "Wine Tasting": { badge: "bg-rose-100 text-rose-700", emoji: "🍷" },
+  "Spa Day": { badge: "bg-cyan-100 text-cyan-700", emoji: "💆" },
+  "Go-Karting": { badge: "bg-red-100 text-red-700", emoji: "🏎️" },
+  "Fashion Show": { badge: "bg-fuchsia-100 text-fuchsia-700", emoji: "👗" },
+  "Baby Shower": { badge: "bg-pink-100 text-pink-700", emoji: "🍼" },
+  "Graduation Party": { badge: "bg-amber-100 text-amber-700", emoji: "🎓" },
 };
 
 export function categoryStyle(category: string) {
@@ -300,6 +322,17 @@ export const CATEGORY_GRADIENTS: Record<EventCategory, string> = {
   "Birthday": "from-pink-400 to-rose-500",
   "Detty December": "from-red-500 to-rose-600",
   "Volunteering": "from-emerald-500 to-green-600",
+  "Camping": "from-lime-500 to-green-600",
+  "Boat Cruise": "from-sky-500 to-blue-600",
+  "Day Party": "from-yellow-400 to-amber-500",
+  "Silent Disco": "from-violet-500 to-purple-600",
+  "Trivia Night": "from-indigo-500 to-blue-600",
+  "Wine Tasting": "from-rose-500 to-red-600",
+  "Spa Day": "from-cyan-400 to-teal-500",
+  "Go-Karting": "from-red-500 to-orange-600",
+  "Fashion Show": "from-fuchsia-500 to-pink-600",
+  "Baby Shower": "from-pink-400 to-rose-500",
+  "Graduation Party": "from-amber-500 to-yellow-600",
 };
 
 export function categoryGradient(category: string) {

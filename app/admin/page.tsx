@@ -7,6 +7,7 @@ import AdminReservations from "@/components/admin/AdminReservations";
 import AdminExpiredEvents from "@/components/admin/AdminExpiredEvents";
 import AdminMessages from "@/components/admin/AdminMessages";
 import AdminVenues from "@/components/admin/AdminVenues";
+import AdminInstagram from "@/components/admin/AdminInstagram";
 import AdminRides from "@/components/admin/AdminRides";
 import AdminPro from "@/components/admin/AdminPro";
 import AdminPayouts from "@/components/admin/AdminPayouts";
@@ -495,6 +496,14 @@ export default async function AdminPage() {
       <section className="mt-10">
         <h2 className="mb-3 text-lg font-bold text-gray-900">Ride requests</h2>
         <AdminRides />
+      </section>
+
+      {/* Instagram posts */}
+      <section className="mt-10">
+        <h2 className="mb-1 text-lg font-bold text-gray-900">
+          Post an event to Instagram
+        </h2>
+        <AdminInstagram />
       </section>
 
       {/* Onboarded venues */}
