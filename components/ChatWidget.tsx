@@ -1,14 +1,26 @@
 "use client";
 
 import { useEffect, useRef, useState, Fragment } from "react";
+import { LogoMark } from "./Logo";
 
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
 }
 
+// "Paddy" is what the product already calls a close friend — "bring your
+// paddy", "share a ride with your paddy". Naming the assistant after it makes
+// it part of LinkUpNaija rather than a generic bot bolted onto the corner.
 const GREETING =
-  "Hey! 👋 I'm the LinkUpNaija assistant. Tell me the kind of vibe you're after (e.g. \"chill picnic in Lagos this weekend\"), ask how the platform works, or get help writing your event. No wahala!";
+  "How far? 👋 I'm Paddy, your plug on LinkUpNaija. Tell me the vibe you're chasing, ask how anything here works, or let me help you write your event.";
+
+// Starters, so nobody has to guess what it can do.
+const PROMPTS = [
+  "What's happening this weekend?",
+  "Find me a chill spot in Abuja",
+  "How do I host an event?",
+  "Help me write my event description",
+];
 
 // Render text with markdown links [label](url) turned into clickable anchors.
 function renderContent(text: string) {
@@ -74,7 +86,11 @@ export default function ChatWidget() {
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
-    const text = input.trim();
+    await ask(input);
+  }
+
+  async function ask(raw: string) {
+    const text = raw.trim();
     if (!text || loading) return;
 
     const next: ChatMessage[] = [...messages, { role: "user", content: text }];
@@ -110,8 +126,8 @@ export default function ChatWidget() {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        aria-label={open ? "Close chat" : "Open LinkUpNaija assistant"}
-        className="fixed bottom-20 right-4 z-50 grid h-14 w-14 place-items-center rounded-full bg-brand text-white shadow-lg shadow-brand/30 transition hover:bg-brand-600 active:scale-95 lg:bottom-5 lg:right-5"
+        aria-label={open ? "Close chat" : "Ask Paddy, the LinkUpNaija assistant"}
+        className="fixed bottom-20 right-4 z-50 grid h-11 w-11 place-items-center rounded-full bg-brand text-white shadow-lg shadow-brand/25 transition hover:bg-brand-600 active:scale-95 lg:bottom-5 lg:right-5"
       >
         {open ? <CloseIcon /> : <ChatIcon />}
       </button>
@@ -125,21 +141,25 @@ export default function ChatWidget() {
         }`}
         style={{ height: "500px", maxHeight: "calc(100vh - 8rem)" }}
         role="dialog"
-        aria-label="LinkUpNaija assistant"
+        aria-label="Paddy, the LinkUpNaija assistant"
         aria-hidden={!open}
       >
         {/* Header */}
-        <div className="flex items-center justify-between bg-brand px-4 py-3 text-white">
-          <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-white/20 text-base font-black">
-              L
+        <div
+          className="flex items-center justify-between px-4 py-3 text-white"
+          style={{ background: "linear-gradient(135deg, #534AB7 0%, #1A1040 100%)" }}
+        >
+          <div className="flex items-center gap-2.5">
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-white/15">
+              <LogoMark size={26} />
             </span>
             <div>
-              <p className="text-sm font-bold leading-tight">
-                LinkUpNaija Assistant
+              <p className="flex items-center gap-1.5 text-sm font-bold leading-tight">
+                Paddy
+                <span className="flex h-1.5 w-1.5 rounded-full bg-naija" />
               </p>
-              <p className="text-[11px] text-brand-100">
-                Ask me about events, hosting & more
+              <p className="text-[11px] text-white/65">
+                Your plug for events, spots &amp; hosting
               </p>
             </div>
           </div>
@@ -159,6 +179,21 @@ export default function ChatWidget() {
           className="flex-1 space-y-3 overflow-y-auto bg-gray-50 px-3 py-4"
         >
           <AssistantBubble>{renderContent(GREETING)}</AssistantBubble>
+
+          {messages.length === 0 && (
+            <div className="flex flex-wrap gap-1.5 pl-9">
+              {PROMPTS.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => ask(p)}
+                  className="rounded-full border border-brand/25 bg-white px-3 py-1.5 text-[12px] font-semibold text-brand transition hover:border-brand hover:bg-brand-50"
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          )}
 
           {messages.map((m, i) =>
             m.role === "assistant" ? (
@@ -194,7 +229,7 @@ export default function ChatWidget() {
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask me anything…"
+            placeholder="Ask Paddy anything…"
             className="flex-1 rounded-xl border border-gray-200 px-3.5 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
           />
           <button
@@ -214,8 +249,8 @@ export default function ChatWidget() {
 function AssistantBubble({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-start gap-2">
-      <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand text-xs font-black text-white">
-        AI
+      <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand-50">
+        <LogoMark size={20} />
       </span>
       <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-tl-sm bg-white px-3.5 py-2 text-sm text-gray-800 shadow-sm">
         {children}
@@ -226,7 +261,7 @@ function AssistantBubble({ children }: { children: React.ReactNode }) {
 
 function TypingDots() {
   return (
-    <span className="flex items-center gap-1 py-1" aria-label="Assistant is typing">
+    <span className="flex items-center gap-1 py-1" aria-label="Paddy is typing">
       {[0, 150, 300].map((delay) => (
         <span
           key={delay}
