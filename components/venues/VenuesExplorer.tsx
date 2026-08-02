@@ -16,6 +16,7 @@ import LineIcon from "../ui/LineIcon";
 import { createClient } from "@/lib/supabase/client";
 import { mergePartnersWithOsm } from "@/lib/venue-match";
 import { formatPriceRange } from "@/lib/format";
+import SwipeDeck from "../home/SwipeDeck";
 
 interface PartnerVenue {
   id: string;
@@ -190,40 +191,12 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
     [categoryPartners, venues]
   );
 
-  // One list, partners first — two separate grids made you scan the page twice
-  // to answer the same question.
+  // The grid is everything else nearby. Partners live in the deck above, so
+  // listing them here too would re-create exactly the duplication this page
+  // just got rid of.
   const cards: Card[] = useMemo(() => {
     const cat = VENUE_CATEGORIES.find((c) => c.key === category);
-
-    const partnerCards: Card[] = categoryPartners.map((p) => {
-      const pin = located.find((l) => l.id === p.id);
-      return {
-        key: `partner-${p.id}`,
-        name: p.name,
-        category: p.category,
-        address: p.address,
-        description: p.description,
-        price: formatPriceRange(p.price_range),
-        image: p.image_url ?? venuePhoto(cat?.photos, p.id),
-        isPartner: true,
-        distanceKm: pin
-          ? distanceKm(center.lat, center.lng, pin.lat, pin.lng)
-          : null,
-        href: null,
-        venue: {
-          id: `partner-${p.id}`,
-          osmType: "node",
-          osmId: 0,
-          name: p.name,
-          category: p.category,
-          lat: pin?.lat ?? center.lat,
-          lng: pin?.lng ?? center.lng,
-          address: p.address ?? "",
-        },
-      };
-    });
-
-    const osmCards: Card[] = osmOnly.map((v) => ({
+    return osmOnly.map((v) => ({
       key: v.id,
       name: v.name,
       category: v.category,
@@ -236,9 +209,7 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
       href: `/venues/${v.id}`,
       venue: v,
     }));
-
-    return [...partnerCards, ...osmCards];
-  }, [categoryPartners, located, osmOnly, category, center]);
+  }, [osmOnly, category, center]);
 
   const pinCount = osmOnly.length + located.length;
 
@@ -301,9 +272,94 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
       </div>
 
       <p className="mt-3 text-sm text-gray-500">
-        {loading ? "Looking…" : `${cards.length} ${category.toLowerCase()}`} near{" "}
+        {loading
+          ? "Looking…"
+          : `${categoryPartners.length + cards.length} ${category.toLowerCase()}`}{" "}
+        near{" "}
         <span className="font-semibold text-gray-700">{center.label}</span>
       </p>
+
+      {/* Partner venues get a deck of their own — these are the spots we can
+          actually book, and they deserve more than a row in a grid. */}
+      {categoryPartners.length > 0 && (
+        <div className="-mx-4 mt-4 sm:-mx-6 lg:-mx-8">
+          <div className="container-page flex items-end justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="flex items-center gap-2 text-[19px] font-extrabold tracking-[-0.02em] text-gray-900">
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-amber-100 text-amber-600">
+                  <LineIcon name="star" size={13} filled />
+                </span>
+                Partner venues
+              </h2>
+              <p className="mt-0.5 text-[13px] text-gray-500">
+                Swipe through the spots we can book for you
+              </p>
+            </div>
+          </div>
+
+          <SwipeDeck className="h-[356px]">
+            {categoryPartners.map((p) => {
+              const pin = located.find((l) => l.id === p.id);
+              const price = formatPriceRange(p.price_range);
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() =>
+                    setModalVenue({
+                      id: `partner-${p.id}`,
+                      osmType: "node",
+                      osmId: 0,
+                      name: p.name,
+                      category: p.category,
+                      lat: pin?.lat ?? center.lat,
+                      lng: pin?.lng ?? center.lng,
+                      address: p.address ?? "",
+                    })
+                  }
+                  className="relative block h-full w-full overflow-hidden rounded-3xl text-left shadow-card"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={
+                      p.image_url ??
+                      venuePhoto(
+                        VENUE_CATEGORIES.find((c) => c.key === p.category)?.photos,
+                        p.id
+                      )
+                    }
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/92 via-black/35 to-black/10" />
+
+                  <span className="absolute left-4 top-4 rounded-full bg-[#FAC775] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#1A1040]">
+                    Partner
+                  </span>
+
+                  <div className="absolute inset-x-0 bottom-0 p-5 text-white">
+                    <p className="text-[21px] font-extrabold leading-tight">
+                      {p.name}
+                    </p>
+                    {p.address && (
+                      <p className="mt-1 line-clamp-1 text-sm text-white/75">
+                        {p.address}
+                      </p>
+                    )}
+                    {price && (
+                      <p className="mt-1 text-sm font-bold text-[#FAC775]">{price}</p>
+                    )}
+                    <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-bold text-gray-900">
+                      <LineIcon name="calendar" size={14} />
+                      {ctaLabel(p.category)}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </SwipeDeck>
+        </div>
+      )}
 
       {error && (
         <p className="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
@@ -389,7 +445,7 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
                 </div>
               ))}
             </div>
-          ) : cards.length === 0 ? (
+          ) : cards.length === 0 && categoryPartners.length === 0 ? (
             <EmptyState
               category={category}
               label={center.label}
@@ -399,7 +455,7 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
                 setCenter(DEFAULT_CENTER);
               }}
             />
-          ) : (
+          ) : cards.length === 0 ? null : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {cards.map((c) => (
                 <VenueCard

@@ -5,6 +5,8 @@ import CategoryBadge from "@/components/CategoryBadge";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { categoriesForInterests } from "@/lib/constants";
 import LineIcon from "@/components/ui/LineIcon";
+import Rail from "@/components/home/Rail";
+import SwipeDeck from "@/components/home/SwipeDeck";
 
 interface EventLite {
   id: string;
@@ -16,6 +18,10 @@ interface EventLite {
   state: string;
   cover_image_url: string | null;
 }
+
+// Matches the visitor homepage exactly — the two screens should feel like
+// one product, not two.
+const CARD = "w-[72vw] max-w-[268px] shrink-0 snap-start sm:w-[268px]";
 
 const QUICK_ACTIONS = [
   { href: "/events", label: "Explore", icon: "search" },
@@ -119,10 +125,10 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
     .slice(0, 4);
 
   return (
-    <div className="container-page max-w-4xl py-6 sm:py-8">
+    <div className="pb-10 pt-6">
       {/* Greeting — app style: type sits on the page, not inside a navy card,
           and the shortcuts are a row of round icon buttons like a phone home. */}
-      <section>
+      <section className="container-page">
         <p className="text-[11px] font-black uppercase tracking-[0.2em] text-brand">
           {greeting()}
         </p>
@@ -152,60 +158,93 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
       </section>
 
       {/* Your upcoming events */}
-      <section className="mt-8">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-extrabold tracking-tight text-gray-900">
-            Your <span className="text-brand">line-up</span>
+      {upcoming.length === 0 ? (
+        <section className="container-page mt-8">
+          <h2 className="text-[19px] font-extrabold tracking-[-0.02em] text-gray-900">
+            Your line-up
           </h2>
-          <Link href="/dashboard" className="text-sm font-semibold text-brand">
-            See all →
-          </Link>
-        </div>
-        {upcoming.length === 0 ? (
           <div className="mt-3 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center">
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="text-sm text-gray-500">
               Nothing on your calendar yet. Find a vibe near you.
             </p>
             <Link href="/events" className="btn-primary mt-4">
               Explore events
             </Link>
           </div>
-        ) : (
-          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {upcoming.map((e) => (
-              <EventTile key={e.id} event={e} hosting={hostingIds.has(e.id)} />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Picked for you */}
-      {forYou.length > 0 && (
-        <section className="mt-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-500">
-                Your taste
-              </p>
-              <h2 className="mt-1 text-xl font-extrabold tracking-tight text-gray-900">
-                Picked for <span className="text-brand">you</span>
-              </h2>
+        </section>
+      ) : (
+        <Rail
+          title="Your line-up"
+          auto
+          subtitle="What you've already said yes to"
+          href="/dashboard"
+        >
+          {upcoming.map((e) => (
+            <div key={e.id} className={CARD}>
+              <EventTile event={e} hosting={hostingIds.has(e.id)} />
             </div>
-            <Link href="/profile/edit" className="text-sm font-semibold text-brand">
-              Edit interests →
+          ))}
+        </Rail>
+      )}
+
+      {/* Picked for you — a deck, because a recommendation deserves a look
+          rather than a skim past */}
+      {forYou.length > 0 && (
+        <>
+          <div className="container-page mt-7 flex items-end justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-[19px] font-extrabold tracking-[-0.02em] text-gray-900">
+                Picked for you
+              </h2>
+              <p className="mt-0.5 text-[13px] text-gray-500">
+                Swipe through link-ups matched to your taste
+              </p>
+            </div>
+            <Link
+              href="/profile/edit"
+              className="shrink-0 whitespace-nowrap text-sm font-bold text-brand transition hover:opacity-70"
+            >
+              Edit interests
             </Link>
           </div>
-          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <SwipeDeck className="h-[336px]">
             {forYou.map((e) => (
-              <EventTile key={e.id} event={e} />
+              <Link
+                key={e.id}
+                href={`/events/${e.id}`}
+                className="group relative block h-full overflow-hidden rounded-3xl shadow-card"
+              >
+                <div className="absolute inset-0">
+                  <EventCover
+                    url={e.cover_image_url}
+                    category={e.category}
+                    title={e.title}
+                    className="h-full w-full"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
+                <div className="absolute inset-x-0 bottom-0 p-5 text-white">
+                  <p className="text-[22px] font-extrabold leading-tight">
+                    {e.title}
+                  </p>
+                  <p className="mt-1.5 text-sm text-white/80">
+                    {formatEventDate(e.date)}
+                    {e.time ? ` · ${formatEventTime(e.time)}` : ""} · {e.location}
+                  </p>
+                  <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-bold text-gray-900">
+                    See the link-up
+                    <LineIcon name="chevronRight" size={13} />
+                  </span>
+                </div>
+              </Link>
             ))}
-          </div>
-        </section>
+          </SwipeDeck>
+        </>
       )}
 
       {/* No interests yet → nudge to personalise */}
       {(!profile?.interests || profile.interests.length === 0) && (
-        <section className="mt-8">
+        <section className="container-page mt-8">
           <div className="flex flex-col items-center gap-3 rounded-2xl border border-brand/20 bg-brand-50 px-6 py-8 text-center sm:flex-row sm:text-left">
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white text-brand">
               <LineIcon name="sparkles" size={22} />
@@ -228,22 +267,18 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
 
       {/* Near you */}
       {nearby.length > 0 && (
-        <section className="mt-8">
-          <div className="flex items-center justify-between">
-            <h2 className="flex items-center gap-2 text-xl font-extrabold tracking-tight text-gray-900">
-              <LineIcon name="pin" size={18} className="text-brand" />
-              Happening {profile?.state ? `in ${profile.state}` : "near you"}
-            </h2>
-            <Link href="/events" className="text-sm font-semibold text-brand">
-              See all →
-            </Link>
-          </div>
-          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {nearby.map((e) => (
-              <EventTile key={e.id} event={e} />
-            ))}
-          </div>
-        </section>
+        <Rail
+          title={`Happening ${profile?.state ? `in ${profile.state}` : "near you"}`}
+          auto
+          subtitle="Fresh link-ups on your doorstep"
+          href="/events"
+        >
+          {nearby.map((e) => (
+            <div key={e.id} className={CARD}>
+              <EventTile event={e} />
+            </div>
+          ))}
+        </Rail>
       )}
     </div>
   );

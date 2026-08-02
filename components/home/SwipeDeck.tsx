@@ -139,9 +139,11 @@ export default function SwipeDeck({
 
   return (
     <div className="container-page mt-3">
+      {/* Capped width: a deck stretched to 1088px on a desktop reads as a
+          banner, not a card you'd flick away. */}
       <div
         ref={box}
-        className={`relative select-none ${className}`}
+        className={`relative mx-auto w-full max-w-xl select-none ${className}`}
         style={{ touchAction: "pan-y" }}
       >
         {cards.map((card, i) => {
