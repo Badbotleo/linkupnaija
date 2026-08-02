@@ -9,7 +9,6 @@ import EventsTabs from "@/components/EventsTabs";
 import EventsStories from "@/components/EventsStories";
 import LocationMatch from "@/components/LocationMatch";
 import { computeBadges, type Badge } from "@/lib/hostBadges";
-import TournamentBanner from "@/components/tournament/TournamentBanner";
 import type { EventRow, RsvpStatus } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -246,7 +245,6 @@ export default async function EventsPage({
         action={<Link href="/host" className="btn-primary rounded-full px-4 py-2 text-sm">Host</Link>}
       />
       <div className="container-page py-5">
-      <TournamentBanner />
 
       <div className="mt-6">
         <Suspense fallback={null}>

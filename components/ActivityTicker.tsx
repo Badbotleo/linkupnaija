@@ -25,10 +25,6 @@ interface TickerMessage {
   text: string;
 }
 
-function rand(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
 export default function ActivityTicker() {
   const supabase = createClient();
   const [messages, setMessages] = useState<TickerMessage[]>([]);
@@ -94,11 +90,6 @@ export default function ActivityTicker() {
             msgs.push({ eventId: e.id, text: `⚡ ${left} spots left for ${e.title}` });
         }
       }
-      msgs.push({
-        eventId: null,
-        text: `🔥 ${rand(8, 47)} people viewed the FC26 Tournament in the last hour`,
-      });
-
       // shuffle for variety
       for (let i = msgs.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
