@@ -64,7 +64,7 @@ export async function GET(
   // Long titles have to shrink or they blow past the canvas.
   const titleSize = title.length > 60 ? 54 : title.length > 34 ? 66 : 82;
 
-  return new ImageResponse(
+  const res = new ImageResponse(
     (
       <div
         style={{
@@ -221,4 +221,10 @@ export async function GET(
     ),
     { width: SIZE, height: SIZE }
   );
+
+  // next/og hardcodes `public, immutable, max-age=31536000`, so a card
+  // generated before a logo change is pinned in every browser for a year and
+  // never revalidated. Overwrite it: browsers re-check, the CDN holds an hour.
+  res.headers.set("Cache-Control", "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400");
+  return res;
 }

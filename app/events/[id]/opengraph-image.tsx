@@ -40,7 +40,7 @@ export default async function OgImage({ params }: { params: { id: string } }) {
       })
     : "";
 
-  return new ImageResponse(
+  const res = new ImageResponse(
     (
       <div
         style={{
@@ -161,4 +161,8 @@ export default async function OgImage({ params }: { params: { id: string } }) {
     ),
     size
   );
+
+  // Same reason as the Instagram card — see that route.
+  res.headers.set("Cache-Control", "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400");
+  return res;
 }

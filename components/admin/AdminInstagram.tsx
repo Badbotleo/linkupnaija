@@ -42,6 +42,9 @@ export function instagramHandle(url: string | null | undefined): string | null {
   return `@${handle}`;
 }
 
+// Bump when the card design changes — old URLs stay cached, this one is new.
+const CARD_VERSION = 2;
+
 export default function AdminInstagram() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -133,14 +136,14 @@ export default function AdminInstagram() {
           >
             {/* Live preview of the exact graphic that downloads */}
             <a
-              href={`/api/ig-card/${r.id}`}
+              href={`/api/ig-card/${r.id}?v=${CARD_VERSION}`}
               target="_blank"
               rel="noreferrer"
               className="relative block aspect-square w-full shrink-0 overflow-hidden rounded-xl bg-gray-100 sm:w-40"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`/api/ig-card/${r.id}`}
+                src={`/api/ig-card/${r.id}?v=${CARD_VERSION}`}
                 alt={`Instagram graphic for ${r.title}`}
                 loading="lazy"
                 className="h-full w-full object-cover"
@@ -173,7 +176,7 @@ export default function AdminInstagram() {
 
               <div className="mt-3 flex flex-wrap gap-2">
                 <a
-                  href={`/api/ig-card/${r.id}`}
+                  href={`/api/ig-card/${r.id}?v=${CARD_VERSION}`}
                   download={`linkupnaija-${r.id}.png`}
                   className="inline-flex items-center gap-1.5 rounded-xl bg-brand px-3.5 py-2 text-sm font-bold text-white transition hover:bg-brand-600"
                 >
