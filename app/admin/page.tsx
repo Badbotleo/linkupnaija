@@ -8,6 +8,7 @@ import AdminExpiredEvents from "@/components/admin/AdminExpiredEvents";
 import AdminMessages from "@/components/admin/AdminMessages";
 import AdminVenues from "@/components/admin/AdminVenues";
 import AdminInstagram from "@/components/admin/AdminInstagram";
+import AdminThingsToDo from "@/components/admin/AdminThingsToDo";
 import AdminRides from "@/components/admin/AdminRides";
 import AdminPro from "@/components/admin/AdminPro";
 import AdminPayouts from "@/components/admin/AdminPayouts";
@@ -340,6 +341,14 @@ export default async function AdminPage() {
           )}
         </h2>
         <AdminReservations initialReservations={reservations} />
+      </section>
+
+      {/* Things to do this week */}
+      <section className="mt-10">
+        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
+          🗓️ Things to do this week
+        </h2>
+        <AdminThingsToDo />
       </section>
 
       {/* Tournament */}

@@ -10,18 +10,25 @@ import { FREQUENCY_OPTIONS, nextDates } from "@/lib/series";
 import { formatEventDate } from "@/lib/format";
 import type { SeriesFrequency } from "@/lib/types";
 
-export default function HostForm({ hostState }: { hostState: string | null }) {
+export default function HostForm({
+  hostState,
+  prefill,
+}: {
+  hostState: string | null;
+  /** Carried in from a "Things to do" idea, so the form opens part-done. */
+  prefill?: { category?: string; location?: string; state?: string; title?: string };
+}) {
   const router = useRouter();
   const supabase = createClient();
 
   const [form, setForm] = useState({
-    title: "",
-    category: "" as string,
+    title: prefill?.title ?? "",
+    category: (prefill?.category ?? "") as string,
     description: "",
     date: "",
     time: "",
-    location: "",
-    state: hostState ?? "",
+    location: prefill?.location ?? "",
+    state: prefill?.state ?? hostState ?? "",
     max_attendees: "",
     price: "",
     event_type: "general" as "general" | "private",

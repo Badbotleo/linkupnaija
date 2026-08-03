@@ -10,6 +10,7 @@ import LoggedInHome from "@/components/home/LoggedInHome";
 import Rail from "@/components/home/Rail";
 import SwipeDeck from "@/components/home/SwipeDeck";
 import ScreenTour from "@/components/home/ScreenTour";
+import ThingsToDo from "@/components/home/ThingsToDo";
 import LineIcon from "@/components/ui/LineIcon";
 import { getSessionUser } from "@/lib/supabase/auth";
 import { getVisitorState } from "@/lib/visitor-geo";
@@ -494,6 +495,9 @@ export default async function HomePage() {
           </SwipeDeck>
         </>
       )}
+
+      {/* Turn browsing into hosting */}
+      <ThingsToDo state={visitorState} />
 
       <DeckHeading
         title="Book the spot"
