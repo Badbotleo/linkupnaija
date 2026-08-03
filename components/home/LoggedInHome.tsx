@@ -4,9 +4,28 @@ import EventCover from "@/components/EventCover";
 import CategoryBadge from "@/components/CategoryBadge";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { categoriesForInterests } from "@/lib/constants";
+import { categoryPhoto } from "@/lib/category-photos";
 import LineIcon from "@/components/ui/LineIcon";
 import Rail from "@/components/home/Rail";
 import SwipeDeck from "@/components/home/SwipeDeck";
+
+interface CircleLite {
+  id: string;
+  name: string;
+  category: string | null;
+  state: string | null;
+  member_count: number;
+  cover_image_url: string | null;
+}
+
+interface VenueLite {
+  id: string;
+  name: string;
+  category: string;
+  address: string | null;
+  state: string | null;
+  image_url: string | null;
+}
 
 interface EventLite {
   id: string;
@@ -110,6 +129,37 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
     for (const e of forYou) seen.add(e.id);
   }
 
+  // The page used to stop dead after the last event rail. These give it an
+  // ending: somewhere to belong, somewhere to book, and something to do when
+  // there's nothing on.
+  const [{ data: myCircleRows }, { data: venueRows }, { data: refRow }] =
+    await Promise.all([
+      supabase.from("circle_members").select("circle_id").eq("user_id", userId),
+      supabase
+        .from("venues")
+        .select("id, name, category, address, state, image_url")
+        .eq("is_active", true)
+        .order("is_featured", { ascending: false })
+        .limit(8),
+      supabase.from("users").select("referral_code").eq("id", userId).single(),
+    ]);
+
+  const myCircleIds = new Set(
+    ((myCircleRows ?? []) as { circle_id: string }[]).map((r) => r.circle_id)
+  );
+  const { data: circleRows } = await supabase
+    .from("circles")
+    .select("id, name, category, state, member_count, cover_image_url")
+    .eq("is_private", false)
+    .order("member_count", { ascending: false })
+    .limit(12);
+  const circles = ((circleRows ?? []) as CircleLite[])
+    .filter((c) => !myCircleIds.has(c.id))
+    .slice(0, 8);
+  const venues = (venueRows ?? []) as VenueLite[];
+  const referralCode = (refRow as { referral_code: string | null } | null)
+    ?.referral_code ?? null;
+
   // Nearby events (their state), excluding ones already in their list.
   let nearbyQuery = supabase
     .from("events")
@@ -125,7 +175,7 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
     .slice(0, 4);
 
   return (
-    <div className="pb-10 pt-6">
+    <div className="pb-28 pt-6 lg:pb-14">
       {/* Greeting — app style: type sits on the page, not inside a navy card,
           and the shortcuts are a row of round icon buttons like a phone home. */}
       <section className="container-page">
@@ -280,6 +330,113 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
           ))}
         </Rail>
       )}
+
+      {/* Somewhere to belong between events */}
+      {circles.length > 0 && (
+        <Rail
+          title="Circles to join"
+          auto
+          subtitle="Communities you're not in yet"
+          href="/circles"
+        >
+          {circles.map((c) => (
+            <Link key={c.id} href={`/circles/${c.id}`} className={`${CARD} group`}>
+              <div className="relative h-[148px] overflow-hidden rounded-2xl shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={c.cover_image_url ?? categoryPhoto(c.category ?? "Party")}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-3 text-white">
+                  <p className="truncate font-bold">{c.name}</p>
+                  <p className="mt-0.5 truncate text-xs text-white/75">
+                    {c.member_count} member{c.member_count === 1 ? "" : "s"}
+                    {c.state ? ` · ${c.state}` : ""}
+                  </p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </Rail>
+      )}
+
+      {/* Somewhere to book */}
+      {venues.length > 0 && (
+        <Rail
+          title="Book the spot"
+          auto
+          subtitle="Partner venues you can reserve through us"
+          href="/venues"
+        >
+          {venues.map((v) => (
+            <Link key={v.id} href="/venues" className={`${CARD} group`}>
+              <div className="relative h-[132px] overflow-hidden rounded-2xl shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={v.image_url ?? "/venues/restaurants.jpg"}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                <span className="absolute left-2.5 top-2.5 rounded-full bg-[#FAC775] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[#1A1040]">
+                  Partner
+                </span>
+                <div className="absolute inset-x-0 bottom-0 p-3 text-white">
+                  <p className="truncate font-bold">{v.name}</p>
+                  <p className="mt-0.5 truncate text-xs text-white/75">
+                    {[v.category, v.state].filter(Boolean).join(" · ")}
+                  </p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </Rail>
+      )}
+
+      {/* The close: something to do when nothing on the page tempted them */}
+      <section className="container-page mt-9">
+        <div
+          className="relative overflow-hidden rounded-3xl p-6 text-white shadow-card sm:p-8"
+          style={{ background: "linear-gradient(135deg, #534AB7 0%, #1A1040 100%)" }}
+        >
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-14 -top-14 h-48 w-48 rounded-full bg-[#FAC775]/20 blur-[70px]"
+          />
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50">
+                Nothing catching your eye?
+              </p>
+              <h2 className="mt-1.5 text-[22px] font-extrabold leading-tight tracking-[-0.02em] sm:text-[26px]">
+                Bring your paddy — you both get{" "}
+                <span className="text-[#FAC775]">&#8358;500</span>
+              </h2>
+              <p className="mt-1.5 text-sm text-white/70">
+                {referralCode
+                  ? "Share your code and earn every time someone joins."
+                  : "Or start your own link-up and let your people come to you."}
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-wrap gap-2">
+              <Link
+                href="/refer"
+                className="rounded-full bg-[#FAC775] px-5 py-2.5 text-sm font-black text-[#1A1040] transition hover:brightness-105"
+              >
+                Invite &amp; earn
+              </Link>
+              <Link
+                href="/host"
+                className="rounded-full bg-white/10 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-white/20"
+              >
+                Host something
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
