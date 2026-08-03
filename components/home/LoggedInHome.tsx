@@ -6,6 +6,7 @@ import { formatEventDate, formatEventTime } from "@/lib/format";
 import { categoriesForInterests } from "@/lib/constants";
 import { categoryPhoto } from "@/lib/category-photos";
 import RateVenuePrompt from "@/components/venues/RateVenuePrompt";
+import ThingsToDo from "@/components/home/ThingsToDo";
 import LineIcon from "@/components/ui/LineIcon";
 import Rail from "@/components/home/Rail";
 import SwipeDeck from "@/components/home/SwipeDeck";
@@ -334,6 +335,10 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
 
       {/* Rate anywhere they booked and have now been to */}
       <RateVenuePrompt userId={userId} />
+
+      {/* Turn browsing into hosting — same shelf as the visitor home, but
+          ranked against the state on their own profile. */}
+      <ThingsToDo state={profile?.state ?? null} />
 
       {/* Somewhere to belong between events */}
       {circles.length > 0 && (
