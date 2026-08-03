@@ -39,32 +39,22 @@ create index if not exists things_to_do_active_idx
 alter table public.things_to_do enable row level security;
 
 -- Everyone reads the live ones; only admins see drafts or write.
+--
+-- These use public.is_admin() rather than an inline `select ... from
+-- public.users`. A subquery inside a policy runs AS THE CALLER, so it is
+-- itself subject to RLS on public.users — it came back empty and every admin
+-- write was rejected with "new row violates row-level security policy".
+-- is_admin() is SECURITY DEFINER and reads the row regardless.
 drop policy if exists "Anyone can read active things to do" on public.things_to_do;
 create policy "Anyone can read active things to do"
   on public.things_to_do for select
-  using (
-    is_active
-    or exists (
-      select 1 from public.users u
-       where u.id = auth.uid() and coalesce(u.is_admin, false)
-    )
-  );
+  using (is_active or public.is_admin());
 
 drop policy if exists "Admins manage things to do" on public.things_to_do;
 create policy "Admins manage things to do"
   on public.things_to_do for all
-  using (
-    exists (
-      select 1 from public.users u
-       where u.id = auth.uid() and coalesce(u.is_admin, false)
-    )
-  )
-  with check (
-    exists (
-      select 1 from public.users u
-       where u.id = auth.uid() and coalesce(u.is_admin, false)
-    )
-  );
+  using (public.is_admin())
+  with check (public.is_admin());
 
 -- Videos and cover art for the cards.
 insert into storage.buckets (id, name, public)
@@ -79,32 +69,14 @@ create policy "Public read things-to-do media"
 drop policy if exists "Admins upload things-to-do media" on storage.objects;
 create policy "Admins upload things-to-do media"
   on storage.objects for insert
-  with check (
-    bucket_id = 'things-to-do'
-    and exists (
-      select 1 from public.users u
-       where u.id = auth.uid() and coalesce(u.is_admin, false)
-    )
-  );
+  with check (bucket_id = 'things-to-do' and public.is_admin());
 
 drop policy if exists "Admins replace things-to-do media" on storage.objects;
 create policy "Admins replace things-to-do media"
   on storage.objects for update
-  using (
-    bucket_id = 'things-to-do'
-    and exists (
-      select 1 from public.users u
-       where u.id = auth.uid() and coalesce(u.is_admin, false)
-    )
-  );
+  using (bucket_id = 'things-to-do' and public.is_admin());
 
 drop policy if exists "Admins delete things-to-do media" on storage.objects;
 create policy "Admins delete things-to-do media"
   on storage.objects for delete
-  using (
-    bucket_id = 'things-to-do'
-    and exists (
-      select 1 from public.users u
-       where u.id = auth.uid() and coalesce(u.is_admin, false)
-    )
-  );
+  using (bucket_id = 'things-to-do' and public.is_admin());
