@@ -4,8 +4,8 @@ import Logo from "./Logo";
 const SOCIALS = [
   {
     label: "Instagram",
-    handle: "@Makewelinkupnaija",
-    href: "https://instagram.com/Makewelinkupnaija",
+    handle: "@linkupnaijaofficial",
+    href: "https://instagram.com/linkupnaijaofficial",
     icon: <InstagramIcon />,
   },
   {
