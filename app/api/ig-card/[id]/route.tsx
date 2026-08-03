@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { categoryPhoto } from "@/lib/category-photos";
 import { SITE_ORIGIN } from "@/lib/qr";
 import { LOGO_MARK_DATA_URI } from "@/lib/logo-svg";
+import { ogFonts } from "@/lib/og-fonts";
 
 /**
  * A 1080×1080 Instagram post for an event: the event's own cover art under
@@ -63,6 +64,8 @@ export async function GET(
 
   // Long titles have to shrink or they blow past the canvas.
   const titleSize = title.length > 60 ? 54 : title.length > 34 ? 66 : 82;
+
+  const fonts = await ogFonts();
 
   const res = new ImageResponse(
     (
@@ -219,7 +222,7 @@ export async function GET(
         </div>
       </div>
     ),
-    { width: SIZE, height: SIZE }
+    { width: SIZE, height: SIZE, fonts }
   );
 
   // next/og hardcodes `public, immutable, max-age=31536000`, so a card

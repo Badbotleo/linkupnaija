@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { categoryPhoto } from "@/lib/category-photos";
 import { SITE_ORIGIN } from "@/lib/qr";
 import { LOGO_MARK_DATA_URI } from "@/lib/logo-svg";
+import { ogFonts } from "@/lib/og-fonts";
 
 // Rich link preview: every shared event unfurls with its cover art, title,
 // date and location — the way an Instagram or WhatsApp link does. Events with
@@ -39,6 +40,8 @@ export default async function OgImage({ params }: { params: { id: string } }) {
         month: "long",
       })
     : "";
+
+  const fonts = await ogFonts();
 
   const res = new ImageResponse(
     (
@@ -159,7 +162,7 @@ export default async function OgImage({ params }: { params: { id: string } }) {
         </div>
       </div>
     ),
-    size
+    { ...size, fonts }
   );
 
   // Same reason as the Instagram card — see that route.
