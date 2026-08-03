@@ -19,6 +19,8 @@ export interface VenueRow {
   phone: string | null;
   website: string | null;
   price_range: string | null;
+  rating: number | null;
+  opening_hours: string | null;
   capacity: number | null;
   is_featured: boolean;
   is_active: boolean;
@@ -34,6 +36,8 @@ const BLANK: Omit<VenueRow, "id"> = {
   phone: "",
   website: "",
   price_range: "",
+  rating: null,
+  opening_hours: "",
   capacity: null,
   is_featured: false,
   is_active: true,
@@ -100,6 +104,8 @@ export default function AdminVenues({ adminId }: { adminId: string }) {
       phone: editing.phone || null,
       website: editing.website || null,
       price_range: editing.price_range || null,
+      rating: editing.rating ?? null,
+      opening_hours: editing.opening_hours || null,
       capacity: editing.capacity ?? null,
       is_featured: !!editing.is_featured,
       is_active: editing.is_active !== false,
@@ -260,6 +266,27 @@ export default function AdminVenues({ adminId }: { adminId: string }) {
               value={editing.price_range ?? ""}
               onChange={(e) => setEditing({ ...editing, price_range: e.target.value })}
               placeholder="Price range, e.g. ₦5,000 – ₦20,000"
+              className={field}
+            />
+            <input
+              type="number"
+              min={0}
+              max={5}
+              step={0.1}
+              value={editing.rating ?? ""}
+              onChange={(e) =>
+                setEditing({
+                  ...editing,
+                  rating: e.target.value === "" ? null : Number(e.target.value),
+                })
+              }
+              placeholder="Rating out of 5, e.g. 4.3 (leave blank if unrated)"
+              className={field}
+            />
+            <input
+              value={editing.opening_hours ?? ""}
+              onChange={(e) => setEditing({ ...editing, opening_hours: e.target.value })}
+              placeholder="Hours, e.g. Mo-Fr 09:00-22:00; Sa,Su 10:00-00:00"
               className={field}
             />
             <input

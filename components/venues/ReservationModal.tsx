@@ -13,7 +13,7 @@ export default function ReservationModal({
   isLoggedIn,
   onClose,
 }: {
-  venue: Pick<Venue, "name" | "address" | "lat" | "lng">;
+  venue: Pick<Venue, "id" | "name" | "address" | "lat" | "lng">;
   isLoggedIn: boolean;
   onClose: () => void;
 }) {
@@ -54,7 +54,11 @@ export default function ReservationModal({
       return;
     }
 
-    const { error } = await supabase.from("reservations").insert({
+    const partnerId = venue.id.startsWith("partner-")
+      ? venue.id.slice("partner-".length)
+      : null;
+
+    const base = {
       user_id: user.id,
       venue_name: venue.name,
       venue_address: venue.address || null,
@@ -67,7 +71,17 @@ export default function ReservationModal({
       group_size: form.group_size ? Number(form.group_size) : 1,
       special_requests: form.special_requests.trim() || null,
       contact_phone: form.contact_phone.trim() || null,
-    });
+    };
+
+    // venue_id lands with migration-venue-reviews.sql. Until that runs the
+    // column doesn't exist and including it would fail the whole insert —
+    // so fall back to booking without it rather than blocking bookings.
+    let { error } = await supabase
+      .from("reservations")
+      .insert({ ...base, venue_id: partnerId });
+    if (error && /venue_id/.test(error.message)) {
+      ({ error } = await supabase.from("reservations").insert(base));
+    }
 
     if (error) {
       setError(error.message);

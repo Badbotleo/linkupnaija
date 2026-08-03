@@ -16,6 +16,7 @@ import LineIcon from "../ui/LineIcon";
 import { createClient } from "@/lib/supabase/client";
 import { mergePartnersWithOsm } from "@/lib/venue-match";
 import { formatPriceRange } from "@/lib/format";
+import { openLabel } from "@/lib/opening-hours";
 import SwipeDeck from "../home/SwipeDeck";
 
 interface PartnerVenue {
@@ -27,6 +28,8 @@ interface PartnerVenue {
   image_url: string | null;
   description: string | null;
   price_range: string | null;
+  rating: number | null;
+  opening_hours: string | null;
   lat: number | null;
   lng: number | null;
 }
@@ -40,6 +43,10 @@ type Card = {
   description: string | null;
   price: string | null;
   image: string;
+  /** Out of 5. Partner venues carry ours; OSM results carry their star count. */
+  rating: number | null;
+  /** "Open · till 22:00" — already resolved, so cards don't each re-parse. */
+  hours: string | null;
   isPartner: boolean;
   distanceKm: number | null;
   href: string | null;
@@ -97,14 +104,35 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
 
   useEffect(() => {
     const supabase = createClient();
+    // rating/opening_hours arrive with migration-venue-ratings-hours.sql.
+    // Ask for them, and drop back to the older column set if they aren't
+    // there yet — otherwise the whole partner list disappears.
+    const BASE = "id, name, category, address, state, image_url, description, price_range, lat, lng";
+    const WITH_RATINGS = BASE.replace(", lat", ", rating, opening_hours, lat");
     supabase
       .from("venues")
-      .select(
-        "id, name, category, address, state, image_url, description, price_range, lat, lng"
-      )
+      .select(WITH_RATINGS)
       .eq("is_active", true)
       .order("is_featured", { ascending: false })
-      .then(({ data }) => setPartners((data ?? []) as PartnerVenue[]));
+      .then(async ({ data, error }) => {
+        if (!error) {
+          setPartners((data ?? []) as unknown as PartnerVenue[]);
+          return;
+        }
+        const { data: legacy } = await supabase
+          .from("venues")
+          .select(BASE)
+          .eq("is_active", true)
+          .order("is_featured", { ascending: false });
+        setPartners(
+          ((legacy ?? []) as unknown as Omit<
+            PartnerVenue,
+            "rating" | "opening_hours"
+          >[]).map(
+            (v) => ({ ...v, rating: null, opening_hours: null })
+          )
+        );
+      });
   }, []);
 
   // Remember whether the map was folded away. Phones and tablets only — on a
@@ -204,6 +232,8 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
       description: null,
       price: null,
       image: venuePhoto(cat?.photos, v.id),
+      rating: v.stars ?? null,
+      hours: openLabel(v.openingHours),
       isPartner: false,
       distanceKm: distanceKm(center.lat, center.lng, v.lat, v.lng),
       href: `/venues/${v.id}`,
@@ -301,6 +331,7 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
             {categoryPartners.map((p) => {
               const pin = located.find((l) => l.id === p.id);
               const price = formatPriceRange(p.price_range);
+              const hours = openLabel(p.opening_hours);
               return (
                 <button
                   key={p.id}
@@ -336,6 +367,12 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
                   <span className="absolute left-4 top-4 rounded-full bg-[#FAC775] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#1A1040]">
                     Partner
                   </span>
+                  {p.rating !== null && (
+                    <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1 text-xs font-bold text-[#FAC775] backdrop-blur">
+                      <LineIcon name="star" size={12} filled />
+                      {p.rating.toFixed(1)}
+                    </span>
+                  )}
 
                   <div className="absolute inset-x-0 bottom-0 p-5 text-white">
                     <p className="text-[21px] font-extrabold leading-tight">
@@ -346,9 +383,22 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
                         {p.address}
                       </p>
                     )}
-                    {price && (
-                      <p className="mt-1 text-sm font-bold text-[#FAC775]">{price}</p>
-                    )}
+                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                      {price && (
+                        <p className="text-sm font-bold text-[#FAC775]">{price}</p>
+                      )}
+                      {hours && (
+                        <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/80">
+                          <span
+                            aria-hidden
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              hours.startsWith("Open") ? "bg-naija-300" : "bg-white/40"
+                            }`}
+                          />
+                          {hours}
+                        </p>
+                      )}
+                    </div>
                     <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-bold text-gray-900">
                       <LineIcon name="calendar" size={14} />
                       {ctaLabel(p.category)}
@@ -505,6 +555,12 @@ function VenueCard({ card, onReserve }: { card: Card; onReserve: () => void }) {
             : `${card.distanceKm.toFixed(1)} km`}
         </span>
       )}
+      {card.rating !== null && (
+        <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/55 px-2 py-1 text-[11px] font-bold text-[#FAC775] backdrop-blur">
+          <LineIcon name="star" size={11} filled />
+          {card.rating.toFixed(1)}
+        </span>
+      )}
     </div>
   );
 
@@ -546,6 +602,23 @@ function VenueCard({ card, onReserve }: { card: Card; onReserve: () => void }) {
         )}
         {card.price && (
           <p className="mt-1.5 text-sm font-bold text-naija-700">{card.price}</p>
+        )}
+        {card.hours && (
+          <p
+            className={`mt-1.5 inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-bold ${
+              card.hours.startsWith("Open")
+                ? "bg-naija-50 text-naija-700"
+                : "bg-gray-100 text-gray-600"
+            }`}
+          >
+            <span
+              aria-hidden
+              className={`h-1.5 w-1.5 rounded-full ${
+                card.hours.startsWith("Open") ? "bg-naija" : "bg-gray-400"
+              }`}
+            />
+            {card.hours}
+          </p>
         )}
 
         <button

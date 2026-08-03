@@ -5,6 +5,7 @@ import CategoryBadge from "@/components/CategoryBadge";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { categoriesForInterests } from "@/lib/constants";
 import { categoryPhoto } from "@/lib/category-photos";
+import RateVenuePrompt from "@/components/venues/RateVenuePrompt";
 import LineIcon from "@/components/ui/LineIcon";
 import Rail from "@/components/home/Rail";
 import SwipeDeck from "@/components/home/SwipeDeck";
@@ -330,6 +331,9 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
           ))}
         </Rail>
       )}
+
+      {/* Rate anywhere they booked and have now been to */}
+      <RateVenuePrompt userId={userId} />
 
       {/* Somewhere to belong between events */}
       {circles.length > 0 && (
