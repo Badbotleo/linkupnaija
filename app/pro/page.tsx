@@ -2,7 +2,7 @@ import AppHeader from "@/components/AppHeader";
 import LineIcon from "@/components/ui/LineIcon";
 import { createClient } from "@/lib/supabase/server";
 import GoProButton from "@/components/GoProButton";
-import { PRO_PRICE, FREE_REQUEST_LIMIT, isProActive } from "@/lib/pro";
+import { PRO_PRICE, FREE_REQUEST_LIMIT, FREE_HOST_LIMIT, isProActive } from "@/lib/pro";
 import { formatNaira } from "@/lib/paystack";
 
 export const dynamic = "force-dynamic";
@@ -10,14 +10,19 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "LinkUpNaija Pro",
   description:
-    "Go Pro for ₦9,900/month: see who viewed your profile, early access to events, unlimited join requests, and a profile boost.",
+    "Go Pro for ₦9,900/month: host unlimited events, unlimited join requests, early access, see who viewed your profile, and a profile boost.",
 };
 
 const BENEFITS = [
   {
-    icon: "eye",
-    title: "See who viewed your profile",
-    text: "Know who's checking you out and never miss a potential connection.",
+    icon: "infinity",
+    title: "Host as many events as you want",
+    text: `Free members host ${FREE_HOST_LIMIT} events a month. Pro is unlimited — run a weekly night without ever hitting a wall.`,
+  },
+  {
+    icon: "infinity",
+    title: "Unlimited join requests",
+    text: `Free members send ${FREE_REQUEST_LIMIT} join requests a month. Pro members get unlimited.`,
   },
   {
     icon: "zap",
@@ -25,9 +30,9 @@ const BENEFITS = [
     text: "Request to join events 24 hours before they go public.",
   },
   {
-    icon: "infinity",
-    title: "Unlimited join requests",
-    text: `Free members can send ${FREE_REQUEST_LIMIT} join requests a month. Pro members get unlimited.`,
+    icon: "eye",
+    title: "See who viewed your profile",
+    text: "Know who's checking you out and never miss a potential connection.",
   },
   {
     icon: "trending",

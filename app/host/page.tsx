@@ -1,6 +1,8 @@
 import AppHeader from "@/components/AppHeader";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
+import { FREE_HOST_LIMIT, isProActive, monthStartISO } from "@/lib/pro";
 import HostForm from "@/components/HostForm";
 
 export const dynamic = "force-dynamic";
@@ -22,9 +24,14 @@ export default async function HostPage() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("state, moderation_status")
+    .select("state, moderation_status, is_pro, pro_expires_at")
     .eq("id", user.id)
-    .single<{ state: string | null; moderation_status?: string }>();
+    .single<{
+      state: string | null;
+      moderation_status?: string;
+      is_pro?: boolean | null;
+      pro_expires_at?: string | null;
+    }>();
 
   // Restricted/blocked accounts can't host (also enforced by a DB trigger).
   const status = profile?.moderation_status;
@@ -47,6 +54,59 @@ export default async function HostPage() {
     );
   }
 
+  // Free members host a set number of events a month; Pro is unlimited.
+  // Counted on created_at, so deleting an event doesn't buy back a slot —
+  // otherwise the limit is trivially defeated by create-then-delete.
+  const isPro = isProActive(profile?.is_pro, profile?.pro_expires_at);
+  let hostedThisMonth = 0;
+  if (!isPro) {
+    const { count, error: countErr } = await supabase
+      .from("events")
+      .select("id", { count: "exact", head: true })
+      .eq("host_id", user.id)
+      .gte("created_at", monthStartISO());
+    // Never block someone because the count itself failed — a broken query
+    // should not look like a paywall.
+    if (!countErr) hostedThisMonth = count ?? 0;
+  }
+
+  if (!isPro && hostedThisMonth >= FREE_HOST_LIMIT) {
+    return (
+      <div>
+        <AppHeader title="Host a link-up" back />
+        <div className="container-page max-w-lg py-10 text-center">
+          <div
+            className="overflow-hidden rounded-3xl p-7 text-white shadow-card"
+            style={{ background: "linear-gradient(135deg, #534AB7 0%, #1A1040 100%)" }}
+          >
+            <p className="text-4xl">🎪</p>
+            <h1 className="mt-3 text-2xl font-extrabold">
+              That&apos;s {FREE_HOST_LIMIT} events this month
+            </h1>
+            <p className="mt-2 text-sm leading-relaxed text-white/75">
+              Free members host {FREE_HOST_LIMIT} link-ups a month. Go Pro for
+              unlimited hosting — run a weekly night without ever hitting this
+              wall again.
+            </p>
+            <Link
+              href="/pro"
+              className="mt-5 inline-flex rounded-full bg-[#FAC775] px-6 py-3 text-sm font-black text-[#1A1040] transition hover:brightness-105"
+            >
+              Go Pro for unlimited hosting
+            </Link>
+          </div>
+          <p className="mt-4 text-sm text-gray-500">
+            Your free slots reset on the 1st. Meanwhile you can still{" "}
+            <Link href="/events" className="font-semibold text-brand">
+              join other link-ups
+            </Link>
+            .
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <AppHeader
@@ -55,6 +115,23 @@ export default async function HostPage() {
         back
       />
       <div className="container-page max-w-2xl py-5">
+
+      {!isPro && (
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-brand/20 bg-brand-50 px-4 py-3">
+          <p className="text-sm text-gray-700">
+            <span className="font-bold text-gray-900">
+              {FREE_HOST_LIMIT - hostedThisMonth} of {FREE_HOST_LIMIT}
+            </span>{" "}
+            free events left this month
+          </p>
+          <Link
+            href="/pro"
+            className="shrink-0 whitespace-nowrap text-sm font-bold text-brand hover:underline"
+          >
+            Go unlimited
+          </Link>
+        </div>
+      )}
 
       <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-card sm:p-8">
         <HostForm hostState={profile?.state ?? null} />

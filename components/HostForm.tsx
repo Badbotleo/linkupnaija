@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/image";
+import Link from "next/link";
 import { EVENT_CATEGORIES, NIGERIAN_STATES } from "@/lib/constants";
 import { FREQUENCY_OPTIONS, nextDates } from "@/lib/series";
 import { formatEventDate } from "@/lib/format";
@@ -528,9 +529,24 @@ export default function HostForm({ hostState }: { hostState: string | null }) {
       </div>
 
       {error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
-          {error}
-        </p>
+        /* The monthly-limit trigger raises a plain Postgres error. Dropping a
+           raw exception on someone mid-form is a dead end, so that one case
+           gets an actual way out. */
+        /Upgrade to Pro/i.test(error) ? (
+          <div className="rounded-xl border border-brand/25 bg-brand-50 px-4 py-3">
+            <p className="text-sm font-semibold text-gray-900">{error}</p>
+            <Link
+              href="/pro"
+              className="mt-2 inline-flex rounded-full bg-brand px-4 py-2 text-sm font-bold text-white transition hover:bg-brand-600"
+            >
+              Go Pro for unlimited hosting
+            </Link>
+          </div>
+        ) : (
+          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+            {error}
+          </p>
+        )
       )}
 
       <button type="submit" disabled={loading} className="btn-primary w-full">
