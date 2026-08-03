@@ -14,7 +14,7 @@ security definer
 set search_path = public
 as $$
 declare
-  free_limit  constant int := 4;   -- keep in sync with FREE_HOST_LIMIT in lib/pro.ts
+  free_limit  constant int := 2;   -- keep in sync with FREE_HOST_LIMIT in lib/pro.ts
   is_pro_now  boolean;
   used        int;
 begin

@@ -59,158 +59,23 @@ export const VENUE_CATEGORIES: VenueCategory[] = [
 
 export const DEFAULT_CENTER = { lat: 6.5244, lng: 3.3792, label: "Lagos" }; // Lagos
 
-// The main Overpass instance is heavily rate-limited and regularly answers
-// 429/504 — that alone was the "map fails too often" report. Try the mirrors
-// in turn instead of surfacing the first failure to the user.
-const OVERPASS_MIRRORS = [
-  "https://overpass-api.de/api/interpreter",
-  "https://overpass.kumi.systems/api/interpreter",
-  "https://overpass.private.coffee/api/interpreter",
-  "https://overpass.osm.jp/api/interpreter",
-];
-const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
-// Measured: overpass-api.de answers in ~2s, kumi.systems can hang past 10s.
-// Cap each attempt so one bad mirror costs seconds, not the whole page load.
-const REQUEST_TIMEOUT_MS = 8_000;
-
-// The mirror that answered last time goes first next time — after one bad
-// mirror we stop paying its timeout on every subsequent search.
-let preferredMirror = OVERPASS_MIRRORS[0];
-
-// Re-selecting a category you already looked at shouldn't hit the network
-// again. Keyed by rounded position + category; cleared on reload.
-const cache = new Map<string, { at: number; venues: Venue[] }>();
-const CACHE_TTL_MS = 5 * 60_000;
-
-/** fetch with a hard timeout — a hung mirror must not hang the whole page. */
-async function timedFetch(url: string, init?: RequestInit): Promise<Response> {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
-  try {
-    return await fetch(url, { ...init, signal: ctrl.signal });
-  } finally {
-    clearTimeout(t);
-  }
-}
-
-/**
- * Run an Overpass query, falling through the mirrors until one answers.
- * Only throws once every mirror has failed.
- */
-async function overpass(query: string): Promise<{ elements: OverpassElement[] }> {
-  let lastError: unknown;
-  const order = [
-    preferredMirror,
-    ...OVERPASS_MIRRORS.filter((m) => m !== preferredMirror),
-  ];
-  for (const url of order) {
-    try {
-      const res = await timedFetch(url, { method: "POST", body: query });
-      if (!res.ok) {
-        lastError = new Error(`${url} responded ${res.status}`);
-        continue;
-      }
-      const json = (await res.json()) as { elements: OverpassElement[] };
-      preferredMirror = url;
-      return json;
-    } catch (err) {
-      lastError = err;
-    }
-  }
-  console.error("All Overpass mirrors failed:", lastError);
-  throw new Error(
-    "The venue map is having a moment — every map server we use is busy. Try again in a few seconds."
-  );
-}
-
 export function categoryByKey(key: string): VenueCategory {
   return VENUE_CATEGORIES.find((c) => c.key === key) ?? VENUE_CATEGORIES[1];
 }
 
-/** Geocode a Nigerian city/area to a center point. */
-export async function geocode(
-  query: string
-): Promise<{ lat: number; lng: number; label: string } | null> {
-  const url = `${NOMINATIM_URL}?format=json&limit=1&countrycodes=ng&q=${encodeURIComponent(
-    query
-  )}`;
-  let res: Response;
-  try {
-    res = await timedFetch(url, { headers: { Accept: "application/json" } });
-  } catch {
-    return null;
-  }
-  if (!res.ok) return null;
-  const data = (await res.json()) as Array<{
-    lat: string;
-    lon: string;
-    display_name: string;
-  }>;
-  if (!data.length) return null;
-  return {
-    lat: parseFloat(data[0].lat),
-    lng: parseFloat(data[0].lon),
-    label: data[0].display_name.split(",").slice(0, 2).join(", "),
-  };
-}
+// Per-tab memo on top of the server's shared cache — flipping back to a
+// category you just looked at shouldn't touch the network at all.
+const cache = new Map<string, { at: number; venues: Venue[] }>();
+const CACHE_TTL_MS = 5 * 60_000;
 
-interface OverpassElement {
-  type: "node" | "way" | "relation";
-  id: number;
-  lat?: number;
-  lon?: number;
-  center?: { lat: number; lon: number };
-  tags?: Record<string, string>;
-}
-
-function tagsToAddress(t: Record<string, string>): string {
-  const parts = [
-    [t["addr:housenumber"], t["addr:street"]].filter(Boolean).join(" "),
-    t["addr:suburb"] ?? t["addr:neighbourhood"],
-    t["addr:city"],
-    t["addr:state"],
-  ].filter(Boolean);
-  return parts.join(", ");
-}
-
-function toVenue(el: OverpassElement, category: string): Venue | null {
-  const lat = el.lat ?? el.center?.lat;
-  const lng = el.lon ?? el.center?.lon;
-  const tags = el.tags ?? {};
-  if (lat == null || lng == null || !tags.name) return null;
-  return {
-    id: `${el.type}-${el.id}`,
-    osmType: el.type,
-    osmId: el.id,
-    name: tags.name,
-    category,
-    lat,
-    lng,
-    address: tagsToAddress(tags),
-    openingHours: tags.opening_hours,
-    stars: tags.stars ? Number(tags.stars) : undefined,
-    phone: tags["contact:phone"] ?? tags.phone,
-    website: tags["contact:website"] ?? tags.website,
-  };
-}
-
-function buildQuery(
-  filters: [string, string][],
-  lat: number,
-  lng: number,
-  radius: number
-): string {
-  const selectors = filters
-    .flatMap(([k, v]) =>
-      ["node", "way"].map(
-        (t) => `${t}["${k}"="${v}"](around:${radius},${lat},${lng});`
-      )
-    )
-    .join("");
-  return `[out:json][timeout:25];(${selectors});out center 80;`;
-}
-
-/** Fetch venues of a category near a point. */
+/**
+ * Venues near a point, via our own cached proxy at /api/venues/nearby.
+ *
+ * The browser used to query Overpass directly: slow from Nigerian mobile
+ * data, rate-limited per visitor, and with nothing shared between them. This
+ * never throws — the venues page always has partner venues to show, and an
+ * exception here used to blank the entire list.
+ */
 export async function fetchVenues(opts: {
   lat: number;
   lng: number;
@@ -218,44 +83,57 @@ export async function fetchVenues(opts: {
   radius?: number;
 }): Promise<Venue[]> {
   const cat = categoryByKey(opts.category);
-  const key = `${opts.lat.toFixed(3)},${opts.lng.toFixed(3)},${cat.key},${opts.radius ?? 6000}`;
+  const radius = opts.radius ?? 6000;
+  const key = `${opts.lat.toFixed(3)},${opts.lng.toFixed(3)},${cat.key},${radius}`;
   const hit = cache.get(key);
   if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.venues;
 
-  const query = buildQuery(cat.filters, opts.lat, opts.lng, opts.radius ?? 6000);
-  const data = await overpass(query);
-  const seen = new Set<string>();
-  const venues: Venue[] = [];
-  for (const el of data.elements ?? []) {
-    const v = toVenue(el, opts.category);
-    if (v && !seen.has(v.name)) {
-      seen.add(v.name);
-      venues.push(v);
-    }
+  const qs = new URLSearchParams({
+    lat: String(opts.lat),
+    lng: String(opts.lng),
+    category: cat.key,
+    radius: String(radius),
+  });
+
+  try {
+    const res = await fetch(`/api/venues/nearby?${qs}`);
+    const data = (await res.json()) as { venues?: Venue[] };
+    const venues = data.venues ?? [];
+    cache.set(key, { at: Date.now(), venues });
+    return venues;
+  } catch {
+    return hit?.venues ?? [];
   }
-  cache.set(key, { at: Date.now(), venues });
-  return venues;
 }
 
-/** Fetch a single venue by its encoded id ("node-123"). */
-export async function fetchVenueById(id: string): Promise<Venue | null> {
-  const [type, rawId] = id.split("-");
-  if (!["node", "way", "relation"].includes(type) || !rawId) return null;
-  const query = `[out:json][timeout:25];${type}(${rawId});out center 1;`;
-  let data: { elements: OverpassElement[] };
+/** Geocode a Nigerian city/area to a centre point, server-side. */
+export async function geocode(
+  query: string
+): Promise<{ lat: number; lng: number; label: string } | null> {
   try {
-    data = await overpass(query);
+    const res = await fetch(`/api/venues/geocode?q=${encodeURIComponent(query)}`);
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      lat?: number;
+      lng?: number;
+      label?: string;
+    };
+    if (data.lat == null || data.lng == null) return null;
+    return { lat: data.lat, lng: data.lng, label: data.label ?? query };
   } catch {
     return null;
   }
-  const el = data.elements?.[0];
-  if (!el) return null;
-  // Infer a display category from tags.
-  const tags = el.tags ?? {};
-  const match = VENUE_CATEGORIES.find((c) =>
-    c.filters.some(([k, v]) => tags[k] === v)
-  );
-  return toVenue(el, match?.key ?? "Venue");
+}
+
+/** One OpenStreetMap venue by encoded id, via our proxy. */
+export async function fetchVenueById(id: string): Promise<Venue | null> {
+  try {
+    const res = await fetch(`/api/venues/detail?id=${encodeURIComponent(id)}`);
+    if (!res.ok) return null;
+    return (await res.json()) as Venue;
+  } catch {
+    return null;
+  }
 }
 
 /** Distance in km between two points (Haversine). */

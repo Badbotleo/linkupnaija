@@ -34,6 +34,7 @@ export default function SwipeDeck({
   const [dx, setDx] = useState(0);
   const [flying, setFlying] = useState<0 | 1 | -1>(0);
   const [dragging, setDragging] = useState(false);
+  const topCard = useRef<HTMLDivElement>(null);
   const [paused, setPaused] = useState(false);
 
   // Drag state lives in refs, not state: pointermove can land in the same
@@ -116,7 +117,16 @@ export default function SwipeDeck({
   function onPointerMove(e: React.PointerEvent) {
     if (!draggingRef.current) return;
     dxRef.current = e.clientX - startX.current;
-    setDx(dxRef.current);
+    // Deliberately NOT setDx here: a state update per pointermove re-renders
+    // every card in the deck ~60x a second and the drag visibly stutters.
+    // The top card is moved directly instead, and React is told once on
+    // release.
+    const node = topCard.current;
+    if (node) {
+      node.style.transform = `translateX(${dxRef.current}px) rotate(${
+        dxRef.current / 22
+      }deg)`;
+    }
   }
 
   function onPointerUp() {
@@ -125,6 +135,9 @@ export default function SwipeDeck({
     setDragging(false);
     const moved = dxRef.current;
     dxRef.current = 0;
+    // Hand the card back to React's transform, which the re-render sets.
+    const node = topCard.current;
+    if (node) node.style.transform = "";
     if (Math.abs(moved) > SWIPE_THRESHOLD) advance(moved > 0 ? -1 : 1);
     else setDx(0); // snap back
   }
@@ -158,6 +171,7 @@ export default function SwipeDeck({
           return (
             <div
               key={i}
+              ref={isTop ? topCard : undefined}
               onPointerDown={isTop ? onPointerDown : undefined}
               onPointerMove={isTop ? onPointerMove : undefined}
               onPointerUp={isTop ? onPointerUp : undefined}
@@ -173,6 +187,10 @@ export default function SwipeDeck({
                 opacity: flying && isTop ? 0 : 1,
                 // No transition mid-drag or the card lags behind the finger.
                 transition: dragging && isTop ? "none" : "transform .28s ease, opacity .22s ease",
+                // Promote to its own layer so dragging never repaints the
+                // photo underneath — the difference between smooth and not.
+                willChange: isTop ? "transform" : undefined,
+                backfaceVisibility: "hidden",
               }}
               aria-hidden={!isTop}
             >
