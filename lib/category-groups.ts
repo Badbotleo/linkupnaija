@@ -39,6 +39,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     tint: "from-rose-100 to-rose-50 text-rose-800",
     categories: [
       "Dinner", "Brunch", "Food Festival", "Paint and Sip", "Picnic",
+      "Street Food",
       "Wine Tasting",
     ],
   },
@@ -61,6 +62,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     tint: "from-naija-100 to-naija-50 text-naija-800",
     categories: [
       "Beach Day", "Hiking", "Yoga", "Fitness", "Road Trip", "Bowling",
+      "Sightseeing", "Jogging",
       "Camping", "Boat Cruise", "Go-Karting",
     ],
   },
