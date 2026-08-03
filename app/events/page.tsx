@@ -47,6 +47,10 @@ export default async function EventsPage({
   } = await supabase.auth.getUser();
 
   const forYou = searchParams.tab === "foryou" && !!user;
+  // "Been and gone" — link-ups that already happened. People kept asking
+  // where an event went the day after; it went nowhere, it just fell off a
+  // feed that only ever looked forwards.
+  const past = searchParams.tab === "past";
 
   let feedEvents: (FeedEvent & {
     attendeeCount: number;
@@ -132,15 +136,16 @@ export default async function EventsPage({
     let query = supabase
       .from("events")
       .select(SELECT, { count: "exact" })
-      .eq("event_type", "general")
-      .gte("date", today);
+      .eq("event_type", "general");
+    query = past ? query.lt("date", today) : query.gte("date", today);
     if (searchParams.state) query = query.eq("state", searchParams.state);
     if (searchParams.category) query = query.eq("category", searchParams.category);
     if (searchParams.series === "1") query = query.not("series_id", "is", null);
 
+    // Past events read newest-first; upcoming read soonest-first.
     const { data, error: e, count } = await query
-      .order("date", { ascending: true })
-      .order("time", { ascending: true })
+      .order("date", { ascending: !past })
+      .order("time", { ascending: !past })
       .range(from, to);
     error = e;
     totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));

@@ -7,6 +7,7 @@ import GeneratedAvatar from "./ui/GeneratedAvatar";
 const SIZES = {
   sm: { cls: "h-9 w-9 text-sm", px: 36 },
   md: { cls: "h-12 w-12 text-base", px: 48 },
+  lg2: { cls: "h-16 w-16 text-xl", px: 64 },
   lg: { cls: "h-20 w-20 text-2xl", px: 80 },
 } as const;
 

@@ -380,6 +380,8 @@ export default async function EventDetailPage({
                           user_id: a.user_id,
                           name: a.users?.name ?? null,
                           avatar_url: a.users?.avatar_url ?? null,
+                          gender: a.users?.gender ?? null,
+                          isHost: a.user_id === event.host_id,
                         }))}
                         friendIds={friendIds}
                       />
