@@ -4,6 +4,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useCallback, useState } from "react";
 import { NIGERIAN_STATES, CATEGORY_STYLES } from "@/lib/constants";
 import { CATEGORY_GROUPS, groupForCategory } from "@/lib/category-groups";
+import { EVENT_CATEGORIES } from "@/lib/constants";
 import LineIcon from "./ui/LineIcon";
 
 export default function EventsFilters() {
@@ -17,6 +18,7 @@ export default function EventsFilters() {
 
   // Which family of vibes is expanded. Defaults to the one holding the
   // current filter, so a shared link opens showing where you are.
+  const [catQuery, setCatQuery] = useState("");
   const [open, setOpen] = useState<string | null>(
     activeCategory ? groupForCategory(activeCategory)?.key ?? null : null
   );
@@ -137,8 +139,38 @@ export default function EventsFilters() {
 
       {/* ---- the chosen family's categories ---- */}
       {open && (
-        <div className="flex flex-wrap gap-2 rounded-2xl border border-gray-100 bg-gray-50/70 p-3">
-          {CATEGORY_GROUPS.find((g) => g.key === open)!.categories.map((cat) => (
+        <div className="rounded-2xl border border-gray-100 bg-gray-50/70 p-3">
+          {/* 54 vibes is too many to scroll past. Typing searches ALL of them,
+              not just the open family — nobody knows in advance that Karaoke
+              lives under "Live & stage". */}
+          <div className="mb-2.5 flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2">
+            <LineIcon name="search" size={15} className="shrink-0 text-gray-400" />
+            <input
+              value={catQuery}
+              onChange={(e) => setCatQuery(e.target.value)}
+              placeholder="Search all vibes…"
+              aria-label="Search vibes"
+              className="min-w-0 flex-1 bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none"
+            />
+            {catQuery && (
+              <button
+                type="button"
+                onClick={() => setCatQuery("")}
+                aria-label="Clear vibe search"
+                className="shrink-0 text-gray-400 hover:text-gray-700"
+              >
+                <span aria-hidden className="text-[15px] leading-none">×</span>
+              </button>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+          {(catQuery.trim()
+            ? EVENT_CATEGORIES.filter((c) =>
+                c.toLowerCase().includes(catQuery.trim().toLowerCase())
+              )
+            : CATEGORY_GROUPS.find((g) => g.key === open)!.categories
+          ).map((cat) => (
             <button
               key={cat}
               type="button"
@@ -154,6 +186,15 @@ export default function EventsFilters() {
               {CATEGORY_STYLES[cat]?.emoji} {cat}
             </button>
           ))}
+          </div>
+          {catQuery.trim() &&
+            EVENT_CATEGORIES.filter((c) =>
+              c.toLowerCase().includes(catQuery.trim().toLowerCase())
+            ).length === 0 && (
+              <p className="px-1 py-2 text-sm text-gray-500">
+                No vibe matches &ldquo;{catQuery.trim()}&rdquo;.
+              </p>
+            )}
         </div>
       )}
     </div>
