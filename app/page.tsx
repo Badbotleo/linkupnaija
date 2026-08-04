@@ -377,6 +377,8 @@ export default async function HomePage() {
         </section>
       )}
 
+      <ThingsToDo state={visitorState} />
+
       <ScreenTour />
 
       {/* ---------------------------------------------------------------- */}
@@ -497,7 +499,6 @@ export default async function HomePage() {
       )}
 
       {/* Turn browsing into hosting */}
-      <ThingsToDo state={visitorState} />
 
       <DeckHeading
         title="Book the spot"

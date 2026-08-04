@@ -239,6 +239,8 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
         </Rail>
       )}
 
+      <ThingsToDo state={profile?.state ?? null} />
+
       {/* Picked for you — a deck, because a recommendation deserves a look
           rather than a skim past */}
       {forYou.length > 0 && (
@@ -338,7 +340,6 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
 
       {/* Turn browsing into hosting — same shelf as the visitor home, but
           ranked against the state on their own profile. */}
-      <ThingsToDo state={profile?.state ?? null} />
 
       {/* Somewhere to belong between events */}
       {circles.length > 0 && (
