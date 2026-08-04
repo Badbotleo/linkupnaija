@@ -6,6 +6,8 @@ import EventsFilters from "@/components/EventsFilters";
 import EventsList from "@/components/EventsList";
 import EventsMapToggle from "@/components/events/EventsMapToggle";
 import EventsTabs from "@/components/EventsTabs";
+import SearchPill from "@/components/events/SearchPill";
+import FeaturedCarousel from "@/components/events/FeaturedCarousel";
 import EventsStories from "@/components/EventsStories";
 import LocationMatch from "@/components/LocationMatch";
 import { computeBadges, type Badge } from "@/lib/hostBadges";
@@ -38,6 +40,7 @@ export default async function EventsPage({
     page?: string;
     series?: string;
     tab?: string;
+    q?: string;
   };
 }) {
   const supabase = createClient();
@@ -140,6 +143,15 @@ export default async function EventsPage({
     query = past ? query.lt("date", today) : query.gte("date", today);
     if (searchParams.state) query = query.eq("state", searchParams.state);
     if (searchParams.category) query = query.eq("category", searchParams.category);
+    if (searchParams.q?.trim()) {
+      // Searched server-side rather than filtering the current page, so a
+      // search reaches every event and not just the 24 already loaded.
+      // Commas and parens would break PostgREST's or() syntax.
+      const term = searchParams.q.trim().replace(/[(),]/g, " ");
+      query = query.or(
+        `title.ilike.%${term}%,location.ilike.%${term}%,description.ilike.%${term}%`
+      );
+    }
     if (searchParams.series === "1") query = query.not("series_id", "is", null);
 
     // Past events read newest-first; upcoming read soonest-first.
@@ -257,7 +269,13 @@ export default async function EventsPage({
       />
       <div className="container-page py-5">
 
-      <div className="mt-6">
+      {/* Search leads the page, the way it does on Pinterest — one wide pill
+          with nothing competing beside it. */}
+      <Suspense fallback={null}>
+        <SearchPill />
+      </Suspense>
+
+      <div className="mt-5">
         <Suspense fallback={null}>
           <EventsTabs />
         </Suspense>
@@ -267,6 +285,20 @@ export default async function EventsPage({
         <div className="mt-5">
           <LocationMatch />
         </div>
+      )}
+
+      {!error && !past && !searchParams.q?.trim() && feedEvents.length > 0 && (
+        <FeaturedCarousel
+          events={feedEvents.slice(0, 5).map((e) => ({
+            id: e.id,
+            title: e.title,
+            category: e.category,
+            date: e.date,
+            location: e.location,
+            state: e.state,
+            cover_image_url: e.cover_image_url,
+          }))}
+        />
       )}
 
       {!error && feedEvents.length > 0 && (
@@ -283,7 +315,15 @@ export default async function EventsPage({
       )}
 
       {!forYou && (
-        <div className="mt-6 space-y-4">
+        <div className="mt-8 space-y-4">
+          <div>
+            <p className="text-[13px] font-semibold text-gray-500">
+              Explore by vibe
+            </p>
+            <h2 className="text-[26px] font-extrabold leading-tight tracking-[-0.03em] text-gray-900">
+              Link-ups you might like
+            </h2>
+          </div>
           <Suspense fallback={null}>
             <EventsFilters />
           </Suspense>
@@ -313,6 +353,24 @@ export default async function EventsPage({
           We don&apos;t have enough signal to recommend events yet. Join a few
           and check back!
         </p>
+      ) : searchParams.q?.trim() && feedEvents.length === 0 ? (
+        <div className="mt-8 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-12 text-center">
+          <p className="text-4xl">🔍</p>
+          <h2 className="mt-3 text-lg font-bold text-gray-900">
+            Nothing for &ldquo;{searchParams.q.trim()}&rdquo;
+          </h2>
+          <p className="mx-auto mt-1 max-w-sm text-sm text-gray-500">
+            Try a vibe instead — or start it yourself.
+          </p>
+          <div className="mt-5 flex flex-wrap justify-center gap-2">
+            <Link href="/events" className="btn-outline">
+              Clear search
+            </Link>
+            <Link href="/host" className="btn-primary">
+              Host it
+            </Link>
+          </div>
+        </div>
       ) : past && feedEvents.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-12 text-center">
           <p className="text-4xl">🕰️</p>
