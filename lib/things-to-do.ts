@@ -55,6 +55,14 @@ const ACTIVITY: Record<string, { title: string; category: string; seed: string }
   Museums: { title: "Gallery wander", category: "Art Gallery", seed: "Gallery visit to" },
   Hotels: { title: "Pool day", category: "Pool Party", seed: "Pool day at" },
   Stadiums: { title: "Match day", category: "Sports Viewing", seed: "Match day at" },
+  Camping: { title: "Camping trip", category: "Camping", seed: "Camping at" },
+  "Event Centres": { title: "Throw something", category: "Party", seed: "Party at" },
+  "Art Galleries": { title: "Gallery wander", category: "Art Gallery", seed: "Gallery visit to" },
+  "Amusement Parks": { title: "Theme park day", category: "Entertainment", seed: "Theme park day at" },
+  Golf: { title: "Round of golf", category: "Outdoor", seed: "Golf at" },
+  Swimming: { title: "Swim session", category: "Pool Party", seed: "Swim at" },
+  Malls: { title: "Mall link-up", category: "Friend Reunion", seed: "Link up at" },
+  Arcades: { title: "Arcade showdown", category: "Game Night", seed: "Arcade night at" },
 };
 
 /** Admin-curated cards. These win over anything we derive ourselves. */
@@ -175,12 +183,31 @@ export async function buildIdeas(
     : fromVenues;
 
   const seen = new Map<string, number>();
-  const varied = [...curated, ...ranked].filter((idea) => {
-    const n = seen.get(idea.title) ?? 0;
-    if (n >= perActivityCap) return false;
-    seen.set(idea.title, n + 1);
-    return true;
-  });
+  const take = (list: Idea[], max: number) => {
+    const out: Idea[] = [];
+    for (const idea of list) {
+      if (out.length >= max) break;
+      const n = seen.get(idea.title) ?? 0;
+      if (n >= perActivityCap) continue;
+      seen.set(idea.title, n + 1);
+      out.push(idea);
+    }
+    return out;
+  };
+
+  // Curated used to win outright, so with 19 curated cards and an 8-card
+  // shelf no real venue ever surfaced — no restaurants, no parks, no bars.
+  // Each source gets half the shelf, then whatever's left is topped up from
+  // either, so a thin day still fills.
+  const half = Math.max(1, Math.floor(limit / 2));
+  const pickedCurated = take(curated, half);
+  const pickedVenues = take(ranked, limit - pickedCurated.length);
+  const varied = [
+    ...pickedCurated,
+    ...pickedVenues,
+    ...take(curated, limit),
+    ...take(ranked, limit),
+  ];
 
   return [
     ...varied,
