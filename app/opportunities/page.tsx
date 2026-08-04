@@ -37,7 +37,7 @@ export default function OpportunitiesPage() {
         {/* Corporate — a tappable row, the way an app links onward */}
         <Link
           href="/corporate"
-          className="group mt-4 flex items-center gap-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-card transition hover:border-brand/30 hover:shadow-lg"
+          className="group mt-4 flex items-center gap-4 surface p-4 transition hover:border-brand/30 hover:shadow-lg"
         >
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand">
             <LineIcon name="building" size={21} />

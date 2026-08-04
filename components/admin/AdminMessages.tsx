@@ -50,7 +50,7 @@ export default function AdminMessages({
         placeholder="Search users…"
         className="input mb-3"
       />
-      <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card">
+      <div className="overflow-hidden surface">
         <ul className="max-h-96 divide-y divide-gray-50 overflow-y-auto">
           {filtered.map((u) => (
             <li

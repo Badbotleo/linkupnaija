@@ -98,7 +98,7 @@ export default function ReviewsSection({
       {canReview && (
         <form
           onSubmit={submit}
-          className="mt-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-card"
+          className="mt-4 surface p-4"
         >
           <p className="text-sm font-semibold text-gray-900">
             {existingReview ? "Update your review" : "Rate your host"}

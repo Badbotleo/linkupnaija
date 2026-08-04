@@ -366,7 +366,7 @@ export default async function DashboardPage() {
                     <Link
                       key={circle!.id}
                       href={`/circles/${circle!.id}`}
-                      className="flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-4 shadow-card transition hover:border-brand/30"
+                      className="flex items-center justify-between surface p-4 transition hover:border-brand/30"
                     >
                       <div className="min-w-0">
                         <p className="truncate font-bold text-gray-900">
@@ -398,7 +398,7 @@ export default async function DashboardPage() {
                   <Link
                     key={s.id}
                     href={`/series/${s.id}`}
-                    className="flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-4 shadow-card transition hover:border-brand/30"
+                    className="flex items-center justify-between surface p-4 transition hover:border-brand/30"
                   >
                     <span className="font-bold text-gray-900">{s.title}</span>
                     <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand">
@@ -426,7 +426,7 @@ export default async function DashboardPage() {
                     <Link
                       key={e.id}
                       href={`/events/${e.id}`}
-                      className="flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-4 shadow-card transition hover:border-brand/30"
+                      className="flex items-center justify-between surface p-4 transition hover:border-brand/30"
                     >
                       <div className="min-w-0">
                         <p className="truncate font-bold text-gray-900">
@@ -656,7 +656,7 @@ function EventRowCard({
   return (
     <Link
       href={`/events/${event.id}`}
-      className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-card transition hover:border-brand/30 sm:flex-row sm:items-center sm:justify-between"
+      className="flex flex-col gap-3 surface p-4 transition hover:border-brand/30 sm:flex-row sm:items-center sm:justify-between"
     >
       <div className="min-w-0">
         <div className="flex items-center gap-2">

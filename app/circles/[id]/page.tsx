@@ -135,7 +135,7 @@ export default async function CirclePage({ params }: { params: { id: string } })
         {/* Sidebar */}
         <aside className="lg:col-span-1">
           <div className="sticky top-24 space-y-4">
-            <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-card">
+            <div className="surface p-6">
               <JoinCircleButton
                 circleId={circle.id}
                 isPrivate={circle.is_private}

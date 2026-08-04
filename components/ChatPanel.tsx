@@ -113,7 +113,7 @@ export default function ChatPanel({
   }
 
   return (
-    <div className="flex flex-col rounded-2xl border border-gray-100 bg-white shadow-card">
+    <div className="flex flex-col surface">
       <div className="border-b border-gray-100 px-5 py-3">
         <h2 className="font-bold text-gray-900">💬 Group chat</h2>
         <p className="text-xs text-gray-500">

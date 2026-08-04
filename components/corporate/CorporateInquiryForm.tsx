@@ -115,7 +115,7 @@ export default function CorporateInquiryForm({
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4 rounded-2xl border border-gray-100 bg-white p-6 shadow-card sm:p-8">
+    <form onSubmit={submit} className="space-y-4 surface p-6 sm:p-8">
       <h3 className="text-xl font-bold text-gray-900">Get a quote</h3>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

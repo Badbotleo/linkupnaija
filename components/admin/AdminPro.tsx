@@ -76,7 +76,7 @@ export default function AdminPro() {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card">
+    <div className="overflow-hidden surface">
       <div className="space-y-3 border-b border-gray-100 p-4">
         <div className="relative">
           <LineIcon

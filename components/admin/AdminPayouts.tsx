@@ -54,7 +54,7 @@ export default function AdminPayouts({
       {rows.map((r) => (
         <div
           key={r.id}
-          className="rounded-2xl border border-gray-100 bg-white p-4 shadow-card"
+          className="surface p-4"
         >
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>

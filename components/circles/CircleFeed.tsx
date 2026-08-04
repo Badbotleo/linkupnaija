@@ -274,7 +274,7 @@ export default function CircleFeed({
   // One continuous column with hairline dividers — no floating cards, so the
   // feed reads as a single scroll the way X/Twitter does.
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card">
+    <div className="overflow-hidden surface">
       {isMember && (
         <form onSubmit={submitPost} className="border-b border-gray-100 px-4 py-3">
           <div className="flex gap-3">

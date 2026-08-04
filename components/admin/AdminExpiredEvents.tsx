@@ -45,7 +45,7 @@ export default function AdminExpiredEvents({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card">
+    <div className="overflow-hidden surface">
       <ul className="divide-y divide-gray-50">
         {events.map((e) => (
           <li

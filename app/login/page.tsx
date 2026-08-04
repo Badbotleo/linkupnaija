@@ -98,7 +98,7 @@ export default async function LoginPage() {
             <p className="mt-2 text-gray-600">Log in to join events and host your own.</p>
           </div>
 
-          <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-card sm:p-8 lg:mt-8">
+          <div className="surface p-6 sm:p-8 lg:mt-8">
             <Suspense fallback={null}>
               <AuthForm mode="login" />
             </Suspense>

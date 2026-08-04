@@ -95,7 +95,7 @@ export default function MessageThread({
   }
 
   return (
-    <div className="flex h-[30rem] flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card">
+    <div className="flex h-[30rem] flex-col overflow-hidden surface">
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-gray-100 px-4 py-3">
         <Avatar name={otherName} url={otherAvatar ?? null} size="sm" />

@@ -35,7 +35,7 @@ export default function ReferralCard({
   const waHref = `https://wa.me/?text=${encodeURIComponent(waText)}`;
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-card">
+    <div className="surface p-6">
       <div className="flex items-center gap-2">
         <span className="text-2xl">🎁</span>
         <h2 className="text-lg font-bold text-gray-900">Invite &amp; earn ₦500</h2>

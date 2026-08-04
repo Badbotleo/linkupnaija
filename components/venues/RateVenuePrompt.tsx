@@ -103,7 +103,7 @@ export default function RateVenuePrompt({ userId }: { userId: string }) {
         {pending.map((p) => (
           <div
             key={p.reservationId}
-            className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-card"
+            className="flex flex-wrap items-center justify-between gap-3 surface p-4"
           >
             <div className="min-w-0">
               <p className="truncate font-bold text-gray-900">{p.venueName}</p>

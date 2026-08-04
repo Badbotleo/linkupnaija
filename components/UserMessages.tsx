@@ -107,7 +107,7 @@ export default function UserMessages({ meId }: { meId: string }) {
 
   if (loading) {
     return (
-      <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card">
+      <div className="overflow-hidden surface">
         {[0, 1, 2].map((i) => (
           <div key={i} className="flex animate-pulse items-center gap-3 border-b border-gray-50 px-4 py-3 last:border-0">
             <div className="h-11 w-11 shrink-0 rounded-full bg-gray-100" />
@@ -139,7 +139,7 @@ export default function UserMessages({ meId }: { meId: string }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card">
+    <div className="overflow-hidden surface">
       <ul className="divide-y divide-gray-50">
         {convos.map((c) => (
           <li key={c.otherId}>

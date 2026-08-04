@@ -6,7 +6,7 @@ export function SkeletonBox({ className = "" }: { className?: string }) {
 
 export function EventCardSkeleton() {
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card">
+    <div className="flex flex-col overflow-hidden surface">
       <SkeletonBox className="h-40 w-full rounded-none" />
       <div className="flex flex-col gap-3 p-5">
         <SkeletonBox className="h-5 w-3/4" />

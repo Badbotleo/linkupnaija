@@ -94,7 +94,7 @@ export default function PayoutSettings({
   }
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-card">
+    <div className="surface p-6">
       <h2 className="text-lg font-bold text-gray-900">Payout Settings</h2>
       <p className="mt-1 text-sm text-gray-500">
         Add your bank details to receive payments from your hosted events.

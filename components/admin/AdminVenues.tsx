@@ -146,7 +146,7 @@ export default function AdminVenues({ adminId }: { adminId: string }) {
   const field = "input w-full";
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card">
+    <div className="overflow-hidden surface">
       <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-4 py-3">
         <p className="text-sm font-semibold text-gray-600">
           {loading ? "Loading…" : `${venues.length} onboarded venue${venues.length === 1 ? "" : "s"}`}

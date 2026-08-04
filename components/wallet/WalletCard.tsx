@@ -49,7 +49,7 @@ export default function WalletCard({
   const shown = showAll ? transactions : transactions.slice(0, 5);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card">
+    <div className="overflow-hidden surface">
       {/* Balance header */}
       <div
         className="p-6 text-white"

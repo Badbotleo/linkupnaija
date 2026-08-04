@@ -454,7 +454,7 @@ function EventTile({ event, hosting }: { event: EventLite; hosting?: boolean }) 
   return (
     <Link
       href={`/events/${event.id}`}
-      className="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card transition hover:-translate-y-0.5 hover:border-brand/30"
+      className="group overflow-hidden surface transition hover:-translate-y-0.5 hover:border-brand/30"
     >
       <div className="relative">
         <EventCover

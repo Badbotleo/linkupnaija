@@ -31,7 +31,7 @@ export default async function ProfileSetupPage() {
         </p>
       </div>
 
-      <div className="mt-8 rounded-2xl border border-gray-100 bg-white p-6 shadow-card sm:p-8">
+      <div className="mt-8 surface p-6 sm:p-8">
         <ProfileForm
           userId={user.id}
           mode="setup"

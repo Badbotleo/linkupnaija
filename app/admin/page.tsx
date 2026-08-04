@@ -458,7 +458,7 @@ export default async function AdminPage() {
         {/* Recent signups */}
         <section>
           <h2 className="mb-3 text-lg font-bold text-gray-900">Recent signups</h2>
-          <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card">
+          <div className="overflow-hidden surface">
             {(recentUsers as RecentUser[] | null)?.length ? (
               <ul className="divide-y divide-gray-50">
                 {(recentUsers as RecentUser[]).map((u) => (
@@ -489,7 +489,7 @@ export default async function AdminPage() {
         {/* Recent events */}
         <section>
           <h2 className="mb-3 text-lg font-bold text-gray-900">Recent events</h2>
-          <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card">
+          <div className="overflow-hidden surface">
             {(recentEvents as RecentEvent[] | null)?.length ? (
               <ul className="divide-y divide-gray-50">
                 {(recentEvents as RecentEvent[]).map((e) => (

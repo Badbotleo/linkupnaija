@@ -114,10 +114,18 @@ export default async function ProfilePage({
         )}
 
         {/* Stats */}
-        <div className="mt-4 flex gap-6">
-          <Stat value={friends.count ?? 0} label="Friends" />
-          <Stat value={attending.count ?? 0} label="Attending" />
-          <Stat value={hosting.count ?? 0} label="Hosting" />
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          <Stat value={friends.count ?? 0} label="Friends" href="/friends" />
+          <Stat
+            value={attending.count ?? 0}
+            label="Attending"
+            href="/dashboard?tab=attending"
+          />
+          <Stat
+            value={hosting.count ?? 0}
+            label="Hosting"
+            href="/dashboard?tab=hosting"
+          />
         </div>
 
         {/* Actions */}
@@ -167,12 +175,26 @@ export default async function ProfilePage({
   );
 }
 
-function Stat({ value, label }: { value: number; label: string }) {
+function Stat({
+  value,
+  label,
+  href,
+}: {
+  value: number;
+  label: string;
+  href: string;
+}) {
   return (
-    <div>
+    <Link
+      href={href}
+      className="surface-tap px-3 py-2.5 text-center"
+      aria-label={`${value} ${label}`}
+    >
       <p className="text-xl font-extrabold tabular-nums text-gray-900">{value}</p>
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{label}</p>
-    </div>
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+        {label}
+      </p>
+    </Link>
   );
 }
 

@@ -258,7 +258,7 @@ export default function AdminModeration({
       )}
 
       {/* Users */}
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-card">
+      <div className="surface p-4">
         <p className="text-sm font-bold text-gray-900">Users</p>
         <input
           value={userQuery}
@@ -310,7 +310,7 @@ export default function AdminModeration({
       </div>
 
       {/* Events */}
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-card">
+      <div className="surface p-4">
         <p className="text-sm font-bold text-gray-900">Events</p>
         <input
           value={eventQuery}
@@ -347,7 +347,7 @@ export default function AdminModeration({
 
       {/* Recurring series */}
       {series.length > 0 && (
-        <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-card lg:col-span-2">
+        <div className="surface p-4 lg:col-span-2">
           <p className="text-sm font-bold text-gray-900">Recurring series</p>
           <p className="mt-0.5 text-xs text-gray-500">
             Deleting a series keeps its events. They just stop recurring.

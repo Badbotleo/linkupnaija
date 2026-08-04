@@ -32,7 +32,7 @@ export default function SafetySettings({
   }
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-card sm:p-8">
+    <div className="surface p-6 sm:p-8">
       <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900">
         🛟 Safety
       </h2>

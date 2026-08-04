@@ -107,7 +107,7 @@ export default function VenueDetail({
         </div>
 
         <aside>
-          <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-card">
+          <div className="surface p-6">
             <dl className="space-y-3 text-sm">
               {venue.openingHours && (
                 <div>

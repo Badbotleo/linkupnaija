@@ -40,7 +40,7 @@ export default function EmailPreferences({
   }
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-card sm:p-8">
+    <div className="surface p-6 sm:p-8">
       <h2 className="text-lg font-bold text-gray-900">Email preferences</h2>
       <p className="mt-1 text-sm text-gray-500">
         Choose which emails you&apos;d like to receive from LinkUpNaija.

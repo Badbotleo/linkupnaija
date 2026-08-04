@@ -484,7 +484,7 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
               {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
-                  className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card"
+                  className="overflow-hidden surface"
                 >
                   <div className="aspect-[4/3] w-full animate-pulse bg-gray-100" />
                   <div className="space-y-2 p-4">

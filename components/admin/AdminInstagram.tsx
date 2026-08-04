@@ -132,7 +132,7 @@ export default function AdminInstagram() {
         return (
           <div
             key={r.id}
-            className="flex flex-col gap-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-card sm:flex-row"
+            className="flex flex-col gap-4 surface p-4 sm:flex-row"
           >
             {/* Live preview of the exact graphic that downloads */}
             <a

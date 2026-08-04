@@ -28,7 +28,7 @@ export default async function CreateCirclePage() {
       <p className="mt-1 text-gray-600">
         Start a community around what you love: meetups, chats and shared events.
       </p>
-      <div className="mt-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-card sm:p-8">
+      <div className="mt-6 surface p-6 sm:p-8">
         <CreateCircleForm userState={me?.state ?? null} />
       </div>
     </div>

@@ -29,7 +29,7 @@ export default async function SignupPage() {
         </p>
       </div>
 
-      <div className="mt-8 rounded-2xl border border-gray-100 bg-white p-6 shadow-card sm:p-8">
+      <div className="mt-8 surface p-6 sm:p-8">
         <Suspense fallback={null}>
           <AuthForm mode="signup" />
         </Suspense>

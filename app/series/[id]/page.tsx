@@ -146,7 +146,7 @@ export default async function SeriesPage({
                 <Link
                   key={e.id}
                   href={`/events/${e.id}`}
-                  className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card transition hover:-translate-y-0.5 hover:border-brand/30"
+                  className="flex flex-col overflow-hidden surface transition hover:-translate-y-0.5 hover:border-brand/30"
                 >
                   <EventCover
                     url={e.cover_image_url}
@@ -215,7 +215,7 @@ export default async function SeriesPage({
 
         {/* Sidebar */}
         <aside className="lg:col-span-1">
-          <div className="sticky top-24 rounded-2xl border border-gray-100 bg-white p-6 shadow-card">
+          <div className="sticky top-24 surface p-6">
             <SeriesSubscribeButton
               seriesId={series.id}
               isLoggedIn={!!user}

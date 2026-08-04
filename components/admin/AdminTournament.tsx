@@ -65,7 +65,7 @@ export default function AdminTournament({
         </button>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-gray-100 bg-white shadow-card">
+      <div className="overflow-x-auto surface">
         {registrations.length === 0 ? (
           <p className="px-4 py-8 text-center text-sm text-gray-400">
             No registrations yet.

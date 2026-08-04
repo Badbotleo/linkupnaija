@@ -54,7 +54,7 @@ export default function PayoutRequest({
   }
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-card">
+    <div className="surface p-4">
       <p className="font-bold text-gray-900">{eventTitle}</p>
       <dl className="mt-2 grid grid-cols-3 gap-2 text-center text-sm">
         <div>

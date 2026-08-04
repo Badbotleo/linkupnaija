@@ -21,7 +21,7 @@ export default function ProfileCard({
   const verified = hasSocialLinks(profile);
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-card">
+    <div className="surface p-6">
       <div className="flex items-start gap-4">
         <Avatar name={profile.name} url={profile.avatar_url} size="lg" />
         <div className="min-w-0 flex-1">

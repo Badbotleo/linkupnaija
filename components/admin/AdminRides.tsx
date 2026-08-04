@@ -93,7 +93,7 @@ export default function AdminRides() {
       {rides.map((r) => (
         <div
           key={r.id}
-          className="rounded-2xl border border-gray-100 bg-white p-4 shadow-card"
+          className="surface p-4"
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">

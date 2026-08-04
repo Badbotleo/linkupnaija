@@ -178,7 +178,7 @@ function Card({
   onJoin: () => void;
 }) {
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card">
+    <div className="flex flex-col overflow-hidden surface">
       <Link href={`/circles/${circle.id}`} className="block">
         <EventCover
           url={circle.cover_image_url}

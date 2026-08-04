@@ -142,7 +142,7 @@ export default async function HostPage({
         </div>
       )}
 
-      <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-card sm:p-8">
+      <div className="surface p-6 sm:p-8">
         <HostForm
           hostState={profile?.state ?? null}
           prefill={{
