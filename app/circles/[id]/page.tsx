@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AppHeader from "@/components/AppHeader";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import EventCover from "@/components/EventCover";
@@ -81,12 +82,15 @@ export default async function CirclePage({ params }: { params: { id: string } })
   }
 
   return (
-    <div className="container-page py-10">
-      <Link href="/circles" className="text-sm font-medium text-gray-500 hover:text-brand">
-        ← All circles
-      </Link>
+    <div>
+      <AppHeader
+        title={circle.name}
+        subtitle={`${circle.member_count} member${circle.member_count === 1 ? "" : "s"}${circle.state ? ` · ${circle.state}` : ""}`}
+        back
+      />
+      <div className="container-page py-5">
 
-      <div className="mt-4 overflow-hidden rounded-2xl shadow-card">
+      <div className="overflow-hidden rounded-2xl shadow-card">
         <EventCover
           url={circle.cover_image_url}
           category={circle.category ?? "Networking"}
@@ -113,7 +117,6 @@ export default async function CirclePage({ params }: { params: { id: string } })
               </span>
             )}
           </div>
-          <h1 className="mt-3 text-3xl font-extrabold text-gray-900">{circle.name}</h1>
           {circle.description && <p className="mt-2 text-gray-600">{circle.description}</p>}
 
           <div className="mt-6">
@@ -170,6 +173,7 @@ export default async function CirclePage({ params }: { params: { id: string } })
           </div>
         </aside>
       </div>
+    </div>
     </div>
   );
 }
