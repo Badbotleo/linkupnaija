@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppHeader from "@/components/AppHeader";
 import QuickActions from "@/components/dashboard/QuickActions";
+import DashboardTabs from "@/components/dashboard/DashboardTabs";
 import ProfileCard from "@/components/ProfileCard";
 import ProfileCompletion from "@/components/ProfileCompletion";
 import UserMessages from "@/components/UserMessages";
@@ -490,6 +491,17 @@ export default async function DashboardPage() {
             </section>
           )}
 
+          {/* Five stacked headings became one switchable list. */}
+          <DashboardTabs
+            tabs={[
+              { id: "hosting", label: "Hosting", count: hosting.length },
+              { id: "past", label: "Past", count: pastHosting.length },
+              { id: "attending", label: "Going", count: attending.length },
+              { id: "pending", label: "Pending", count: pending.length },
+              { id: "declined", label: "Declined", count: declined.length },
+            ]}
+          >
+            <div key="hosting">
           <Section
             title="Events I'm hosting"
             count={hosting.length}
@@ -521,7 +533,8 @@ export default async function DashboardPage() {
               );
             })}
           </Section>
-
+            </div>
+            <div key="past">
           {pastHosting.length > 0 && (
             <Section
               title="Past events"
@@ -537,7 +550,8 @@ export default async function DashboardPage() {
               ))}
             </Section>
           )}
-
+            </div>
+            <div key="attending">
           <Section
             title="Events I'm attending"
             count={attending.length}
@@ -553,7 +567,8 @@ export default async function DashboardPage() {
               </EventRowCard>
             ))}
           </Section>
-
+            </div>
+            <div key="pending">
           <Section
             title="Pending requests"
             count={pending.length}
@@ -565,7 +580,8 @@ export default async function DashboardPage() {
               </EventRowCard>
             ))}
           </Section>
-
+            </div>
+            <div key="declined">
           <Section
             title="Declined"
             count={declined.length}
@@ -577,6 +593,8 @@ export default async function DashboardPage() {
               </EventRowCard>
             ))}
           </Section>
+            </div>
+          </DashboardTabs>
         </div>
       </div>
       </div>
