@@ -3,6 +3,7 @@ import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser, getCurrentUserMeta } from "@/lib/supabase/auth";
 import CategoryBadge from "@/components/CategoryBadge";
+import AdminShell from "@/components/admin/AdminShell";
 import AdminReservations from "@/components/admin/AdminReservations";
 import AdminExpiredEvents from "@/components/admin/AdminExpiredEvents";
 import AdminMessages from "@/components/admin/AdminMessages";
@@ -330,116 +331,47 @@ export default async function AdminPage() {
         ))}
       </div>
 
-      {/* Reservations */}
-      <section className="mt-10">
-        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
-          Reservations
-          {reservations.length > 0 && (
-            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700">
-              {reservations.length} pending
-            </span>
-          )}
-        </h2>
-        <AdminReservations initialReservations={reservations} />
-      </section>
+      {/* Sixteen panels on one page meant scrolling past everything to find
+          anything — and every panel that fetches on mount fired on every
+          visit. One section at a time now. */}
+      <AdminShell
+        sections={[
+          { id: "reservations", label: "Reservations", emoji: "🍽️", group: "Requests", badge: reservations.length },
+          { id: "rides", label: "Ride requests", emoji: "🚗", group: "Requests" },
+          { id: "corporate", label: "Corporate", emoji: "🏢", group: "Requests", badge: corporate.length },
+          { id: "messages", label: "Messages", emoji: "💬", group: "Requests" },
+          { id: "moderation", label: "Moderation", emoji: "🛡️", group: "Safety" },
+          { id: "safety", label: "Safety flags", emoji: "🛟", group: "Safety", badge: flaggedHosts.length },
+          { id: "expired", label: "Expired events", emoji: "📅", group: "Content" },
+          { id: "thingstodo", label: "Things to do this week", emoji: "🗓️", group: "Content" },
+          { id: "venues", label: "Onboarded venues", emoji: "📍", group: "Content" },
+          { id: "opportunities", label: "Opportunities", emoji: "💼", group: "Content" },
+          { id: "instagram", label: "Post to Instagram", emoji: "📸", group: "Content" },
+          { id: "tournament", label: "FC26 Tournament", emoji: "🎮", group: "Content" },
+          { id: "payouts", label: "Payout requests", emoji: "💸", group: "Money", badge: payouts.length },
+          { id: "wallet", label: "Credit a wallet", emoji: "💰", group: "Money" },
+          { id: "pro", label: "Pro members", emoji: "⭐", group: "People" },
+          { id: "hosts", label: "Hosts", emoji: "🏅", group: "People" },
+        ]}
+      >
+        <div key="reservations">
+<AdminReservations initialReservations={reservations} />
+        </div>
 
-      {/* Things to do this week */}
-      <section className="mt-10">
-        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
-          🗓️ Things to do this week
-        </h2>
-        <AdminThingsToDo />
-      </section>
+        <div key="rides">
+<AdminRides />
+        </div>
 
-      {/* Tournament */}
-      <section className="mt-10">
-        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
-          🎮 FC26 Tournament
-          {tournamentRegs.length > 0 && (
-            <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand">
-              {tournamentRegs.length}
-            </span>
-          )}
-        </h2>
-        <AdminTournament registrations={tournamentRegs} />
-      </section>
+        <div key="corporate">
+<AdminCorporate initial={corporate} adminId={user.id} />
+        </div>
 
-      {/* Opportunities */}
-      <section className="mt-10">
-        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
-          Opportunities
-          {opportunities.length > 0 && (
-            <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand">
-              {opportunities.length}
-            </span>
-          )}
-        </h2>
-        <AdminOpportunities initial={opportunities} />
-      </section>
+        <div key="messages">
+<AdminMessages adminId={user.id} users={messageUsers} />
+        </div>
 
-      {/* Expired events */}
-      <section className="mt-10">
-        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
-          Expired events
-          {expiredEvents.length > 0 && (
-            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-bold text-gray-600">
-              {expiredEvents.length}
-            </span>
-          )}
-        </h2>
-        <AdminExpiredEvents initialEvents={expiredEvents} />
-      </section>
-
-      {/* Payouts */}
-      <section className="mt-10">
-        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
-          Payout requests
-          {payouts.length > 0 && (
-            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700">
-              {payouts.length}
-            </span>
-          )}
-        </h2>
-        <AdminPayouts initialPayouts={payouts} />
-      </section>
-
-      {/* Hosts */}
-      <section className="mt-10">
-        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
-          🏅 Hosts
-          {adminHosts.length > 0 && (
-            <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand">
-              {adminHosts.length}
-            </span>
-          )}
-        </h2>
-        <AdminHosts initial={adminHosts} />
-      </section>
-
-      {/* Corporate */}
-      <section className="mt-10">
-        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
-          🏢 Corporate
-          {corporate.length > 0 && (
-            <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand">
-              {corporate.length}
-            </span>
-          )}
-        </h2>
-        <AdminCorporate initial={corporate} adminId={user.id} />
-      </section>
-
-      {/* Moderation */}
-      <section className="mt-10">
-        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
-          🛡️ Moderation
-          {modUsers.filter((u) => u.moderation_status && u.moderation_status !== "active").length > 0 && (
-            <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-700">
-              {modUsers.filter((u) => u.moderation_status !== "active").length} flagged
-            </span>
-          )}
-        </h2>
-        <p className="mb-3 text-sm text-gray-500">
+        <div key="moderation">
+<p className="mb-3 text-sm text-gray-500">
           Warn, restrict or block spammers, and delete events that violate the terms.
         </p>
         <AdminModeration
@@ -452,19 +384,10 @@ export default async function AdminPage() {
           series={modSeries}
           reports={modReports}
         />
-      </section>
+        </div>
 
-      {/* Safety flags */}
-      <section className="mt-10">
-        <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-gray-900">
-          🛟 Safety flags
-          {flaggedHosts.length > 0 && (
-            <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-700">
-              {flaggedHosts.length}
-            </span>
-          )}
-        </h2>
-        {flaggedHosts.length === 0 ? (
+        <div key="safety">
+{flaggedHosts.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-8 text-center text-sm text-gray-500">
             No hosts flagged for safety concerns.
           </p>
@@ -485,47 +408,51 @@ export default async function AdminPage() {
             ))}
           </ul>
         )}
-      </section>
+        </div>
 
-      {/* Wallet credits */}
-      <section className="mt-10">
-        <h2 className="mb-3 text-lg font-bold text-gray-900">
-          💰 Credit a wallet
-        </h2>
-        <AdminWalletCredit users={messageUsers} />
-      </section>
+        <div key="expired">
+<AdminExpiredEvents initialEvents={expiredEvents} />
+        </div>
 
-      {/* Pro members */}
-      <section className="mt-10">
-        <h2 className="mb-3 text-lg font-bold text-gray-900">Pro members</h2>
-        <AdminPro />
-      </section>
+        <div key="thingstodo">
+<AdminThingsToDo />
+        </div>
 
-      {/* Ride requests */}
-      <section className="mt-10">
-        <h2 className="mb-3 text-lg font-bold text-gray-900">Ride requests</h2>
-        <AdminRides />
-      </section>
+        <div key="venues">
+<AdminVenues adminId={user.id} />
+        </div>
 
-      {/* Instagram posts */}
-      <section className="mt-10">
-        <h2 className="mb-1 text-lg font-bold text-gray-900">
+        <div key="opportunities">
+<AdminOpportunities initial={opportunities} />
+        </div>
+
+        <div key="instagram">
+<h2 className="mb-1 text-lg font-bold text-gray-900">
           Post an event to Instagram
         </h2>
         <AdminInstagram />
-      </section>
+        </div>
 
-      {/* Onboarded venues */}
-      <section className="mt-10">
-        <h2 className="mb-3 text-lg font-bold text-gray-900">Venues</h2>
-        <AdminVenues adminId={user.id} />
-      </section>
+        <div key="tournament">
+<AdminTournament registrations={tournamentRegs} />
+        </div>
 
-      {/* Messages */}
-      <section className="mt-10">
-        <h2 className="mb-3 text-lg font-bold text-gray-900">Messages</h2>
-        <AdminMessages adminId={user.id} users={messageUsers} />
-      </section>
+        <div key="payouts">
+<AdminPayouts initialPayouts={payouts} />
+        </div>
+
+        <div key="wallet">
+<AdminWalletCredit users={messageUsers} />
+        </div>
+
+        <div key="pro">
+<AdminPro />
+        </div>
+
+        <div key="hosts">
+<AdminHosts initial={adminHosts} />
+        </div>
+      </AdminShell>
 
       <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-2">
         {/* Recent signups */}
