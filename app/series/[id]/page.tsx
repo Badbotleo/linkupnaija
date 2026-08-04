@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AppHeader from "@/components/AppHeader";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import EventCover from "@/components/EventCover";
@@ -92,13 +93,13 @@ export default async function SeriesPage({
   }
 
   return (
-    <div className="container-page py-10">
-      <Link
-        href="/events"
-        className="text-sm font-medium text-gray-500 hover:text-brand"
-      >
-        ← Back to events
-      </Link>
+    <div>
+      <AppHeader
+        title={series.title}
+        subtitle={[series.frequency, series.state].filter(Boolean).join(" · ") || "Event series"}
+        back
+      />
+      <div className="container-page py-5">
 
       <div className="mt-4 grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Main */}
@@ -123,9 +124,6 @@ export default async function SeriesPage({
             )}
           </div>
 
-          <h1 className="mt-3 text-3xl font-extrabold text-gray-900 sm:text-4xl">
-            {series.title}
-          </h1>
           {series.description && (
             <p className="mt-3 whitespace-pre-line text-gray-600">
               {series.description}
@@ -244,6 +242,7 @@ export default async function SeriesPage({
           </div>
         </aside>
       </div>
+    </div>
     </div>
   );
 }
