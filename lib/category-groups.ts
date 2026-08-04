@@ -62,7 +62,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     tint: "from-naija-100 to-naija-50 text-naija-800",
     categories: [
       "Beach Day", "Hiking", "Yoga", "Fitness", "Road Trip", "Bowling",
-      "Sightseeing", "Jogging",
+      "Sightseeing", "Jogging", "Outdoor",
       "Camping", "Boat Cruise", "Go-Karting",
     ],
   },
@@ -75,6 +75,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     categories: [
       "Concert", "Live Music", "Comedy Night", "Karaoke", "Open Mic",
       "Art Gallery", "Fashion Show",
+      "Music", "Entertainment", "Festival",
     ],
   },
   {
@@ -83,7 +84,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     hint: "Rooms worth it",
     emoji: "🤝",
     tint: "from-blue-100 to-blue-50 text-blue-800",
-    categories: ["Networking", "Tech Meetup", "Volunteering"],
+    categories: ["Networking", "Tech Meetup", "Volunteering", "Community & Social"],
   },
   {
     key: "celebrate",

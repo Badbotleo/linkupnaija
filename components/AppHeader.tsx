@@ -33,7 +33,7 @@ export default function AppHeader({
   const router = useRouter();
 
   return (
-    <header className="sticky top-16 z-30 border-b border-gray-100 bg-[#F7F7F9]/85 backdrop-blur-md dark:bg-gray-900/85">
+    <header className="sticky top-16 z-30 lg:top-0 border-b border-gray-100 bg-[#F7F7F9]/85 backdrop-blur-md dark:bg-gray-900/85">
       <div className="container-page py-3.5 sm:py-4">
         <div className="flex items-start gap-3">
           {back && (

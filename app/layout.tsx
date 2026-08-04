@@ -5,6 +5,7 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
+import DesktopRail from "@/components/DesktopRail";
 import DeferredWidgets from "@/components/DeferredWidgets";
 import ScrollProgress from "@/components/ScrollProgress";
 import NavProgress from "@/components/NavProgress";
@@ -99,10 +100,13 @@ export default async function RootLayout({
       <body className="flex min-h-screen flex-col">
         <ScrollProgress />
         <NavProgress />
+        <DesktopRail isLoggedIn={!!user} unread={unread} />
         <Navbar />
         {/* pb clears the mobile bottom nav */}
-        <main className="flex-1 pb-16 lg:pb-0">{children}</main>
-        <Footer />
+        <main className="flex-1 pb-16 lg:pb-0 lg:pl-[248px]">{children}</main>
+        <div className="lg:pl-[248px]">
+          <Footer />
+        </div>
         <DeferredWidgets />
         <BottomNav isLoggedIn={!!user} unread={unread} />
         <Toaster />

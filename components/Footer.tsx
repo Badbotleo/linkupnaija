@@ -24,83 +24,53 @@ const SOCIALS = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-gray-100 bg-gray-50">
-      <div className="container-page py-10">
-        <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start sm:justify-between">
-          {/* Brand + contact */}
-          <div className="flex flex-col items-center gap-2 sm:items-start">
-            <Logo size={28} textClassName="text-base" />
-            <a
-              href="mailto:support@linkupnaija.com"
-              className="text-sm text-gray-500 hover:text-brand"
-            >
-              support@linkupnaija.com
-            </a>
-          </div>
+    /* An app doesn't end in a sitemap. On phones the bottom bar already
+       carries navigation, so this is a quiet sign-off; on desktop the left
+       rail carries it, so the links stay collapsed there too. */
+    <footer className="mt-12 border-t border-gray-100 dark:border-white/10">
+      <div className="container-page py-7">
+        <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
+          <Link href="/" className="flex items-center gap-2">
+            <Logo size={26} textClassName="text-base" />
+          </Link>
 
-          {/* Links */}
-          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-gray-500">
-            <Link href="/events" className="hover:text-brand">
-              Explore
-            </Link>
-            <Link href="/venues" className="hover:text-brand">
-              Venues
-            </Link>
-            <Link href="/host" className="hover:text-brand">
-              Host an event
-            </Link>
-            <Link href="/opportunities" className="hover:text-brand">
-              Opportunities
-            </Link>
-            <Link href="/corporate" className="hover:text-brand">
-              For Business
-            </Link>
-            <Link
-              href="/pro"
-              className="font-semibold text-amber-600 hover:text-amber-700"
-            >
-              Pro
-            </Link>
-            <Link href="/privacy-policy" className="hover:text-brand">
-              Privacy Policy
-            </Link>
-            <Link href="/terms-of-service" className="hover:text-brand">
-              Terms of Service
-            </Link>
+          <div className="flex items-center gap-2">
+            {SOCIALS.map((s) => (
+              <a
+                key={s.label}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${s.label} · ${s.handle}`}
+                className="grid h-9 w-9 place-items-center rounded-full bg-gray-100 text-gray-600 transition hover:bg-brand hover:text-white dark:bg-white/10 dark:text-white/70"
+              >
+                {s.icon}
+              </a>
+            ))}
           </div>
         </div>
 
-        {/* Follow us + copyright */}
-        <div className="mt-8 flex flex-col items-center gap-4 border-t border-gray-100 pt-6 sm:flex-row sm:justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold text-gray-700">
-              Follow us
-            </span>
-            <div className="flex items-center gap-2">
-              {SOCIALS.map((s) => (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`${s.label} · ${s.handle}`}
-                  title={s.handle}
-                  className="grid h-9 w-9 place-items-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:border-brand hover:text-brand"
-                >
-                  {s.icon}
-                </a>
-              ))}
-            </div>
-          </div>
-
-          <p className="flex items-center gap-1.5 text-xs text-gray-400">
-            © {new Date().getFullYear()} LinkUpNaija. Made with 💜 in Nigeria.
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-gray-400 sm:justify-start">
+          <a href="mailto:support@linkupnaija.com" className="hover:text-brand">
+            support@linkupnaija.com
+          </a>
+          <Link href="/privacy-policy" className="hover:text-brand">
+            Privacy
+          </Link>
+          <Link href="/terms-of-service" className="hover:text-brand">
+            Terms
+          </Link>
+          <Link href="/business" className="hover:text-brand">
+            For business
+          </Link>
+          <span className="flex items-center gap-1.5">
+            © {new Date().getFullYear()} LinkUpNaija
             <span aria-hidden className="flex overflow-hidden rounded-[2px]">
               <span className="block h-2.5 w-1 bg-naija" />
               <span className="block h-2.5 w-1 bg-white" />
               <span className="block h-2.5 w-1 bg-naija" />
             </span>
-          </p>
+          </span>
         </div>
       </div>
     </footer>

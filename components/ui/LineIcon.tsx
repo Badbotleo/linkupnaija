@@ -1,6 +1,7 @@
 // Minimal stroke icon set for a clean, emoji-free UI chrome.
 // Same visual language as the drawer icons (24px viewBox, 2px stroke).
 const PATHS: Record<string, string> = {
+  home: "M3 10.5 12 3l9 7.5M5.5 9.5V20h13V9.5M9.5 20v-6h5v6",
   search: "M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3",
   mic: "M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3",
   circles:
