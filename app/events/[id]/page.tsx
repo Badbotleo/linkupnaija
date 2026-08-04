@@ -471,8 +471,8 @@ export default async function EventDetailPage({
         </div>
 
         {/* Sidebar */}
-        <aside className="lg:col-span-1">
-          <div className="sticky top-24 rounded-2xl border border-gray-100 bg-white p-6 shadow-card">
+        <aside className="order-first lg:order-none lg:col-span-1">
+          <div className="surface sticky top-24 p-6 lg:shadow-raised">
             {isHost ? (
               <FeatureButton eventId={event.id} alreadyFeatured={featured} />
             ) : (

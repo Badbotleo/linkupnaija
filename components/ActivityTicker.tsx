@@ -97,7 +97,10 @@ export default function ActivityTicker() {
       }
 
       setMessages(msgs);
-      setTimeout(() => active && setShow(true), 3000); // slide in after 3s
+      // Slide in after 3s, then retire. Social proof that never leaves is
+      // just furniture in front of the content.
+      setTimeout(() => active && setShow(true), 3000);
+      setTimeout(() => active && setShow(false), 3000 + 24_000);
     })();
 
     // Live prune: when an event is deleted (e.g. by an admin removing spam),
@@ -148,7 +151,7 @@ export default function ActivityTicker() {
 
   return (
     <div
-      className="fixed bottom-[8.5rem] right-3 z-30 w-[min(15rem,calc(100vw-5.5rem))] sm:right-5 sm:w-[19rem] lg:bottom-24"
+      className="pointer-events-none fixed bottom-[8.5rem] right-3 z-30 w-[min(15rem,calc(100vw-5.5rem))] sm:right-5 sm:w-[19rem] lg:bottom-24"
       role="status"
       aria-live="polite"
     >
@@ -170,7 +173,7 @@ export default function ActivityTicker() {
           type="button"
           onClick={dismiss}
           aria-label="Dismiss activity feed"
-          className="shrink-0 text-[11px] text-white/50 transition hover:text-white"
+          className="pointer-events-auto shrink-0 px-1 text-[11px] text-white/50 transition hover:text-white"
         >
           ✕
         </button>
