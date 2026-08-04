@@ -24,7 +24,7 @@ export default function Avatar({
   seed?: string | null;
 }) {
   const { cls, px } = SIZES[size];
-  const wrap = `${cls} shrink-0 overflow-hidden rounded-full`;
+  const wrap = `${cls} block shrink-0 overflow-hidden rounded-full`;
 
   if (url) {
     return (

@@ -47,9 +47,12 @@ const config: Config = {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
       },
       boxShadow: {
-        // Hairline fintech-style elevation: cards separate from the neutral
-        // page background via contrast, not big colored shadows.
-        card: "0 1px 2px rgba(17, 15, 37, 0.04), 0 1px 3px rgba(17, 15, 37, 0.06)",
+        // One elevation ladder, defined once in globals.css. shadow-card is
+        // already used on ~every surface, so pointing it here re-skins the
+        // whole product from a single place.
+        card: "var(--e1)",
+        raised: "var(--e2)",
+        float: "var(--e3)",
       },
     },
   },

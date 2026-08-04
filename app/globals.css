@@ -4,6 +4,18 @@
 
 :root {
   --brand: #534ab7;
+
+  /* One elevation ladder for the whole product. Cards used to pick their own
+     shadow per screen, which is the main reason surfaces felt inconsistent —
+     the thing that separates an app from a website more than any single
+     layout does. */
+  --e1: 0 1px 2px rgba(17, 15, 37, 0.05), 0 1px 3px rgba(17, 15, 37, 0.04);
+  --e2: 0 2px 6px rgba(17, 15, 37, 0.06), 0 8px 20px -8px rgba(17, 15, 37, 0.10);
+  --e3: 0 4px 12px rgba(17, 15, 37, 0.08), 0 20px 40px -16px rgba(17, 15, 37, 0.16);
+
+  /* Native-feeling easing. Linear motion is the tell of a web page. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 html {
@@ -13,6 +25,59 @@ html {
 body {
   /* Soft neutral canvas so white cards read as elevated surfaces. */
   @apply bg-[#F7F7F9] text-gray-900 antialiased;
+  /* Stops the rubber-band white flash at the top and bottom of a scroll on
+     iOS, which instantly reads as "this is a web page in a browser". */
+  overscroll-behavior-y: none;
+}
+
+/* Nothing in an app highlights blue when you tap it. */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Every tappable thing acknowledges the tap. A press with no response is the
+   single biggest difference between a native feel and a web feel. */
+@media (hover: none) {
+  a:active,
+  button:not(:disabled):active,
+  [role="button"]:active {
+    transform: scale(0.975);
+  }
+}
+a,
+button,
+[role="button"] {
+  transition:
+    transform 0.14s var(--ease-out),
+    opacity 0.14s var(--ease-out),
+    background-color 0.16s var(--ease-out),
+    border-color 0.16s var(--ease-out),
+    color 0.16s var(--ease-out);
+}
+
+/* Screens arrive rather than appear. */
+@keyframes app-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+main > * {
+  animation: app-enter 0.26s var(--ease-out) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  main > * {
+    animation: none;
+  }
+  a:active,
+  button:active,
+  [role="button"]:active {
+    transform: none;
+  }
 }
 
 @layer components {
@@ -44,6 +109,22 @@ body {
   }
   .label {
     @apply mb-1.5 block text-sm font-medium text-gray-700;
+  }
+  /* The card. Every elevated surface should come from here. */
+  .surface {
+    @apply rounded-2xl border border-gray-100 bg-white;
+    box-shadow: var(--e1);
+  }
+  .surface-raised {
+    @apply rounded-2xl border border-gray-100 bg-white;
+    box-shadow: var(--e2);
+  }
+  .surface-tap {
+    @apply surface transition;
+  }
+  .surface-tap:hover {
+    box-shadow: var(--e2);
+    @apply -translate-y-0.5 border-brand/25;
   }
   .container-page {
     @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
