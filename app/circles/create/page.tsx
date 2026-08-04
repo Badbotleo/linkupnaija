@@ -1,4 +1,4 @@
-import Link from "next/link";
+import AppHeader from "@/components/AppHeader";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import CreateCircleForm from "@/components/circles/CreateCircleForm";
@@ -20,16 +20,16 @@ export default async function CreateCirclePage() {
     .single();
 
   return (
-    <div className="container-page max-w-xl py-10">
-      <Link href="/circles" className="text-sm font-medium text-gray-500 hover:text-brand">
-        ← Back to circles
-      </Link>
-      <h1 className="mt-4 text-3xl font-extrabold text-gray-900">Create a circle</h1>
-      <p className="mt-1 text-gray-600">
-        Start a community around what you love: meetups, chats and shared events.
-      </p>
-      <div className="mt-6 surface p-6 sm:p-8">
-        <CreateCircleForm userState={me?.state ?? null} />
+    <div>
+      <AppHeader
+        title="Create a circle"
+        subtitle="A community around what you love — meetups, chats and shared events"
+        back
+      />
+      <div className="container-page max-w-xl py-5">
+        <div className="surface p-6 sm:p-8">
+          <CreateCircleForm userState={me?.state ?? null} />
+        </div>
       </div>
     </div>
   );
