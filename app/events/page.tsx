@@ -246,7 +246,13 @@ export default async function EventsPage({
     <div>
       <AppHeader
         title={"Events"}
-        subtitle={<>Parties, hangouts and everything buzzing near you</>}
+        subtitle={
+          past ? (
+            <>Link-ups that already happened — see who was there</>
+          ) : (
+            <>Parties, hangouts and everything buzzing near you</>
+          )
+        }
         action={<Link href="/host" className="btn-primary rounded-full px-4 py-2 text-sm">Host</Link>}
       />
       <div className="container-page py-5">
@@ -307,6 +313,19 @@ export default async function EventsPage({
           We don&apos;t have enough signal to recommend events yet. Join a few
           and check back!
         </p>
+      ) : past && feedEvents.length === 0 ? (
+        <div className="mt-8 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-12 text-center">
+          <p className="text-4xl">🕰️</p>
+          <h2 className="mt-3 text-lg font-bold text-gray-900">
+            Nothing behind you yet
+          </h2>
+          <p className="mx-auto mt-1 max-w-sm text-sm text-gray-500">
+            Link-ups show up here the day after they happen.
+          </p>
+          <Link href="/events" className="btn-primary mt-5">
+            See what&apos;s coming up
+          </Link>
+        </div>
       ) : (
         <>
           <div className="mt-6">
