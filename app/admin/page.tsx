@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSessionUser, getCurrentUserMeta } from "@/lib/supabase/auth";
 import CategoryBadge from "@/components/CategoryBadge";
 import AdminShell from "@/components/admin/AdminShell";
+import AdminDrivers from "@/components/admin/AdminDrivers";
 import AdminReservations from "@/components/admin/AdminReservations";
 import AdminExpiredEvents from "@/components/admin/AdminExpiredEvents";
 import AdminMessages from "@/components/admin/AdminMessages";
@@ -338,6 +339,7 @@ export default async function AdminPage() {
         sections={[
           { id: "reservations", label: "Reservations", emoji: "🍽️", group: "Requests", badge: reservations.length },
           { id: "rides", label: "Ride requests", emoji: "🚗", group: "Requests" },
+          { id: "drivers", label: "Driver applications", emoji: "🪪", group: "Requests" },
           { id: "corporate", label: "Corporate", emoji: "🏢", group: "Requests", badge: corporate.length },
           { id: "messages", label: "Messages", emoji: "💬", group: "Requests" },
           { id: "moderation", label: "Moderation", emoji: "🛡️", group: "Safety" },
@@ -360,6 +362,10 @@ export default async function AdminPage() {
 
         <div key="rides">
 <AdminRides />
+        </div>
+
+        <div key="drivers">
+          <AdminDrivers />
         </div>
 
         <div key="corporate">

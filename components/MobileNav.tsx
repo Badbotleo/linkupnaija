@@ -21,7 +21,8 @@ const DISCOVER = [
   { href: "/live", label: "Live feed", icon: "activity" },
   { href: "/hosts/leaderboard", label: "Host leaderboard", icon: "trophy" },
   { href: "/venues", label: "Venues", icon: "pin" },
-  { href: "/rides", label: "Hail a car", icon: "car" },
+  { href: "/things-to-do", label: "Things to do", icon: "sparkles" },
+  { href: "/rides", label: "Rides", icon: "car" },
   { href: "/opportunities", label: "Opportunities", icon: "briefcase" },
   { href: "/tournament", label: "FC26 Tournament", icon: "gamepad" },
 ];
