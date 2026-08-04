@@ -273,6 +273,25 @@ export default async function EventDetailPage({
         />
       </div>
 
+      {/* The host's other pictures. `gallery_urls` only exists once
+          migration-event-gallery.sql has run, so read it defensively —
+          `select("*")` simply won't return the key before then. */}
+      {Array.isArray((event as { gallery_urls?: string[] }).gallery_urls) &&
+        (event as { gallery_urls: string[] }).gallery_urls.length > 0 && (
+          <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto">
+            {(event as { gallery_urls: string[] }).gallery_urls.map((url, i) => (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                key={url}
+                src={url}
+                alt={`${event.title} — picture ${i + 2}`}
+                loading="lazy"
+                className="h-28 w-28 shrink-0 rounded-xl object-cover shadow-sm sm:h-36 sm:w-36"
+              />
+            ))}
+          </div>
+        )}
+
       <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Main */}
         <div className="lg:col-span-2">

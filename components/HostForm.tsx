@@ -34,6 +34,10 @@ export default function HostForm({
     event_type: "general" as "general" | "private",
   });
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  // Extra pictures beyond the cover. Four here plus the cover is the five a
+  // host is offered.
+  const [extraFiles, setExtraFiles] = useState<File[]>([]);
+  const [extraPreviews, setExtraPreviews] = useState<string[]>([]);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +77,28 @@ export default function HostForm({
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  const MAX_EXTRA = 4;
+
+  function onPickExtras(e: React.ChangeEvent<HTMLInputElement>) {
+    const picked = Array.from(e.target.files ?? []);
+    if (picked.length === 0) return;
+    // Take what fits and say so, rather than silently dropping the rest.
+    const room = MAX_EXTRA - extraFiles.length;
+    const taken = picked.slice(0, Math.max(0, room));
+    if (picked.length > taken.length) {
+      setError(`Only ${MAX_EXTRA + 1} pictures per event — kept the first ${taken.length}.`);
+    }
+    setExtraFiles((prev) => [...prev, ...taken]);
+    setExtraPreviews((prev) => [...prev, ...taken.map((f) => URL.createObjectURL(f))]);
+    e.target.value = "";
+  }
+
+  function removeExtra(i: number) {
+    URL.revokeObjectURL(extraPreviews[i]);
+    setExtraFiles((prev) => prev.filter((_, n) => n !== i));
+    setExtraPreviews((prev) => prev.filter((_, n) => n !== i));
   }
 
   function onPickCover(e: React.ChangeEvent<HTMLInputElement>) {
@@ -115,6 +141,26 @@ export default function HostForm({
         .data.publicUrl;
     }
 
+    // Extra pictures. One failing shouldn't lose the whole event, so a bad
+    // upload is skipped and the rest go up.
+    const galleryUrls: string[] = [];
+    for (const file of extraFiles.slice(0, MAX_EXTRA)) {
+      try {
+        const optimized = await compressImage(file, { maxDimension: 1600 });
+        const ext = optimized.name.split(".").pop()?.toLowerCase() || "jpg";
+        const path = `${user.id}/${Date.now()}-${galleryUrls.length}.${ext}`;
+        const { error: gErr } = await supabase.storage
+          .from("event-covers")
+          .upload(path, optimized, { upsert: true, cacheControl: "3600" });
+        if (gErr) continue;
+        galleryUrls.push(
+          supabase.storage.from("event-covers").getPublicUrl(path).data.publicUrl
+        );
+      } catch {
+        /* skip this one */
+      }
+    }
+
     const baseEvent = {
       title: form.title.trim(),
       category: form.category,
@@ -127,6 +173,7 @@ export default function HostForm({
       price: form.price ? Math.max(0, Math.round(Number(form.price))) : 0,
       event_type: form.event_type,
       cover_image_url: coverImageUrl,
+      gallery_urls: galleryUrls,
     };
 
     // Recurring series: create the series + its first 3 events.
@@ -142,6 +189,7 @@ export default function HostForm({
           location: form.location.trim(),
           frequency,
           cover_image_url: coverImageUrl,
+      gallery_urls: galleryUrls,
         })
         .select("id")
         .single();
@@ -157,7 +205,12 @@ export default function HostForm({
         date,
         series_id: series.id,
       }));
-      const { error: evErr } = await supabase.from("events").insert(rows);
+      let { error: evErr } = await supabase.from("events").insert(rows);
+      if (evErr && /gallery_urls/.test(evErr.message)) {
+        ({ error: evErr } = await supabase
+          .from("events")
+          .insert(rows.map(({ gallery_urls: _drop, ...r }) => r)));
+      }
       if (evErr) {
         setError(evErr.message);
         setLoading(false);
@@ -169,14 +222,29 @@ export default function HostForm({
       return;
     }
 
-    const { data, error } = await supabase
+    // Same fallback as the series path above.
+    let { data, error } = await supabase
       .from("events")
       .insert({ ...baseEvent, date: form.date })
       .select("id")
       .single();
+    if (error && /gallery_urls/.test(error.message)) {
+      const { gallery_urls: _drop, ...withoutGallery } = baseEvent;
+      ({ data, error } = await supabase
+        .from("events")
+        .insert({ ...withoutGallery, date: form.date })
+        .select("id")
+        .single());
+    }
 
     if (error) {
       setError(error.message);
+      setLoading(false);
+      return;
+    }
+
+    if (!data) {
+      setError("Event created but could not be opened. Check your dashboard.");
       setLoading(false);
       return;
     }
@@ -232,6 +300,51 @@ export default function HostForm({
             className="hidden"
           />
         </label>
+      </div>
+
+      {/* Up to four more, so five pictures in total. */}
+      <div>
+        <span className="label">
+          More pictures{" "}
+          <span className="font-normal text-gray-400">
+            ({extraPreviews.length}/{MAX_EXTRA} extra · optional)
+          </span>
+        </span>
+        <div className="mt-1.5 flex flex-wrap gap-2">
+          {extraPreviews.map((src, i) => (
+            <div key={src} className="relative h-20 w-20 overflow-hidden rounded-xl">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={src} alt="" className="h-full w-full object-cover" />
+              <button
+                type="button"
+                onClick={() => removeExtra(i)}
+                aria-label={`Remove picture ${i + 1}`}
+                className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-black/60 text-[13px] leading-none text-white transition hover:bg-black/80"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+          {extraPreviews.length < MAX_EXTRA && (
+            <label
+              htmlFor="extras"
+              className="grid h-20 w-20 cursor-pointer place-items-center rounded-xl border-2 border-dashed border-gray-200 text-gray-400 transition hover:border-brand/40 hover:text-brand"
+            >
+              <span className="text-2xl leading-none">+</span>
+              <input
+                id="extras"
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={onPickExtras}
+                className="hidden"
+              />
+            </label>
+          )}
+        </div>
+        <p className="mt-1.5 text-xs text-gray-500">
+          The first image is the cover. These show on the event page.
+        </p>
       </div>
 
       <div>
