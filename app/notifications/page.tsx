@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import AppHeader from "@/components/AppHeader";
 import { createClient } from "@/lib/supabase/server";
 import type { AppNotification } from "@/lib/types";
 import EnablePush from "@/components/EnablePush";
@@ -39,10 +40,18 @@ export default async function NotificationsPage() {
     .eq("read", false);
 
   return (
-    <div className="container-page max-w-2xl py-6">
-      <h1 className="text-2xl font-extrabold text-gray-900">Notifications</h1>
-
-      <div className="mt-4">
+    <div>
+      <AppHeader
+        title="Alerts"
+        subtitle={
+          items.length > 0
+            ? `${items.length} update${items.length === 1 ? "" : "s"}`
+            : "You're all caught up"
+        }
+        back
+      />
+      <div className="container-page max-w-2xl py-5">
+      <div className="mt-1">
         <EnablePush />
       </div>
 
@@ -91,6 +100,7 @@ export default async function NotificationsPage() {
           })}
         </ul>
       )}
+    </div>
     </div>
   );
 }

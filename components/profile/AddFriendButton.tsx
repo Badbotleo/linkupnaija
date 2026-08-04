@@ -63,15 +63,48 @@ export default function AddFriendButton({
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return;
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("connections")
-      .insert({ requester_id: user.id, receiver_id: targetId, status: "pending" });
+      .insert({ requester_id: user.id, receiver_id: targetId, status: "pending" })
+      .select("id")
+      .single();
     setBusy(false);
     if (error) toast.error("Couldn't send request.");
     else {
+      if (data?.id) setConnId(data.id);
       setRel("outgoing");
       toast.success("Friend request sent 👋");
     }
+  }
+
+  /** Take it back. A sent request used to be a dead end. */
+  async function unsend() {
+    setBusy(true);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      setBusy(false);
+      return;
+    }
+    // Delete by id where we have one, otherwise by the pair — the id is
+    // missing on a page load that found the request already sent.
+    const q = supabase.from("connections").delete();
+    const { error } = connId
+      ? await q.eq("id", connId)
+      : await q
+          .eq("requester_id", user.id)
+          .eq("receiver_id", targetId)
+          .eq("status", "pending");
+    setBusy(false);
+    if (error) {
+      toast.error("Couldn't cancel that request.");
+      return;
+    }
+    setConnId(null);
+    setRel("none");
+    toast.success("Request cancelled");
+    router.refresh();
   }
 
   async function accept() {
@@ -91,7 +124,18 @@ export default function AddFriendButton({
   if (rel === "friends")
     return <span className="flex-1 rounded-full bg-naija-50 py-2 text-center text-sm font-semibold text-naija-600">✓ Friends</span>;
   if (rel === "outgoing")
-    return <span className="flex-1 rounded-full bg-gray-100 py-2 text-center text-sm font-medium text-gray-500">Requested</span>;
+    return (
+      <button
+        type="button"
+        onClick={unsend}
+        disabled={busy}
+        aria-label="Cancel friend request"
+        className="group flex-1 rounded-full bg-gray-100 py-2 text-center text-sm font-medium text-gray-500 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+      >
+        <span className="group-hover:hidden">Requested</span>
+        <span className="hidden group-hover:inline">Cancel request</span>
+      </button>
+    );
   if (rel === "incoming")
     return (
       <button type="button" onClick={accept} disabled={busy} className="btn-primary flex-1 rounded-full py-2">
