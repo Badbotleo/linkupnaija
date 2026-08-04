@@ -23,6 +23,7 @@ const DISCOVER = [
   { href: "/venues", label: "Venues", icon: "pin" },
   { href: "/things-to-do", label: "Things to do", icon: "sparkles" },
   { href: "/rides", label: "Rides", icon: "car" },
+  { href: "/drive", label: "Drive with us", icon: "car" },
   { href: "/opportunities", label: "Opportunities", icon: "briefcase" },
   { href: "/tournament", label: "FC26 Tournament", icon: "gamepad" },
 ];

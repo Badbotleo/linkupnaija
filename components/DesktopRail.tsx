@@ -23,6 +23,7 @@ const MAIN = [
   { href: "/venues", label: "Venues", icon: "pin" },
   { href: "/things-to-do", label: "Things to do", icon: "sparkles" },
   { href: "/rides", label: "Rides", icon: "car" },
+  { href: "/drive", label: "Drive with us", icon: "car" },
 ];
 
 const YOU = [

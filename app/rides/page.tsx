@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 import AppHeader from "@/components/AppHeader";
+import LineIcon from "@/components/ui/LineIcon";
 import RideHailer from "@/components/rides/RideHailer";
 
 export const dynamic = "force-dynamic";
@@ -38,6 +40,14 @@ export default async function RidesPage({
           { icon: "shield", label: "Vetted partners" },
           { icon: "check", label: "Fare before you pay" },
         ]}
+        action={
+          <Link
+            href="/drive"
+            className="whitespace-nowrap rounded-full border border-brand/30 px-3.5 py-2 text-sm font-bold text-brand transition hover:bg-brand-50"
+          >
+            Drive
+          </Link>
+        }
       />
       <div className="mx-auto max-w-2xl sm:px-4 sm:py-4">
         <RideHailer
@@ -46,6 +56,28 @@ export default async function RidesPage({
           presetTo={searchParams.to ?? null}
           presetEventTitle={searchParams.title ?? null}
         />
+
+        {/* /drive existed with nothing pointing at it, so nobody could find
+            the driver application. This is the entry point. */}
+        <div className="px-4 pb-6 pt-2 sm:px-0">
+          <Link
+            href="/drive"
+            className="surface-tap flex items-center gap-3 p-4"
+          >
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand">
+              <LineIcon name="car" size={20} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-bold text-gray-900">
+                Got a car? Drive with us
+              </span>
+              <span className="mt-0.5 block text-sm text-gray-500">
+                Upload your ID and plate, get verified, start earning
+              </span>
+            </span>
+            <LineIcon name="chevronRight" size={16} className="shrink-0 text-gray-400" />
+          </Link>
+        </div>
       </div>
     </div>
   );
