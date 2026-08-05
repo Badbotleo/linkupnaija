@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AppHeader from "@/components/AppHeader";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import EventCover from "@/components/EventCover";
@@ -72,6 +73,17 @@ export default async function ProfilePage({
 
   return (
     <div className="pb-4">
+      <AppHeader
+        title="Your profile"
+        action={
+          <Link
+            href="/profile/edit"
+            className="btn-outline rounded-full px-4 py-2 text-sm"
+          >
+            Edit
+          </Link>
+        }
+      />
       {/* Cover + avatar */}
       <BannerUpload userId={user.id} initialUrl={profile?.banner_url ?? null} editable />
 
