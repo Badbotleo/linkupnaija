@@ -12,6 +12,7 @@ import SwipeDeck from "@/components/home/SwipeDeck";
 import ScreenTour from "@/components/home/ScreenTour";
 import ThingsToDo from "@/components/home/ThingsToDo";
 import LineIcon from "@/components/ui/LineIcon";
+import { LogoMark } from "@/components/Logo";
 import { getSessionUser } from "@/lib/supabase/auth";
 import { getVisitorState } from "@/lib/visitor-geo";
 
@@ -658,37 +659,51 @@ export default async function HomePage() {
       </div>
 
       {/* ---------------------------------------------------------------- */}
-      {/* Sign-up card                                                      */}
+      {/* Closing action                                                    */}
       {/* ---------------------------------------------------------------- */}
-      <section className="container-page mt-8">
-        <div
-          className="relative overflow-hidden rounded-3xl px-6 py-8 text-center text-white sm:px-10 sm:py-10"
-          style={{ background: "linear-gradient(150deg, #110F25 0%, #1A1040 60%, #221E49 100%)" }}
-        >
-          <div aria-hidden className="pointer-events-none absolute -left-20 -top-20 h-60 w-60 rounded-full bg-[#534AB7]/40 blur-[90px]" />
-          <div aria-hidden className="pointer-events-none absolute -bottom-24 -right-14 h-60 w-60 rounded-full bg-[#FAC775]/15 blur-[90px]" />
-          <div className="relative">
-            <h2 className="text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">
-              Your next link-up is <span className="text-[#FAC775]">minutes away</span>.
-            </h2>
-            <p className="mx-auto mt-2 max-w-md text-[15px] text-white/70">
-              Free to join. Hosts approve every guest, so you always know who
-              you&apos;re pulling up with.
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Link
-                href="/signup"
-                className="btn rounded-full bg-[#FAC775] px-6 py-3 font-bold text-[#1A1040] hover:bg-[#fbd28e]"
-              >
-                Join free
-              </Link>
-              <Link
-                href="/events"
-                className="btn rounded-full border border-white/25 px-6 py-3 font-bold text-white hover:bg-white/10"
-              >
-                Browse first
-              </Link>
-            </div>
+      {/* Was a dark gradient band with glow orbs — the same treatment as the
+          FC26 card, and the most website-like thing left on the page. An app
+          asks once, plainly, on the same surface as everything else. */}
+      <section className="container-page mt-10">
+        <div className="surface p-6 text-center sm:p-8">
+          <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-brand-50">
+            <LogoMark size={34} />
+          </span>
+
+          <h2 className="mt-4 text-[22px] font-extrabold leading-tight tracking-[-0.02em] text-gray-900 sm:text-[26px]">
+            Find your people this week
+          </h2>
+          <p className="mx-auto mt-1.5 max-w-sm text-[15px] leading-relaxed text-gray-600">
+            Free to join, and the host approves every guest — so you always know
+            who you&apos;re pulling up with.
+          </p>
+
+          <Link
+            href="/signup"
+            className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-brand px-6 py-3.5 text-[15px] font-bold text-white transition hover:bg-brand-600 sm:w-auto sm:px-10"
+          >
+            Create a free account
+          </Link>
+
+          <p className="mt-3 text-sm text-gray-500">
+            Just looking?{" "}
+            <Link href="/events" className="font-bold text-brand hover:underline">
+              Browse what&apos;s on
+            </Link>
+          </p>
+
+          {/* Real facts, not invented social proof. */}
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 border-t border-gray-100 pt-4 text-[13px] font-semibold text-gray-500">
+            <span className="inline-flex items-center gap-1.5">
+              <span aria-hidden className="flex overflow-hidden rounded-[2px]">
+                <span className="block h-2.5 w-1 bg-naija" />
+                <span className="block h-2.5 w-1 bg-white" />
+                <span className="block h-2.5 w-1 bg-naija" />
+              </span>
+              All 36 states + FCT
+            </span>
+            <span>Free to join</span>
+            <span>Hosts approve every guest</span>
           </div>
         </div>
       </section>
