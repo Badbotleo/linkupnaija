@@ -107,7 +107,7 @@ each one by actually doing it. Mark it and date it.*
 | 7 | "I found a venue and booked it" | ☐ | Partner venues only; OSM spots aren't bookable |
 | 8 | "I rated the venue after I went" | ◐ | Migration run 5 Aug. `venue_reviews` + `reservations.venue_id` live. Untestable until a confirmed reservation has a past date |
 | 9 | "A driver actually showed up" | ✗ | Migration run 5 Aug; `/drive` and the review queue work. **Zero approved drivers** — supply, not code |
-| 10 | "I got paid out after my event" | ☐ | **Never verified end to end in this build** |
+| 10 | "I got paid out after my event" | ✗ | Walked 5 Aug. 21 paid events · 1 paid RSVP · **0 transactions · 0 payouts, ever**. No host has been paid |
 | 11 | "I invited a friend and we both got ₦500" | ☐ | Verify the credit actually lands |
 | 12 | "It felt like an app, not a website" | ◐ | 8/12 screens done; signup/login now consistent |
 
@@ -123,8 +123,25 @@ connection reporting as a negative result, not a real answer.
 ## 4. Internal FAQ
 
 **What's the single biggest risk right now?**
-Sentence 10 — payouts. Never walked end to end, no error has ever appeared,
-and we have no evidence hosts get paid. Silence is not proof.
+Still sentence 10, and now we know why rather than guessing.
+
+Walked it 5 Aug. The path is: paid RSVP -> `transactions` row -> host payout
+request -> `payouts` row -> transfer. The database says 21 paid events, 1 RSVP
+marked `paid = true`, and **zero transactions and zero payouts, ever**.
+
+The structure is fine — RLS insert policy is correct and all five columns
+exist. The defect was in the handling: a failed `transactions` insert was sent
+to `console.error` and the buyer was still shown "Payment confirmed ✅". Since
+host payouts are computed *from* `transactions`, any failure meant the money
+was taken and the host silently never paid. Nobody would find out until a host
+asked where their money was.
+
+Now: one retry, and if it still fails the buyer is told plainly that payment
+succeeded but recording didn't, with the Paystack reference to quote to
+support. They keep their spot, because they did pay.
+
+This does NOT make sentence 10 true. No transaction has ever been written and
+no payout has ever been requested or paid. It stays ✗ until one completes.
 
 Sentence 6 was the biggest risk until 5 Aug. The migration is now applied and
 the table, columns, policy and count RPC are all live, so the failure mode is

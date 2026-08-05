@@ -141,14 +141,39 @@ export default function RsvpButton({
 
     // Record the ticket sale (drives host payout) + notify.
     if (price > 0) {
-      const { error: txErr } = await supabase.from("transactions").insert({
+      // This row IS the host's payout. If it doesn't land, the money was
+      // taken and the host is never paid — and until now that failure was
+      // written to console.error and the buyer was told "Payment confirmed".
+      // Nobody would find out until a host asked where their money was.
+      const txRow = {
         event_id: eventId,
         user_id: user.id,
         amount: price,
         platform_fee: Math.round(price * 0.1),
         paystack_reference: paymentReference ?? "wallet",
-      });
-      if (txErr) console.error("Failed to record transaction:", txErr.message);
+      };
+      let { error: txErr } = await supabase.from("transactions").insert(txRow);
+      if (txErr) {
+        // One retry: the common cause is a transient network blip straight
+        // after returning from the Paystack popup.
+        ({ error: txErr } = await supabase.from("transactions").insert(txRow));
+      }
+
+      if (txErr) {
+        console.error("Failed to record transaction:", txErr.message);
+        // Never claim success here. They paid; we failed to record it. Give
+        // them the reference so support can reconcile it against Paystack.
+        setError(
+          `Your payment went through, but we couldn't record it. Please send this reference to support@linkupnaija.com: ${
+            paymentReference ?? "wallet"
+          }`
+        );
+        setLoading(false);
+        // The RSVP is already saved as paid, so they keep their spot.
+        setStatus("pending");
+        router.refresh();
+        return;
+      }
 
       await supabase.from("notifications").insert({
         user_id: user.id,
