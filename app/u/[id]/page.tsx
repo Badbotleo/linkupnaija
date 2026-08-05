@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AppHeader from "@/components/AppHeader";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Avatar from "@/components/Avatar";
@@ -117,6 +118,7 @@ export default async function PublicProfilePage({
 
   return (
     <div className="pb-4">
+      <AppHeader title={profile.name ?? "Member"} back />
       <div className="h-36 w-full sm:h-52">
         {profile.banner_url ? (
           // eslint-disable-next-line @next/next/no-img-element
