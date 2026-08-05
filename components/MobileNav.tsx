@@ -17,21 +17,30 @@ const QUICK = [
 ];
 
 // Grouped, scannable lists.
+// The bottom bar already carries Home, Explore, Host, Alerts and Profile, so
+// this drawer only needs the places it can't reach. Everything here used to be
+// one flat list of fourteen rows, which is a directory, not a menu.
 const DISCOVER = [
-  { href: "/live", label: "Live feed", icon: "activity" },
-  { href: "/hosts/leaderboard", label: "Host leaderboard", icon: "trophy" },
-  { href: "/venues", label: "Venues", icon: "pin" },
   { href: "/things-to-do", label: "Things to do", icon: "sparkles" },
+  { href: "/venues", label: "Venues", icon: "pin" },
+  { href: "/circles", label: "Circles", icon: "circles" },
   { href: "/rides", label: "Rides", icon: "car" },
-  { href: "/drive", label: "Drive with us", icon: "car" },
-  { href: "/opportunities", label: "Opportunities", icon: "briefcase" },
-  { href: "/tournament", label: "FC26 Tournament", icon: "gamepad" },
 ];
 
 const YOU = [
-  { href: "/dashboard", label: "My Events", icon: "calendar" },
+  { href: "/dashboard", label: "My link-ups", icon: "calendar" },
   { href: "/refer", label: "Invite & earn ₦500", icon: "gift" },
   { href: "/profile/edit", label: "Settings", icon: "settings" },
+];
+
+// The long tail, one tap away rather than always on screen.
+const MORE = [
+  { href: "/live", label: "Live feed", icon: "activity" },
+  { href: "/hosts/leaderboard", label: "Host leaderboard", icon: "trophy" },
+  { href: "/drivers/leaderboard", label: "Top drivers", icon: "star" },
+  { href: "/drive", label: "Drive with us", icon: "car" },
+  { href: "/opportunities", label: "Opportunities", icon: "briefcase" },
+  { href: "/tournament", label: "FC26 Tournament", icon: "gamepad" },
   { href: "mailto:support@linkupnaija.com", label: "Help", icon: "help" },
 ];
 
@@ -190,6 +199,27 @@ export default function MobileNav({
                   ))}
                   {isAdmin && <MenuRow href="/admin" label="Admin" icon="shield" />}
                 </Section>
+
+                {/* Everything else, folded away. A native <details> keeps this
+                    keyboard- and screen-reader-friendly with no extra state. */}
+                <details className="mt-4 group">
+                  <summary className="flex cursor-pointer list-none items-center justify-between rounded-2xl bg-white p-3 text-[15px] font-semibold text-gray-800 shadow-sm">
+                    <span className="flex items-center gap-3">
+                      <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand">
+                        <Icon name="more" />
+                      </span>
+                      More
+                    </span>
+                    <span className="text-gray-400 transition group-open:rotate-180">
+                      <Icon name="chevronDown" />
+                    </span>
+                  </summary>
+                  <div className="mt-1">
+                    {MORE.map((m) => (
+                      <MenuRow key={m.label} href={m.href} label={m.label} icon={m.icon} />
+                    ))}
+                  </div>
+                </details>
 
                 {/* Appearance */}
                 <div className="mt-4 flex items-center justify-between rounded-2xl bg-white p-3 shadow-sm">
