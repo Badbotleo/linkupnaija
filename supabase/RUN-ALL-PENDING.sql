@@ -5,14 +5,14 @@
 --   Supabase Dashboard -> SQL Editor -> New query -> paste this whole file
 --   -> Run.
 --
--- Every statement is idempotent, so running it twice is safe and re-running
+-- Every statement is idempotent: running it twice is safe, and re-running
 -- after a failure part-way through is safe too.
 -- ============================================================================
 
 
 -- ==========================================================================
 -- migration-tournament.sql
--- FC26 registrations — URGENT: without this, paying customers are charged and their registration fails
+-- FC26 registrations — URGENT: without this, paying customers are charged and their registration fails to save
 -- ==========================================================================
 -- ============================================================================
 -- LinkUpNaija — FC26 Tournament registrations
@@ -64,7 +64,7 @@ grant execute on function public.count_tournament_registrations() to anon, authe
 
 -- ==========================================================================
 -- migration-things-to-do.sql
--- Things to do — re-run: fixes the admin upload RLS error
+-- Things to do — RE-RUN: fixes the admin upload RLS error
 -- ==========================================================================
 -- ============================================================================
 -- LinkUpNaija — admin-curated "Things to do this week"
@@ -152,7 +152,7 @@ create policy "Admins delete things-to-do media"
 
 -- ==========================================================================
 -- migration-host-limit.sql
--- Free hosting cap — re-run: moves the enforced limit from 4 to 2
+-- Free hosting cap — RE-RUN: moves the enforced limit from 4 to 2
 -- ==========================================================================
 -- ============================================================================
 -- LinkUpNaija — free members host 4 events per calendar month, Pro unlimited
@@ -400,3 +400,311 @@ drop trigger if exists refresh_venue_rating_trg on public.venue_reviews;
 create trigger refresh_venue_rating_trg
   after insert or update or delete on public.venue_reviews
   for each row execute function public.refresh_venue_rating();
+
+
+-- ==========================================================================
+-- migration-drivers.sql
+-- Driver onboarding — /drive and the admin review queue need this
+-- ==========================================================================
+-- ============================================================================
+-- LinkUpNaija — driver onboarding (Bolt/Uber style)
+-- Run in Supabase: Dashboard → SQL Editor → New query → Run. (Idempotent.)
+-- ============================================================================
+
+create table if not exists public.drivers (
+  id                uuid primary key default gen_random_uuid(),
+  user_id           uuid not null unique references public.users(id) on delete cascade,
+
+  -- Who they are
+  full_name         text not null,
+  phone             text not null,
+  photo_url         text,              -- face photo, shown to riders
+  id_type           text,              -- NIN / Driver's Licence / Voter's Card / Passport
+  id_number         text,
+  id_document_url   text,              -- scan/photo of the ID — NEVER shown to riders
+  licence_expiry    date,
+
+  -- What they drive
+  vehicle_make      text,
+  vehicle_model     text,
+  vehicle_colour    text,
+  vehicle_year      int,
+  plate_number      text,
+  vehicle_photo_url text,
+  seats             int not null default 4,
+
+  -- Where
+  state             text,
+  city              text,
+
+  -- Review
+  status            text not null default 'pending'
+                    check (status in ('pending','approved','rejected','suspended')),
+  admin_notes       text,
+  reviewed_at       timestamptz,
+  reviewed_by       uuid references public.users(id) on delete set null,
+
+  rating            numeric(2,1),
+  trips_completed   int not null default 0,
+
+  created_at        timestamptz not null default now(),
+  updated_at        timestamptz not null default now()
+);
+
+create index if not exists drivers_status_idx on public.drivers (status, created_at desc);
+create index if not exists drivers_state_idx  on public.drivers (state) where status = 'approved';
+
+-- A plate belongs to one driver.
+create unique index if not exists drivers_plate_uniq
+  on public.drivers (upper(replace(plate_number, ' ', '')))
+  where plate_number is not null;
+
+alter table public.drivers enable row level security;
+
+-- Riders may see APPROVED drivers only, and only the safe columns — the ID
+-- number and ID document must never reach a rider. Exposed through a view
+-- rather than a policy, because a policy filters rows, not columns.
+drop policy if exists "Drivers read own record" on public.drivers;
+create policy "Drivers read own record"
+  on public.drivers for select
+  using (user_id = auth.uid() or public.is_admin());
+
+drop policy if exists "Users create their own driver application" on public.drivers;
+create policy "Users create their own driver application"
+  on public.drivers for insert
+  with check (user_id = auth.uid());
+
+-- An applicant may edit their own details, but must not be able to approve
+-- themselves — status changes are admin-only, enforced by the trigger below.
+drop policy if exists "Drivers update own record" on public.drivers;
+create policy "Drivers update own record"
+  on public.drivers for update
+  using (user_id = auth.uid() or public.is_admin())
+  with check (user_id = auth.uid() or public.is_admin());
+
+drop policy if exists "Admins delete drivers" on public.drivers;
+create policy "Admins delete drivers"
+  on public.drivers for delete
+  using (public.is_admin());
+
+create or replace function public.guard_driver_status()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.status is distinct from old.status and not public.is_admin() then
+    raise exception 'Only an admin can change a driver''s status.'
+      using errcode = 'insufficient_privilege';
+  end if;
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+drop trigger if exists guard_driver_status_trg on public.drivers;
+create trigger guard_driver_status_trg
+  before update on public.drivers
+  for each row execute function public.guard_driver_status();
+
+-- What a rider is allowed to see about an approved driver.
+create or replace view public.public_drivers as
+  select id, user_id, full_name, photo_url,
+         vehicle_make, vehicle_model, vehicle_colour, vehicle_year,
+         plate_number, vehicle_photo_url, seats, state, city,
+         rating, trips_completed
+    from public.drivers
+   where status = 'approved';
+
+-- ----------------------------------------------------------------------------
+-- Documents. Private bucket: these are government IDs, not avatars.
+-- ----------------------------------------------------------------------------
+insert into storage.buckets (id, name, public)
+values ('driver-docs', 'driver-docs', false)
+on conflict (id) do nothing;
+
+drop policy if exists "Drivers upload own documents" on storage.objects;
+create policy "Drivers upload own documents"
+  on storage.objects for insert
+  with check (
+    bucket_id = 'driver-docs'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+drop policy if exists "Drivers read own documents" on storage.objects;
+create policy "Drivers read own documents"
+  on storage.objects for select
+  using (
+    bucket_id = 'driver-docs'
+    and ((storage.foldername(name))[1] = auth.uid()::text or public.is_admin())
+  );
+
+drop policy if exists "Drivers replace own documents" on storage.objects;
+create policy "Drivers replace own documents"
+  on storage.objects for update
+  using (
+    bucket_id = 'driver-docs'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- Face and vehicle photos are shown to riders, so they live in a public
+-- bucket, separate from the ID documents above.
+insert into storage.buckets (id, name, public)
+values ('driver-photos', 'driver-photos', true)
+on conflict (id) do nothing;
+
+drop policy if exists "Public read driver photos" on storage.objects;
+create policy "Public read driver photos"
+  on storage.objects for select
+  using (bucket_id = 'driver-photos');
+
+drop policy if exists "Drivers upload own photos" on storage.objects;
+create policy "Drivers upload own photos"
+  on storage.objects for insert
+  with check (
+    bucket_id = 'driver-photos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+drop policy if exists "Drivers replace own photos" on storage.objects;
+create policy "Drivers replace own photos"
+  on storage.objects for update
+  using (
+    bucket_id = 'driver-photos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+
+-- ==========================================================================
+-- migration-driver-ratings.sql
+-- Driver ratings + leaderboard (needs migration-drivers.sql first)
+-- ==========================================================================
+-- ============================================================================
+-- LinkUpNaija — riders rate drivers
+-- Run AFTER migration-drivers.sql.
+-- Supabase: Dashboard → SQL Editor → New query → Run. (Idempotent.)
+--
+-- Mirrors how hosts are rated: a rating is earned by a completed trip, one
+-- per ride, and the driver's average is maintained by a trigger rather than
+-- computed on every read.
+-- ============================================================================
+
+alter table public.ride_requests
+  add column if not exists driver_id uuid references public.drivers(id) on delete set null,
+  add column if not exists completed_at timestamptz;
+
+create index if not exists ride_requests_driver_idx
+  on public.ride_requests (driver_id);
+
+create table if not exists public.driver_ratings (
+  id          uuid primary key default gen_random_uuid(),
+  driver_id   uuid not null references public.drivers(id) on delete cascade,
+  rider_id    uuid not null references public.users(id) on delete cascade,
+  ride_id     uuid references public.ride_requests(id) on delete set null,
+  rating      int  not null check (rating between 1 and 5),
+  comment     text,
+  created_at  timestamptz not null default now(),
+  -- One rating per ride. Without this a single rider could move a driver's
+  -- average on their own, which is the whole game with reputation scores.
+  unique (rider_id, ride_id)
+);
+
+create index if not exists driver_ratings_driver_idx
+  on public.driver_ratings (driver_id, created_at desc);
+
+alter table public.driver_ratings enable row level security;
+
+drop policy if exists "Anyone can read driver ratings" on public.driver_ratings;
+create policy "Anyone can read driver ratings"
+  on public.driver_ratings for select
+  using (true);
+
+-- Only the rider on a completed ride with this driver may rate it.
+drop policy if exists "Riders rate their completed rides" on public.driver_ratings;
+create policy "Riders rate their completed rides"
+  on public.driver_ratings for insert
+  with check (
+    auth.uid() = rider_id
+    and exists (
+      select 1 from public.ride_requests r
+       where r.id = driver_ratings.ride_id
+         and r.user_id = auth.uid()
+         and r.driver_id = driver_ratings.driver_id
+         and r.completed_at is not null
+    )
+  );
+
+drop policy if exists "Riders edit their own rating" on public.driver_ratings;
+create policy "Riders edit their own rating"
+  on public.driver_ratings for update
+  using (auth.uid() = rider_id)
+  with check (auth.uid() = rider_id);
+
+drop policy if exists "Riders delete their own rating" on public.driver_ratings;
+create policy "Riders delete their own rating"
+  on public.driver_ratings for delete
+  using (auth.uid() = rider_id);
+
+-- ----------------------------------------------------------------------------
+-- Keep drivers.rating / trips_completed in step.
+-- ----------------------------------------------------------------------------
+create or replace function public.refresh_driver_rating()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  target uuid := coalesce(new.driver_id, old.driver_id);
+  n      int;
+begin
+  select count(*) into n from public.driver_ratings where driver_id = target;
+
+  update public.drivers d
+     set rating = case
+                    when n = 0 then null   -- unrated, not zero stars
+                    else (select round(avg(rating)::numeric, 1)
+                            from public.driver_ratings
+                           where driver_id = target)
+                  end
+   where d.id = target;
+
+  return null;
+end;
+$$;
+
+drop trigger if exists refresh_driver_rating_trg on public.driver_ratings;
+create trigger refresh_driver_rating_trg
+  after insert or update or delete on public.driver_ratings
+  for each row execute function public.refresh_driver_rating();
+
+-- Completed trips are counted from the rides themselves, so the number can't
+-- be inflated by rating activity.
+create or replace function public.bump_driver_trips()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.completed_at is not null
+     and old.completed_at is null
+     and new.driver_id is not null then
+    update public.drivers
+       set trips_completed = trips_completed + 1
+     where id = new.driver_id;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists bump_driver_trips_trg on public.ride_requests;
+create trigger bump_driver_trips_trg
+  after update on public.ride_requests
+  for each row execute function public.bump_driver_trips();
+
+-- Leaderboard reads: best-rated approved drivers first.
+create index if not exists drivers_leaderboard_idx
+  on public.drivers (rating desc nulls last, trips_completed desc)
+  where status = 'approved';
