@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AppHeader from "@/components/AppHeader";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ProfileForm from "@/components/ProfileForm";
@@ -32,17 +33,9 @@ export default async function ProfileEditPage() {
   ]);
 
   return (
-    <div className="container-page max-w-2xl py-10">
-      <Link
-        href="/dashboard"
-        className="text-sm font-medium text-gray-500 hover:text-brand"
-      >
-        ← Back to dashboard
-      </Link>
-
-      <h1 className="mt-4 text-3xl font-extrabold text-gray-900">
-        Edit your profile
-      </h1>
+    <div>
+      <AppHeader title="Edit your profile" back />
+      <div className="container-page max-w-2xl py-5">
 
       <div className="mt-6">
         <PhoneVerify
@@ -100,6 +93,7 @@ export default async function ProfileEditPage() {
           }}
         />
       </div>
+    </div>
     </div>
   );
 }
