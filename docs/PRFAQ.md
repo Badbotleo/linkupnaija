@@ -98,11 +98,11 @@ each one by actually doing it. Mark it and date it.*
 
 | # | The customer should be able to say | Status | Notes |
 |---|---|---|---|
-| 1 | "I opened it and saw something on near me this week" | ☐ | Depends on real events existing in their state |
-| 2 | "I asked to join and the host got it" | ☐ | Broke silently once (ambiguous FK). Re-verify end to end |
-| 3 | "I could see who else was going before I said yes" | ☐ | Guest grid + gender split |
-| 4 | "I got into the group chat once accepted" | ☐ | |
-| 5 | "I hosted something in about two minutes" | ☐ | Time it. If it's longer, say so |
+| 1 | "I opened it and saw something on near me this week" | ✗ | Walked 5 Aug, 375px. 8 events on the page but **0 visible without scrolling** — the first is 1597px down, 2 full screens |
+| 2 | "I asked to join and the host got it" | ◐ | CTA reachable at 670px, above the fold. **Second half unverifiable without a login** — host receipt still unproven |
+| 3 | "I could see who else was going before I said yes" | ☑ | Walked 5 Aug logged OUT: host, guest grid and the M/F/? split all visible before committing |
+| 4 | "I got into the group chat once accepted" | ☐ | Needs a login and an approval. Not walkable in this environment |
+| 5 | "I hosted something in about two minutes" | ◐ | Not timed — needs a login. Measured instead: **15 fields, 7 required**, plus a cover upload. Two minutes is optimistic; the claim should be re-timed or softened |
 | 6 | "I paid and I am definitely registered" | ◐ | Migration run 5 Aug. Table, columns and count RPC all live (RPC returns 0). **Insert not proven** — see note |
 | 7 | "I found a venue and booked it" | ☐ | Partner venues only; OSM spots aren't bookable |
 | 8 | "I rated the venue after I went" | ◐ | Migration run 5 Aug. `venue_reviews` + `reservations.venue_id` live. Untestable until a confirmed reservation has a past date |
@@ -149,6 +149,27 @@ gone. It stays ◐ rather than ☑ because nobody has actually pushed a row
 through the insert on production — writing a junk registration to prove it is
 worse than leaving it unproven. Prove it with the next real registration, or
 a row written inside a rolled-back transaction.
+
+**What did walking sentences 1–5 turn up?**
+Sentence 1 fails, and it's the first line of the press release. On a 375px
+phone the homepage carries 8 events and **none are visible without
+scrolling** — the first sits 1597px down, two full screens, behind the
+positioning line, Things to do, and the ScreenTour explainer. "Open the app
+and you see what's on near you this week" is not what happens.
+
+Sentence 3 passes cleanly, logged out: host, guest grid and the M/F/? split
+are all visible before you commit to anything.
+
+Sentence 5 could not be timed — it needs a login — so it was measured
+instead: 15 fields, 7 of them required, plus a cover upload. "About two
+minutes" is optimistic. Either time it properly with a real host or soften
+the claim.
+
+**What couldn't be verified here, and why?**
+Sentences 2 (second half), 4, 5, 7 and 11 all need an authenticated session,
+and this environment can't log in. They are marked ☐/◐ rather than guessed at.
+Anyone continuing this should walk them on a real phone with a real account —
+that is the only honest way to close them.
 
 **Why are so many rows unverified?**
 Because most of this was built forwards from "that looks wrong" rather than
