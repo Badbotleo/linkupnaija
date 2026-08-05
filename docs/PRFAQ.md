@@ -103,13 +103,18 @@ each one by actually doing it. Mark it and date it.*
 | 3 | "I could see who else was going before I said yes" | ☐ | Guest grid + gender split |
 | 4 | "I got into the group chat once accepted" | ☐ | |
 | 5 | "I hosted something in about two minutes" | ☐ | Time it. If it's longer, say so |
-| 6 | "I paid and I am definitely registered" | ✗ | **FC26 charges, then the insert fails — table never created** |
+| 6 | "I paid and I am definitely registered" | ◐ | Migration run 5 Aug. Table, columns and count RPC all live (RPC returns 0). **Insert not proven** — see note |
 | 7 | "I found a venue and booked it" | ☐ | Partner venues only; OSM spots aren't bookable |
-| 8 | "I rated the venue after I went" | ✗ | Migration unrun |
-| 9 | "A driver actually showed up" | ✗ | No approved drivers exist; migrations unrun |
+| 8 | "I rated the venue after I went" | ◐ | Migration run 5 Aug. `venue_reviews` + `reservations.venue_id` live. Untestable until a confirmed reservation has a past date |
+| 9 | "A driver actually showed up" | ✗ | Migration run 5 Aug; `/drive` and the review queue work. **Zero approved drivers** — supply, not code |
 | 10 | "I got paid out after my event" | ☐ | **Never verified end to end in this build** |
 | 11 | "I invited a friend and we both got ₦500" | ☐ | Verify the credit actually lands |
 | 12 | "It felt like an app, not a website" | ◐ | 8/12 screens done; signup/login now consistent |
+
+**Verified 5 Aug 2026** — all seven migrations confirmed applied against the
+live database, using a known-good table as a control on every run. This matters:
+an earlier check returned "missing" for all seven, which was a dropped
+connection reporting as a negative result, not a real answer.
 
 **Legend:** ☐ untested · ◐ partly true · ✗ known broken
 
@@ -118,9 +123,15 @@ each one by actually doing it. Mark it and date it.*
 ## 4. Internal FAQ
 
 **What's the single biggest risk right now?**
-Sentence 6. Money leaves a customer's account through Paystack and the
-registration insert then fails, because `tournament_registrations` was never
-created. Nobody is told. This is worse than a feature not existing.
+Sentence 10 — payouts. Never walked end to end, no error has ever appeared,
+and we have no evidence hosts get paid. Silence is not proof.
+
+Sentence 6 was the biggest risk until 5 Aug. The migration is now applied and
+the table, columns, policy and count RPC are all live, so the failure mode is
+gone. It stays ◐ rather than ☑ because nobody has actually pushed a row
+through the insert on production — writing a junk registration to prove it is
+worse than leaving it unproven. Prove it with the next real registration, or
+a row written inside a rolled-back transaction.
 
 **Why are so many rows unverified?**
 Because most of this was built forwards from "that looks wrong" rather than
