@@ -22,9 +22,8 @@ export default async function ThingsToDo({ state }: { state?: string | null }) {
       seeAll="See all"
     >
       {ideas.map((idea) => (
-        <Link
+        <div
           key={idea.key}
-          href={hostHref(idea)}
           className="group w-[72vw] max-w-[268px] shrink-0 snap-start sm:w-[268px]"
         >
           <div className="relative h-[176px] overflow-hidden rounded-2xl shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
@@ -64,13 +63,34 @@ export default async function ThingsToDo({ state }: { state?: string | null }) {
                   {idea.mediaType === "video" ? "🎬" : "📷"} {idea.credit}
                 </p>
               )}
-              <span className="mt-2.5 flex w-fit items-center gap-1 rounded-full bg-white px-3 py-1.5 text-[12px] font-black text-gray-900">
-                <LineIcon name="mic" size={12} />
-                Host it
+              {/* Two doors. "Host it" alone is a big ask for someone just
+                  browsing — if it's already happening this week, joining is
+                  the smaller and far likelier step. */}
+              <span className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                {idea.liveCount ? (
+                  <Link
+                    href={idea.liveHref!}
+                    className="flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-[12px] font-black text-gray-900 transition hover:bg-white/90"
+                  >
+                    <LineIcon name="calendar" size={12} />
+                    {idea.liveCount} on now
+                  </Link>
+                ) : null}
+                <Link
+                  href={hostHref(idea)}
+                  className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-black transition ${
+                    idea.liveCount
+                      ? "bg-white/15 text-white hover:bg-white/25"
+                      : "bg-white text-gray-900 hover:bg-white/90"
+                  }`}
+                >
+                  <LineIcon name="mic" size={12} />
+                  Host it
+                </Link>
               </span>
             </div>
           </div>
-        </Link>
+        </div>
       ))}
     </Rail>
   );

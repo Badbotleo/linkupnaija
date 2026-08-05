@@ -25,6 +25,11 @@ export interface Idea {
   state: string | null;
   /** Pre-written event title, so the host form opens part-done. */
   seedTitle: string;
+  /** Upcoming link-ups already happening in this category — filled in by
+      buildIdeas. "Host it" is a big ask; if someone else is already doing
+      it this week, joining is the smaller, likelier step. */
+  liveCount?: number;
+  liveHref?: string;
   /** Who shot the media, shown small on the card. */
   credit?: string | null;
   creditUrl?: string | null;
@@ -64,6 +69,33 @@ const ACTIVITY: Record<string, { title: string; category: string; seed: string }
   Malls: { title: "Mall link-up", category: "Friend Reunion", seed: "Link up at" },
   Arcades: { title: "Arcade showdown", category: "Game Night", seed: "Arcade night at" },
 };
+
+/** How many upcoming link-ups exist per category, so a card can offer
+    "join" instead of only "host". */
+const getLiveCounts = unstable_cache(
+  async (): Promise<Record<string, number>> => {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const today = new Date().toISOString().slice(0, 10);
+    const { data, error } = await supabase
+      .from("events")
+      .select("category, state")
+      .eq("event_type", "general")
+      .gte("date", today)
+      .limit(500);
+    if (error) return {};
+    const out: Record<string, number> = {};
+    for (const e of (data ?? []) as { category: string; state: string | null }[]) {
+      out[e.category] = (out[e.category] ?? 0) + 1;
+      if (e.state) out[`${e.category}|${e.state}`] = (out[`${e.category}|${e.state}`] ?? 0) + 1;
+    }
+    return out;
+  },
+  ["things-to-do-live-counts"],
+  { revalidate: 300 }
+);
 
 /** Admin-curated cards. These win over anything we derive ourselves. */
 const getCuratedIdeas = unstable_cache(
@@ -170,9 +202,10 @@ export async function buildIdeas(
 ): Promise<Idea[]> {
   // Each source degrades on its own: a broken curated table still leaves the
   // venue ideas, and a broken venues query still leaves the evergreen ones.
-  const [curated, fromVenues] = await Promise.all([
+  const [curated, fromVenues, live] = await Promise.all([
     getCuratedIdeas().catch(() => [] as Idea[]),
     getVenueIdeas().catch(() => [] as Idea[]),
+    getLiveCounts().catch(() => ({}) as Record<string, number>),
   ]);
 
   // Their own state first — a picnic in Lagos is no use to someone in Kano.
@@ -216,7 +249,17 @@ export async function buildIdeas(
       mediaType: "image" as const,
       state: state ?? null,
     })),
-  ].slice(0, limit);
+  ]
+    .slice(0, limit)
+    .map((idea) => {
+      // Prefer a count for their own state; fall back to nationwide.
+      const local = idea.state ? live[`${idea.category}|${idea.state}`] : 0;
+      const n = local || live[idea.category] || 0;
+      if (!n) return idea;
+      const qs = new URLSearchParams({ category: idea.category });
+      if (idea.state && local) qs.set("state", idea.state);
+      return { ...idea, liveCount: n, liveHref: `/events?${qs.toString()}` };
+    });
 }
 
 /** The /host link an idea should open, with the vibe and spot filled in. */
