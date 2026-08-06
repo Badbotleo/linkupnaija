@@ -368,23 +368,25 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
             : "Log in"}
       </button>
 
-      <p className="text-center text-sm text-gray-500">
-        {isSignup ? (
-          <>
-            Already have an account?{" "}
-            <Link href="/login" className="font-semibold text-brand hover:underline">
-              Log in
-            </Link>
-          </>
-        ) : (
-          <>
-            New to LinkUpNaija?{" "}
-            <Link href="/signup" className="font-semibold text-brand hover:underline">
-              Sign up
-            </Link>
-          </>
-        )}
-      </p>
+      {/* Switching between log in and sign up used to be one underlined word
+          inside a sentence — a 60px tap target for the second most common
+          action on the screen. Apps give it its own button below a divider,
+          which is also how someone who landed on the wrong screen finds their
+          way out. */}
+      <div className="flex items-center gap-3 pt-1">
+        <span className="h-px flex-1 bg-gray-200" />
+        <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-400">
+          {isSignup ? "Already with us" : "New here"}
+        </span>
+        <span className="h-px flex-1 bg-gray-200" />
+      </div>
+
+      <Link
+        href={isSignup ? "/login" : "/signup"}
+        className="flex w-full items-center justify-center rounded-xl border border-brand/30 bg-white px-5 py-3 text-sm font-bold text-brand transition hover:bg-brand-50 active:scale-[0.99]"
+      >
+        {isSignup ? "Log in instead" : "Create a free account"}
+      </Link>
     </form>
   );
 }
