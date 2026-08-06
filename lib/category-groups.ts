@@ -27,6 +27,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     emoji: "🪩",
     tint: "from-purple-100 to-purple-50 text-purple-800",
     categories: [
+      "Listening Party", "After-Party",
       "Clubbing", "Party", "Afrobeats Night", "Rooftop Party", "Pool Party",
       "Detty December", "Day Party", "Silent Disco",
     ],
@@ -38,6 +39,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     emoji: "🍽️",
     tint: "from-rose-100 to-rose-50 text-rose-800",
     categories: [
+      "Food Tasting", "Cooking Class", "Wine / Cocktail Night", "Street Food Tour", "Suya Night", "Coffee Meetup",
       "Dinner", "Brunch", "Food Festival", "Paint and Sip", "Picnic",
       "Street Food",
       "Wine Tasting",
@@ -50,6 +52,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     emoji: "🤗",
     tint: "from-teal-100 to-teal-50 text-teal-800",
     categories: [
+      "Family Fun Day", "Kids Event", "Game Tournament",
       "Family Hangout", "Friend Reunion", "Game Night", "Board Games",
       "Book Club", "Cinema", "Sports Viewing", "Trivia Night", "Spa Day",
     ],
@@ -61,6 +64,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     emoji: "🏝️",
     tint: "from-naija-100 to-naija-50 text-naija-800",
     categories: [
+      "Fitness Class", "Gym Session", "Meditation", "Wellness Walk", "Sports", "Cycling", "Adventure Park", "Photography Walk",
       "Beach Day", "Hiking", "Yoga", "Fitness", "Road Trip", "Bowling",
       "Sightseeing", "Jogging", "Outdoor",
       "Camping", "Boat Cruise", "Go-Karting",
@@ -73,6 +77,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     emoji: "🎤",
     tint: "from-amber-100 to-amber-50 text-amber-800",
     categories: [
+      "Art Exhibition", "Movie Screening", "Theatre / Drama", "Fashion Meetup", "Music Jam", "Fashion Pop-up",
       "Concert", "Live Music", "Comedy Night", "Karaoke", "Open Mic",
       "Art Gallery", "Fashion Show",
       "Music", "Entertainment", "Festival",
@@ -84,7 +89,8 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     hint: "Rooms worth it",
     emoji: "🤝",
     tint: "from-blue-100 to-blue-50 text-blue-800",
-    categories: ["Networking", "Tech Meetup", "Volunteering", "Community & Social"],
+    categories: [
+      "Workshop", "Seminar", "Conference", "Career Fair", "Mentorship", "Business Meetup", "Startup / Pitch Night", "Study Abroad", "Skill Training", "Coding / Tech Class", "Language Exchange", "Masterclass", "Mental Health Talk", "Charity Event", "Alumni Meetup", "Faith Gathering", "Singles Meetup", "Market / Trade Fair", "Product Launch","Networking", "Tech Meetup", "Volunteering", "Community & Social"],
   },
   {
     key: "celebrate",
@@ -92,7 +98,8 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     hint: "Somebody's big day",
     emoji: "🎉",
     tint: "from-pink-100 to-pink-50 text-pink-800",
-    categories: ["Owambe", "Birthday", "Baby Shower", "Graduation Party"],
+    categories: [
+      "Cultural Day","Owambe", "Birthday", "Baby Shower", "Graduation Party"],
   },
 ];
 
