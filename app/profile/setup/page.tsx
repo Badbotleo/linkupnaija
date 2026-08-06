@@ -1,3 +1,4 @@
+import AppHeader from "@/components/AppHeader";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ProfileForm from "@/components/ProfileForm";
@@ -20,7 +21,12 @@ export default async function ProfileSetupPage() {
     .single();
 
   return (
-    <div className="container-page max-w-2xl py-10">
+    <div>
+      <AppHeader
+        title="Set up your profile"
+        subtitle="A photo and your socials tell hosts you're real"
+      />
+      <div className="container-page max-w-2xl py-6">
       <div className="text-center">
         <h1 className="text-3xl font-extrabold text-gray-900">
           Set up your profile ✨
@@ -49,6 +55,7 @@ export default async function ProfileSetupPage() {
           }}
         />
       </div>
+    </div>
     </div>
   );
 }

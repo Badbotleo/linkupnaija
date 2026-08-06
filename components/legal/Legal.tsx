@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AppHeader from "../AppHeader";
 
 export function LegalShell({
   title,
@@ -12,12 +13,10 @@ export function LegalShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="container-page max-w-3xl py-12">
-      <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-        {title}
-      </h1>
-      <p className="mt-2 text-sm text-gray-400">Last updated: {updated}</p>
-      <p className="mt-5 leading-relaxed text-gray-600">{intro}</p>
+    <div>
+      <AppHeader title={title} subtitle={`Last updated: ${updated}`} back />
+      <div className="container-page max-w-3xl py-6">
+      <p className="leading-relaxed text-gray-600">{intro}</p>
 
       <div className="mt-10 space-y-9">{children}</div>
 
@@ -38,6 +37,7 @@ export function LegalShell({
         legal advice. LinkUpNaija recommends reviewing it with a qualified legal
         professional before relying on it in production.
       </p>
+    </div>
     </div>
   );
 }

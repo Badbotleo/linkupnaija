@@ -1,3 +1,4 @@
+import AppHeader from "@/components/AppHeader";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +11,9 @@ export default function VerifyEmailPage({
   const email = searchParams.email;
 
   return (
-    <div className="container-page flex max-w-md flex-col py-16 text-center">
+    <div>
+      <AppHeader title="Check your email" back />
+      <div className="container-page flex max-w-md flex-col py-6 text-center">
       <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-card">
         <p className="text-5xl">📬</p>
         <h1 className="mt-4 text-2xl font-extrabold text-gray-900">
@@ -47,6 +50,7 @@ export default function VerifyEmailPage({
           Go to login
         </Link>
       </div>
+    </div>
     </div>
   );
 }
