@@ -134,8 +134,8 @@ Deno.serve(async () => {
     if (recent && recent.length) continue;
 
     const ok = await sendEventsEmail(supabase, user, {
-      subject: "New events just dropped near you 👀",
-      title: "New events just dropped near you 👀",
+      subject: "New link-ups just dropped near you 👀",
+      title: "New link-ups just dropped near you 👀",
       intro: "We've missed you! Here's what's fresh on LinkUpNaija.",
       limit: 3,
       recent: true,
@@ -272,7 +272,7 @@ async function sendProfileNudge(user: {
 }): Promise<boolean> {
   const html = emailLayout({
     title: "Complete your profile",
-    preheader: "A complete profile gets more event invites.",
+    preheader: "A complete profile gets more link-up invites.",
     bodyHtml: `
       ${heading("Complete your profile to get more invites ✨")}
       ${paragraph(
@@ -286,7 +286,7 @@ async function sendProfileNudge(user: {
   });
   return sendEmail({
     to: user.email,
-    subject: "Complete your profile to get more event invites",
+    subject: "Complete your profile to get more link-up invites",
     html,
   });
 }

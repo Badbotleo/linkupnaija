@@ -140,8 +140,6 @@ interface EventRow {
 
 const CARD = "w-[72vw] max-w-[268px] shrink-0 snap-start sm:w-[268px]";
 
-// Where the FC26 tournament actually is.
-const TOURNAMENT_STATE = "FCT - Abuja";
 
 // Decks carry their own heading — Rail draws one, SwipeDeck deliberately
 // doesn't, so it can be dropped anywhere.
@@ -195,11 +193,14 @@ export default async function HomePage() {
   // (local dev, VPN, non-Vercel host) we show neither rather than defaulting
   // to "everyone sees Abuja" — that's the behaviour this replaces.
   const visitorState = getVisitorState();
-  const featureFc26 = visitorState === TOURNAMENT_STATE;
+  // Always a real link-up now. FC26 used to take this slot for Abuja, which
+  // meant the most prominent card on the homepage advertised one tournament
+  // instead of the thing the product is for. It still has its own page, its
+  // menu entry and a shelf card — it just doesn't own the hero.
   const localFeature =
-    !featureFc26 && visitorState
-      ? upcoming.find((e) => e.state === visitorState) ?? null
-      : null;
+    (visitorState ? upcoming.find((e) => e.state === visitorState) : null) ??
+    upcoming[0] ??
+    null;
 
   return (
     <div className="pb-12">
@@ -256,81 +257,6 @@ export default async function HomePage() {
       {/* ---------------------------------------------------------------- */}
       {/* Featured — location aware                                         */}
       {/* ---------------------------------------------------------------- */}
-      {featureFc26 && (
-      <section className="container-page mt-6">
-        <Link
-          href="/tournament"
-          className="group relative block overflow-hidden rounded-3xl text-white shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-xl"
-          style={{ background: "linear-gradient(135deg, #1A1040 0%, #2C2260 55%, #3B2F7A 100%)" }}
-        >
-          {/* PlayStation face buttons — the tournament is FIFA, so the
-              texture should say so instead of a generic dot grid. */}
-          <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-            <svg className="absolute -right-6 -top-8 h-44 w-44 opacity-[0.13]" viewBox="0 0 24 24" fill="none">
-              <path d="M12 4 21 20H3z" stroke="#4FD1A5" strokeWidth="1.4" />
-            </svg>
-            <svg className="absolute right-24 top-16 h-24 w-24 opacity-[0.10]" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="9" stroke="#F65A78" strokeWidth="1.4" />
-            </svg>
-            <svg className="absolute -bottom-6 right-10 h-28 w-28 opacity-[0.10]" viewBox="0 0 24 24" fill="none">
-              <rect x="4" y="4" width="16" height="16" rx="2" stroke="#E06FCB" strokeWidth="1.4" />
-            </svg>
-            <div className="absolute -left-20 top-1/2 h-56 w-56 -translate-y-1/2 rounded-full bg-[#FAC775]/20 blur-[80px]" />
-          </div>
-
-          <div className="relative p-5 sm:p-7">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FAC775] px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-[#1A1040]">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#1A1040] opacity-60" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#1A1040]" />
-                </span>
-                Registration open
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white/70">
-                <span aria-hidden className="flex overflow-hidden rounded-[2px]">
-                  <span className="block h-2.5 w-1 bg-naija" />
-                  <span className="block h-2.5 w-1 bg-white" />
-                  <span className="block h-2.5 w-1 bg-naija" />
-                </span>
-                FC26 · Abuja
-              </span>
-            </div>
-
-            {/* The prize is the reason anyone reads this card, so it leads. */}
-            <p className="mt-4 text-[13px] font-bold uppercase tracking-[0.18em] text-white/50">
-              Prize pool
-            </p>
-            <p className="mt-0.5 text-[42px] font-extrabold leading-none tracking-[-0.03em] text-[#FAC775] sm:text-[54px]">
-              &#8358;2,000,000
-            </p>
-            <h2 className="mt-2 text-xl font-extrabold tracking-tight sm:text-2xl">
-              FC26 Tournament
-            </h2>
-
-            <dl className="mt-5 grid grid-cols-3 gap-2 border-t border-white/15 pt-4">
-              {[
-                { k: "Entry", v: "\u20A610,000" },
-                { k: "Slots", v: "40 players" },
-                { k: "Where", v: "Abuja" },
-              ].map((s) => (
-                <div key={s.k}>
-                  <dt className="text-[11px] font-bold uppercase tracking-wide text-white/45">
-                    {s.k}
-                  </dt>
-                  <dd className="mt-0.5 text-[15px] font-extrabold">{s.v}</dd>
-                </div>
-              ))}
-            </dl>
-
-            <span className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-[#FAC775] px-5 py-2.5 text-sm font-black text-[#1A1040] transition group-hover:brightness-105">
-              Claim your slot
-              <LineIcon name="chevronRight" size={14} />
-            </span>
-          </div>
-        </Link>
-      </section>
-      )}
 
       {/* Not in Abuja — feature the soonest thing happening where they are. */}
       {localFeature && (
