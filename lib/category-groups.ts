@@ -63,8 +63,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     hint: "Beach, hikes, gym",
     emoji: "🏝️",
     tint: "from-naija-100 to-naija-50 text-naija-800",
-    categories: [
-      "Fitness Class", "Gym Session", "Meditation", "Wellness Walk", "Sports", "Cycling", "Adventure Park", "Photography Walk",
+    categories: [ "Gym Session", "Meditation", "Wellness Walk", "Sports", "Cycling", "Adventure Park", "Photography Walk",
       "Beach Day", "Hiking", "Yoga", "Fitness", "Road Trip", "Bowling",
       "Sightseeing", "Jogging", "Outdoor",
       "Camping", "Boat Cruise", "Go-Karting",
@@ -77,10 +76,9 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     emoji: "🎤",
     tint: "from-amber-100 to-amber-50 text-amber-800",
     categories: [
-      "Art Exhibition", "Movie Screening", "Theatre / Drama", "Fashion Meetup", "Music Jam", "Fashion Pop-up",
+      "Art Exhibition", "Movie Screening", "Theatre / Drama", "Fashion Meetup", "Fashion Pop-up",
       "Concert", "Live Music", "Comedy Night", "Karaoke", "Open Mic",
-      "Art Gallery", "Fashion Show",
-      "Music", "Entertainment", "Festival",
+      "Art Gallery", "Fashion Show", "Entertainment", "Festival",
     ],
   },
   {
