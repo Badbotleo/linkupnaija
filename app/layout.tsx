@@ -90,10 +90,14 @@ export default async function RootLayout({
   return (
     <html lang="en" className={jakarta.variable} suppressHydrationWarning>
       <head>
-        {/* Apply the saved theme before paint to avoid a flash of the wrong theme. */}
+        {/* Clears the stale theme flag before paint. The dark toggle was
+            removed on 5 Aug because only 6 of 194 components supported it —
+            without this, anyone who had switched it on would be stuck in a
+            half-dark app forever, with no toggle left to switch it back.
+            Restore the original read when dark mode is genuinely finished. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark')}}catch(e){}})();`,
+            __html: `(function(){try{localStorage.removeItem('theme');document.documentElement.classList.remove('dark')}catch(e){}})();`,
           }}
         />
       </head>

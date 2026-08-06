@@ -6,7 +6,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ProBadge from "./ProBadge";
 import Avatar from "./Avatar";
-import ThemeToggle from "./ThemeToggle";
 
 // Top actions as a compact tappable grid.
 const QUICK = [
@@ -221,16 +220,16 @@ export default function MobileNav({
                   </div>
                 </details>
 
-                {/* Appearance */}
-                <div className="mt-4 flex items-center justify-between rounded-2xl bg-white p-3 shadow-sm">
-                  <span className="flex items-center gap-3 text-[15px] font-semibold text-gray-800">
-                    <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand">
-                      <Icon name="moon" />
-                    </span>
-                    Dark mode
-                  </span>
-                  <ThemeToggle />
-                </div>
+                {/* Dark mode toggle removed 5 Aug. Only 6 of 194 components
+                    carried dark: variants — the rail, bottom bar, header,
+                    footer, logo and install banner — so switching it on gave
+                    you dark chrome wrapped around a blinding white page.
+                    A toggle that half-works is worse than none.
+
+                    Everything needed to bring it back is still here:
+                    darkMode: "class" in tailwind.config.ts, the pre-paint
+                    script in layout.tsx, ThemeToggle, and those 6 files.
+                    Restore this block once the other 188 are covered. */}
 
                 {userId && (
                   <form action="/auth/signout" method="post" className="mt-3">
