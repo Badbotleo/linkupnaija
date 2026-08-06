@@ -77,14 +77,21 @@ export default async function RootLayout({
 }) {
   const user = await getSessionUser();
   let unread = 0;
+  let isAdmin = false;
   if (user) {
     const supabase = createClient();
-    const { count } = await supabase
-      .from("notifications")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .eq("read", false);
+    // Both in one round trip — the rail needs the admin flag to know whether
+    // to show the Admin row, and previously only the top navbar knew.
+    const [{ count }, { data: me }] = await Promise.all([
+      supabase
+        .from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("read", false),
+      supabase.from("users").select("is_admin").eq("id", user.id).single(),
+    ]);
     unread = count ?? 0;
+    isAdmin = !!me?.is_admin;
   }
 
   return (
@@ -104,7 +111,7 @@ export default async function RootLayout({
       <body className="flex min-h-screen flex-col">
         <ScrollProgress />
         <NavProgress />
-        <DesktopRail isLoggedIn={!!user} unread={unread} />
+        <DesktopRail isLoggedIn={!!user} unread={unread} isAdmin={isAdmin} />
         <Navbar />
         {/* pb clears the mobile bottom nav */}
         <main className="flex-1 pb-16 lg:pb-0 lg:pl-[248px]">{children}</main>

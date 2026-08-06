@@ -36,9 +36,11 @@ const YOU = [
 export default function DesktopRail({
   isLoggedIn,
   unread = 0,
+  isAdmin = false,
 }: {
   isLoggedIn: boolean;
   unread?: number;
+  isAdmin?: boolean;
 }) {
   const pathname = usePathname();
   const active = (href: string) =>
@@ -64,6 +66,30 @@ export default function DesktopRail({
               You
             </p>
             <RailGroup items={YOU} active={active} unread={unread} />
+
+            <p className="mb-1 mt-5 px-3 text-[11px] font-black uppercase tracking-[0.14em] text-gray-400">
+              Account
+            </p>
+            <RailGroup
+              items={[
+                { href: "/profile", label: "Profile", icon: "users" },
+                { href: "/profile/edit", label: "Settings", icon: "settings" },
+                ...(isAdmin
+                  ? [{ href: "/admin", label: "Admin", icon: "shield" }]
+                  : []),
+              ]}
+              active={active}
+            />
+
+            <form action="/auth/signout" method="post" className="mt-1">
+              <button
+                type="submit"
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[15px] font-bold text-red-600 transition hover:bg-red-50"
+              >
+                <LineIcon name="logout" size={20} className="shrink-0" />
+                <span className="min-w-0 flex-1 truncate">Log out</span>
+              </button>
+            </form>
           </>
         )}
       </nav>
