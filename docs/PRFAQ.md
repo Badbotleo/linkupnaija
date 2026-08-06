@@ -98,7 +98,7 @@ each one by actually doing it. Mark it and date it.*
 
 | # | The customer should be able to say | Status | Notes |
 |---|---|---|---|
-| 1 | "I opened it and saw something on near me this week" | ✗ | Walked 5 Aug, 375px. 8 events on the page but **0 visible without scrolling** — the first is 1597px down, 2 full screens |
+| 1 | "I opened it and saw something on near me this week" | ☑ | Fixed 5 Aug. Real events moved above the idea shelf and the explainer: **8 visible without scrolling**, first at 433px (was 1597px) |
 | 2 | "I asked to join and the host got it" | ◐ | CTA reachable at 670px, above the fold. **Second half unverifiable without a login** — host receipt still unproven |
 | 3 | "I could see who else was going before I said yes" | ☑ | Walked 5 Aug logged OUT: host, guest grid and the M/F/? split all visible before committing |
 | 4 | "I got into the group chat once accepted" | ☐ | Needs a login and an approval. Not walkable in this environment |
@@ -151,11 +151,18 @@ worse than leaving it unproven. Prove it with the next real registration, or
 a row written inside a rolled-back transaction.
 
 **What did walking sentences 1–5 turn up?**
-Sentence 1 fails, and it's the first line of the press release. On a 375px
-phone the homepage carries 8 events and **none are visible without
-scrolling** — the first sits 1597px down, two full screens, behind the
-positioning line, Things to do, and the ScreenTour explainer. "Open the app
-and you see what's on near you this week" is not what happens.
+Sentence 1 failed, and it was the first line of the press release. On a 375px
+phone the homepage carried 8 events with **none visible without scrolling** —
+the first sat 1597px down, two full screens, behind the positioning line,
+Things to do, and the ScreenTour explainer.
+
+Fixed the same day by moving the real-events shelf above both: 8 events now
+visible without scrolling, first at 433px. Measured, not eyeballed.
+
+Worth noting how it got that way: Things to do was raised earlier that day
+because it "felt missing" on mobile — a real complaint, correctly fixed, which
+quietly pushed actual events below the fold. Both can't be first. The press
+release settles it: the promise is that you see what's ON, so events win.
 
 Sentence 3 passes cleanly, logged out: host, guest grid and the M/F/? split
 are all visible before you commit to anything.

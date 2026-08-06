@@ -378,13 +378,10 @@ export default async function HomePage() {
         </section>
       )}
 
-      <ThingsToDo state={visitorState} />
-
-      <ScreenTour />
-
-      {/* ---------------------------------------------------------------- */}
-      {/* Shelves                                                           */}
-      {/* ---------------------------------------------------------------- */}
+      {/* Real events lead. Working backwards found sentence 1 failing: 8
+          events on this page and none visible without scrolling, because a
+          shelf of ideas and a product explainer came first. "Open the app and
+          you see what's on near you this week" has to be literally true. */}
       <Rail
         title="Happening soon"
         auto
@@ -445,6 +442,14 @@ export default async function HomePage() {
             </Link>
         ))}
       </Rail>
+
+      <ThingsToDo state={visitorState} />
+
+      <ScreenTour />
+
+      {/* ---------------------------------------------------------------- */}
+      {/* Shelves                                                           */}
+      {/* ---------------------------------------------------------------- */}
 
       {circles.length > 0 && (
         <>
