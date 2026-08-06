@@ -8,6 +8,7 @@ import { payWithPaystack, formatNaira } from "@/lib/paystack";
 import { FREE_REQUEST_LIMIT } from "@/lib/pro";
 import { confettiJoin, confettiCoins } from "@/lib/confetti";
 import { toast } from "@/lib/toast";
+import { haptic } from "@/lib/haptics";
 import type { RsvpStatus } from "@/lib/types";
 
 type JoinState = "none" | RsvpStatus;
@@ -163,6 +164,7 @@ export default function RsvpButton({
         console.error("Failed to record transaction:", txErr.message);
         // Never claim success here. They paid; we failed to record it. Give
         // them the reference so support can reconcile it against Paystack.
+        haptic("error");
         setError(
           `Your payment went through, but we couldn't record it. Please send this reference to support@linkupnaija.com: ${
             paymentReference ?? "wallet"
@@ -182,6 +184,7 @@ export default function RsvpButton({
       });
     }
 
+    haptic("success");
     if (price > 0) confettiCoins();
     else confettiJoin();
     toast.success(
