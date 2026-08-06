@@ -110,7 +110,7 @@ const getCuratedIdeas = unstable_cache(
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false })
-      .limit(12);
+      .limit(60);
 
     // Throw rather than return []: unstable_cache caches return values, so a
     // single failed request would otherwise pin an empty shelf in place for
@@ -216,12 +216,12 @@ export async function buildIdeas(
     : fromVenues;
 
   const seen = new Map<string, number>();
-  const take = (list: Idea[], max: number) => {
+  const take = (list: Idea[], max: number, ignoreCap = false) => {
     const out: Idea[] = [];
     for (const idea of list) {
       if (out.length >= max) break;
       const n = seen.get(idea.title) ?? 0;
-      if (n >= perActivityCap) continue;
+      if (!ignoreCap && n >= perActivityCap) continue;
       seen.set(idea.title, n + 1);
       out.push(idea);
     }
@@ -232,13 +232,22 @@ export async function buildIdeas(
   // shelf no real venue ever surfaced — no restaurants, no parks, no bars.
   // Each source gets half the shelf, then whatever's left is topped up from
   // either, so a thin day still fills.
+  // Rotate which curated cards lead, so all of them get airtime across
+  // visits instead of the same first few every time. Seeded by the hour so a
+  // single page's server and client render agree.
+  const rotation = new Date().getUTCHours();
+  const rotated =
+    curated.length > 0
+      ? curated.map((_, i) => curated[(i + rotation) % curated.length])
+      : curated;
+
   const half = Math.max(1, Math.floor(limit / 2));
-  const pickedCurated = take(curated, half);
+  const pickedCurated = take(rotated, half, true);
   const pickedVenues = take(ranked, limit - pickedCurated.length);
   const varied = [
     ...pickedCurated,
     ...pickedVenues,
-    ...take(curated, limit),
+    ...take(rotated, limit, true),
     ...take(ranked, limit),
   ];
 

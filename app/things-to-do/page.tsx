@@ -82,7 +82,7 @@ export default async function ThingsToDoPage() {
                  whole-card link is an overlay, and the credit sits above it. */
               <div
                 key={idea.key}
-                className="group relative h-[210px] overflow-hidden rounded-2xl shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-xl"
+                className="group relative h-[248px] overflow-hidden rounded-2xl shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-xl"
               >
                 {idea.mediaType === "video" ? (
                   <video
@@ -113,7 +113,7 @@ export default async function ThingsToDoPage() {
                 />
 
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-4 text-white">
-                  <p className="text-[19px] font-extrabold leading-tight">
+                  <p className="line-clamp-2 text-[19px] font-extrabold leading-tight">
                     {idea.title}
                   </p>
                   <p className="mt-0.5 truncate text-[13px] text-white/70">
@@ -134,9 +134,30 @@ export default async function ThingsToDoPage() {
                         {idea.mediaType === "video" ? "🎬" : "📷"} {idea.credit}
                       </p>
                     ))}
-                  <span className="mt-3 flex w-fit items-center gap-1.5 rounded-full bg-white px-4 py-2 text-[13px] font-black text-gray-900">
-                    <LineIcon name="mic" size={13} />
-                    Host it
+                  {/* Two doors, same as the homepage shelf — this page only
+                      ever offered "Host it", which is a big ask for someone
+                      browsing ideas. */}
+                  <span className="mt-3 flex flex-wrap items-center gap-2">
+                    {idea.liveCount ? (
+                      <Link
+                        href={idea.liveHref!}
+                        className="pointer-events-auto flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-[13px] font-black text-gray-900 transition hover:bg-white/90"
+                      >
+                        <LineIcon name="calendar" size={13} />
+                        {idea.liveCount} on now
+                      </Link>
+                    ) : null}
+                    <Link
+                      href={hostHref(idea)}
+                      className={`pointer-events-auto flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-black transition ${
+                        idea.liveCount
+                          ? "bg-white/15 text-white hover:bg-white/25"
+                          : "bg-white text-gray-900 hover:bg-white/90"
+                      }`}
+                    >
+                      <LineIcon name="mic" size={13} />
+                      Host it
+                    </Link>
                   </span>
                 </div>
               </div>
