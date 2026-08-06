@@ -134,7 +134,7 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
   // The page used to stop dead after the last event rail. These give it an
   // ending: somewhere to belong, somewhere to book, and something to do when
   // there's nothing on.
-  const [{ data: myCircleRows }, { data: venueRows }, { data: refRow }] =
+  const [{ data: myCircleRows }, { data: venueRows }] =
     await Promise.all([
       supabase.from("circle_members").select("circle_id").eq("user_id", userId),
       supabase
@@ -143,7 +143,6 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
         .eq("is_active", true)
         .order("is_featured", { ascending: false })
         .limit(8),
-      supabase.from("users").select("referral_code").eq("id", userId).single(),
     ]);
 
   const myCircleIds = new Set(
@@ -159,8 +158,6 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
     .filter((c) => !myCircleIds.has(c.id))
     .slice(0, 8);
   const venues = (venueRows ?? []) as VenueLite[];
-  const referralCode = (refRow as { referral_code: string | null } | null)
-    ?.referral_code ?? null;
 
   // Nearby events (their state), excluding ones already in their list.
   let nearbyQuery = supabase
@@ -405,46 +402,58 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
         </Rail>
       )}
 
-      {/* The close: something to do when nothing on the page tempted them */}
+      {/* Two things you can do, as rows rather than a banner. A big gradient
+          marketing block at the end of a personal feed reads as an ad in your
+          own app — a settings-style list reads as part of it. */}
       <section className="container-page mt-9">
-        <div
-          className="relative overflow-hidden rounded-3xl p-6 text-white shadow-card sm:p-8"
-          style={{ background: "linear-gradient(135deg, #534AB7 0%, #1A1040 100%)" }}
-        >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-14 -top-14 h-48 w-48 rounded-full bg-[#FAC775]/20 blur-[70px]"
-          />
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-white/50">
-                Nothing catching your eye?
-              </p>
-              <h2 className="mt-1.5 text-[22px] font-extrabold leading-tight tracking-[-0.02em] sm:text-[26px]">
-                Bring your paddy — you both get{" "}
-                <span className="text-[#FAC775]">&#8358;500</span>
-              </h2>
-              <p className="mt-1.5 text-sm text-white/70">
-                {referralCode
-                  ? "Share your code and earn every time someone joins."
-                  : "Or start your own link-up and let your people come to you."}
-              </p>
-            </div>
-            <div className="flex shrink-0 flex-wrap gap-2">
-              <Link
-                href="/refer"
-                className="rounded-full bg-[#FAC775] px-5 py-2.5 text-sm font-black text-[#1A1040] transition hover:brightness-105"
-              >
-                Invite &amp; earn
-              </Link>
-              <Link
-                href="/host"
-                className="rounded-full bg-white/10 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-white/20"
-              >
-                Host something
-              </Link>
-            </div>
-          </div>
+        <h2 className="text-[19px] font-extrabold tracking-[-0.02em] text-gray-900">
+          Nothing catching your eye?
+        </h2>
+
+        <div className="mt-3 divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card">
+          <Link
+            href="/refer"
+            className="flex items-center gap-3.5 p-4 transition hover:bg-gray-50 active:bg-gray-100"
+          >
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-naija-50 text-naija-700">
+              <LineIcon name="gift" size={20} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-bold text-gray-900">
+                Bring your paddy
+              </span>
+              <span className="mt-0.5 block text-[13px] text-gray-500">
+                You both get &#8358;500 when they join
+              </span>
+            </span>
+            <LineIcon
+              name="chevronRight"
+              size={16}
+              className="shrink-0 text-gray-300"
+            />
+          </Link>
+
+          <Link
+            href="/host"
+            className="flex items-center gap-3.5 p-4 transition hover:bg-gray-50 active:bg-gray-100"
+          >
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-50 text-brand">
+              <LineIcon name="mic" size={20} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-bold text-gray-900">
+                Host something yourself
+              </span>
+              <span className="mt-0.5 block text-[13px] text-gray-500">
+                Pick a vibe and let your people come to you
+              </span>
+            </span>
+            <LineIcon
+              name="chevronRight"
+              size={16}
+              className="shrink-0 text-gray-300"
+            />
+          </Link>
         </div>
       </section>
     </div>
