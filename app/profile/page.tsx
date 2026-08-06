@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Profile" };
 
 const TABS = [
-  { key: "events", label: "Events" },
+  { key: "events", label: "Link-ups" },
   { key: "about", label: "About" },
   { key: "photos", label: "Photos" },
   { key: "posts", label: "Posts" },
@@ -227,7 +227,7 @@ async function EventsTab({ userId }: { userId: string }) {
     cover_image_url: string | null;
   }[];
   if (events.length === 0)
-    return <Empty text="No events hosted yet." cta={{ href: "/host", label: "Host an event" }} />;
+    return <Empty text="No link-ups hosted yet." cta={{ href: "/host", label: "Host a link-up" }} />;
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {events.map((e) => (

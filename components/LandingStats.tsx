@@ -13,7 +13,7 @@ export default function LandingStats({
   categoriesCount: number;
 }) {
   const stats = [
-    { end: eventsCount, suffix: "", label: "Events hosted" },
+    { end: eventsCount, suffix: "", label: "Link-ups hosted" },
     { end: membersCount, suffix: "", label: "Members" },
     { end: 36, suffix: "", label: "States supported" },
     { end: categoriesCount, suffix: "", label: "Event categories" },

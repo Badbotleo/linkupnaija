@@ -503,7 +503,7 @@ export default async function DashboardPage() {
           >
             <div key="hosting">
           <Section
-            title="Events I'm hosting"
+            title="Link-ups I'm hosting"
             count={hosting.length}
             emptyText="Ready to bring people together?"
             emptyCta
@@ -537,7 +537,7 @@ export default async function DashboardPage() {
             <div key="past">
           {pastHosting.length > 0 && (
             <Section
-              title="Past events"
+              title="Past link-ups"
               count={pastHosting.length}
               emptyText=""
             >
@@ -553,7 +553,7 @@ export default async function DashboardPage() {
             </div>
             <div key="attending">
           <Section
-            title="Events I'm attending"
+            title="Link-ups I'm attending"
             count={attending.length}
             emptyText="You haven't joined any events yet."
             emptyCta

@@ -39,7 +39,7 @@ export default async function DrivePage() {
     <div>
       <AppHeader
         title="Drive with LinkUpNaija"
-        subtitle="Earn on rides to events near you"
+        subtitle="Earn on rides to link-ups near you"
         back
       />
       <div className="container-page max-w-2xl py-5">

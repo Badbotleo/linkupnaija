@@ -23,7 +23,7 @@ export default async function CreateCirclePage() {
     <div>
       <AppHeader
         title="Create a circle"
-        subtitle="A community around what you love — meetups, chats and shared events"
+        subtitle="A community around what you love — meetups, chats and shared link-ups"
         back
       />
       <div className="container-page max-w-xl py-5">

@@ -21,7 +21,7 @@ import type { UserProfile, HostStats } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 const TABS = [
-  { key: "events", label: "Events" },
+  { key: "events", label: "Link-ups" },
   { key: "about", label: "About" },
   { key: "photos", label: "Photos" },
 ] as const;
@@ -67,7 +67,7 @@ export default async function PublicProfilePage({
         <div className="container-page max-w-2xl py-16 text-center">
           <p className="text-4xl">🚫</p>
           <p className="mt-3 font-semibold text-gray-900">You&apos;ve blocked this user.</p>
-          <Link href="/events" className="btn-outline mt-6">Back to events</Link>
+          <Link href="/events" className="btn-outline mt-6">Back to link-ups</Link>
         </div>
       );
     }
