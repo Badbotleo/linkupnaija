@@ -195,11 +195,13 @@ export default async function DashboardPage() {
     collected: number;
     platformFee: number;
     due: number;
+    unrecorded: number;
     status: string | null;
   }[] = [];
   if (paidEvents.length) {
     const paidIds = paidEvents.map((e) => e.id);
-    const [{ data: txRows }, { data: payoutRows }] = await Promise.all([
+    const [{ data: txRows }, { data: payoutRows }, { data: paidRsvpRows }] =
+      await Promise.all([
       supabase
         .from("transactions")
         .select("event_id, amount, platform_fee")
@@ -208,6 +210,11 @@ export default async function DashboardPage() {
         .from("payouts")
         .select("event_id, status")
         .eq("host_id", user.id),
+      supabase
+        .from("rsvps")
+        .select("event_id")
+        .in("event_id", paidIds)
+        .eq("paid", true),
     ]);
     const txns = (txRows ?? []) as {
       event_id: string | null;
@@ -218,21 +225,31 @@ export default async function DashboardPage() {
       event_id: string | null;
       status: string;
     }[];
+    const paidRsvps = (paidRsvpRows ?? []) as { event_id: string }[];
+
     payoutCards = paidEvents
       .map((e) => {
         const evTx = txns.filter((t) => t.event_id === e.id);
         const collected = evTx.reduce((s, t) => s + t.amount, 0);
         const platformFee = evTx.reduce((s, t) => s + t.platform_fee, 0);
+        // Guests who paid but whose transaction never landed. Without this a
+        // host just sees ₦0 and no reason — the money is gone from the
+        // guest's account and invisible here.
+        const unrecorded =
+          paidRsvps.filter((r) => r.event_id === e.id).length - evTx.length;
         return {
           eventId: e.id,
           eventTitle: e.title,
           collected,
           platformFee,
           due: collected - platformFee,
+          unrecorded: unrecorded > 0 ? unrecorded : 0,
           status: payouts.find((p) => p.event_id === e.id)?.status ?? null,
         };
       })
-      .filter((c) => c.collected > 0);
+      // Keep an event visible if money was taken but not recorded, even
+      // though collected is 0 — that's exactly the case worth surfacing.
+      .filter((c) => c.collected > 0 || c.unrecorded > 0);
   }
 
   const p = profile as UserProfile | null;
@@ -482,6 +499,7 @@ export default async function DashboardPage() {
                     eventId={c.eventId}
                     eventTitle={c.eventTitle}
                     collected={c.collected}
+                    unrecorded={c.unrecorded}
                     platformFee={c.platformFee}
                     due={c.due}
                     status={c.status}

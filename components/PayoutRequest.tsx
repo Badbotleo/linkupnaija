@@ -19,6 +19,7 @@ export default function PayoutRequest({
   collected,
   platformFee,
   due,
+  unrecorded = 0,
   status,
 }: {
   hostId: string;
@@ -27,6 +28,8 @@ export default function PayoutRequest({
   collected: number;
   platformFee: number;
   due: number;
+  /** Guests who paid but whose transaction never landed. */
+  unrecorded?: number;
   status: string | null;
 }) {
   const router = useRouter();
@@ -76,6 +79,18 @@ export default function PayoutRequest({
       </dl>
 
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+
+      {/* Money left the guest's account but no transaction landed, so it isn't
+          in the figures above. Silence here means a host waits for a payout
+          that was never going to come. */}
+      {unrecorded > 0 && (
+        <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2.5 text-sm text-amber-800">
+          <strong>{unrecorded}</strong> guest{unrecorded === 1 ? "" : "s"} paid for
+          this event but the payment didn&apos;t record, so it isn&apos;t counted
+          above. Email support@linkupnaija.com and we&apos;ll reconcile it
+          against Paystack.
+        </p>
+      )}
 
       <div className="mt-3">
         {current ? (

@@ -72,11 +72,23 @@ export default function DriverOnboarding({
   }
 
   async function upload(file: File, bucket: string, kind: string) {
-    const optimized = await compressImage(file, { maxDimension: 1600 });
-    const path = `${userId}/${kind}-${Date.now()}.jpg`;
+    let body: File | Blob = file;
+    let ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    try {
+      body = await compressImage(file, { maxDimension: 1600 });
+      ext = "jpg";
+    } catch {
+      // HEIC (every iPhone photo) and PDFs can't go through a canvas.
+      // Upload as-is — a large ID scan beats a rejected one.
+    }
+    const path = `${userId}/${kind}-${Date.now()}.${ext}`;
     const { error: e } = await supabase.storage
       .from(bucket)
-      .upload(path, optimized, { upsert: true, cacheControl: "3600" });
+      .upload(path, body, {
+        upsert: true,
+        cacheControl: "3600",
+        contentType: file.type || undefined,
+      });
     if (e) throw new Error(e.message);
     if (bucket === "driver-photos") {
       return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
@@ -318,6 +330,18 @@ export default function DriverOnboarding({
           <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
         )}
       </div>
+
+      {!canNext && (
+        <p className="mt-3 text-center text-xs text-gray-500">
+          {step === 0
+            ? "Add your name and phone to continue."
+            : step === 1
+              ? !idDoc
+                ? "Upload a photo of your ID to continue."
+                : "Add your ID number to continue."
+              : "Add your plate number to continue."}
+        </p>
+      )}
 
       <div className="mt-4 flex gap-2">
         {step > 0 && (
