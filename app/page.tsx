@@ -5,7 +5,6 @@ import { EVENT_CATEGORIES, CATEGORY_STYLES } from "@/lib/constants";
 import { categoryPhoto } from "@/lib/category-photos";
 import EventCover from "@/components/EventCover";
 import { formatEventDate, formatPriceRange } from "@/lib/format";
-import LandingStats from "@/components/LandingStats";
 import LoggedInHome from "@/components/home/LoggedInHome";
 import Rail from "@/components/home/Rail";
 import SwipeDeck from "@/components/home/SwipeDeck";
@@ -43,19 +42,6 @@ const cache = () =>
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
-
-const getLandingCounts = unstable_cache(
-  async () => {
-    const supabase = cache();
-    const [{ count: events }, { count: members }] = await Promise.all([
-      supabase.from("events").select("*", { count: "exact", head: true }),
-      supabase.from("users").select("*", { count: "exact", head: true }),
-    ]);
-    return { events: events ?? 0, members: members ?? 0 };
-  },
-  ["homepage-landing-counts"],
-  { revalidate: 300 }
-);
 
 const getPopularSeries = unstable_cache(
   async () => {
@@ -178,8 +164,7 @@ export default async function HomePage() {
   const user = await getSessionUser();
   if (user) return <LoggedInHome userId={user.id} />;
 
-  const [counts, series, events, circles, partnerVenues] = await Promise.all([
-    getLandingCounts(),
+  const [series, events, circles, partnerVenues] = await Promise.all([
     getPopularSeries(),
     getUpcomingEvents(),
     getPopularCircles(),
@@ -580,14 +565,6 @@ export default async function HomePage() {
         ))}
       </SwipeDeck>
 
-      {/* Honest live numbers */}
-      <div className="mt-8">
-        <LandingStats
-          eventsCount={counts.events}
-          membersCount={counts.members}
-          categoriesCount={EVENT_CATEGORIES.length}
-        />
-      </div>
 
       {/* ---------------------------------------------------------------- */}
       {/* Closing action                                                    */}

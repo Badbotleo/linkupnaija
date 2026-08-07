@@ -177,6 +177,11 @@ export default function AdminDrivers() {
                   </dl>
 
                   <div className="mt-3 flex flex-wrap gap-2">
+                    {!d.id_document_url && (
+                      <span className="rounded-full bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700">
+                        No ID uploaded — don&apos;t approve
+                      </span>
+                    )}
                     {d.id_document_url &&
                       (idUrl[d.id] ? (
                         <a

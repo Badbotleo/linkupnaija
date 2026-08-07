@@ -82,14 +82,16 @@ export default function DriverOnboarding({
       // Upload as-is — a large ID scan beats a rejected one.
     }
     const path = `${userId}/${kind}-${Date.now()}.${ext}`;
-    const { error: e } = await supabase.storage
-      .from(bucket)
-      .upload(path, body, {
-        upsert: true,
-        cacheControl: "3600",
-        contentType: file.type || undefined,
-      });
-    if (e) throw new Error(e.message);
+    const opts = {
+      upsert: true,
+      cacheControl: "3600",
+      contentType: file.type || undefined,
+    };
+    let { error: e } = await supabase.storage.from(bucket).upload(path, body, opts);
+    if (e) {
+      ({ error: e } = await supabase.storage.from(bucket).upload(path, body, opts));
+    }
+    if (e) throw new Error(`${bucket}: ${e.message}`);
     if (bucket === "driver-photos") {
       return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
     }
@@ -202,7 +204,7 @@ export default function DriverOnboarding({
     step === 0
       ? f.full_name.trim() && f.phone.trim()
       : step === 1
-        ? f.id_number.trim() && idDoc
+        ? f.id_number.trim()
         : f.plate_number.trim();
 
   return (
@@ -292,6 +294,13 @@ export default function DriverOnboarding({
               onPick={(e) => pick(e, "driver-docs", "id", setIdDoc)}
               privateDoc
             />
+            {!idDoc && (
+              <p className="rounded-xl bg-amber-50 px-3 py-2.5 text-sm text-amber-800">
+                You can carry on without this, but we can&apos;t approve you
+                until we&apos;ve seen your ID. If the upload keeps failing,
+                send it to support@linkupnaija.com and we&apos;ll attach it.
+              </p>
+            )}
           </>
         )}
 
