@@ -52,10 +52,17 @@ Deno.serve(async (req) => {
   const code = String(Math.floor(100000 + Math.random() * 900000));
   const expires = new Date(Date.now() + OTP_TTL_MIN * 60000).toISOString();
 
-  await supabase.from("phone_verifications").upsert(
+  // If this write fails we must NOT send an SMS: the person would receive a
+  // code that was never stored, and verifying it would answer "Request a code
+  // first" forever. Previously the error was discarded.
+  const { error: storeErr } = await supabase.from("phone_verifications").upsert(
     { user_id: user.id, phone, code, expires_at: expires, attempts: 0, last_sent_at: new Date().toISOString() },
     { onConflict: "user_id" }
   );
+  if (storeErr) {
+    console.error("phone_verifications upsert failed", storeErr.message);
+    return json({ error: "Couldn't start verification. Please try again." }, 500);
+  }
 
   // Test mode: skip the SMS provider and return the code so the full flow can
   // be exercised without a Termii account. Gate with OTP_TEST_MODE=true; remove

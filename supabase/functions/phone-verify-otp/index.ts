@@ -28,12 +28,18 @@ Deno.serve(async (req) => {
   }
   const code = (body.code ?? "").trim();
 
-  const { data: row } = await supabase
+  const { data: row, error: readErr } = await supabase
     .from("phone_verifications")
     .select("phone, code, expires_at, attempts")
     .eq("user_id", user.id)
     .maybeSingle();
 
+  // A failed read and "no row" are not the same thing. Reporting a database
+  // failure as "Request a code first" sends people round the loop forever.
+  if (readErr) {
+    console.error("phone_verifications read failed", readErr.message);
+    return json({ error: "Couldn't check that code. Please try again." }, 500);
+  }
   if (!row) return json({ error: "Request a code first." }, 400);
   if (row.attempts >= MAX_ATTEMPTS)
     return json({ error: "Too many attempts. Request a new code." }, 429);
@@ -49,12 +55,21 @@ Deno.serve(async (req) => {
   }
 
   // Success — mark verified, store the number, clear the OTP row.
-  await supabase
+  // This is the write that actually verifies them. Unchecked, a failure here
+  // still deleted the OTP row and returned verified:true — the person was told
+  // they were verified, no badge appeared, and the code was gone so they had
+  // to start over with no idea why.
+  const { error: saveErr } = await supabase
     .from("users")
     .update({ phone: row.phone, phone_verified: true, phone_verified_at: new Date().toISOString() })
     .eq("id", user.id);
-  await supabase.from("phone_verifications").delete().eq("user_id", user.id);
+  if (saveErr) {
+    console.error("phone verify save failed", saveErr.message);
+    // Deliberately leave the OTP row in place so the same code still works.
+    return json({ error: "Couldn't save that. Please try again." }, 500);
+  }
 
+  await supabase.from("phone_verifications").delete().eq("user_id", user.id);
   return json({ verified: true });
 });
 
