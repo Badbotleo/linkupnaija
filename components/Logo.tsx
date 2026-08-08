@@ -1,3 +1,7 @@
+// The mark's geometry lives in lib/logo-svg.ts so the app, app icon,
+// share cards and QR codes can never disagree about it.
+import { MARK } from "@/lib/logo-svg";
+
 // LinkUpNaija pin-mark logo: a purple emblem with three "people", plus the
 // wordmark. Works on light and dark backgrounds.
 
@@ -19,26 +23,15 @@ export function LogoMark({
       className={pulse ? "animate-logo-pulse" : undefined}
       style={{ transformOrigin: "center" }}
     >
-      <circle cx="24" cy="24" r="22" fill="#534AB7" />
-      <circle cx="24" cy="24" r="16.5" fill="#3C3489" />
-      {/* Centre / top person (lavender) */}
-      <circle cx="24" cy="16.5" r="4" fill="#AFA9EC" />
-      <path
-        d="M16.5 30c0-4.4 3.4-7.5 7.5-7.5s7.5 3.1 7.5 7.5z"
-        fill="#AFA9EC"
-      />
-      {/* Left person (white) */}
-      <circle cx="14.5" cy="23" r="3.3" fill="#FFFFFF" />
-      <path
-        d="M8.5 34.5c0-3.6 2.7-6.2 6-6.2s6 2.6 6 6.2z"
-        fill="#FFFFFF"
-      />
-      {/* Right person (white) */}
-      <circle cx="33.5" cy="23" r="3.3" fill="#FFFFFF" />
-      <path
-        d="M27.5 34.5c0-3.6 2.7-6.2 6-6.2s6 2.6 6 6.2z"
-        fill="#FFFFFF"
-      />
+      <circle {...MARK.outer} />
+      <circle {...MARK.inner} />
+      {/* Centre figure sits behind so the flanking two overlap it. */}
+      <circle {...MARK.centreHead} />
+      <path {...MARK.centreBody} />
+      <circle {...MARK.leftHead} />
+      <path {...MARK.leftBody} />
+      <circle {...MARK.rightHead} />
+      <path {...MARK.rightBody} />
     </svg>
   );
 }
