@@ -48,14 +48,36 @@ typefaces and logo rules here too. >>>
 Nigerian green is deliberately restrained. It marks a positive state that has
 already happened. Purple owns the action.
 
-**Logo mark** — a circular emblem: outer disc `#534AB7`, inner disc `#3C3489`,
-a lavender `#AFA9EC` centre person, and two white people flanking them. Three
-people, because the product is about linking up with others.
+**Logo mark — attach the supplied artwork alongside this prompt and work
+from that file. Do not redraw it, and do not take it from any code.**
 
-**Wordmark** — "LinkUpNaija" set in one extrabold word, where **"Up" carries
-the brand purple** (`#7F77DD` on dark) and "Link"/"Naija" are navy `#1A1040`
-(white on dark). The purple is on *Up*, not on *Naija* — this has been got
-wrong before.
+A circular emblem with three people inside it:
+
+- Two concentric circles. The outer ring is brand purple `#534AB7`; the inner
+  disc is a darker indigo `#3C3489`. The ring reads as a fairly thin band, not
+  a thick donut.
+- **Three figures**, each a round head above a rounded, flat-bottomed body —
+  simple silhouettes, no facial features, no outlines.
+- The **centre figure is lavender `#AFA9EC`** and sits **highest**, so its head
+  clearly rises above the other two. It reads as the person you're linking up
+  with.
+- The **two flanking figures are white**, sit slightly lower, and are a little
+  wider. Their bodies overlap the centre figure's body on each side, so the
+  three read as one group rather than three separate icons.
+- All three bodies terminate on a **common flat baseline**, well inside the
+  inner disc.
+
+**Lockup** — the official arrangement is **stacked**: emblem above, wordmark
+centred beneath it, with the wordmark roughly the same width as the emblem's
+diameter. A horizontal version (emblem left, wordmark right) is used in the
+product's header and side rail; treat the stacked one as primary for
+collaboration material.
+
+**Wordmark** — "LinkUpNaija" set as one word, extrabold, in a geometric sans
+with tight letter-spacing and no space between the three parts. **"Up" is
+brand purple; "Link" and "Naija" are deep navy `#1A1040`** (both go white on
+dark backgrounds, with "Up" shifting to `#7F77DD`). The purple sits on **Up**,
+not on "Naija" — this has been got wrong more than once, so check it.
 
 **Type** — Noto Sans. Note: the **latin-ext** cut is required, not latin —
 the naira sign ₦ (U+20A6) sits in the Currency Symbols block and renders as a
