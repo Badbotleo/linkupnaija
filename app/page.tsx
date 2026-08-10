@@ -11,6 +11,7 @@ import SwipeDeck from "@/components/home/SwipeDeck";
 import ScreenTour from "@/components/home/ScreenTour";
 import ThingsToDo from "@/components/home/ThingsToDo";
 import LineIcon from "@/components/ui/LineIcon";
+import { memberProof, subscriberProof } from "@/lib/social-proof";
 import { LogoMark } from "@/components/Logo";
 import { getSessionUser } from "@/lib/supabase/auth";
 import { getVisitorState } from "@/lib/visitor-geo";
@@ -401,8 +402,9 @@ export default async function HomePage() {
                   </p>
                   <p className="mt-1.5 flex items-center gap-1.5 text-sm text-white/80">
                     <LineIcon name="users" size={14} />
-                    {c.member_count} member{c.member_count === 1 ? "" : "s"}
-                    {c.state ? ` · ${c.state}` : ""}
+                    {[memberProof(c.member_count), c.state]
+                      .filter(Boolean)
+                      .join(" · ") || "New circle"}
                   </p>
                   <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-bold text-gray-900">
                     Join the circle
@@ -504,8 +506,9 @@ export default async function HomePage() {
                 <div className="absolute inset-x-0 bottom-0 p-3 text-white">
                   <p className="truncate font-bold">{s.title}</p>
                   <p className="mt-0.5 truncate text-xs text-white/75">
-                    {s.subscriber_count} subscriber{s.subscriber_count === 1 ? "" : "s"}
-                    {s.state ? ` · ${s.state}` : ""}
+                    {[subscriberProof(s.subscriber_count), s.state]
+                      .filter(Boolean)
+                      .join(" · ") || s.frequency || "Recurring"}
                   </p>
                 </div>
               </div>

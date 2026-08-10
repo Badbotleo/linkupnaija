@@ -8,6 +8,7 @@ import { categoryPhoto } from "@/lib/category-photos";
 import RateVenuePrompt from "@/components/venues/RateVenuePrompt";
 import ThingsToDo from "@/components/home/ThingsToDo";
 import LineIcon from "@/components/ui/LineIcon";
+import { memberProof } from "@/lib/social-proof";
 import Rail from "@/components/home/Rail";
 import SwipeDeck from "@/components/home/SwipeDeck";
 
@@ -359,8 +360,9 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
                 <div className="absolute inset-x-0 bottom-0 p-3 text-white">
                   <p className="truncate font-bold">{c.name}</p>
                   <p className="mt-0.5 truncate text-xs text-white/75">
-                    {c.member_count} member{c.member_count === 1 ? "" : "s"}
-                    {c.state ? ` · ${c.state}` : ""}
+                    {[memberProof(c.member_count), c.state]
+                      .filter(Boolean)
+                      .join(" · ") || "New circle"}
                   </p>
                 </div>
               </div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import LineIcon from "@/components/ui/LineIcon";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { subscriberProof } from "@/lib/social-proof";
 import AppHeader from "@/components/AppHeader";
 import QuickActions from "@/components/dashboard/QuickActions";
 import DashboardTabs from "@/components/dashboard/DashboardTabs";
@@ -418,10 +419,11 @@ export default async function DashboardPage() {
                     className="flex items-center justify-between surface p-4 transition hover:border-brand/30"
                   >
                     <span className="font-bold text-gray-900">{s.title}</span>
-                    <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand">
-                      {s.subscriber_count}{" "}
-                      {s.subscriber_count === 1 ? "follower" : "followers"}
-                    </span>
+                    {subscriberProof(s.subscriber_count, "follower") && (
+                      <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand">
+                        {subscriberProof(s.subscriber_count, "follower")}
+                      </span>
+                    )}
                   </Link>
                 ))}
               </div>

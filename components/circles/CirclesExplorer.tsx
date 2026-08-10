@@ -7,6 +7,7 @@ import { EVENT_CATEGORIES, NIGERIAN_STATES } from "@/lib/constants";
 import { toast } from "@/lib/toast";
 import EventCover from "../EventCover";
 import LineIcon from "../ui/LineIcon";
+import { memberProof } from "@/lib/social-proof";
 import type { Circle } from "@/lib/types";
 
 export default function CirclesExplorer({
@@ -199,10 +200,14 @@ function Card({
           <p className="mt-2 line-clamp-2 flex-1 text-sm text-gray-600">{circle.description}</p>
         )}
         <div className="mt-3 flex items-center justify-between">
-          <span className="inline-flex items-center gap-1 text-xs font-semibold text-gray-500">
-            <LineIcon name="users" size={13} className="text-gray-400" />
-            {circle.member_count} {circle.member_count === 1 ? "member" : "members"}
-          </span>
+          {memberProof(circle.member_count) ? (
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-gray-500">
+              <LineIcon name="users" size={13} className="text-gray-400" />
+              {memberProof(circle.member_count)}
+            </span>
+          ) : (
+            <span />
+          )}
           {status === "active" ? (
             <span className="text-sm font-semibold text-naija-600">✓ Joined</span>
           ) : status === "pending" ? (

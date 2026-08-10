@@ -28,6 +28,7 @@ import { computeBadges } from "@/lib/hostBadges";
 import FeaturedBadge, { isFeatured } from "@/components/FeaturedBadge";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
+import { attendanceProof, ATTENDANCE_REVEAL_AT } from "@/lib/social-proof";
 import { isProActive } from "@/lib/pro";
 import type {
   ChatMessageUI,
@@ -114,6 +115,10 @@ export default async function EventDetailPage({
   } = await supabase.auth.getUser();
 
   const attendeeCount = accepted.length;
+  const attendance = attendanceProof(attendeeCount, {
+    capacity: event.max_attendees,
+    createdAt: event.created_at,
+  });
   const isHost = !!user && user.id === event.host_id;
   const myRsvpId = user
     ? (rsvps.find((r) => r.user_id === user.id)?.id ?? null)
@@ -356,15 +361,15 @@ export default async function EventDetailPage({
                         label="Location"
                         value={event.location}
                       />
-                      <Detail
-                        icon="users"
-                        label="Attendees"
-                        value={
-                          event.max_attendees
-                            ? `${attendeeCount} / ${event.max_attendees}`
-                            : `${attendeeCount} going`
-                        }
-                      />
+                      {/* Drops out entirely when there's nothing worth saying,
+                          rather than announcing "0 / 15". */}
+                      {attendance && (
+                        <Detail
+                          icon="users"
+                          label="Attendees"
+                          value={attendance.label}
+                        />
+                      )}
                     </div>
 
                     <div className="mt-5 border-t border-gray-100 pt-4">
@@ -387,7 +392,10 @@ export default async function EventDetailPage({
 
                   <div>
                     <h2 className="text-lg font-bold text-gray-900">
-                      Who&apos;s going ({attendeeCount})
+                      Who&apos;s going
+                      {attendeeCount >= ATTENDANCE_REVEAL_AT
+                        ? ` (${attendeeCount})`
+                        : ""}
                     </h2>
                     {attendeeCount === 0 ? (
                       <p className="mt-2 text-gray-500">

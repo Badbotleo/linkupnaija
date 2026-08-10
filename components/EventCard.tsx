@@ -8,6 +8,7 @@ import LineIcon from "./ui/LineIcon";
 import HostBadges from "./host/HostBadges";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
+import { attendanceProof } from "@/lib/social-proof";
 import type { EventRow } from "@/lib/types";
 import type { Badge } from "@/lib/hostBadges";
 
@@ -28,14 +29,13 @@ export default function EventCard({
   recommended?: boolean;
   friendsGoing?: { count: number; names: string[]; avatars: (string | null)[] };
 }) {
-  const spotsLabel = event.max_attendees
-    ? `${attendeeCount}/${event.max_attendees} going`
-    : `${attendeeCount} going`;
   const featured = isFeatured(event.featured, event.featured_until);
-  const spotsLeft = event.max_attendees
-    ? event.max_attendees - attendeeCount
-    : null;
-  const lowSpots = spotsLeft !== null && spotsLeft > 0 && spotsLeft < 5;
+  // Every attendee number on the site goes through this. It may return null,
+  // in which case the row renders nothing rather than an empty pill.
+  const proof = attendanceProof(attendeeCount, {
+    capacity: event.max_attendees,
+    createdAt: event.created_at,
+  });
 
   return (
     <div
@@ -100,7 +100,10 @@ export default function EventCard({
             {event.title}
           </h3>
         </div>
-        {(hostRating || (hostBadges && hostBadges.length > 0)) && (
+        {/* Guard on count, not on the object: an unrated host now renders
+            nothing, and an empty flex row would still take up space. */}
+        {((hostRating && hostRating.count > 0) ||
+          (hostBadges && hostBadges.length > 0)) && (
           <div className="mt-1 flex flex-wrap items-center gap-2">
             {hostRating && (
               <RatingSummary avg={hostRating.avg} count={hostRating.count} />
@@ -163,16 +166,26 @@ export default function EventCard({
         )}
 
         <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
-          {lowSpots ? (
-            <span className="inline-flex animate-spot-pulse items-center gap-1.5 text-sm font-bold text-red-600">
-              <span className="h-1.5 w-1.5 rounded-full bg-red-500" aria-hidden />
-              {spotsLeft} spot{spotsLeft === 1 ? "" : "s"} left
-            </span>
+          {/* Empty span keeps "View →" hard right when there's no proof to show. */}
+          {proof ? (
+            proof.tone === "urgent" ? (
+              <span className="inline-flex animate-spot-pulse items-center gap-1.5 text-sm font-bold text-red-600">
+                <span className="h-1.5 w-1.5 rounded-full bg-red-500" aria-hidden />
+                {proof.label}
+              </span>
+            ) : proof.tone === "warm" ? (
+              <span className="inline-flex items-center gap-1.5 text-sm font-bold text-brand">
+                <LineIcon name="sparkles" size={15} className="text-brand/70" />
+                {proof.label}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-600">
+                <LineIcon name="users" size={15} className="text-gray-400" />
+                {proof.label}
+              </span>
+            )
           ) : (
-            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-600">
-              <LineIcon name="users" size={15} className="text-gray-400" />
-              {spotsLabel}
-            </span>
+            <span />
           )}
           <span className="inline-flex items-center gap-1 text-sm font-semibold text-brand opacity-0 transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100">
             View →

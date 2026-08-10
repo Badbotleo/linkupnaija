@@ -82,7 +82,9 @@ export default function ActivityTicker() {
         const accepted = (e.rsvps ?? []).filter(
           (x) => x.status === "accepted"
         ).length;
-        if (e.title && accepted < 10) {
+        // Only once somebody has actually joined. An empty event announcing
+        // "10 spots left" is scarcity we invented, and it reads as empty.
+        if (e.title && accepted >= 1 && accepted < 10) {
           const left = e.max_attendees
             ? e.max_attendees - accepted
             : 10 - accepted;

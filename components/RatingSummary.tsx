@@ -8,13 +8,13 @@ export default function RatingSummary({
   count: number;
   className?: string;
 }) {
-  if (!count) {
-    return (
-      <span className={`text-xs font-medium text-gray-400 ${className}`}>
-        ✨ New host
-      </span>
-    );
-  }
+  // No reviews yet → render nothing.
+  //
+  // This used to say "✨ New host". Read on one card it's a warm little
+  // disclosure; read down a whole feed where every host has it, it says
+  // nobody established uses this platform. The badge earned us nothing and
+  // cost us that, so an unrated host now simply carries no rating line.
+  if (!count) return null;
   return (
     <span
       className={`inline-flex items-center gap-1 text-xs font-semibold text-gray-700 ${className}`}

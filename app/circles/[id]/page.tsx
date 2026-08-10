@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import EventCover from "@/components/EventCover";
 import Avatar from "@/components/Avatar";
+import { memberProof } from "@/lib/social-proof";
 import JoinCircleButton from "@/components/circles/JoinCircleButton";
 import CircleFeed from "@/components/circles/CircleFeed";
 import CirclePendingRequests from "@/components/circles/CirclePendingRequests";
@@ -85,7 +86,11 @@ export default async function CirclePage({ params }: { params: { id: string } })
     <div>
       <AppHeader
         title={circle.name}
-        subtitle={`${circle.member_count} member${circle.member_count === 1 ? "" : "s"}${circle.state ? ` · ${circle.state}` : ""}`}
+        subtitle={
+          [memberProof(circle.member_count), circle.state]
+            .filter(Boolean)
+            .join(" · ") || undefined
+        }
         back
       />
       <div className="container-page py-5">
@@ -151,8 +156,7 @@ export default async function CirclePage({ params }: { params: { id: string } })
 
               <div className="mt-6 border-t border-gray-100 pt-4">
                 <p className="text-sm font-bold text-gray-900">
-                  👥 {circle.member_count}{" "}
-                  {circle.member_count === 1 ? "member" : "members"}
+                  👥 {memberProof(circle.member_count) ?? "Members"}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {members.map((m) => (
