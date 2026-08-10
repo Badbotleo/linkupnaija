@@ -11,6 +11,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import LineIcon from "../ui/LineIcon";
 import { formatEventDate } from "@/lib/format";
+import RecapActions from "./RecapActions";
 import type { Recap } from "@/lib/recaps";
 
 /**
@@ -315,7 +316,20 @@ function ReelsPlayer({
       )}
 
       {active && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5 pb-8 text-white">
+        <div className="pointer-events-none absolute bottom-28 right-4 z-10">
+          {/* Keyed by recap id so switching clips remounts with that clip's
+              own counts rather than briefly showing the previous one's. */}
+          <RecapActions
+            key={active.id}
+            recapId={active.id}
+            eventId={active.event?.id}
+            eventTitle={active.event?.title}
+          />
+        </div>
+      )}
+
+      {active && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5 pb-8 pr-20 text-white">
           {active.title && (
             <p className="text-[17px] font-extrabold leading-tight">
               {active.title}
