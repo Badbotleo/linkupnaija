@@ -130,22 +130,34 @@ const getCuratedIdeas = unstable_cache(
       credit: string | null;
       credit_url: string | null;
     }[])
-      // Every one of these rows was saved through an admin form that only
-      // checked the title was non-empty, so "." got through — and "." is what
-      // 26 of 26 rows contained, which rendered a shelf of blank cards on the
-      // home page. Curated cards outrank venues, so they crowded out the real
-      // ideas as well as being blank themselves.
-      .filter((r) => isRealText(r.title))
+      // These rows were saved through an admin form that only checked the
+      // title was non-empty, so "." got through — and "." is the title on all
+      // 26 rows. But 24 of them carry a real uploaded video or photo, so the
+      // content is there; only the label is missing. Dropping them threw away
+      // the uploads, which was the wrong trade.
+      //
+      // The category is real data on every row, and it makes a perfectly good
+      // card title — "Brunch", "Game Night", "Wine Tasting". So we fall back
+      // to it rather than inventing anything or hiding the media.
+      //
+      // A row with neither a usable title nor media has nothing to show and
+      // is the only kind we still drop.
+      .filter((r) => isRealText(r.title) || isRealText(r.media_url, 8))
       .map((r) => ({
       key: r.id,
-      title: r.title,
-      place: r.place ?? "",
+      title: isRealText(r.title) ? r.title : r.category,
+      // "." is not a place. Blank renders as nothing, which is what we want.
+      place: isRealText(r.place) ? r.place! : "",
       category: r.category,
       image: r.media_url ?? "/venues/restaurants.jpg",
       mediaType: r.media_type === "video" ? "video" : "image",
       state: r.state,
-      seedTitle: r.seed_title ?? r.title,
-      credit: r.credit,
+      seedTitle: isRealText(r.seed_title)
+        ? r.seed_title!
+        : isRealText(r.title)
+          ? r.title
+          : r.category,
+      credit: isRealText(r.credit) ? r.credit : null,
       creditUrl: r.credit_url,
     }));
   },
@@ -252,12 +264,21 @@ export async function buildIdeas(
   const half = Math.max(1, Math.floor(limit / 2));
   const pickedCurated = take(rotated, half, true);
   const pickedVenues = take(ranked, limit - pickedCurated.length);
+  // The two top-up calls re-scan both lists from the start, so anything short
+  // of a full shelf gets added a second time. That was invisible while the
+  // curated cards were blank; now that they render, it showed each uploaded
+  // video twice. Key is the row id, so this collapses the repeats.
+  const usedKeys = new Set<string>();
   const varied = [
     ...pickedCurated,
     ...pickedVenues,
     ...take(rotated, limit, true),
     ...take(ranked, limit),
-  ];
+  ].filter((idea) => {
+    if (usedKeys.has(idea.key)) return false;
+    usedKeys.add(idea.key);
+    return true;
+  });
 
   return [
     ...varied,
@@ -267,9 +288,11 @@ export async function buildIdeas(
       state: state ?? null,
     })),
   ]
-    // Nothing without a real title leaves this function, whichever source it
-    // came from. Filtering before the slice matters: filtering after would
-    // let a placeholder eat one of the eight slots and shorten the shelf.
+    // Nothing unlabelled leaves this function, whichever source it came from.
+    // Curated rows have already had a category substituted for a missing
+    // title above, so this catches genuinely empty cards only. Filtering
+    // before the slice matters: filtering after would let a blank card eat
+    // one of the eight slots and shorten the shelf.
     .filter((idea) => isRealText(idea.title))
     .slice(0, limit)
     .map((idea) => {

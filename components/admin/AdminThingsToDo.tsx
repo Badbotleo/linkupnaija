@@ -107,21 +107,26 @@ export default function AdminThingsToDo() {
     if (!editing || saving) return;
     // `.trim()` alone is satisfied by "." — which is how all 26 rows in this
     // table ended up titled ".", rendering blank cards on the home page.
-    if (!isRealText(editing.title)) {
-      toast.error("Give it a real title — this shows on the home page.");
-      return;
-    }
-    if (editing.place && !isRealText(editing.place)) {
-      toast.error("Give a real place, or leave it blank.");
+    //
+    // Blocking the save would be the obvious fix and the wrong one: whoever
+    // typed "." 26 times was uploading videos in a batch, and a hard stop
+    // just means they type "." again. So we fall back to the category, which
+    // is already chosen, is real, and makes a good card title.
+    const title = isRealText(editing.title) ? editing.title.trim() : editing.category;
+    if (!isRealText(title)) {
+      toast.error("Pick a category, or give it a title.");
       return;
     }
     setSaving(true);
     const payload = {
-      title: editing.title.trim(),
-      place: editing.place?.trim() || null,
+      title,
+      // "." is not a place, and it renders under the title on the card.
+      place: isRealText(editing.place) ? editing.place!.trim() : null,
       category: editing.category,
       state: editing.state || null,
-      seed_title: editing.seed_title?.trim() || editing.title.trim(),
+      seed_title: isRealText(editing.seed_title)
+        ? editing.seed_title!.trim()
+        : title,
       media_url: editing.media_url?.trim() || null,
       media_type: editing.media_type,
       credit: editing.credit?.trim() || null,

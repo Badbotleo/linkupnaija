@@ -88,23 +88,45 @@ where length(location) > 160;
 -- 3. Placeholder "Things to do" cards
 -- ---------------------------------------------------------------------------
 -- All 26 rows in things_to_do were saved with '.' as the title (and mostly
--- '.' as the place too). Curated cards outrank venue-derived ones, so these
--- were both blank themselves AND crowding the real ideas off the shelf.
+-- '.' as the place too), because the admin form only checked the title was
+-- non-empty and '.' satisfies that.
 --
--- Deactivated rather than deleted: the category, state and any uploaded media
--- are still attached, so you can retitle and re-enable any that were meant to
--- be something. The app now filters them out either way.
+-- IMPORTANT: 24 of those 26 rows carry a real uploaded video or photo. The
+-- content is fine; only the label was missing. So we do NOT deactivate them —
+-- the app now shows the row's category as the card title, which is real data
+-- and reads well ("Brunch", "Game Night", "Wine Tasting").
+--
+-- Only the 2 rows with no media AND no usable title are deactivated, because
+-- those genuinely have nothing to render. Deactivated, not deleted, so they
+-- can be retitled and switched back on.
 
 update public.things_to_do
 set is_active = false,
     updated_at = now()
 where is_active = true
+  and (media_url is null or btrim(media_url) = '')
   and (
     title is null
     or btrim(title) = ''
     -- only punctuation and whitespace, i.e. no real content
     or btrim(title) ~ '^[[:punct:][:space:]]+$'
   );
+
+-- Optional tidy-up: replace the '.' placeholders with the row's category, so
+-- the stored data matches what the app displays. The app does not need this —
+-- it falls back on its own — but it makes the admin list readable.
+--
+-- update public.things_to_do
+-- set title = category, updated_at = now()
+-- where btrim(coalesce(title, '')) ~ '^[[:punct:][:space:]]*$';
+--
+-- Clear the '.' placeholders out of `place` either way — a card shows this
+-- under the title, and "." is not a place.
+update public.things_to_do
+set place = null,
+    updated_at = now()
+where place is not null
+  and btrim(place) ~ '^[[:punct:][:space:]]+$';
 
 select count(*) filter (where is_active) as still_active,
        count(*) filter (where not is_active) as deactivated,
