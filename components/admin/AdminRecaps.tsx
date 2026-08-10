@@ -139,7 +139,15 @@ export default function AdminRecaps() {
     const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
     const { error } = await supabase.storage
       .from("event-recaps")
-      .upload(path, file, { contentType: file.type, upsert: true });
+      .upload(path, file, {
+        contentType: file.type,
+        upsert: true,
+        // A year. The path carries a timestamp and a random suffix, so the
+        // bytes behind a given URL never change — there is nothing to
+        // invalidate, and the default hour meant repeat visitors re-fetched
+        // the whole reel every time.
+        cacheControl: "31536000",
+      });
     if (error) {
       toast.error(`${file.name}: ${error.message}`);
       return null;

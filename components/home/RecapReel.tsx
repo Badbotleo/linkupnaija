@@ -30,6 +30,41 @@ import type { Recap } from "@/lib/recaps";
  */
 export default function RecapReel({ recaps }: { recaps: Recap[] }) {
   const [openAt, setOpenAt] = useState<number | null>(null);
+  // Which cards have been on screen. Everything used to mount with a src and
+  // autoplay, so a twelve-card shelf started twelve simultaneous downloads on
+  // one connection and none of them finished quickly. Now a card fetches when
+  // it's about to be seen, and the two or three actually visible get the whole
+  // pipe to themselves.
+  const [seen, setSeen] = useState<Set<number>>(() => new Set([0, 1, 2]));
+  const firstCard = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    // Rail owns the horizontal scroller; our cards are its children.
+    const root = firstCard.current?.parentElement;
+    if (!root) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const add: number[] = [];
+        for (const e of entries)
+          if (e.isIntersecting)
+            add.push(Number((e.target as HTMLElement).dataset.card));
+        if (add.length)
+          setSeen((s) => {
+            const next = new Set(s);
+            // Warm the next one along too, so swiping never waits.
+            add.forEach((i) => {
+              next.add(i);
+              next.add(i + 1);
+            });
+            return next;
+          });
+      },
+      // rootMargin starts the fetch just before the card arrives.
+      { root, rootMargin: "200px", threshold: 0.01 }
+    );
+    root.querySelectorAll("[data-card]").forEach((n) => io.observe(n));
+    return () => io.disconnect();
+  }, [recaps.length]);
 
   return (
     <>
@@ -41,19 +76,23 @@ export default function RecapReel({ recaps }: { recaps: Recap[] }) {
             type="button"
             onClick={() => setOpenAt(i)}
             aria-label={`Play recap${r.event ? ` from ${r.event.title}` : ""}`}
+            data-card={i}
+            ref={i === 0 ? firstCard : undefined}
             className="group w-[45vw] max-w-[172px] shrink-0 snap-start text-left"
           >
             <div className="relative aspect-[9/16] overflow-hidden rounded-2xl bg-gray-900 shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
               {r.mediaType === "video" ? (
                 /* Muted + playsInline is what lets this autoplay at all;
-                   without both, Safari shows a paused black frame. */
+                   without both, Safari shows a paused black frame.
+                   No src until the card is near the viewport — an empty
+                   <video> costs nothing, a fetched one costs megabytes. */
                 <video
-                  src={r.mediaUrl}
-                  autoPlay
+                  src={seen.has(i) ? r.mediaUrl : undefined}
+                  autoPlay={seen.has(i)}
                   muted
                   loop
                   playsInline
-                  preload="metadata"
+                  preload={seen.has(i) ? "metadata" : "none"}
                   aria-hidden
                   className="absolute inset-0 h-full w-full object-cover"
                 />
@@ -256,10 +295,16 @@ function ReelsPlayer({
                 ref={(n) => {
                   videos.current[i] = n;
                 }}
-                src={r.mediaUrl}
+                src={Math.abs(i - current) <= 1 ? r.mediaUrl : undefined}
                 loop
                 playsInline
-                preload={Math.abs(i - current) <= 1 ? "auto" : "none"}
+                // The one you're watching in full, the next one ready to
+                // go, and nothing else on the wire. Preloading in both
+                // directions doubled the fetching for a feed people almost
+                // always scroll one way.
+                preload={
+                  i === current ? "auto" : i === current + 1 ? "metadata" : "none"
+                }
                 // The effect above can run before the element has enough of
                 // the file to start; this catches that case.
                 onLoadedData={() => {
