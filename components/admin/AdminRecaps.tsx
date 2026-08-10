@@ -58,7 +58,18 @@ export default function AdminRecaps() {
     (Omit<Row, "id"> & { id?: string }) | null
   >(null);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState("");
+  /**
+   * Uploaded-but-not-yet-saved media.
+   *
+   * A recap is one clip, but nobody has one clip — they come back from a night
+   * with a handful. Picking them one at a time meant repeating the event, the
+   * credit and the save for each. The picker takes as many as you like now and
+   * one save writes a row per clip, all sharing the settings above.
+   */
+  const [queue, setQueue] = useState<{ url: string; type: "video" | "image" }[]>(
+    []
+  );
   const [missing, setMissing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -94,72 +105,120 @@ export default function AdminRecaps() {
     load();
   }, [load]);
 
-  async function upload(file: File) {
+  /** Upload one file. Returns its public URL, or null if it was rejected. */
+  async function uploadOne(
+    file: File
+  ): Promise<{ url: string; type: "video" | "image" } | null> {
     // Type from the file itself, not the extension — renaming a .mov to .mp4
     // would otherwise store the wrong content type and break the player.
     const isVideo = file.type.startsWith("video/");
     if (!isVideo && !file.type.startsWith("image/")) {
-      toast.error("Pick a video or an image.");
-      return;
+      toast.error(`${file.name}: not a video or image — skipped.`);
+      return null;
     }
     if (file.size > 25 * 1024 * 1024) {
-      toast.error("Keep it under 25MB — this autoplays on the home page.");
-      return;
+      toast.error(`${file.name}: over 25MB — skipped.`);
+      return null;
     }
-
-    setUploading(true);
     const ext =
       file.name.split(".").pop()?.toLowerCase() || (isVideo ? "mp4" : "jpg");
     const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
     const { error } = await supabase.storage
       .from("event-recaps")
       .upload(path, file, { contentType: file.type, upsert: true });
-    setUploading(false);
     if (error) {
-      toast.error(error.message);
-      return;
+      toast.error(`${file.name}: ${error.message}`);
+      return null;
     }
     const { data } = supabase.storage.from("event-recaps").getPublicUrl(path);
-    setEditing((e) =>
-      e
-        ? {
-            ...e,
-            media_url: data.publicUrl,
-            media_type: isVideo ? "video" : "image",
-          }
-        : e
+    return { url: data.publicUrl, type: isVideo ? "video" : "image" };
+  }
+
+  async function upload(files: File[]) {
+    // Sequential, not Promise.all: a phone-recorded batch is tens of MB and
+    // firing them at once is how uploads start timing out on a Nigerian
+    // connection. One failing doesn't lose the rest.
+    const done: { url: string; type: "video" | "image" }[] = [];
+    for (let i = 0; i < files.length; i++) {
+      setUploading(`Uploading ${i + 1} of ${files.length}…`);
+      const r = await uploadOne(files[i]);
+      if (r) done.push(r);
+    }
+    setUploading("");
+    if (done.length === 0) return;
+
+    // Editing an existing row replaces its clip; adding new ones queues them.
+    if (editing?.id) {
+      setEditing((e) =>
+        e ? { ...e, media_url: done[0].url, media_type: done[0].type } : e
+      );
+      if (done.length > 1)
+        toast.error("Editing one recap — kept the first clip only.");
+      else toast.success("Replaced");
+      return;
+    }
+    setQueue((q) => [...q, ...done]);
+    toast.success(
+      done.length === 1 ? "1 clip ready" : `${done.length} clips ready`
     );
-    toast.success(isVideo ? "Video uploaded" : "Image uploaded");
   }
 
   async function save() {
     if (!editing || saving) return;
-    if (!isRealText(editing.media_url, 8)) {
-      toast.error("Upload a video or image first.");
+
+    // What we're about to write: the queue when adding, the single clip when
+    // editing. A pasted URL still works — it just counts as one.
+    const media = editing.id
+      ? isRealText(editing.media_url, 8)
+        ? [{ url: editing.media_url!.trim(), type: editing.media_type }]
+        : []
+      : queue.length > 0
+        ? queue
+        : isRealText(editing.media_url, 8)
+          ? [{ url: editing.media_url!.trim(), type: editing.media_type }]
+          : [];
+
+    if (media.length === 0) {
+      toast.error("Upload at least one video or image first.");
       return;
     }
+
     setSaving(true);
     // Inherit the state from the linked event, so the reel can order by
     // proximity without anyone having to set it twice.
     const linked = pastEvents.find((e) => e.id === editing.event_id);
-    const payload = {
+    const shared = {
       event_id: editing.event_id || null,
       title: isRealText(editing.title) ? editing.title!.trim() : null,
-      media_url: editing.media_url!.trim(),
-      media_type: editing.media_type,
       state: editing.state || linked?.state || null,
       credit: isRealText(editing.credit) ? editing.credit!.trim() : null,
-      sort_order: editing.sort_order,
       is_active: editing.is_active,
       updated_at: new Date().toISOString(),
     };
+
+    // One row per clip, in the order they were picked. sort_order increments
+    // so a batch keeps the order you chose rather than landing on one number
+    // and shuffling.
+    const payload = media.map((m, i) => ({
+      ...shared,
+      media_url: m.url,
+      media_type: m.type,
+      sort_order: editing.sort_order + i,
+    }));
+
     const { error } = editing.id
-      ? await supabase.from("event_recaps").update(payload).eq("id", editing.id)
+      ? await supabase
+          .from("event_recaps")
+          .update(payload[0])
+          .eq("id", editing.id)
       : await supabase.from("event_recaps").insert(payload);
     setSaving(false);
     if (error) return toast.error(error.message);
-    toast.success("Saved");
+    toast.success(
+      payload.length === 1 ? "Saved" : `Saved ${payload.length} recaps`
+    );
     setEditing(null);
+    setQueue([]);
     load();
   }
 
@@ -201,7 +260,10 @@ export default function AdminRecaps() {
         </p>
         <button
           type="button"
-          onClick={() => setEditing({ ...BLANK })}
+          onClick={() => {
+            setQueue([]);
+            setEditing({ ...BLANK });
+          }}
           className="btn-primary shrink-0 rounded-full px-4 py-2 text-sm"
         >
           Add a recap
@@ -275,21 +337,26 @@ export default function AdminRecaps() {
               ref={fileRef}
               type="file"
               accept="video/*,image/*"
+              // Editing replaces one clip; adding takes as many as you like.
+              multiple={!editing.id}
               hidden
               onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) upload(f);
+                const picked = Array.from(e.target.files ?? []);
+                if (picked.length) upload(picked);
                 e.target.value = "";
               }}
             />
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              disabled={uploading}
+              disabled={!!uploading}
               className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-4 py-2 text-sm font-bold text-gray-700 disabled:opacity-50"
             >
               <LineIcon name="video" size={14} />
-              {uploading ? "Uploading…" : "Upload video or photo"}
+              {uploading ||
+                (editing.id
+                  ? "Replace clip"
+                  : "Upload videos or photos — pick several")}
             </button>
             <label className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-600">
               <input
@@ -304,7 +371,10 @@ export default function AdminRecaps() {
             <span className="flex-1" />
             <button
               type="button"
-              onClick={() => setEditing(null)}
+              onClick={() => {
+                setEditing(null);
+                setQueue([]);
+              }}
               className="rounded-full px-4 py-2 text-sm font-bold text-gray-500"
             >
               Cancel
@@ -312,32 +382,65 @@ export default function AdminRecaps() {
             <button
               type="button"
               onClick={save}
-              disabled={saving}
+              // Also blocked mid-upload: saving then would write only the
+              // clips that had finished and silently drop the rest.
+              disabled={saving || !!uploading}
               className="btn-primary rounded-full px-4 py-2 text-sm disabled:opacity-50"
             >
               {saving ? "Saving…" : "Save"}
             </button>
           </div>
 
-          {editing.media_url && (
-            <div className="max-w-[220px] overflow-hidden rounded-xl">
-              {editing.media_type === "video" ? (
-                <video
-                  src={editing.media_url}
-                  muted
-                  loop
-                  autoPlay
-                  playsInline
-                  className="h-[180px] w-full object-cover"
-                />
-              ) : (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                  src={editing.media_url}
-                  alt=""
-                  className="h-[180px] w-full object-cover"
-                />
+          {(queue.length > 0 || editing.media_url) && (
+            <div>
+              {!editing.id && queue.length > 0 && (
+                <p className="mb-1.5 text-xs font-bold text-gray-600">
+                  {queue.length} clip{queue.length === 1 ? "" : "s"} — saving
+                  creates {queue.length === 1 ? "one recap" : `${queue.length} recaps`}
+                  , all linked to the same event.
+                </p>
               )}
+              <div className="flex flex-wrap gap-2">
+                {(queue.length > 0
+                  ? queue
+                  : [{ url: editing.media_url!, type: editing.media_type }]
+                ).map((m, i) => (
+                  <div
+                    key={m.url}
+                    className="relative h-[120px] w-[100px] overflow-hidden rounded-xl bg-gray-100"
+                  >
+                    {m.type === "video" ? (
+                      <video
+                        src={m.url}
+                        muted
+                        loop
+                        autoPlay
+                        playsInline
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={m.url}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    )}
+                    {queue.length > 0 && (
+                      <button
+                        type="button"
+                        aria-label="Remove this clip"
+                        onClick={() =>
+                          setQueue((q) => q.filter((_, n) => n !== i))
+                        }
+                        className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-black/65 text-white"
+                      >
+                        <LineIcon name="trash" size={12} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -394,7 +497,10 @@ export default function AdminRecaps() {
             </button>
             <button
               type="button"
-              onClick={() => setEditing(r)}
+              onClick={() => {
+                setQueue([]);
+                setEditing(r);
+              }}
               className="shrink-0 rounded-full px-3 py-1 text-xs font-bold text-brand"
             >
               Edit
