@@ -147,14 +147,21 @@ export default function AdminRecaps() {
     setUploading("");
     if (done.length === 0) return;
 
-    // Editing an existing row replaces its clip; adding new ones queues them.
+    // Editing: the first file replaces this recap's clip, and anything else
+    // is queued as additional new recaps rather than being thrown away.
     if (editing?.id) {
       setEditing((e) =>
         e ? { ...e, media_url: done[0].url, media_type: done[0].type } : e
       );
-      if (done.length > 1)
-        toast.error("Editing one recap — kept the first clip only.");
-      else toast.success("Replaced");
+      const extra = done.slice(1);
+      if (extra.length > 0) {
+        setQueue((q) => [...q, ...extra]);
+        toast.success(
+          `Replaced this clip, and ${extra.length} more will be added`
+        );
+      } else {
+        toast.success("Replaced");
+      }
       return;
     }
     setQueue((q) => [...q, ...done]);
@@ -206,17 +213,32 @@ export default function AdminRecaps() {
       sort_order: editing.sort_order + i,
     }));
 
-    const { error } = editing.id
-      ? await supabase
-          .from("event_recaps")
-          .update(payload[0])
-          .eq("id", editing.id)
-      : await supabase.from("event_recaps").insert(payload);
+    let error = null;
+    if (editing.id) {
+      const up = await supabase
+        .from("event_recaps")
+        .update(payload[0])
+        .eq("id", editing.id);
+      error = up.error;
+      // Files picked alongside an edit become their own recaps.
+      if (!error && queue.length > 0) {
+        const extras = queue.map((m, i) => ({
+          ...shared,
+          media_url: m.url,
+          media_type: m.type,
+          sort_order: editing.sort_order + i + 1,
+        }));
+        const ins = await supabase.from("event_recaps").insert(extras);
+        error = ins.error;
+      }
+    } else {
+      const ins = await supabase.from("event_recaps").insert(payload);
+      error = ins.error;
+    }
     setSaving(false);
     if (error) return toast.error(error.message);
-    toast.success(
-      payload.length === 1 ? "Saved" : `Saved ${payload.length} recaps`
-    );
+    const written = editing.id ? 1 + queue.length : payload.length;
+    toast.success(written === 1 ? "Saved" : `Saved ${written} recaps`);
     setEditing(null);
     setQueue([]);
     load();
@@ -337,8 +359,10 @@ export default function AdminRecaps() {
               ref={fileRef}
               type="file"
               accept="video/*,image/*"
-              // Editing replaces one clip; adding takes as many as you like.
-              multiple={!editing.id}
+              // ALWAYS multiple. This used to be `!editing.id`, so arriving via
+              // Edit silently gave you a single-file picker with nothing
+              // saying why. Extra files are simply queued as new recaps.
+              multiple
               hidden
               onChange={(e) => {
                 const picked = Array.from(e.target.files ?? []);
