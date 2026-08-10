@@ -30,6 +30,8 @@ import { formatEventDate, formatEventTime } from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
 import { attendanceProof, ATTENDANCE_REVEAL_AT } from "@/lib/social-proof";
 import TicketPanel from "@/components/events/TicketPanel";
+import RecapReel from "@/components/home/RecapReel";
+import { getRecapsForEvent } from "@/lib/recaps";
 import { isProActive } from "@/lib/pro";
 import type {
   ChatMessageUI,
@@ -114,6 +116,9 @@ export default async function EventDetailPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // The home-page reel links here, so the footage has to be here too.
+  const eventRecaps = await getRecapsForEvent(params.id);
 
   const attendeeCount = accepted.length;
   const attendance = attendanceProof(attendeeCount, {
@@ -378,6 +383,20 @@ export default async function EventDetailPage({
                       />
                     </div>
                   </div>
+
+                  {eventRecaps.length > 0 && (
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-900">
+                        How it went
+                      </h2>
+                      <p className="mt-1 text-sm text-gray-500">
+                        Tap to watch
+                      </p>
+                      <div className="no-scrollbar mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1">
+                        <RecapReel recaps={eventRecaps} />
+                      </div>
+                    </div>
+                  )}
 
                   <div>
                     <h2 className="text-lg font-bold text-gray-900">

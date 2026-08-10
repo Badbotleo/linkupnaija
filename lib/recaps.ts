@@ -93,3 +93,48 @@ export async function getRecapsFor(
   const all = await getRecaps().catch(() => [] as Recap[]);
   return byProximity(all, state, (r) => r.state).slice(0, limit);
 }
+
+/**
+ * Recaps belonging to one event.
+ *
+ * The home-page cards link through to the event, so the event has to be able
+ * to show the footage — otherwise tapping a video lands you on a page with no
+ * video on it, which is exactly how it felt.
+ *
+ * Not cached by id: an event page is already dynamic, and a per-id cache entry
+ * for every event is a lot of keys for a query this small.
+ */
+export async function getRecapsForEvent(eventId: string): Promise<Recap[]> {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { data, error } = await supabase
+    .from("event_recaps")
+    .select(
+      "id, title, media_url, media_type, state, credit, event:events(id, title, date)"
+    )
+    .eq("event_id", eventId)
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+
+  // A supporting section — if it can't load, the event page renders without
+  // it rather than failing.
+  if (error) {
+    console.error("event recaps failed", error.message);
+    return [];
+  }
+
+  return ((data ?? []) as unknown as Row[])
+    .filter((r) => isRealText(r.media_url, 8))
+    .map((r) => ({
+      id: r.id,
+      title: isRealText(r.title) ? r.title : null,
+      mediaUrl: r.media_url!,
+      mediaType: r.media_type === "image" ? "image" : "video",
+      state: r.state,
+      credit: isRealText(r.credit) ? r.credit : null,
+      event: r.event ?? null,
+    }));
+}
