@@ -3,16 +3,31 @@ import type { HostStats } from "./types";
 export interface Badge {
   key: string;
   label: string;
-  emoji: string;
+  /** A LineIcon name — see components/ui/LineIcon.tsx. */
+  icon: string;
+  /** "gold" for the two status badges, "brand" for the earned ones. */
+  tone: "gold" | "brand";
 }
 
-// The full catalogue (also used by admin award/revoke UI).
+/**
+ * The full catalogue (also used by the admin award/revoke UI).
+ *
+ * These were emoji — 👑 🏆 ✅ 🛡️ ⚡ — and on the host leaderboard, where five
+ * of them sit in a row under every name, that was the one place the app most
+ * looked like a spreadsheet. Emoji render differently on every OS, don't take
+ * the brand colour, and never match the line icons used everywhere else.
+ *
+ * Now LineIcon glyphs, which inherit currentColor and sit on the same optical
+ * weight as the rest of the interface. Two tones only: gold for the two
+ * status badges, brand purple for the earned ones. No new colours — both are
+ * already in the kit.
+ */
 export const BADGE_CATALOG: Record<string, Badge> = {
-  elite: { key: "elite", label: "LinkUpNaija Elite", emoji: "👑" },
-  top_host: { key: "top_host", label: "Top Host", emoji: "🏆" },
-  verified: { key: "verified", label: "Verified Host", emoji: "✅" },
-  safety_champion: { key: "safety_champion", label: "Safety Champion", emoji: "🛡️" },
-  quick_responder: { key: "quick_responder", label: "Quick Responder", emoji: "⚡" },
+  elite: { key: "elite", label: "LinkUpNaija Elite", icon: "star", tone: "gold" },
+  top_host: { key: "top_host", label: "Top Host", icon: "trophy", tone: "gold" },
+  verified: { key: "verified", label: "Verified Host", icon: "check", tone: "brand" },
+  safety_champion: { key: "safety_champion", label: "Safety Champion", icon: "shield", tone: "brand" },
+  quick_responder: { key: "quick_responder", label: "Quick Responder", icon: "zap", tone: "brand" },
 };
 
 // Display priority (highest-status first).

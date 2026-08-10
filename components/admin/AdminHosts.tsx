@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "@/lib/toast";
 import { BADGE_CATALOG } from "@/lib/hostBadges";
+import LineIcon from "../ui/LineIcon";
 
 export interface AdminHostRow {
   host_id: string;
@@ -118,7 +119,7 @@ export default function AdminHosts({ initial }: { initial: AdminHostRow[] }) {
                       setBadges(r, a, v);
                     }}
                     title={awarded ? "Awarded (tap to revoke)" : revoked ? "Revoked (tap to clear)" : "Tap to award"}
-                    className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
                       awarded
                         ? "bg-brand text-white"
                         : revoked
@@ -126,7 +127,8 @@ export default function AdminHosts({ initial }: { initial: AdminHostRow[] }) {
                           : "bg-gray-100 text-gray-500"
                     }`}
                   >
-                    {BADGE_CATALOG[k].emoji} {BADGE_CATALOG[k].label}
+                    <LineIcon name={BADGE_CATALOG[k].icon} size={12} />
+                    {BADGE_CATALOG[k].label}
                   </button>
                 );
               })}
