@@ -65,7 +65,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     tint: "from-naija-100 to-naija-50 text-naija-800",
     categories: [ "Gym Session", "Meditation", "Wellness Walk", "Sports", "Cycling", "Adventure Park", "Photography Walk",
       "Beach Day", "Hiking", "Yoga", "Fitness", "Road Trip", "Bowling",
-      "Sightseeing", "Jogging", "Outdoor",
+      "Sightseeing", "Jogging", "Outdoor", "Vacation",
       "Camping", "Boat Cruise", "Go-Karting",
     ],
   },

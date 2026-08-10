@@ -43,6 +43,7 @@ const PHOTOS: Record<string, string> = {
   "Sightseeing": "/venues/museums.jpg",
   "Street Food": "/venues/restaurants-2.jpg",
   "Jogging": "/venues/parks.jpg",
+  "Vacation": "/venues/beaches.jpg",
   "Workshop": "/circles/networking.jpg",
   "Seminar": "/circles/networking.jpg",
   "Conference": "/venues/museums.jpg",
