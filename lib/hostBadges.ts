@@ -13,7 +13,6 @@ export const BADGE_CATALOG: Record<string, Badge> = {
   verified: { key: "verified", label: "Verified Host", emoji: "✅" },
   safety_champion: { key: "safety_champion", label: "Safety Champion", emoji: "🛡️" },
   quick_responder: { key: "quick_responder", label: "Quick Responder", emoji: "⚡" },
-  new_host: { key: "new_host", label: "New Host", emoji: "🌟" },
 };
 
 // Display priority (highest-status first).
@@ -23,7 +22,6 @@ const ORDER = [
   "verified",
   "safety_champion",
   "quick_responder",
-  "new_host",
 ];
 
 // Postgres `numeric` columns come back from Supabase as strings — coerce.
@@ -46,7 +44,12 @@ export function computeBadges(
     const response = num(stats.avg_response_time_hours);
     const safety = num(stats.safety_score);
 
-    keys.add("new_host");
+    // "New Host" used to be added here for anyone with at least one event —
+    // unconditionally, and never removed, so every host on the platform wore
+    // it forever. Read down a feed it announced that nobody established is
+    // here. Removed rather than time-limited: the upside was never worth it.
+    // An `awarded` list containing "new_host" is now simply ignored, because
+    // ORDER no longer contains it.
     if (events >= 3 && rating >= 4) keys.add("verified");
     if (events >= 10 && rating >= 4.8 && attendance >= 90) keys.add("elite");
     if (response != null && response <= 2) keys.add("quick_responder");

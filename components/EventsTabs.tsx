@@ -4,11 +4,15 @@ import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 
-type TabKey = "all" | "foryou" | "past";
+type TabKey = "all" | "foryou" | "work" | "past";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "foryou", label: "For you" },
   { key: "all", label: "All events" },
+  // Conferences, summits and expos live here rather than in the default feed.
+  // They're a third of what's listed, so they need a door, just not the one
+  // someone lands on expecting a beach day.
+  { key: "work", label: "Meet & grow" },
   { key: "past", label: "Been and gone" },
 ];
 
@@ -26,7 +30,13 @@ export default function EventsTabs() {
 
   const raw = searchParams.get("tab");
   const tab: TabKey =
-    raw === "foryou" ? "foryou" : raw === "past" ? "past" : "all";
+    raw === "foryou"
+      ? "foryou"
+      : raw === "work"
+        ? "work"
+        : raw === "past"
+          ? "past"
+          : "all";
 
   const href = (t: TabKey) => {
     const params = new URLSearchParams(searchParams.toString());

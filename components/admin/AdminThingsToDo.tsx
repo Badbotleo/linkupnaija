@@ -105,18 +105,16 @@ export default function AdminThingsToDo() {
 
   async function save() {
     if (!editing || saving) return;
-    // `.trim()` alone is satisfied by "." — which is how all 26 rows in this
-    // table ended up titled ".", rendering blank cards on the home page.
-    //
-    // Blocking the save would be the obvious fix and the wrong one: whoever
-    // typed "." 26 times was uploading videos in a batch, and a hard stop
-    // just means they type "." again. So we fall back to the category, which
-    // is already chosen, is real, and makes a good card title.
-    const title = isRealText(editing.title) ? editing.title.trim() : editing.category;
-    if (!isRealText(title)) {
-      toast.error("Pick a category, or give it a title.");
+    // A blank title is a real choice here, not a mistake: most of these
+    // uploads are videos with the description already burned into the frame,
+    // and a caption drawn on top collides with it. So an empty title means
+    // "no caption" and the card renders the media clean. It needs a category
+    // either way — that's what seeds the host form behind the card.
+    if (!editing.category) {
+      toast.error("Pick a category — that's what the Host it button uses.");
       return;
     }
+    const title = isRealText(editing.title) ? editing.title.trim() : "";
     setSaving(true);
     const payload = {
       title,
@@ -124,9 +122,11 @@ export default function AdminThingsToDo() {
       place: isRealText(editing.place) ? editing.place!.trim() : null,
       category: editing.category,
       state: editing.state || null,
+      // Always a real string — with no caption this is what the host form
+      // opens with, so it falls back to the category.
       seed_title: isRealText(editing.seed_title)
         ? editing.seed_title!.trim()
-        : title,
+        : title || editing.category,
       media_url: editing.media_url?.trim() || null,
       media_type: editing.media_type,
       credit: editing.credit?.trim() || null,
@@ -158,7 +158,7 @@ export default function AdminThingsToDo() {
   }
 
   async function remove(r: Row) {
-    if (!confirm(`Delete "${r.title}"?`)) return;
+    if (!confirm(`Delete "${r.title || r.category}"?`)) return;
     const { error } = await supabase.from("things_to_do").delete().eq("id", r.id);
     if (error) return toast.error(error.message);
     toast.success("Deleted");
@@ -188,7 +188,7 @@ export default function AdminThingsToDo() {
             <input
               value={editing.title}
               onChange={(e) => setEditing({ ...editing, title: e.target.value })}
-              placeholder="What you'd do, e.g. Sunday picnic"
+              placeholder="Caption — leave blank if the video has its own text"
               className={field}
             />
             <input

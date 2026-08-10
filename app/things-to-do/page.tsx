@@ -104,7 +104,16 @@ export default async function ThingsToDoPage() {
                     className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
                   />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
+                {/* Lighter scrim when there's no caption to make readable —
+                    these videos carry their own text and shouldn't be dimmed
+                    behind one that isn't there. */}
+                <div
+                  className={`absolute inset-0 bg-gradient-to-t ${
+                    idea.hideLabel
+                      ? "from-black/60 via-black/10 to-transparent"
+                      : "from-black/90 via-black/35 to-transparent"
+                  }`}
+                />
 
                 <Link
                   href={hostHref(idea)}
@@ -113,12 +122,18 @@ export default async function ThingsToDoPage() {
                 />
 
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-4 text-white">
-                  <p className="line-clamp-2 text-[19px] font-extrabold leading-tight">
-                    {idea.title}
-                  </p>
-                  <p className="mt-0.5 truncate text-[13px] text-white/70">
-                    {idea.place}
-                  </p>
+                  {/* Uploads with burned-in text render no caption — a title
+                      over them collides with the video's own wording. */}
+                  {!idea.hideLabel && (
+                    <>
+                      <p className="line-clamp-2 text-[19px] font-extrabold leading-tight">
+                        {idea.title}
+                      </p>
+                      <p className="mt-0.5 truncate text-[13px] text-white/70">
+                        {idea.place}
+                      </p>
+                    </>
+                  )}
                   {idea.credit &&
                     (idea.creditUrl ? (
                       <a

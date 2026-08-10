@@ -29,6 +29,7 @@ import FeaturedBadge, { isFeatured } from "@/components/FeaturedBadge";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
 import { attendanceProof, ATTENDANCE_REVEAL_AT } from "@/lib/social-proof";
+import TicketPanel from "@/components/events/TicketPanel";
 import { isProActive } from "@/lib/pro";
 import type {
   ChatMessageUI,
@@ -316,11 +317,8 @@ export default async function EventDetailPage({
             <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand">
               {event.state}
             </span>
-            {event.price > 0 && (
-              <span className="rounded-full bg-gray-900 px-2.5 py-1 text-xs font-bold text-white">
-                {formatNaira(event.price)}
-              </span>
-            )}
+            {/* The price used to sit here as a chip, the same weight as the
+                state. It's now the Buy Ticket panel further down. */}
           </div>
 
           <h1 className="mt-4 text-3xl font-extrabold text-gray-900 sm:text-4xl">
@@ -513,6 +511,12 @@ export default async function EventDetailPage({
                     )}
                   </div>
                 </div>
+
+                {event.price > 0 && (
+                  <div className="mt-6">
+                    <TicketPanel price={event.price} />
+                  </div>
+                )}
 
                 <div className="mt-6">
                   <RsvpButton

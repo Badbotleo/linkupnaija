@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { unstable_cache } from "next/cache";
 import { isRealText } from "./content-guards";
+import { byProximity, proximity } from "./state-proximity";
 
 /**
  * "Things to do this week" — the bridge between browsing and hosting.
@@ -31,6 +32,16 @@ export interface Idea {
       it this week, joining is the smaller, likelier step. */
   liveCount?: number;
   liveHref?: string;
+  /**
+   * True when the card should render no caption over the media.
+   *
+   * Several uploads are videos with the description already burned into the
+   * frame. A title drawn on top collides with that text, which is why they
+   * were saved with "." as the title — it was a deliberate "no caption",
+   * not a mistake. `title` is still set (from the category) because the host
+   * link and the alt text need it; it just isn't painted over the video.
+   */
+  hideLabel?: boolean;
   /** Who shot the media, shown small on the card. */
   credit?: string | null;
   creditUrl?: string | null;
@@ -130,22 +141,22 @@ const getCuratedIdeas = unstable_cache(
       credit: string | null;
       credit_url: string | null;
     }[])
-      // These rows were saved through an admin form that only checked the
-      // title was non-empty, so "." got through — and "." is the title on all
-      // 26 rows. But 24 of them carry a real uploaded video or photo, so the
-      // content is there; only the label is missing. Dropping them threw away
-      // the uploads, which was the wrong trade.
+      // "." as a title is intentional: these are videos whose description is
+      // already burned into the frame, and drawing a caption over them
+      // collides with that text. So "." means "no caption", and the card
+      // renders the media clean.
       //
-      // The category is real data on every row, and it makes a perfectly good
-      // card title — "Brunch", "Game Night", "Wine Tasting". So we fall back
-      // to it rather than inventing anything or hiding the media.
+      // We still need a title internally — the "Host it" link seeds the event
+      // form with it — so the category fills in there. It just never gets
+      // painted over the media.
       //
       // A row with neither a usable title nor media has nothing to show and
-      // is the only kind we still drop.
+      // is the only kind we drop.
       .filter((r) => isRealText(r.title) || isRealText(r.media_url, 8))
       .map((r) => ({
       key: r.id,
       title: isRealText(r.title) ? r.title : r.category,
+      hideLabel: !isRealText(r.title),
       // "." is not a place. Blank renders as nothing, which is what we want.
       place: isRealText(r.place) ? r.place! : "",
       category: r.category,
@@ -228,12 +239,16 @@ export async function buildIdeas(
     getLiveCounts().catch(() => ({}) as Record<string, number>),
   ]);
 
-  // Their own state first — a picnic in Lagos is no use to someone in Kano.
-  const ranked = state
-    ? [...fromVenues].sort(
-        (a, b) => (a.state === state ? 0 : 1) - (b.state === state ? 0 : 1)
-      )
-    : fromVenues;
+  // Their own state first, then their zone, then everywhere else — a picnic
+  // in Lagos is no use to someone in Kano, but showing them nothing is worse.
+  // Sorted, never filtered: outside Lagos and Abuja a strict state filter
+  // empties this page, and that is most of the country.
+  //
+  // Curated cards get the same treatment. They used to lead the shelf in
+  // whatever order they were uploaded, so an Abuja video led the page for
+  // someone in Port Harcourt.
+  const ranked = byProximity(fromVenues, state, (v) => v.state);
+  const curatedNear = byProximity(curated, state, (c) => c.state);
 
   const seen = new Map<string, number>();
   const take = (list: Idea[], max: number, ignoreCap = false) => {
@@ -255,11 +270,16 @@ export async function buildIdeas(
   // Rotate which curated cards lead, so all of them get airtime across
   // visits instead of the same first few every time. Seeded by the hour so a
   // single page's server and client render agree.
+  // Rotation is applied within the proximity ordering, not across it, so
+  // rotating for variety can never promote a far-away card over a local one.
   const rotation = new Date().getUTCHours();
-  const rotated =
-    curated.length > 0
-      ? curated.map((_, i) => curated[(i + rotation) % curated.length])
-      : curated;
+  const near = curatedNear.filter((c) => proximity(state, c.state) <= 1);
+  const rest = curatedNear.filter((c) => proximity(state, c.state) > 1);
+  const spin = <T,>(list: T[]) =>
+    list.length > 0
+      ? list.map((_, i) => list[(i + rotation) % list.length])
+      : list;
+  const rotated = [...spin(near), ...spin(rest)];
 
   const half = Math.max(1, Math.floor(limit / 2));
   const pickedCurated = take(rotated, half, true);

@@ -5,6 +5,11 @@ import { createClient } from "@/lib/supabase/server";
 import EventsFilters from "@/components/EventsFilters";
 import EventsList from "@/components/EventsList";
 import { dedupeEvents } from "@/lib/content-guards";
+import {
+  filterByKind,
+  shouldFilterByKind,
+  professionalCategoriesFilter,
+} from "@/lib/event-kind";
 import EventsMapToggle from "@/components/events/EventsMapToggle";
 import EventsTabs from "@/components/EventsTabs";
 import SearchPill from "@/components/events/SearchPill";
@@ -55,6 +60,8 @@ export default async function EventsPage({
   // where an event went the day after; it went nowhere, it just fell off a
   // feed that only ever looked forwards.
   const past = searchParams.tab === "past";
+  // Professional events stay reachable, just not in the default feed.
+  const work = searchParams.tab === "work";
 
   let feedEvents: (FeedEvent & {
     attendeeCount: number;
@@ -132,7 +139,15 @@ export default async function EventsPage({
       if (e.max_attendees && e.attendeeCount / e.max_attendees >= 0.6) s += 25;
       return s;
     };
-    feedEvents = candidates.sort((a, b) => score(b) - score(a)).slice(0, 24);
+    // "For you" is a recommendation feed, so it follows the same default:
+    // hangouts unless they asked otherwise. Filtered in JS because this
+    // branch isn't paginated.
+    feedEvents = filterByKind(
+      candidates,
+      work ? "professional" : shouldFilterByKind(searchParams) ? "hangout" : null
+    )
+      .sort((a, b) => score(b) - score(a))
+      .slice(0, 24);
   } else {
     // --- Standard paginated feed --------------------------------------------
     const from = (page - 1) * PAGE_SIZE;
@@ -154,6 +169,21 @@ export default async function EventsPage({
       );
     }
     if (searchParams.series === "1") query = query.not("series_id", "is", null);
+
+    // --- Hangouts vs professional -------------------------------------------
+    // The default feed is hangouts. 19 of 53 upcoming events were conferences,
+    // summits and expos filed under "Networking", which is not what the
+    // homepage promised anyone. Applied in SQL so the paginated count stays
+    // right; skipped entirely when the viewer asked for something specific.
+    if (work) {
+      query = query.or(
+        `category.in.${professionalCategoriesFilter()},is_corporate.eq.true`
+      );
+    } else if (shouldFilterByKind(searchParams)) {
+      query = query
+        .not("category", "in", professionalCategoriesFilter())
+        .or("is_corporate.is.null,is_corporate.eq.false");
+    }
 
     // Past events read newest-first; upcoming read soonest-first.
     const { data, error: e, count } = await query

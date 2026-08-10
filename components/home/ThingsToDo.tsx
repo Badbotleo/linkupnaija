@@ -56,15 +56,30 @@ export default async function ThingsToDo({ state }: { state?: string | null }) {
                 className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
               />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/35 to-transparent" />
+            {/* The scrim exists to make the caption readable. With no caption
+                it only muddies a video that was shot to be looked at, so it
+                lightens to just enough for the button. */}
+            <div
+              className={`absolute inset-0 bg-gradient-to-t ${
+                idea.hideLabel
+                  ? "from-black/60 via-black/10 to-transparent"
+                  : "from-black/88 via-black/35 to-transparent"
+              }`}
+            />
 
             <div className="absolute inset-x-0 bottom-0 p-3.5 text-white">
-              <p className="text-[17px] font-extrabold leading-tight">
-                {idea.title}
-              </p>
-              <p className="mt-0.5 truncate text-xs text-white/70">
-                {idea.place}
-              </p>
+              {/* These uploads carry their own burned-in text. A caption on
+                  top collides with it, so the card stays clean. */}
+              {!idea.hideLabel && (
+                <>
+                  <p className="text-[17px] font-extrabold leading-tight">
+                    {idea.title}
+                  </p>
+                  <p className="mt-0.5 truncate text-xs text-white/70">
+                    {idea.place}
+                  </p>
+                </>
+              )}
               {idea.credit && (
                 <p className="mt-1 truncate text-[10px] text-white/45">
                   {idea.mediaType === "video" ? "🎬" : "📷"} {idea.credit}
