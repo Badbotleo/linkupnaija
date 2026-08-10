@@ -88,6 +88,9 @@ export default function RecapReel({ recaps }: { recaps: Recap[] }) {
                    <video> costs nothing, a fetched one costs megabytes. */
                 <video
                   src={seen.has(i) ? r.mediaUrl : undefined}
+                  // Shown immediately, and kept until the first frame decodes,
+                  // so a card is never a black rectangle waiting on a network.
+                  poster={r.posterUrl ?? undefined}
                   autoPlay={seen.has(i)}
                   muted
                   loop
@@ -296,6 +299,7 @@ function ReelsPlayer({
                   videos.current[i] = n;
                 }}
                 src={Math.abs(i - current) <= 1 ? r.mediaUrl : undefined}
+                poster={r.posterUrl ?? undefined}
                 loop
                 playsInline
                 // The one you're watching in full, the next one ready to

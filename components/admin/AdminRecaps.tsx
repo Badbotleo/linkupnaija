@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { NIGERIAN_STATES } from "@/lib/constants";
 import { toast } from "@/lib/toast";
 import { isRealText } from "@/lib/content-guards";
+import { capturePoster } from "@/lib/video-poster";
 import LineIcon from "../ui/LineIcon";
 
 /**
@@ -22,6 +23,7 @@ interface Row {
   title: string | null;
   media_url: string | null;
   media_type: "video" | "image";
+  poster_url: string | null;
   state: string | null;
   credit: string | null;
   sort_order: number;
@@ -41,6 +43,7 @@ const BLANK: Omit<Row, "id"> = {
   title: "",
   media_url: "",
   media_type: "video",
+  poster_url: null,
   state: "",
   credit: "",
   sort_order: 0,
@@ -67,9 +70,9 @@ export default function AdminRecaps() {
    * credit and the save for each. The picker takes as many as you like now and
    * one save writes a row per clip, all sharing the settings above.
    */
-  const [queue, setQueue] = useState<{ url: string; type: "video" | "image" }[]>(
-    []
-  );
+  const [queue, setQueue] = useState<
+    { url: string; type: "video" | "image"; poster: string | null }[]
+  >([]);
   const [missing, setMissing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -108,7 +111,11 @@ export default function AdminRecaps() {
   /** Upload one file. Returns its public URL, or null if it was rejected. */
   async function uploadOne(
     file: File
-  ): Promise<{ url: string; type: "video" | "image" } | null> {
+  ): Promise<{
+    url: string;
+    type: "video" | "image";
+    poster: string | null;
+  } | null> {
     // Type from the file itself, not the extension — renaming a .mov to .mp4
     // would otherwise store the wrong content type and break the player.
     const isVideo = file.type.startsWith("video/");
@@ -153,14 +160,39 @@ export default function AdminRecaps() {
       return null;
     }
     const { data } = supabase.storage.from("event-recaps").getPublicUrl(path);
-    return { url: data.publicUrl, type: isVideo ? "video" : "image" };
+
+    // Grab a still while we still have the original file in memory — no CORS
+    // to negotiate and no second download. A failure here is not an upload
+    // failure: the clip works, it just paints black a moment longer.
+    let poster: string | null = null;
+    if (isVideo) {
+      const frame = await capturePoster(file);
+      if (frame) {
+        const pPath = `${path.replace(/\.[^.]+$/, "")}-poster.jpg`;
+        const up = await supabase.storage
+          .from("event-recaps")
+          .upload(pPath, frame, {
+            contentType: "image/jpeg",
+            upsert: true,
+            cacheControl: "31536000",
+          });
+        if (!up.error)
+          poster = supabase.storage.from("event-recaps").getPublicUrl(pPath)
+            .data.publicUrl;
+      }
+    }
+    return { url: data.publicUrl, type: isVideo ? "video" : "image", poster };
   }
 
   async function upload(files: File[]) {
     // Sequential, not Promise.all: a phone-recorded batch is tens of MB and
     // firing them at once is how uploads start timing out on a Nigerian
     // connection. One failing doesn't lose the rest.
-    const done: { url: string; type: "video" | "image" }[] = [];
+    const done: {
+      url: string;
+      type: "video" | "image";
+      poster: string | null;
+    }[] = [];
     for (let i = 0; i < files.length; i++) {
       setUploading(`Uploading ${i + 1} of ${files.length}…`);
       const r = await uploadOne(files[i]);
@@ -173,7 +205,14 @@ export default function AdminRecaps() {
     // is queued as additional new recaps rather than being thrown away.
     if (editing?.id) {
       setEditing((e) =>
-        e ? { ...e, media_url: done[0].url, media_type: done[0].type } : e
+        e
+          ? {
+              ...e,
+              media_url: done[0].url,
+              media_type: done[0].type,
+              poster_url: done[0].poster,
+            }
+          : e
       );
       const extra = done.slice(1);
       if (extra.length > 0) {
@@ -197,15 +236,20 @@ export default function AdminRecaps() {
 
     // What we're about to write: the queue when adding, the single clip when
     // editing. A pasted URL still works — it just counts as one.
+    const single = isRealText(editing.media_url, 8)
+      ? [
+          {
+            url: editing.media_url!.trim(),
+            type: editing.media_type,
+            poster: editing.poster_url,
+          },
+        ]
+      : [];
     const media = editing.id
-      ? isRealText(editing.media_url, 8)
-        ? [{ url: editing.media_url!.trim(), type: editing.media_type }]
-        : []
+      ? single
       : queue.length > 0
         ? queue
-        : isRealText(editing.media_url, 8)
-          ? [{ url: editing.media_url!.trim(), type: editing.media_type }]
-          : [];
+        : single;
 
     if (media.length === 0) {
       toast.error("Upload at least one video or image first.");
@@ -232,6 +276,7 @@ export default function AdminRecaps() {
       ...shared,
       media_url: m.url,
       media_type: m.type,
+      poster_url: m.poster ?? null,
       sort_order: editing.sort_order + i,
     }));
 
@@ -248,6 +293,7 @@ export default function AdminRecaps() {
           ...shared,
           media_url: m.url,
           media_type: m.type,
+          poster_url: m.poster ?? null,
           sort_order: editing.sort_order + i + 1,
         }));
         const ins = await supabase.from("event_recaps").insert(extras);
@@ -258,11 +304,76 @@ export default function AdminRecaps() {
       error = ins.error;
     }
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      if (/poster_url/.test(error.message)) {
+        toast.error(
+          "Run supabase/migration-recap-posters.sql — saved without posters."
+        );
+      } else {
+        toast.error(error.message);
+      }
+      return;
+    }
     const written = editing.id ? 1 + queue.length : payload.length;
     toast.success(written === 1 ? "Saved" : `Saved ${written} recaps`);
     setEditing(null);
     setQueue([]);
+    load();
+  }
+
+  /**
+   * Backfill posters for clips uploaded before posters existed.
+   *
+   * Re-downloads each video in this browser to grab a frame, which is slow
+   * and depends on this browser being able to decode it — a .mov in Chrome
+   * simply won't. Anything that fails is left alone and reported, rather than
+   * being marked done.
+   */
+  async function backfillPosters() {
+    const targets = rows.filter(
+      (r) => r.media_type === "video" && r.media_url && !r.poster_url
+    );
+    if (targets.length === 0) {
+      toast.success("Every clip already has a poster.");
+      return;
+    }
+    let ok = 0;
+    let failed = 0;
+    for (let i = 0; i < targets.length; i++) {
+      const r = targets[i];
+      setUploading(`Poster ${i + 1} of ${targets.length}…`);
+      const frame = await capturePoster(r.media_url!);
+      if (!frame) {
+        failed++;
+        continue;
+      }
+      const pPath = `${Date.now()}-${Math.random().toString(36).slice(2)}-poster.jpg`;
+      const up = await supabase.storage
+        .from("event-recaps")
+        .upload(pPath, frame, {
+          contentType: "image/jpeg",
+          upsert: true,
+          cacheControl: "31536000",
+        });
+      if (up.error) {
+        failed++;
+        continue;
+      }
+      const url = supabase.storage.from("event-recaps").getPublicUrl(pPath)
+        .data.publicUrl;
+      const res = await supabase
+        .from("event_recaps")
+        .update({ poster_url: url })
+        .eq("id", r.id);
+      if (res.error) failed++;
+      else ok++;
+    }
+    setUploading("");
+    if (ok) toast.success(`${ok} poster${ok === 1 ? "" : "s"} created`);
+    if (failed)
+      toast.error(
+        `${failed} couldn't be read in this browser — usually .mov. Try Safari, or re-upload as MP4.`
+      );
     load();
   }
 
@@ -302,16 +413,28 @@ export default function AdminRecaps() {
           {rows.length} recap{rows.length === 1 ? "" : "s"}. These show publicly
           on the home page — the proof that events here actually happen.
         </p>
-        <button
-          type="button"
-          onClick={() => {
-            setQueue([]);
-            setEditing({ ...BLANK });
-          }}
-          className="btn-primary shrink-0 rounded-full px-4 py-2 text-sm"
-        >
-          Add a recap
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          {rows.some((r) => r.media_type === "video" && !r.poster_url) && (
+            <button
+              type="button"
+              onClick={backfillPosters}
+              disabled={!!uploading}
+              className="rounded-full border border-gray-300 px-4 py-2 text-sm font-bold text-gray-700 disabled:opacity-50"
+            >
+              {uploading || "Create missing posters"}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              setQueue([]);
+              setEditing({ ...BLANK });
+            }}
+            className="btn-primary rounded-full px-4 py-2 text-sm"
+          >
+            Add a recap
+          </button>
+        </div>
       </div>
 
       {editing && (

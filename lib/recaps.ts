@@ -22,6 +22,8 @@ export interface Recap {
   title: string | null;
   mediaUrl: string;
   mediaType: "video" | "image";
+  /** Still frame shown instantly while the video streams. */
+  posterUrl: string | null;
   state: string | null;
   credit: string | null;
   /** Set when the recap is still linked to a live event page. */
@@ -33,6 +35,7 @@ interface Row {
   title: string | null;
   media_url: string | null;
   media_type: string | null;
+  poster_url: string | null;
   state: string | null;
   credit: string | null;
   event: { id: string; title: string; date: string } | null;
@@ -47,7 +50,7 @@ const getRecaps = unstable_cache(
     const { data, error } = await supabase
       .from("event_recaps")
       .select(
-        "id, title, media_url, media_type, state, credit, event:events(id, title, date)"
+        "id, title, media_url, media_type, poster_url, state, credit, event:events(id, title, date)"
       )
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
@@ -67,6 +70,7 @@ const getRecaps = unstable_cache(
         title: isRealText(r.title) ? r.title : null,
         mediaUrl: r.media_url!,
         mediaType: r.media_type === "image" ? "image" : "video",
+        posterUrl: isRealText(r.poster_url, 8) ? r.poster_url : null,
         state: r.state,
         credit: isRealText(r.credit) ? r.credit : null,
         event: r.event ?? null,
@@ -112,7 +116,7 @@ export async function getRecapsForEvent(eventId: string): Promise<Recap[]> {
   const { data, error } = await supabase
     .from("event_recaps")
     .select(
-      "id, title, media_url, media_type, state, credit, event:events(id, title, date)"
+      "id, title, media_url, media_type, poster_url, state, credit, event:events(id, title, date)"
     )
     .eq("event_id", eventId)
     .eq("is_active", true)
@@ -133,6 +137,7 @@ export async function getRecapsForEvent(eventId: string): Promise<Recap[]> {
       title: isRealText(r.title) ? r.title : null,
       mediaUrl: r.media_url!,
       mediaType: r.media_type === "image" ? "image" : "video",
+      posterUrl: isRealText(r.poster_url, 8) ? r.poster_url : null,
       state: r.state,
       credit: isRealText(r.credit) ? r.credit : null,
       event: r.event ?? null,
