@@ -34,6 +34,13 @@ const PATHS: Record<string, string> = {
   car: "M5 17H3v-4l2-5h14l2 5v4h-2M5 17a2 2 0 1 0 4 0M5 17h10m4 0a2 2 0 1 1-4 0M7 8h10",
   camera: "M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
   video: "m23 7-7 5 7 5V7zM3 5h11a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z",
+  // Reels player controls. Added rather than borrowing a near-enough glyph —
+  // a speaker that isn't a speaker is worse than no icon.
+  volume:
+    "M11 5 6 9H2v6h4l5 4V5zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14",
+  volumeOff: "M11 5 6 9H2v6h4l5 4V5zM22 9l-6 6M16 9l6 6",
+  play: "M6 4l14 8-14 8V4z",
+  pause: "M9 4v16M15 4v16",
   trash: "M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6M10 11v6M14 11v6",
   image:
     "M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM8.5 11.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM22 15l-5-5L7 19",
