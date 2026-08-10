@@ -8,6 +8,7 @@ import AdminDrivers from "@/components/admin/AdminDrivers";
 import AdminReservations from "@/components/admin/AdminReservations";
 import AdminExpiredEvents from "@/components/admin/AdminExpiredEvents";
 import AdminOffPlatform from "@/components/admin/AdminOffPlatform";
+import AdminRecaps from "@/components/admin/AdminRecaps";
 import AdminMessages from "@/components/admin/AdminMessages";
 import AdminVenues from "@/components/admin/AdminVenues";
 import AdminInstagram from "@/components/admin/AdminInstagram";
@@ -347,6 +348,7 @@ export default async function AdminPage() {
           { id: "safety", label: "Safety flags", emoji: "🛟", group: "Safety", badge: flaggedHosts.length },
           { id: "expired", label: "Expired events", emoji: "📅", group: "Content" },
           { id: "offplatform", label: "Off-platform sign-ups", emoji: "🔗", group: "Content" },
+          { id: "recaps", label: "Past-event recaps", emoji: "🎬", group: "Content" },
           { id: "thingstodo", label: "Things to do this week", emoji: "🗓️", group: "Content" },
           { id: "venues", label: "Onboarded venues", emoji: "📍", group: "Content" },
           { id: "opportunities", label: "Opportunities", emoji: "💼", group: "Content" },
@@ -426,6 +428,10 @@ export default async function AdminPage() {
             pairs them by index, not by key. */}
         <div key="offplatform">
           <AdminOffPlatform />
+        </div>
+
+        <div key="recaps">
+          <AdminRecaps />
         </div>
 
         <div key="thingstodo">

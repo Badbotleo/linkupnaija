@@ -12,6 +12,7 @@ import { memberProof } from "@/lib/social-proof";
 import { dedupeEvents } from "@/lib/content-guards";
 import Rail from "@/components/home/Rail";
 import SwipeDeck from "@/components/home/SwipeDeck";
+import PastEventsReel from "@/components/home/PastEventsReel";
 
 interface CircleLite {
   id: string;
@@ -237,6 +238,8 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
           ))}
         </Rail>
       )}
+
+      <PastEventsReel state={profile?.state ?? null} />
 
       <ThingsToDo state={profile?.state ?? null} />
 
