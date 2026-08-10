@@ -12,6 +12,7 @@ import ScreenTour from "@/components/home/ScreenTour";
 import ThingsToDo from "@/components/home/ThingsToDo";
 import LineIcon from "@/components/ui/LineIcon";
 import { memberProof, subscriberProof } from "@/lib/social-proof";
+import { dedupeEvents } from "@/lib/content-guards";
 import { LogoMark } from "@/components/Logo";
 import { getSessionUser } from "@/lib/supabase/auth";
 import { getVisitorState } from "@/lib/visitor-geo";
@@ -98,7 +99,8 @@ const getUpcomingEvents = unstable_cache(
       .gte("date", today)
       .order("date", { ascending: true })
       .limit(12);
-    return data ?? [];
+    // Duplicate rows exist in the table; never show the same listing twice.
+    return dedupeEvents(data ?? []);
   },
   ["homepage-upcoming-events"],
   { revalidate: 300 }

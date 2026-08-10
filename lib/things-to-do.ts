@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { unstable_cache } from "next/cache";
+import { isRealText } from "./content-guards";
 
 /**
  * "Things to do this week" — the bridge between browsing and hosting.
@@ -128,7 +129,14 @@ const getCuratedIdeas = unstable_cache(
       media_type: string | null;
       credit: string | null;
       credit_url: string | null;
-    }[]).map((r) => ({
+    }[])
+      // Every one of these rows was saved through an admin form that only
+      // checked the title was non-empty, so "." got through — and "." is what
+      // 26 of 26 rows contained, which rendered a shelf of blank cards on the
+      // home page. Curated cards outrank venues, so they crowded out the real
+      // ideas as well as being blank themselves.
+      .filter((r) => isRealText(r.title))
+      .map((r) => ({
       key: r.id,
       title: r.title,
       place: r.place ?? "",
@@ -259,6 +267,10 @@ export async function buildIdeas(
       state: state ?? null,
     })),
   ]
+    // Nothing without a real title leaves this function, whichever source it
+    // came from. Filtering before the slice matters: filtering after would
+    // let a placeholder eat one of the eight slots and shorten the shelf.
+    .filter((idea) => isRealText(idea.title))
     .slice(0, limit)
     .map((idea) => {
       // Prefer a count for their own state; fall back to nationwide.

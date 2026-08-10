@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import EventsFilters from "@/components/EventsFilters";
 import EventsList from "@/components/EventsList";
+import { dedupeEvents } from "@/lib/content-guards";
 import EventsMapToggle from "@/components/events/EventsMapToggle";
 import EventsTabs from "@/components/EventsTabs";
 import SearchPill from "@/components/events/SearchPill";
@@ -169,6 +170,13 @@ export default async function EventsPage({
       .sort((a, b) => (activeFeatured(b) ? 1 : 0) - (activeFeatured(a) ? 1 : 0))
       .map(decorate);
   }
+
+  // Two identical rows can exist in the database — a host double-submitting
+  // produced two "Cocktails and Chow Festival 2.0" listings 15 minutes apart,
+  // and an import run twice produced three of one film festival. The host
+  // form now refuses the second write, but that does nothing for rows already
+  // there, so the feed collapses them on the way out.
+  feedEvents = dedupeEvents(feedEvents);
 
   // --- Social proof: which of the viewer's friends are going -----------------
   // Map event_id -> { count, names, avatars } for a "friends going" badge.

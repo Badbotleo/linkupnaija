@@ -8,6 +8,7 @@ import Link from "next/link";
 import { EVENT_CATEGORIES, NIGERIAN_STATES } from "@/lib/constants";
 import { FREQUENCY_OPTIONS, nextDates } from "@/lib/series";
 import { formatEventDate } from "@/lib/format";
+import { validateLocation, MAX_LOCATION_LENGTH } from "@/lib/content-guards";
 import type { SeriesFrequency } from "@/lib/types";
 
 export default function HostForm({
@@ -119,6 +120,41 @@ export default function HostForm({
 
     if (!user) {
       router.push("/login?redirect=/host");
+      return;
+    }
+
+    // Both checks run before any upload, so a rejected event doesn't leave
+    // orphaned images in the bucket.
+
+    // A location field with no cap absorbed an entire 474-character event
+    // description on one live listing, which then rendered as the venue.
+    const locationError = validateLocation(form.location);
+    if (locationError) {
+      setError(locationError);
+      setLoading(false);
+      return;
+    }
+
+    // Double-submit guard. Two identical rows 15 minutes apart is what
+    // produced the duplicate "Cocktails and Chow Festival 2.0" listings —
+    // nobody runs the same event twice at the same place on the same day.
+    const { data: clash, error: clashErr } = await supabase
+      .from("events")
+      .select("id")
+      .eq("host_id", user.id)
+      .eq("date", form.date)
+      .ilike("title", form.title.trim())
+      .ilike("location", form.location.trim())
+      .limit(1);
+    // A failed check must not block hosting — if we can't tell, let it
+    // through. The read-side dedupe still catches it in the feed.
+    if (clashErr) {
+      console.error("duplicate check failed", clashErr.message);
+    } else if (clash && clash.length > 0) {
+      setError(
+        "You've already listed this event on this date at this venue. Open it from your dashboard to edit it instead."
+      );
+      setLoading(false);
       return;
     }
 
@@ -484,11 +520,20 @@ export default function HostForm({
           id="location"
           type="text"
           required
+          maxLength={MAX_LOCATION_LENGTH}
           value={form.location}
           onChange={(e) => update("location", e.target.value)}
           placeholder="Hard Rock Cafe, Victoria Island"
           className="input"
         />
+        {/* The cap is what stops a whole description landing in here. Say so
+            as they approach it rather than truncating silently. */}
+        {form.location.length > MAX_LOCATION_LENGTH - 30 && (
+          <p className="mt-1 text-xs font-semibold text-amber-600">
+            {MAX_LOCATION_LENGTH - form.location.length} characters left — this
+            is the venue, put the details in the description.
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">

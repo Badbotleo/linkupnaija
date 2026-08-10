@@ -2,6 +2,7 @@ import Link from "next/link";
 import Rail from "./Rail";
 import LineIcon from "../ui/LineIcon";
 import { buildIdeas, hostHref } from "@/lib/things-to-do";
+import { isRealText } from "@/lib/content-guards";
 
 /**
  * The "Things to do this week" shelf, on both home pages.
@@ -10,7 +11,13 @@ import { buildIdeas, hostHref } from "@/lib/things-to-do";
  * eight cards is a taste, not the catalogue.
  */
 export default async function ThingsToDo({ state }: { state?: string | null }) {
-  const ideas = await buildIdeas(state, { limit: 8 });
+  // buildIdeas already filters these, but the component refuses to render a
+  // titleless card on its own account — a blank card on the home page is the
+  // exact failure this shelf had, and it shouldn't depend on one caller
+  // getting it right.
+  const ideas = (await buildIdeas(state, { limit: 8 })).filter((i) =>
+    isRealText(i.title)
+  );
   if (ideas.length === 0) return null;
 
   return (

@@ -9,6 +9,7 @@ import RateVenuePrompt from "@/components/venues/RateVenuePrompt";
 import ThingsToDo from "@/components/home/ThingsToDo";
 import LineIcon from "@/components/ui/LineIcon";
 import { memberProof } from "@/lib/social-proof";
+import { dedupeEvents } from "@/lib/content-guards";
 import Rail from "@/components/home/Rail";
 import SwipeDeck from "@/components/home/SwipeDeck";
 
@@ -120,7 +121,7 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
       .in("category", forYouCategories)
       .order("date", { ascending: true })
       .limit(12);
-    forYou = ((forYouRows ?? []) as EventLite[])
+    forYou = dedupeEvents((forYouRows ?? []) as EventLite[])
       .filter((e) => !seen.has(e.id))
       // Rank: same-state matches first, then soonest.
       .sort((a, b) => {
@@ -170,9 +171,9 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
     .limit(6);
   if (profile?.state) nearbyQuery = nearbyQuery.eq("state", profile.state);
   const { data: nearbyRows } = await nearbyQuery;
-  const nearby = ((nearbyRows ?? []) as EventLite[])
-    .filter((e) => !seen.has(e.id))
-    .slice(0, 4);
+  const nearby = dedupeEvents(
+    ((nearbyRows ?? []) as EventLite[]).filter((e) => !seen.has(e.id))
+  ).slice(0, 4);
 
   return (
     <div className="pb-28 pt-6 lg:pb-14">

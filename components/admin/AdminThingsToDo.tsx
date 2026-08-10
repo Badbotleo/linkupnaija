@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { EVENT_CATEGORIES, NIGERIAN_STATES } from "@/lib/constants";
 import { toast } from "@/lib/toast";
+import { isRealText } from "@/lib/content-guards";
 import LineIcon from "../ui/LineIcon";
 
 interface Row {
@@ -104,8 +105,14 @@ export default function AdminThingsToDo() {
 
   async function save() {
     if (!editing || saving) return;
-    if (!editing.title.trim()) {
-      toast.error("Give it a title.");
+    // `.trim()` alone is satisfied by "." — which is how all 26 rows in this
+    // table ended up titled ".", rendering blank cards on the home page.
+    if (!isRealText(editing.title)) {
+      toast.error("Give it a real title — this shows on the home page.");
+      return;
+    }
+    if (editing.place && !isRealText(editing.place)) {
+      toast.error("Give a real place, or leave it blank.");
       return;
     }
     setSaving(true);
