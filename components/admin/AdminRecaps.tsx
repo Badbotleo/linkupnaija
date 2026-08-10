@@ -120,6 +120,20 @@ export default function AdminRecaps() {
       toast.error(`${file.name}: over 25MB — skipped.`);
       return null;
     }
+    // Warn, don't block. A .mov is a QuickTime container: Safari plays it,
+    // Chrome and Firefox usually don't, so it uploads fine and then renders
+    // as a black frame for most of the country. Some .mov files are H.264
+    // that Chrome will play, which is why this asks the browser rather than
+    // trusting the extension — and why it's a warning and not a rejection.
+    if (isVideo) {
+      const probe = document.createElement("video");
+      const playable = probe.canPlayType(file.type || "");
+      if (!playable || file.type === "video/quicktime") {
+        toast.error(
+          `${file.name}: this browser can't play that format — most people won't see it. Re-export as MP4 (H.264). Uploading anyway.`
+        );
+      }
+    }
     const ext =
       file.name.split(".").pop()?.toLowerCase() || (isVideo ? "mp4" : "jpg");
     const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
