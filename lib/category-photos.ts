@@ -84,6 +84,7 @@ const PHOTOS: Record<string, string> = {
   "Listening Party": "/circles/concert.jpg",
   "After-Party": "/circles/party.jpg",
   "Cultural Day": "/circles/party.jpg",
+  "Carnival": "/circles/concert.jpg",
   "Family Fun Day": "/venues/parks.jpg",
   "Kids Event": "/venues/parks.jpg",
   "Game Tournament": "/circles/gamenight.jpg",

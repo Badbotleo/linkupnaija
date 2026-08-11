@@ -97,7 +97,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     emoji: "🎉",
     tint: "from-pink-100 to-pink-50 text-pink-800",
     categories: [
-      "Cultural Day","Owambe", "Birthday", "Baby Shower", "Graduation Party"],
+      "Cultural Day", "Carnival", "Owambe", "Birthday", "Baby Shower", "Graduation Party"],
   },
 ];
 
