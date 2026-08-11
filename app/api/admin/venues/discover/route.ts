@@ -1,8 +1,19 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { fetchVenuesFromOverpass, geocodeOnServer } from "@/lib/overpass-server";
+import {
+  fetchVenuesFromOverpass,
+  geocodeOnServer,
+  BULK_TIMEOUT_MS,
+} from "@/lib/overpass-server";
 
 export const runtime = "nodejs";
+/**
+ * Vercel kills a Node function at 10s by default, which is less than the 25s
+ * the Overpass query itself asks for — so the platform hung up before the
+ * answer arrived and it looked like a rate limit. This asks for the room the
+ * query actually needs.
+ */
+export const maxDuration = 60;
 
 /**
  * Find real venues near a place, for an admin to review and onboard.
@@ -34,9 +45,19 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const q = (url.searchParams.get("q") ?? "").trim().slice(0, 120);
   const category = (url.searchParams.get("category") ?? "").trim();
+  /**
+   * 5km, and capped at 15.
+   *
+   * The default was 8km and it was the whole problem. Measured against
+   * Victoria Island restaurants: 8km returns HTTP 504 after 14 seconds, 5km
+   * returns 200 in one second with SEVENTY-FOUR venues. Overpass cost grows
+   * with area, so the wider search didn't return more — it returned nothing,
+   * slowly, and the panel reported a rate limit for what was really a query
+   * too expensive to answer.
+   */
   const radius = Math.min(
-    30000,
-    Math.max(1000, Number(url.searchParams.get("radius")) || 8000)
+    15000,
+    Math.max(1000, Number(url.searchParams.get("radius")) || 5000)
   );
   if (!q || !category)
     return NextResponse.json(
@@ -58,6 +79,7 @@ export async function GET(req: Request) {
       lng: place.lng,
       category,
       radius,
+      timeoutMs: BULK_TIMEOUT_MS,
     });
   } catch (e) {
     // Overpass rate-limits and times out under load. Say so rather than
@@ -65,7 +87,7 @@ export async function GET(req: Request) {
     return NextResponse.json(
       {
         error:
-          "OpenStreetMap didn't answer in time — it rate-limits. Try again in a minute.",
+          "OpenStreetMap didn't answer in time. Big cities are slow — try a smaller area like \"Wuse 2, Abuja\" or \"Lekki Phase 1\", or try again shortly.",
         detail: e instanceof Error ? e.message : String(e),
       },
       { status: 503 }

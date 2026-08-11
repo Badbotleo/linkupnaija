@@ -23,6 +23,16 @@ const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
 // Measured: overpass-api.de answers in ~2s, kumi.systems can hang past 10s.
 // Cap each attempt so one bad mirror costs seconds, not the whole page load.
 const REQUEST_TIMEOUT_MS = 8_000;
+/**
+ * Bulk admin searches get longer.
+ *
+ * 8s is right for the live venue map, where a person is staring at a spinner
+ * and a fast wrong answer beats a slow right one. It is wrong for an admin
+ * importing a city: the Overpass query itself asks for up to 25s, so an 8s
+ * abort killed every mirror in turn and reported "rate-limited" for what was
+ * really us hanging up first.
+ */
+export const BULK_TIMEOUT_MS = 28_000;
 
 // The mirror that answered last time goes first next time — after one bad
 // mirror we stop paying its timeout on every subsequent search.
@@ -30,9 +40,13 @@ let preferredMirror = OVERPASS_MIRRORS[0];
 
 
 /** fetch with a hard timeout — a hung mirror must not hang the whole page. */
-async function timedFetch(url: string, init?: RequestInit): Promise<Response> {
+async function timedFetch(
+  url: string,
+  init?: RequestInit,
+  timeoutMs?: number
+): Promise<Response> {
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
+  const t = setTimeout(() => ctrl.abort(), timeoutMs ?? REQUEST_TIMEOUT_MS);
   try {
     return await fetch(url, { ...init, signal: ctrl.signal });
   } finally {
@@ -44,7 +58,10 @@ async function timedFetch(url: string, init?: RequestInit): Promise<Response> {
  * Run an Overpass query, falling through the mirrors until one answers.
  * Only throws once every mirror has failed.
  */
-async function overpass(query: string): Promise<{ elements: OverpassElement[] }> {
+async function overpass(
+  query: string,
+  timeoutMs?: number
+): Promise<{ elements: OverpassElement[] }> {
   let lastError: unknown;
   const order = [
     preferredMirror,
@@ -52,7 +69,7 @@ async function overpass(query: string): Promise<{ elements: OverpassElement[] }>
   ];
   for (const url of order) {
     try {
-      const res = await timedFetch(url, { method: "POST", body: query });
+      const res = await timedFetch(url, { method: "POST", body: query }, timeoutMs);
       if (!res.ok) {
         lastError = new Error(`${url} responded ${res.status}`);
         continue;
@@ -133,10 +150,12 @@ export async function fetchVenuesFromOverpass(opts: {
   lng: number;
   category: string;
   radius?: number;
+  /** Longer for admin bulk imports — see BULK_TIMEOUT_MS. */
+  timeoutMs?: number;
 }): Promise<Venue[]> {
   const cat = categoryByKey(opts.category);
   const query = buildQuery(cat.filters, opts.lat, opts.lng, opts.radius ?? 6000);
-  const data = await overpass(query);
+  const data = await overpass(query, opts.timeoutMs);
   const seen = new Set<string>();
   const venues: Venue[] = [];
   for (const el of data.elements ?? []) {
