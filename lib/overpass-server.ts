@@ -69,7 +69,23 @@ async function overpass(
   ];
   for (const url of order) {
     try {
-      const res = await timedFetch(url, { method: "POST", body: query }, timeoutMs);
+      const res = await timedFetch(
+        url,
+        {
+          method: "POST",
+          body: query,
+          // Overpass answers 504 to requests with no User-Agent — it
+          // deprioritises anonymous clients, exactly as Nominatim does. The
+          // geocoder below already identified itself; this never did, so
+          // every mirror "timed out" and we blamed rate limiting for what was
+          // really us refusing to say who we were.
+          headers: {
+            "User-Agent": "LinkUpNaija/1.0 (support@linkupnaija.com)",
+            "Content-Type": "text/plain;charset=UTF-8",
+          },
+        },
+        timeoutMs
+      );
       if (!res.ok) {
         lastError = new Error(`${url} responded ${res.status}`);
         continue;
