@@ -9,6 +9,7 @@ import AdminReservations from "@/components/admin/AdminReservations";
 import AdminExpiredEvents from "@/components/admin/AdminExpiredEvents";
 import AdminOffPlatform from "@/components/admin/AdminOffPlatform";
 import AdminRecaps from "@/components/admin/AdminRecaps";
+import AdminVenueImport from "@/components/admin/AdminVenueImport";
 import AdminMessages from "@/components/admin/AdminMessages";
 import AdminVenues from "@/components/admin/AdminVenues";
 import AdminInstagram from "@/components/admin/AdminInstagram";
@@ -351,6 +352,7 @@ export default async function AdminPage() {
           { id: "recaps", label: "Past-event recaps", emoji: "🎬", group: "Content" },
           { id: "thingstodo", label: "Things to do this week", emoji: "🗓️", group: "Content" },
           { id: "venues", label: "Onboarded venues", emoji: "📍", group: "Content" },
+          { id: "venueimport", label: "Find more venues", emoji: "🧭", group: "Content" },
           { id: "opportunities", label: "Opportunities", emoji: "💼", group: "Content" },
           { id: "instagram", label: "Post to Instagram", emoji: "📸", group: "Content" },
           { id: "tournament", label: "FC26 Tournament", emoji: "🎮", group: "Content" },
@@ -440,6 +442,11 @@ export default async function AdminPage() {
 
         <div key="venues">
 <AdminVenues adminId={user.id} />
+        </div>
+
+        {/* Order must match `sections` — AdminShell pairs by index, not key. */}
+        <div key="venueimport">
+          <AdminVenueImport adminId={user.id} />
         </div>
 
         <div key="opportunities">
