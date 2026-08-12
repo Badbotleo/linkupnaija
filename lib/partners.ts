@@ -22,6 +22,8 @@ export interface Partner {
   tiktok: string | null;
   website: string | null;
   state: string | null;
+  /** The collaboration headline, when one is running. */
+  collabBlurb: string | null;
 }
 
 /** Hex only. A partner-supplied value goes straight into a style attribute,
@@ -45,10 +47,11 @@ interface Row {
   tiktok: string | null;
   website: string | null;
   state: string | null;
+  collab_blurb: string | null;
 }
 
 const SELECT =
-  "id, slug, name, tagline, about, logo_url, cover_url, brand_color, accent_color, instagram, tiktok, website, state";
+  "id, slug, name, tagline, about, logo_url, cover_url, brand_color, accent_color, instagram, tiktok, website, state, collab_blurb";
 
 function toPartner(r: Row): Partner {
   return {
@@ -65,6 +68,7 @@ function toPartner(r: Row): Partner {
     tiktok: r.tiktok,
     website: r.website,
     state: r.state,
+    collabBlurb: r.collab_blurb,
   };
 }
 

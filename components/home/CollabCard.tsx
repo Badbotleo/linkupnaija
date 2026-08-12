@@ -46,7 +46,9 @@ export default async function CollabCard() {
   return (
     <section className="container-page mt-6">
       <Link
-        href={`/partners/${p.slug}`}
+        // The campaign page for partners that have one, the generic
+        // template for everyone else.
+        href={p.slug === "defcon" ? "/defcon" : `/partners/${p.slug}`}
         className="group relative block overflow-hidden rounded-3xl shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-xl"
         style={{ backgroundColor: brand }}
       >
