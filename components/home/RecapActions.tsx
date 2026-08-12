@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "@/lib/toast";
 import LineIcon from "../ui/LineIcon";
@@ -231,15 +232,32 @@ export default function RecapActions({
               ) : (
                 comments.map((c) => (
                   <div key={c.id} className="flex items-start gap-2.5">
-                    <Avatar
-                      name={c.users?.name ?? null}
-                      url={c.users?.avatar_url ?? null}
-                      size="sm"
-                    />
+                    {/* A comment is the one place on this shelf you meet
+                        somebody new, so their name and face go where you'd
+                        expect: to them. The player is portalled over the whole
+                        page, so opening a profile has to close it first,
+                        otherwise you navigate underneath an overlay that's
+                        still covering the screen. */}
+                    <Link
+                      href={`/u/${c.user_id}`}
+                      onClick={() => setOpen(false)}
+                      className="shrink-0"
+                      aria-label={`Open ${c.users?.name ?? "this member"}'s profile`}
+                    >
+                      <Avatar
+                        name={c.users?.name ?? null}
+                        url={c.users?.avatar_url ?? null}
+                        size="sm"
+                      />
+                    </Link>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-gray-900 dark:text-white">
+                      <Link
+                        href={`/u/${c.user_id}`}
+                        onClick={() => setOpen(false)}
+                        className="text-xs font-bold text-gray-900 hover:underline dark:text-white"
+                      >
                         {c.users?.name ?? "Someone"}
-                      </p>
+                      </Link>
                       <p className="text-sm leading-snug text-gray-700 dark:text-white/80">
                         {c.body}
                       </p>
