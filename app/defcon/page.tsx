@@ -69,67 +69,61 @@ export default async function DefconPage() {
   const tables = tiers.filter((t) => !!t.admits);
 
   const brand = safeColor(partner.brandColor, "#E4373C");
-  const accent = safeColor(partner.accentColor, "#EFEADA");
 
   return (
     <div className="pb-24">
-      {/* --- poster wall ------------------------------------------------ */}
-      {/* Branded squares for every upcoming night, then their own flyers.
-          The ig-card route is the same generator the admin panel uses, so
-          the poster carries our mark without a second pipeline to keep. */}
-      <PartnerHero
-        brand={brand}
-        slides={[
-          ...events.map((e) => ({
-            src: `/api/ig-card/${e.id}`,
-            label: `${partner.name} — ${e.title}`,
-          })),
-          ...partner.posterUrls.map((src, i) => ({
-            src,
-            label: `${partner.name} poster ${i + 1}`,
-          })),
-        ]}
-      />
-
-      {/* --- hero ------------------------------------------------------- */}
-      <section className="relative overflow-hidden" style={{ backgroundColor: brand }}>
-        {partner.coverUrl && (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
-            src={partner.coverUrl}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover opacity-25"
-          />
-        )}
-        <div className="container-page relative py-14 text-white sm:py-20">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-[20px] font-extrabold tracking-tight sm:text-[24px]">
-              LinkUpNaija
+      {/* --- hero ---------------------------------------------------------
+          One hero, not two. The posters used to sit in a block ABOVE a solid
+          colour panel, so the page opened with two competing headers and you
+          scrolled past the artwork to reach the words. The lockup is a thin
+          band now, the posters ARE the hero, and the call to action sits
+          under them where you land after swiping. */}
+      <section style={{ backgroundColor: brand }} className="text-white">
+        <div className="container-page flex flex-wrap items-center gap-2.5 py-4">
+          <span className="text-[17px] font-extrabold tracking-tight sm:text-[19px]">
+            LinkUpNaija
+          </span>
+          {/* Ours in the lockup, so it stays LinkUpNaija purple. */}
+          <span className="text-[19px] font-black text-[#8B83E6]">×</span>
+          {partner.logoUrl ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={partner.logoUrl}
+              alt={partner.name}
+              className="h-7 w-auto max-w-[150px] object-contain"
+            />
+          ) : (
+            <span className="text-[17px] font-extrabold tracking-tight sm:text-[19px]">
+              {partner.name}
             </span>
-            {/* Ours in the lockup, so it stays LinkUpNaija purple. */}
-            <span className="text-[22px] font-black text-[#8B83E6]">×</span>
-            {partner.logoUrl ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={partner.logoUrl}
-                alt={partner.name}
-                className="h-8 w-auto max-w-[180px] object-contain sm:h-10"
-              />
-            ) : (
-              <span className="text-[20px] font-extrabold tracking-tight sm:text-[24px]">
-                {partner.name}
-              </span>
-            )}
-          </div>
+          )}
+        </div>
 
-          <h1 className="mt-6 max-w-2xl text-[32px] font-extrabold leading-[1.05] tracking-[-0.03em] sm:text-[46px]">
+        {/* Branded squares for every upcoming night, then their own flyers.
+            The ig-card route is the same generator the admin panel uses, so
+            the poster carries our mark without a second pipeline to keep. */}
+        <PartnerHero
+          brand={brand}
+          slides={[
+            ...events.map((e) => ({
+              src: `/api/ig-card/${e.id}`,
+              label: `${partner.name} — ${e.title}`,
+            })),
+            ...partner.posterUrls.map((src, i) => ({
+              src,
+              label: `${partner.name} poster ${i + 1}`,
+            })),
+          ]}
+        />
+
+        <div className="container-page pb-10 pt-6">
+          <h1 className="max-w-2xl text-[28px] font-extrabold uppercase leading-[1.05] tracking-[-0.02em] sm:text-[40px]">
             {partner.collabBlurb ?? partner.tagline ?? "A different kind of night in Abuja."}
           </h1>
-
           {events.length > 0 && (
             <Link
               href={`/events/${events[0].id}`}
-              className="mt-7 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-[15px] font-black text-gray-900 transition hover:opacity-90"
+              className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-[15px] font-black text-gray-900 transition hover:opacity-90"
             >
               Get on the list
               <LineIcon name="chevronRight" size={14} />
