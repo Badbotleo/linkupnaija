@@ -31,6 +31,7 @@ import { formatNaira } from "@/lib/paystack";
 import { attendanceProof, ATTENDANCE_REVEAL_AT } from "@/lib/social-proof";
 import TicketPanel from "@/components/events/TicketPanel";
 import TicketTiersEditor from "@/components/events/TicketTiersEditor";
+import EventPictures from "@/components/events/EventPictures";
 import RecapReel from "@/components/home/RecapReel";
 import { getRecapsForEvent } from "@/lib/recaps";
 import { isProActive } from "@/lib/pro";
@@ -139,6 +140,26 @@ export default async function EventDetailPage({
     description: string | null;
     admits: number | null;
   }[];
+
+  // The partner behind this event, when there is one. Its own query for the
+  // same reason as the tiers: embedded, a missing table would fail the whole
+  // event select and take the page down.
+  interface PartnerBadge {
+    slug: string;
+    name: string;
+    logo_url: string | null;
+  }
+  let partner: PartnerBadge | null = null;
+  const partnerId = (event as { partner_id?: string | null }).partner_id;
+  if (partnerId) {
+    const { data } = await supabase
+      .from("partners")
+      .select("slug, name, logo_url")
+      .eq("id", partnerId)
+      .eq("is_active", true)
+      .maybeSingle();
+    partner = (data as PartnerBadge | null) ?? null;
+  }
 
   const attendeeCount = accepted.length;
   const attendance = attendanceProof(attendeeCount, {
@@ -309,18 +330,10 @@ export default async function EventDetailPage({
           `select("*")` simply won't return the key before then. */}
       {Array.isArray((event as { gallery_urls?: string[] }).gallery_urls) &&
         (event as { gallery_urls: string[] }).gallery_urls.length > 0 && (
-          <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto">
-            {(event as { gallery_urls: string[] }).gallery_urls.map((url, i) => (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                key={url}
-                src={url}
-                alt={`${event.title} — picture ${i + 2}`}
-                loading="lazy"
-                className="h-28 w-28 shrink-0 rounded-xl object-cover shadow-sm sm:h-36 sm:w-36"
-              />
-            ))}
-          </div>
+          <EventPictures
+            urls={(event as { gallery_urls: string[] }).gallery_urls}
+            title={event.title}
+          />
         )}
 
       <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -337,6 +350,25 @@ export default async function EventDetailPage({
               <span className="inline-flex items-center gap-1 rounded-full bg-gray-900 px-2.5 py-1 text-xs font-bold text-white">
                 Private Event
               </span>
+            )}
+            {/* The partner was invisible here: their page existed and nothing
+                on the event pointed at it. */}
+            {partner && (
+              <Link
+                href={`/partners/${partner.slug}`}
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#1A1040] px-2.5 py-1 text-xs font-bold text-white transition hover:opacity-90"
+              >
+                {partner.logo_url ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={partner.logo_url}
+                    alt=""
+                    className="h-3.5 w-auto max-w-[54px] object-contain"
+                  />
+                ) : null}
+                {partner.name}
+                <LineIcon name="chevronRight" size={11} />
+              </Link>
             )}
             <CategoryBadge category={event.category} />
             <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand">
