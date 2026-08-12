@@ -27,6 +27,7 @@ export default function PartnerHero({
   brand: string;
 }) {
   const scroller = useRef<HTMLDivElement>(null);
+  const videos = useRef<(HTMLVideoElement | null)[]>([]);
   const [active, setActive] = useState(0);
 
   // Which one is in view. Reading scrollLeft rather than tracking taps keeps
@@ -42,6 +43,22 @@ export default function PartnerHero({
     return () => el.removeEventListener("scroll", onScroll);
   }, [slides.length]);
 
+  // Play only what's on screen. Autoplay attributes alone would start every
+  // clip at once, and these run to 15MB apiece.
+  useEffect(() => {
+    videos.current.forEach((v, i) => {
+      if (!v) return;
+      if (i === active) {
+        v.muted = true;
+        // Rejects on some autoplay policies even when muted. A still first
+        // frame beats an exception nobody sees.
+        v.play().catch(() => {});
+      } else {
+        v.pause();
+      }
+    });
+  }, [active, slides.length]);
+
   if (slides.length === 0) return null;
 
   return (
@@ -56,12 +73,20 @@ export default function PartnerHero({
               /* Muted + playsInline is what lets it autoplay at all; without
                  both, Safari shows a paused black frame. */
               <video
+                ref={(n) => {
+                  videos.current[i] = n;
+                }}
                 src={s.src}
-                autoPlay
                 muted
                 loop
                 playsInline
-                preload={i === 0 ? "auto" : "none"}
+                // NEVER "none" here. This carried autoPlay AND
+                // preload="none", which is a contradiction: the browser was
+                // told to start playing and to fetch nothing, so an
+                // off-screen clip never loaded and never played. Metadata is
+                // enough to paint a first frame; the effect below starts the
+                // one you've actually swiped to.
+                preload="metadata"
                 aria-label={s.label}
                 className="mx-auto max-h-[78vh] w-full object-contain"
               />
