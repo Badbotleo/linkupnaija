@@ -12,11 +12,19 @@ interface Result {
   error?: string;
 }
 
+/** What they bought, so the door knows what to hand over. */
+interface Tier {
+  name: string;
+  admits: number | null;
+  description: string | null;
+}
+
 // Runs the check-in the moment the host's scan opens this page.
 export default function CheckInClient({ rsvpId }: { rsvpId: string }) {
   const supabase = createClient();
   const [state, setState] = useState<"loading" | "done">("loading");
   const [result, setResult] = useState<Result | null>(null);
+  const [tier, setTier] = useState<Tier | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -26,6 +34,17 @@ export default function CheckInClient({ rsvpId }: { rsvpId: string }) {
       if (error) setResult({ ok: false, error: error.message });
       else setResult(data as Result);
       setState("done");
+
+      // Read separately rather than from the RPC. "Checked in" and "which
+      // package" are different questions, and a failure here must not stop
+      // somebody getting through the door.
+      const { data: row } = await supabase
+        .from("rsvps")
+        .select("ticket_tiers(name, admits, description)")
+        .eq("id", rsvpId)
+        .maybeSingle();
+      const t = (row as { ticket_tiers?: Tier | null } | null)?.ticket_tiers;
+      if (t) setTier(t);
     })();
   }, [rsvpId, supabase]);
 
@@ -49,6 +68,29 @@ export default function CheckInClient({ rsvpId }: { rsvpId: string }) {
                 : "Checked in for"}{" "}
               <span className="font-semibold">{result.title}</span>
             </p>
+            {/* The whole reason for this screen on a multi-tier event: a
+                Gold Table and a Combo Lite look identical without it. */}
+            {tier && (
+              <div className="mt-5 rounded-2xl border-2 border-brand bg-brand-50 p-4 text-left">
+                <p className="text-[11px] font-black uppercase tracking-[0.14em] text-brand">
+                  Package
+                </p>
+                <p className="mt-0.5 text-xl font-extrabold text-gray-900">
+                  {tier.name}
+                  {!!tier.admits && (
+                    <span className="ml-2 text-sm font-bold text-gray-500">
+                      {tier.admits} {tier.admits === 1 ? "person" : "people"}
+                    </span>
+                  )}
+                </p>
+                {tier.description && (
+                  <p className="mt-1.5 text-sm leading-snug text-gray-600">
+                    {tier.description}
+                  </p>
+                )}
+              </div>
+            )}
+
             <p className="mt-6 text-sm text-gray-400">
               Scan the next guest&apos;s ticket to check them in.
             </p>

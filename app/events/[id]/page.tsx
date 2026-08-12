@@ -599,6 +599,7 @@ export default async function EventDetailPage({
                     isHost={isHost}
                     isFull={isFull}
                     price={event.price}
+                    tiers={tiers}
                     isPro={isPro}
                     requestsThisMonth={requestsThisMonth}
                     eventTitle={event.title}

@@ -20,6 +20,7 @@ export default function RsvpButton({
   isHost,
   isFull,
   price,
+  tiers = [],
   isPro,
   requestsThisMonth,
   eventTitle,
@@ -32,6 +33,14 @@ export default function RsvpButton({
   isHost: boolean;
   isFull: boolean;
   price: number;
+  /** Ticket types on this event. Empty means the single price applies. */
+  tiers?: {
+    id: string;
+    name: string;
+    price: number;
+    admits: number | null;
+    description: string | null;
+  }[];
   isPro: boolean;
   requestsThisMonth: number;
   eventTitle: string;
@@ -61,6 +70,16 @@ export default function RsvpButton({
     return null;
   }
 
+  // Which package they're buying. Cheapest preselected so the common case is
+  // one tap, but nothing is bought until they press the button either way.
+  const [tierId, setTierId] = useState<string | null>(
+    tiers.length > 0 ? tiers[0].id : null
+  );
+  const chosen = tiers.find((x) => x.id === tierId) ?? null;
+  // A tier's price replaces the event price. The event price on a
+  // multi-tier event is a floor, not a thing anyone actually buys.
+  const dueNow = chosen ? chosen.price : price;
+
   async function getUser() {
     const {
       data: { user },
@@ -81,8 +100,8 @@ export default function RsvpButton({
     // Paid events: apply wallet balance first, then charge the remainder.
     let paymentReference: string | null = null;
     const walletUsed =
-      price > 0 && useWallet ? Math.min(walletBalance, price) : 0;
-    const remainder = price - walletUsed;
+      dueNow > 0 && useWallet ? Math.min(walletBalance, dueNow) : 0;
+    const remainder = dueNow - walletUsed;
 
     if (remainder > 0) {
       try {
@@ -129,7 +148,8 @@ export default function RsvpButton({
         event_id: eventId,
         user_id: user.id,
         status: "pending",
-        paid: price > 0,
+        paid: dueNow > 0,
+        tier_id: tierId,
         payment_reference: paymentReference ?? (walletUsed > 0 ? "wallet" : null),
       },
       { onConflict: "event_id,user_id" }
@@ -141,7 +161,7 @@ export default function RsvpButton({
     }
 
     // Record the ticket sale (drives host payout) + notify.
-    if (price > 0) {
+    if (dueNow > 0) {
       // This row IS the host's payout. If it doesn't land, the money was
       // taken and the host is never paid — and until now that failure was
       // written to console.error and the buyer was told "Payment confirmed".
@@ -149,8 +169,8 @@ export default function RsvpButton({
       const txRow = {
         event_id: eventId,
         user_id: user.id,
-        amount: price,
-        platform_fee: Math.round(price * 0.1),
+        amount: dueNow,
+        platform_fee: Math.round(dueNow * 0.1),
         paystack_reference: paymentReference ?? "wallet",
       };
       let { error: txErr } = await supabase.from("transactions").insert(txRow);
@@ -185,10 +205,10 @@ export default function RsvpButton({
     }
 
     haptic("success");
-    if (price > 0) confettiCoins();
+    if (dueNow > 0) confettiCoins();
     else confettiJoin();
     toast.success(
-      price > 0
+      dueNow > 0
         ? "Payment confirmed ✅ Your request has been sent!"
         : "Request sent 🎉 The host will review it."
     );
@@ -217,17 +237,65 @@ export default function RsvpButton({
 
   // Button label reflecting the wallet portion for paid events.
   const walletApplied =
-    price > 0 && useWallet ? Math.min(walletBalance, price) : 0;
-  const remainderDue = price - walletApplied;
+    dueNow > 0 && useWallet ? Math.min(walletBalance, dueNow) : 0;
+  const remainderDue = dueNow - walletApplied;
   const remainderLabel =
     remainderDue === 0
       ? "Pay with wallet & request to join"
       : walletApplied > 0
         ? `Pay ${formatNaira(remainderDue)} & request to join`
-        : `Pay ${formatNaira(price)} & request to join`;
+        : `Pay ${formatNaira(dueNow)} & request to join`;
 
   return (
     <div className="space-y-2">
+      {/* Pick a package before paying. Without this the host takes money and
+          has no idea whether they owe a Combo Lite or a Gold Table. */}
+      {tiers.length > 0 && status === "none" && (
+        <fieldset className="space-y-1.5">
+          <legend className="mb-1 text-xs font-black uppercase tracking-[0.12em] text-gray-500">
+            Choose your ticket
+          </legend>
+          {tiers.map((x) => (
+            <label
+              key={x.id}
+              className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition ${
+                tierId === x.id
+                  ? "border-brand bg-brand-50/60"
+                  : "border-gray-200 hover:border-brand/40"
+              }`}
+            >
+              <input
+                type="radio"
+                name="tier"
+                checked={tierId === x.id}
+                onChange={() => setTierId(x.id)}
+                className="mt-1 shrink-0"
+              />
+              <span className="min-w-0 flex-1">
+                <span className="flex items-baseline justify-between gap-2">
+                  <span className="text-sm font-bold text-gray-900">
+                    {x.name}
+                    {!!x.admits && (
+                      <span className="ml-1.5 font-medium text-gray-400">
+                        · {x.admits} {x.admits === 1 ? "person" : "people"}
+                      </span>
+                    )}
+                  </span>
+                  <span className="shrink-0 text-sm font-extrabold tabular-nums text-gray-900">
+                    {formatNaira(x.price)}
+                  </span>
+                </span>
+                {x.description && (
+                  <span className="mt-0.5 block text-xs leading-snug text-gray-500">
+                    {x.description}
+                  </span>
+                )}
+              </span>
+            </label>
+          ))}
+        </fieldset>
+      )}
+
       {status === "accepted" && (
         <>
           <div className="rounded-xl bg-naija-50 px-4 py-3 text-center text-sm font-semibold text-naija-700">
