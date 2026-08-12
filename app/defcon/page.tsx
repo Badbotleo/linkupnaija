@@ -99,21 +99,24 @@ export default async function DefconPage() {
           )}
         </div>
 
-        {/* Branded squares for every upcoming night, then their own flyers.
-            The ig-card route is the same generator the admin panel uses, so
-            the poster carries our mark without a second pipeline to keep. */}
+        {/* The partner's OWN artwork leads. Their designer made a flyer that
+            says everything in their voice; our generated square is a
+            competent summary of the same facts and nowhere near as good.
+            The generated cards are the fallback for a partner who hasn't
+            uploaded anything yet, so a new page is never empty. */}
         <PartnerHero
           brand={brand}
-          slides={[
-            ...events.map((e) => ({
-              src: `/api/ig-card/${e.id}`,
-              label: `${partner.name} — ${e.title}`,
-            })),
-            ...partner.posterUrls.map((src, i) => ({
-              src,
-              label: `${partner.name} poster ${i + 1}`,
-            })),
-          ]}
+          slides={
+            partner.posterUrls.length > 0
+              ? partner.posterUrls.map((src, i) => ({
+                  src,
+                  label: `${partner.name} artwork ${i + 1}`,
+                }))
+              : events.map((e) => ({
+                  src: `/api/ig-card/${e.id}`,
+                  label: `${partner.name} — ${e.title}`,
+                }))
+          }
         />
 
         <div className="container-page pb-10 pt-6">
