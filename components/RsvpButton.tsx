@@ -53,6 +53,19 @@ export default function RsvpButton({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [useWallet, setUseWallet] = useState(walletBalance > 0);
+  // Which package they're buying. Cheapest preselected so the common case is
+  // one tap, but nothing is bought until they press the button either way.
+  //
+  // Declared with the other hooks, above the isLoggedIn and isHost early
+  // returns — a hook after a conditional return doesn't run in the same order
+  // every render, which is a real bug and not just a lint rule.
+  const [tierId, setTierId] = useState<string | null>(
+    tiers.length > 0 ? tiers[0].id : null
+  );
+  const chosen = tiers.find((x) => x.id === tierId) ?? null;
+  // A tier's price replaces the event price. On a multi-tier event the event
+  // price is a floor, not a thing anyone actually buys.
+  const dueNow = chosen ? chosen.price : price;
 
   if (!isLoggedIn) {
     return (
@@ -69,16 +82,6 @@ export default function RsvpButton({
   if (isHost) {
     return null;
   }
-
-  // Which package they're buying. Cheapest preselected so the common case is
-  // one tap, but nothing is bought until they press the button either way.
-  const [tierId, setTierId] = useState<string | null>(
-    tiers.length > 0 ? tiers[0].id : null
-  );
-  const chosen = tiers.find((x) => x.id === tierId) ?? null;
-  // A tier's price replaces the event price. The event price on a
-  // multi-tier event is a floor, not a thing anyone actually buys.
-  const dueNow = chosen ? chosen.price : price;
 
   async function getUser() {
     const {
