@@ -115,7 +115,7 @@ export default async function CollabCard() {
           </p>
 
           <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-black text-gray-900">
-            See what&apos;s on
+            Make we link up
             <LineIcon name="chevronRight" size={13} />
           </span>
         </div>

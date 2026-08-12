@@ -125,7 +125,10 @@ export default async function DefconPage() {
               href={`/events/${events[0].id}`}
               className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-[15px] font-black text-gray-900 transition hover:opacity-90"
             >
-              Get on the list
+              {/* The app's verb is "link up" everywhere else, and their
+                  TikTok is literally @makewelinkupnaija. "Get on the list"
+                  was a nightclub's words, not ours. */}
+              Make we link up
               <LineIcon name="chevronRight" size={14} />
             </Link>
           )}
