@@ -25,32 +25,6 @@ export interface OpportunityDef {
 
 export const OPPORTUNITIES: OpportunityDef[] = [
   {
-    type: "car_hire",
-    emoji: "🚗",
-    title: "Car Hire Hub",
-    headline: "List your vehicles for event hire",
-    description:
-      "Offer your cars, buses or SUVs to attendees heading to events. Get booked directly through LinkUpNaija.",
-    benefits: [
-      "Reach event-goers who need transport",
-      "Set your own rates",
-      "Get paid via Paystack",
-      "Build ratings and reviews",
-    ],
-    buttonLabel: "Register as Car Hire",
-    businessLabel: "Business name",
-    extra: [
-      {
-        key: "vehicle_type",
-        label: "Vehicle type",
-        kind: "select",
-        options: ["Sedan", "SUV", "Bus", "Luxury"],
-        required: true,
-      },
-      { key: "num_vehicles", label: "Number of vehicles", kind: "number" },
-    ],
-  },
-  {
     type: "photographer",
     emoji: "📸",
     title: "Photographer Hub",

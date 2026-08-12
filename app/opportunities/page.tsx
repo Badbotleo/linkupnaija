@@ -14,7 +14,7 @@ export default function OpportunitiesPage() {
     <div>
       <AppHeader
         title="Opportunities"
-        subtitle="List your car, venue or services and get booked"
+        subtitle="List your venue or services and get booked"
         back
       />
 

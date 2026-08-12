@@ -559,7 +559,7 @@ export default async function HomePage() {
           { href: "/live", icon: "activity", title: "Live feed", text: "Who's hosting and joining right now" },
           { href: "/hosts/leaderboard", icon: "trophy", title: "Host leaderboard", text: "Nigeria's most-loved hosts" },
           { href: "/rides", icon: "car", title: "Hail a car", text: "Get a ride to your next link-up" },
-          { href: "/opportunities", icon: "briefcase", title: "Opportunities", text: "List your car, venue or services" },
+          { href: "/opportunities", icon: "briefcase", title: "Opportunities", text: "List your venue or services" },
           { href: "/refer", icon: "gift", title: "Invite & earn", text: "Give ₦500, get ₦500" },
           { href: "/pro", icon: "star", title: "Go Pro", text: "Early access and a gold badge" },
         ].map((f) => (
