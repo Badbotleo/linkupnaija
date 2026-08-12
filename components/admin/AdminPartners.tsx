@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { NIGERIAN_STATES } from "@/lib/constants";
 import { toast } from "@/lib/toast";
 import { isRealText } from "@/lib/content-guards";
+import { capturePoster } from "@/lib/video-poster";
 import LineIcon from "../ui/LineIcon";
 
 /**
@@ -126,7 +127,28 @@ export default function AdminPartners() {
       );
       return null;
     }
-    return supabase.storage.from("partner-assets").getPublicUrl(path).data.publicUrl;
+    const url = supabase.storage.from("partner-assets").getPublicUrl(path)
+      .data.publicUrl;
+
+    // Grab a still for videos while the file is still in memory, and store it
+    // at "<same path>-poster.jpg". No column needed: the hero derives the
+    // poster URL from the video URL, and a miss just 404s harmlessly.
+    //
+    // Without this a 6MB clip is a black rectangle until enough of it
+    // arrives, which is what "it takes time to load" actually looks like.
+    if (isVideo) {
+      const frame = await capturePoster(file);
+      if (frame) {
+        await supabase.storage
+          .from("partner-assets")
+          .upload(`${path.replace(/\.[^.]+$/, "")}-poster.jpg`, frame, {
+            contentType: "image/jpeg",
+            upsert: true,
+            cacheControl: "31536000",
+          });
+      }
+    }
+    return url;
   }
 
   async function pickSingle(files: File[], key: "logo_url" | "cover_url") {

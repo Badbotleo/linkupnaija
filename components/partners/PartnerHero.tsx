@@ -20,6 +20,15 @@ import LineIcon from "../ui/LineIcon";
 /** Posters can be clips now, so the hero has to play them. */
 const isVideo = (u: string) => /\.(mp4|webm|mov|m4v)(\?|$)/i.test(u);
 
+/**
+ * Where the upload stashed this clip's first frame.
+ *
+ * Derived rather than stored: the admin uploads it beside the video as
+ * "<same path>-poster.jpg", so no column is needed and a clip uploaded
+ * before this existed simply 404s and paints black as it used to.
+ */
+const posterFor = (u: string) => u.replace(/\.[^.]+(\?.*)?$/, "-poster.jpg");
+
 export default function PartnerHero({
   slides,
   brand,
@@ -37,6 +46,7 @@ export default function PartnerHero({
    * swipe between clips.
    */
   const [muted, setMuted] = useState(true);
+  const [paused, setPaused] = useState(false);
 
   // Which one is in view. Reading scrollLeft rather than tracking taps keeps
   // the dots honest when somebody flings past two at once.
@@ -58,6 +68,10 @@ export default function PartnerHero({
       if (!v) return;
       if (i === active) {
         v.muted = muted;
+        if (paused) {
+          v.pause();
+          return;
+        }
         // Rejects on some autoplay policies even when muted. A still first
         // frame beats an exception nobody sees.
         v.play().catch(() => {
@@ -71,7 +85,7 @@ export default function PartnerHero({
         v.pause();
       }
     });
-  }, [active, muted, slides.length]);
+  }, [active, muted, paused, slides.length]);
 
   if (slides.length === 0) return null;
 
@@ -101,6 +115,8 @@ export default function PartnerHero({
                 // enough to paint a first frame; the effect below starts the
                 // one you've actually swiped to.
                 preload="metadata"
+                poster={posterFor(s.src)}
+                onClick={() => setPaused((x) => !x)}
                 aria-label={s.label}
                 className="mx-auto max-h-[78vh] w-full object-contain"
               />
@@ -130,6 +146,17 @@ export default function PartnerHero({
           className="absolute left-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-black/45 text-white backdrop-blur-sm transition hover:bg-black/65"
         >
           <LineIcon name={muted ? "volumeOff" : "volume"} size={16} />
+        </button>
+      )}
+
+      {isVideo(slides[active]?.src ?? "") && (
+        <button
+          type="button"
+          onClick={() => setPaused((x) => !x)}
+          aria-label={paused ? "Play" : "Pause"}
+          className="absolute left-14 top-3 grid h-9 w-9 place-items-center rounded-full bg-black/45 text-white backdrop-blur-sm transition hover:bg-black/65"
+        >
+          <LineIcon name={paused ? "play" : "pause"} size={16} />
         </button>
       )}
 
