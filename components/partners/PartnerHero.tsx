@@ -16,6 +16,9 @@ import { useEffect, useRef, useState } from "react";
  *   2. Anything in partners.poster_urls — their own flyers, past ones
  *      included.
  */
+/** Posters can be clips now, so the hero has to play them. */
+const isVideo = (u: string) => /\.(mp4|webm|mov|m4v)(\?|$)/i.test(u);
+
 export default function PartnerHero({
   slides,
   brand,
@@ -49,15 +52,30 @@ export default function PartnerHero({
       >
         {slides.map((s, i) => (
           <div key={s.src} className="w-full shrink-0 snap-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={s.src}
-              alt={s.label}
-              // contain, not cover: a flyer cropped to fill is a flyer with
-              // its date cut off, which is the one thing it exists to say.
-              className="mx-auto max-h-[78vh] w-full object-contain"
-              loading={i === 0 ? "eager" : "lazy"}
-            />
+            {isVideo(s.src) ? (
+              /* Muted + playsInline is what lets it autoplay at all; without
+                 both, Safari shows a paused black frame. */
+              <video
+                src={s.src}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload={i === 0 ? "auto" : "none"}
+                aria-label={s.label}
+                className="mx-auto max-h-[78vh] w-full object-contain"
+              />
+            ) : (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={s.src}
+                alt={s.label}
+                // contain, not cover: a flyer cropped to fill is a flyer with
+                // its date cut off, which is the one thing it exists to say.
+                className="mx-auto max-h-[78vh] w-full object-contain"
+                loading={i === 0 ? "eager" : "lazy"}
+              />
+            )}
           </div>
         ))}
       </div>
