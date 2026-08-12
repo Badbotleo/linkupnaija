@@ -6,6 +6,7 @@ import LineIcon from "@/components/ui/LineIcon";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
 import { createClient } from "@/lib/supabase/server";
+import PartnerHero from "@/components/partners/PartnerHero";
 import { getPartner, getPartnerEvents, safeColor } from "@/lib/partners";
 
 export const dynamic = "force-dynamic";
@@ -72,6 +73,24 @@ export default async function DefconPage() {
 
   return (
     <div className="pb-24">
+      {/* --- poster wall ------------------------------------------------ */}
+      {/* Branded squares for every upcoming night, then their own flyers.
+          The ig-card route is the same generator the admin panel uses, so
+          the poster carries our mark without a second pipeline to keep. */}
+      <PartnerHero
+        brand={brand}
+        slides={[
+          ...events.map((e) => ({
+            src: `/api/ig-card/${e.id}`,
+            label: `${partner.name} — ${e.title}`,
+          })),
+          ...partner.posterUrls.map((src, i) => ({
+            src,
+            label: `${partner.name} poster ${i + 1}`,
+          })),
+        ]}
+      />
+
       {/* --- hero ------------------------------------------------------- */}
       <section className="relative overflow-hidden" style={{ backgroundColor: brand }}>
         {partner.coverUrl && (

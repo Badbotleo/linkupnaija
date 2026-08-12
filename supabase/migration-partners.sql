@@ -104,3 +104,10 @@ alter table public.partners
   add column if not exists collab_until timestamptz;
 alter table public.partners
   add column if not exists collab_blurb text;
+
+-- --- poster wall -----------------------------------------------------------
+-- Past and present flyers, newest first. An array rather than a table: these
+-- are ordered images with no other attributes, and a join table for that is
+-- ceremony.
+alter table public.partners
+  add column if not exists poster_urls text[] not null default '{}';

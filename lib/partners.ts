@@ -24,6 +24,8 @@ export interface Partner {
   state: string | null;
   /** The collaboration headline, when one is running. */
   collabBlurb: string | null;
+  /** Their flyers, past ones included. */
+  posterUrls: string[];
 }
 
 /**
@@ -62,10 +64,11 @@ interface Row {
   website: string | null;
   state: string | null;
   collab_blurb: string | null;
+  poster_urls: string[] | null;
 }
 
 const SELECT =
-  "id, slug, name, tagline, about, logo_url, cover_url, brand_color, accent_color, instagram, tiktok, website, state, collab_blurb";
+  "id, slug, name, tagline, about, logo_url, cover_url, brand_color, accent_color, instagram, tiktok, website, state, collab_blurb, poster_urls";
 
 function toPartner(r: Row): Partner {
   return {
@@ -83,6 +86,10 @@ function toPartner(r: Row): Partner {
     website: r.website,
     state: r.state,
     collabBlurb: r.collab_blurb,
+    // Placeholders and typos filtered the same way as the single urls.
+    posterUrls: (r.poster_urls ?? [])
+      .map(safeUrl)
+      .filter((u): u is string => !!u),
   };
 }
 
