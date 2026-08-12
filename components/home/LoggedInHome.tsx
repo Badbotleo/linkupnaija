@@ -62,9 +62,15 @@ function greeting() {
       timeZone: "Africa/Lagos",
     }).format(new Date())
   );
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  return "Good evening";
+  // Pidgin, because "Good afternoon" is how a bank app talks to you and this
+  // is meant to sound like a friend. Lagos time, not the device's — a member
+  // travelling shouldn't be greeted for the wrong half of the day back home.
+  if (hour < 12) return "Morning o!";
+  if (hour < 17) return "How afternoon?";
+  // "How night?" from 9pm. Not a bug fix — the old bucket stopped correctly
+  // at midnight — just that 10pm reads as night, not evening.
+  if (hour < 21) return "How evening?";
+  return "How night?";
 }
 
 // Personalised home for signed-in users — replaces the marketing landing so
