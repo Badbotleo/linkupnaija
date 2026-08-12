@@ -50,6 +50,17 @@ export default function HostForm({
   const [seriesDescription, setSeriesDescription] = useState("");
   const [frequency, setFrequency] = useState<SeriesFrequency>("monthly");
 
+  /**
+   * Ticket types, collected before the event exists.
+   *
+   * They can't be written until the event has an id, so they're held here and
+   * inserted straight after it. A host setting up combo packs and tables
+   * shouldn't have to create the event, find it, and come back.
+   */
+  const [tiers, setTiers] = useState<
+    { name: string; price: string; admits: string; description: string }[]
+  >([]);
+
   // Circles the host can share this event to.
   const [myCircles, setMyCircles] = useState<{ id: string; name: string }[]>([]);
   const [postToCircle, setPostToCircle] = useState("");
@@ -306,6 +317,34 @@ export default function HostForm({
       setError("Event created but could not be opened. Check your dashboard.");
       setLoading(false);
       return;
+    }
+
+    // Ticket types, now that there's an id to attach them to.
+    //
+    // A failure here must NOT lose the event — it already exists and the host
+    // is about to be sent to it. They're told instead, and the same editor
+    // lives on the event page for a second attempt.
+    const rows = tiers
+      .map((x, i) => ({
+        event_id: data.id,
+        name: x.name.trim(),
+        price: Math.round(Number(x.price)),
+        admits: x.admits ? Math.max(1, Math.round(Number(x.admits))) : null,
+        description: x.description.trim() || null,
+        sort_order: i,
+      }))
+      .filter((r) => r.name && Number.isFinite(r.price) && r.price > 0);
+    if (rows.length > 0) {
+      const { error: tErr } = await supabase.from("ticket_tiers").insert(rows);
+      if (tErr) {
+        setError(
+          /ticket_tiers/.test(tErr.message)
+            ? "Event created, but ticket types need supabase/migration-ticket-tiers.sql. Add them from the event page."
+            : `Event created, but the ticket types didn't save: ${tErr.message}`
+        );
+        setLoading(false);
+        return;
+      }
     }
 
     // Optionally share the new event to a circle (notifies its members).
@@ -594,6 +633,102 @@ export default function HostForm({
             Paid events collect payment via Paystack before a request is sent.
           </p>
         </div>
+      </div>
+
+      {/* Several prices on one event — combo packs, tables, early bird.
+          Optional: leave it empty and the single price above is the ticket. */}
+      <div>
+        <div className="flex items-center justify-between gap-3">
+          <label className="label mb-0">
+            More ticket types{" "}
+            <span className="font-normal text-gray-400">(optional)</span>
+          </label>
+          <button
+            type="button"
+            onClick={() =>
+              setTiers((t) => [
+                ...t,
+                { name: "", price: "", admits: "", description: "" },
+              ])
+            }
+            className="shrink-0 rounded-full border border-gray-200 px-3 py-1.5 text-xs font-bold text-gray-700"
+          >
+            + Add a type
+          </button>
+        </div>
+        <p className="mt-1 text-xs text-gray-400">
+          For combo packs, table sizes, early bird — anything with its own
+          price. Skip it and the price above is the only ticket.
+        </p>
+
+        {tiers.length > 0 && (
+          <div className="mt-3 space-y-3">
+            {tiers.map((row, i) => (
+              <div key={i} className="rounded-2xl bg-gray-50 p-3">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <input
+                    value={row.name}
+                    onChange={(e) =>
+                      setTiers((t) =>
+                        t.map((x, n) =>
+                          n === i ? { ...x, name: e.target.value } : x
+                        )
+                      )
+                    }
+                    maxLength={60}
+                    placeholder="Name, e.g. Gold Table"
+                    className="input"
+                  />
+                  <input
+                    value={row.price}
+                    onChange={(e) =>
+                      setTiers((t) =>
+                        t.map((x, n) =>
+                          n === i ? { ...x, price: e.target.value } : x
+                        )
+                      )
+                    }
+                    inputMode="numeric"
+                    placeholder="Price, e.g. 280000"
+                    className="input"
+                  />
+                  <input
+                    value={row.admits}
+                    onChange={(e) =>
+                      setTiers((t) =>
+                        t.map((x, n) =>
+                          n === i ? { ...x, admits: e.target.value } : x
+                        )
+                      )
+                    }
+                    inputMode="numeric"
+                    placeholder="Admits how many? (blank if not a table)"
+                    className="input"
+                  />
+                  <input
+                    value={row.description}
+                    onChange={(e) =>
+                      setTiers((t) =>
+                        t.map((x, n) =>
+                          n === i ? { ...x, description: e.target.value } : x
+                        )
+                      )
+                    }
+                    placeholder="What's included"
+                    className="input"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setTiers((t) => t.filter((_, n) => n !== i))}
+                  className="mt-2 text-xs font-bold text-red-600"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div>
