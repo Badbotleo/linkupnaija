@@ -52,16 +52,27 @@ export default async function CollabCard() {
         className="group relative block overflow-hidden rounded-3xl shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-xl"
         style={{ backgroundColor: brand }}
       >
+        {/* The artwork IS the banner. It used to sit at opacity-25 behind a
+            flat colour block, which threw away the thing people actually
+            respond to and left a coloured rectangle with words on it. Now it
+            leads, and the scrim only darkens the strip the text sits in. */}
         {p.cover_url && (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={p.cover_url}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover opacity-25 transition duration-300 group-hover:scale-105"
+            className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
           />
         )}
+        {p.cover_url && (
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10" />
+        )}
 
-        <div className="relative p-6 text-white sm:p-8">
+        <div
+          className={`relative p-6 sm:p-8 ${
+            p.cover_url ? "min-h-[260px] sm:min-h-[300px]" : ""
+          } flex flex-col justify-end text-white`}
+        >
           {/* The lockup: both names, equal billing — that's what a
               collaboration is. */}
           <div className="flex flex-wrap items-center gap-2.5">
@@ -95,8 +106,8 @@ export default async function CollabCard() {
           >
             Collaboration
           </p>
-          <p className="mt-1 max-w-lg text-[22px] font-extrabold leading-tight tracking-[-0.02em] sm:text-[26px]">
-            {p.collab_blurb ?? p.tagline ?? `We're running nights with ${p.name}.`}
+          <p className="mt-1 max-w-lg text-[24px] font-extrabold uppercase leading-[1.05] tracking-[-0.01em] sm:text-[30px]">
+            {p.collab_blurb ?? p.tagline ?? `Nights with ${p.name}.`}
           </p>
 
           <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-black text-gray-900">
