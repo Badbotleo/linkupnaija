@@ -63,3 +63,30 @@ create policy "Admins and owners manage partners"
   on public.partners for all
   using (public.is_admin() or owner_id = auth.uid())
   with check (public.is_admin() or owner_id = auth.uid());
+
+-- --- partner assets bucket -------------------------------------------------
+-- Logos and covers the partner supplies. Public: they're brand marks meant to
+-- be seen, and a signed URL on every page view would be cost for nothing.
+insert into storage.buckets (id, name, public)
+values ('partner-assets', 'partner-assets', true)
+on conflict (id) do nothing;
+
+drop policy if exists "Public read partner assets" on storage.objects;
+create policy "Public read partner assets"
+  on storage.objects for select
+  using (bucket_id = 'partner-assets');
+
+drop policy if exists "Admins upload partner assets" on storage.objects;
+create policy "Admins upload partner assets"
+  on storage.objects for insert
+  with check (bucket_id = 'partner-assets' and public.is_admin());
+
+drop policy if exists "Admins replace partner assets" on storage.objects;
+create policy "Admins replace partner assets"
+  on storage.objects for update
+  using (bucket_id = 'partner-assets' and public.is_admin());
+
+drop policy if exists "Admins delete partner assets" on storage.objects;
+create policy "Admins delete partner assets"
+  on storage.objects for delete
+  using (bucket_id = 'partner-assets' and public.is_admin());

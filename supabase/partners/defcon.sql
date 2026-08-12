@@ -5,7 +5,9 @@
 -- The copy below is DEFCON's own wording, taken from their SUMMER GAMES
 -- listing and their menu, reorganised. Nothing about them is invented here.
 -- The two colours ARE estimates, read off the flyer artwork: replace them
--- with the real brand values when DEFCON confirms them.
+-- with the real brand values when DEFCON confirms them. They're taken from
+-- the logo itself (red keyline, cream letterforms) rather than the flyer
+-- background, so they should be close.
 
 -- 1. The partner ------------------------------------------------------------
 insert into public.partners (slug, name, tagline, about, state, brand_color, accent_color, sort_order)
@@ -15,8 +17,8 @@ values (
   'A different kind of night in Abuja.',
   E'DEFCON brings good music, games, competition and new connections to Abuja rooftops.\n\nThe night starts with fun, games and social vibes before the energy takes over. Come with your friends, meet new people, play, compete, catch a vibe.\n\nCombo packs and table reservations are booked through the event you want to attend — pick a night below and choose your table when you request to join.',
   'FCT - Abuja',
-  '#E11B22',   -- estimate from the flyer red
-  '#C0C0C0',   -- estimate from the chrome logotype
+  '#E4373C',   -- read off the logo artwork: the red keyline
+  '#EFEADA',   -- the cream letterform fill
   0
 )
 on conflict (slug) do update set
