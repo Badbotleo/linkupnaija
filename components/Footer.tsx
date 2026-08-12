@@ -17,7 +17,7 @@ const SOCIALS = [
   {
     label: "TikTok",
     handle: "@LinkUpNaija",
-    href: "https://tiktok.com/@linkupnaija",
+    href: "https://tiktok.com/@makewelinkupnaija",
     icon: <TikTokIcon />,
   },
 ];

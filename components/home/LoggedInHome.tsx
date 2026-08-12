@@ -191,7 +191,8 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
           {greeting()}
         </p>
         <h1 className="mt-1.5 text-[26px] font-extrabold leading-tight tracking-[-0.03em] text-gray-900 sm:text-[30px]">
-          Hey <span className="text-brand">{firstName}</span>, ready to link up?
+          How far <span className="text-brand">{firstName}</span>, ready to link
+          up?
         </h1>
         <p className="mt-1 text-sm text-gray-500">
           {upcoming.length > 0

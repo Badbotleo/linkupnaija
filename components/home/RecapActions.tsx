@@ -193,7 +193,14 @@ export default function RecapActions({
 
       {open && (
         <div
-          className="absolute inset-0 z-10 flex flex-col justify-end bg-black/50"
+          // FIXED, not absolute. This component is mounted inside the player's
+          // small action rail (`absolute bottom-28 right-4`), so `inset-0`
+          // resolved against a ~44px box and the whole sheet rendered clipped
+          // into the corner — open, but effectively invisible.
+          //
+          // z above the player's own 100, and pointer-events-auto because the
+          // rail's wrapper turns them off.
+          className="pointer-events-auto fixed inset-0 z-[110] flex flex-col justify-end bg-black/50"
           onClick={() => setOpen(false)}
         >
           <div
