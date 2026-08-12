@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import LineIcon from "../ui/LineIcon";
 
 /**
  * The swipeable poster wall at the top of a partner page.
@@ -29,6 +30,13 @@ export default function PartnerHero({
   const scroller = useRef<HTMLDivElement>(null);
   const videos = useRef<(HTMLVideoElement | null)[]>([]);
   const [active, setActive] = useState(0);
+  /**
+   * Muted to start, because browsers refuse to autoplay audio and a page
+   * that starts talking at you is a page you close. The button is the
+   * gesture that earns the right to make noise, and the choice sticks as you
+   * swipe between clips.
+   */
+  const [muted, setMuted] = useState(true);
 
   // Which one is in view. Reading scrollLeft rather than tracking taps keeps
   // the dots honest when somebody flings past two at once.
@@ -49,15 +57,21 @@ export default function PartnerHero({
     videos.current.forEach((v, i) => {
       if (!v) return;
       if (i === active) {
-        v.muted = true;
+        v.muted = muted;
         // Rejects on some autoplay policies even when muted. A still first
         // frame beats an exception nobody sees.
-        v.play().catch(() => {});
+        v.play().catch(() => {
+          // Unmuted playback can be refused outright. Fall back rather than
+          // leaving a frozen frame with no explanation.
+          v.muted = true;
+          setMuted(true);
+          v.play().catch(() => {});
+        });
       } else {
         v.pause();
       }
     });
-  }, [active, slides.length]);
+  }, [active, muted, slides.length]);
 
   if (slides.length === 0) return null;
 
@@ -104,6 +118,20 @@ export default function PartnerHero({
           </div>
         ))}
       </div>
+
+      {/* Only when there's audio to unmute. A speaker icon over a flyer is
+          a control that does nothing. */}
+      {isVideo(slides[active]?.src ?? "") && (
+        <button
+          type="button"
+          onClick={() => setMuted((m) => !m)}
+          aria-label={muted ? "Unmute" : "Mute"}
+          aria-pressed={!muted}
+          className="absolute left-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-black/45 text-white backdrop-blur-sm transition hover:bg-black/65"
+        >
+          <LineIcon name={muted ? "volumeOff" : "volume"} size={16} />
+        </button>
+      )}
 
       {slides.length > 1 && (
         <>
