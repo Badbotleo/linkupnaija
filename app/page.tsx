@@ -9,6 +9,7 @@ import LoggedInHome from "@/components/home/LoggedInHome";
 import Rail from "@/components/home/Rail";
 import SwipeDeck from "@/components/home/SwipeDeck";
 import PastEventsReel from "@/components/home/PastEventsReel";
+import FeaturedRail from "@/components/home/FeaturedRail";
 import ScreenTour from "@/components/home/ScreenTour";
 import ThingsToDo from "@/components/home/ThingsToDo";
 import LineIcon from "@/components/ui/LineIcon";
@@ -357,6 +358,8 @@ export default async function HomePage() {
             </Link>
         ))}
       </Rail>
+
+      <FeaturedRail />
 
       <PastEventsReel state={visitorState} />
 

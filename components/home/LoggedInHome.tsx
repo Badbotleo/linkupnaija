@@ -13,6 +13,7 @@ import { dedupeEvents } from "@/lib/content-guards";
 import Rail from "@/components/home/Rail";
 import SwipeDeck from "@/components/home/SwipeDeck";
 import PastEventsReel from "@/components/home/PastEventsReel";
+import FeaturedRail from "@/components/home/FeaturedRail";
 
 interface CircleLite {
   id: string;
@@ -245,6 +246,8 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
           ))}
         </Rail>
       )}
+
+      <FeaturedRail />
 
       <PastEventsReel state={profile?.state ?? null} />
 
