@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "@/lib/toast";
+import { checkNigerianPhone } from "@/lib/phone";
 
 // Two-step phone verification: send an SMS code, then confirm it. On success
 // the user's number shows a "Verified" badge across the app.
@@ -32,9 +33,18 @@ export default function PhoneVerify({
   }
 
   async function sendCode() {
+    // Checked here first so a typo costs nothing. An SMS to a number that
+    // cannot exist is money spent to tell someone what we already knew, and
+    // they wait for a code that will never arrive.
+    const checked = checkNigerianPhone(phone);
+    if (!checked.ok) {
+      toast.error(checked.error ?? "Check that number.");
+      return;
+    }
     setBusy(true);
+    // Send the canonical +234 form, not whatever shape they typed.
     const { data, error } = await supabase.functions.invoke("phone-send-otp", {
-      body: { phone },
+      body: { phone: checked.e164 },
     });
     setBusy(false);
     if (error || (data as { error?: string })?.error) {
@@ -81,13 +91,13 @@ export default function PhoneVerify({
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             inputMode="tel"
-            placeholder="+234 801 234 5678"
+            placeholder="0801 234 5678"
             className="input flex-1"
           />
           <button
             type="button"
             onClick={sendCode}
-            disabled={busy || phone.trim().length < 10}
+            disabled={busy || !checkNigerianPhone(phone).ok}
             className="btn-primary shrink-0"
           >
             {busy ? "Sending…" : "Send code"}

@@ -21,6 +21,7 @@ export default function PayoutRequest({
   due,
   unrecorded = 0,
   status,
+  phoneVerified = true,
 }: {
   hostId: string;
   eventId: string;
@@ -31,6 +32,18 @@ export default function PayoutRequest({
   /** Guests who paid but whose transaction never landed. */
   unrecorded?: number;
   status: string | null;
+  /**
+   * Gate for money leaving the platform.
+   *
+   * Verification is deliberately NOT asked for at signup — most members never
+   * touch a payout, and an SMS per signup is a bill for nothing. It's asked
+   * for here, where a real number is the difference between paying a host and
+   * paying whoever typed their name.
+   *
+   * Defaults true so an existing caller that hasn't been updated can't
+   * accidentally lock hosts out of their own money.
+   */
+  phoneVerified?: boolean;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -39,6 +52,12 @@ export default function PayoutRequest({
   const [error, setError] = useState<string | null>(null);
 
   async function request() {
+    if (!phoneVerified) {
+      setError(
+        "Verify your phone number before requesting a payout — we need a real number to reach you about the transfer."
+      );
+      return;
+    }
     setLoading(true);
     setError(null);
     const { error } = await supabase.from("payouts").insert({

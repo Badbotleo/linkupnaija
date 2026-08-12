@@ -504,6 +504,7 @@ export default async function DashboardPage() {
                     unrecorded={c.unrecorded}
                     platformFee={c.platformFee}
                     due={c.due}
+                    phoneVerified={!!profile?.phone_verified}
                     status={c.status}
                   />
                 ))}
