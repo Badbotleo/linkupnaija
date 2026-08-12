@@ -14,6 +14,7 @@ import Rail from "@/components/home/Rail";
 import SwipeDeck from "@/components/home/SwipeDeck";
 import PastEventsReel from "@/components/home/PastEventsReel";
 import FeaturedRail from "@/components/home/FeaturedRail";
+import CollabCard from "@/components/home/CollabCard";
 
 interface CircleLite {
   id: string;
@@ -246,6 +247,8 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
           ))}
         </Rail>
       )}
+
+      <CollabCard />
 
       <FeaturedRail />
 

@@ -90,3 +90,17 @@ drop policy if exists "Admins delete partner assets" on storage.objects;
 create policy "Admins delete partner assets"
   on storage.objects for delete
   using (bucket_id = 'partner-assets' and public.is_admin());
+
+-- --- collaboration placement ----------------------------------------------
+-- Kept on PARTNERS, deliberately separate from events.featured.
+--
+-- events.featured is what a host pays for. A collaboration is an editorial
+-- decision we make. Sharing one flag would mean you cannot tell a paid boost
+-- from a partnership, and a host who paid could quietly rank below one who
+-- didn't. Two ideas, two columns.
+alter table public.partners
+  add column if not exists is_collab boolean not null default false;
+alter table public.partners
+  add column if not exists collab_until timestamptz;
+alter table public.partners
+  add column if not exists collab_blurb text;
