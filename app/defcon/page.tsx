@@ -163,7 +163,7 @@ export default async function DefconPage() {
             )}
 
             <p className="mt-4 text-xs text-gray-400">
-              Book by requesting to join the night you want — no calls, no DMs.
+              Pick a night, request to join, choose your table. No calls, no DMs.
             </p>
           </section>
         )}
@@ -175,7 +175,7 @@ export default async function DefconPage() {
           </h2>
           {events.length === 0 ? (
             <p className="mt-2 text-sm text-gray-500">
-              Nothing listed yet — check back shortly.
+              Nothing listed yet. Check back shortly.
             </p>
           ) : (
             <div className="mt-3 grid gap-3 sm:grid-cols-2">

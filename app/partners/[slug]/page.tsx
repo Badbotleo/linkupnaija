@@ -139,7 +139,7 @@ export default async function PartnerPage({
           </h2>
           {events.length === 0 ? (
             <p className="mt-2 text-sm text-gray-500">
-              Nothing listed yet — check back shortly.
+              Nothing listed yet. Check back shortly.
             </p>
           ) : (
             <div className="mt-3 grid gap-3 sm:grid-cols-2">

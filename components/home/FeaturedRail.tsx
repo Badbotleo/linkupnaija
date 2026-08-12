@@ -19,7 +19,7 @@ export default async function FeaturedRail() {
   return (
     <Rail
       title="Featured"
-      subtitle="Picked out this week"
+      subtitle="Worth your Saturday"
       href="/events"
       seeAll="See all events"
     >

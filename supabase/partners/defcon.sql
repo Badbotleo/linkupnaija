@@ -14,8 +14,8 @@ insert into public.partners (slug, name, tagline, about, state, brand_color, acc
 values (
   'defcon',
   'DEFCON',
-  'A different kind of night in Abuja.',
-  E'DEFCON brings good music, games, competition and new connections to Abuja rooftops.\n\nThe night starts with fun, games and social vibes before the energy takes over. Come with your friends, meet new people, play, compete, catch a vibe.\n\nCombo packs and table reservations are booked through the event you want to attend — pick a night below and choose your table when you request to join.',
+  'Rooftop nights in Abuja. Free entry, tables from 50k.',
+  E'DEFCON runs rooftop nights in Abuja. Good music, games, competition, and a crowd that knows how to have a good time.\n\nThe night opens with games and social vibes before the energy takes over. Bring your friends. Meet new people. Play, compete, catch a vibe.\n\nEntry is free. Combo packs and tables are booked through whichever night you want to attend.',
   'FCT - Abuja',
   '#E4373C',   -- read off the logo artwork: the red keyline
   '#EFEADA',   -- the cream letterform fill
