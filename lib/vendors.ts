@@ -131,3 +131,57 @@ export async function getVendor(slug: string): Promise<Vendor | null> {
   if (error || !data) return null;
   return toVendor(data as Row);
 }
+
+/**
+ * A face for each category.
+ *
+ * A vendor with no photos yet was a grey box with a briefcase icon, and a
+ * directory of grey boxes is a directory nobody browses. The category
+ * carries the card until they upload their work.
+ */
+export const VENDOR_EMOJI: Record<string, string> = {
+  Food: "🍲",
+  "Small Chops": "🍢",
+  "Grills & Suya": "🍖",
+  "Pastries & Cakes": "🍰",
+  "Drinks & Bar": "🍾",
+  Cocktails: "🍹",
+  Shisha: "💨",
+  Decor: "🎈",
+  Photography: "📸",
+  Videography: "🎬",
+  DJ: "🎧",
+  "Live Band": "🎷",
+  "MC / Host": "🎤",
+  Makeup: "💄",
+  Ushers: "🎀",
+  Rentals: "🪑",
+  Security: "🛡️",
+  Cleaning: "🧹",
+  Transport: "🚐",
+  Venue: "🏛️",
+};
+
+/** Tailwind gradient per category, for the same reason. */
+export const VENDOR_GRADIENT: Record<string, string> = {
+  Food: "from-orange-500 to-red-600",
+  "Small Chops": "from-amber-500 to-orange-600",
+  "Grills & Suya": "from-red-600 to-rose-700",
+  "Pastries & Cakes": "from-pink-400 to-rose-500",
+  "Drinks & Bar": "from-purple-500 to-indigo-600",
+  Cocktails: "from-fuchsia-500 to-pink-600",
+  Shisha: "from-slate-500 to-slate-700",
+  Decor: "from-sky-400 to-blue-600",
+  Photography: "from-gray-700 to-gray-900",
+  Videography: "from-zinc-700 to-neutral-900",
+  DJ: "from-violet-500 to-purple-700",
+  "Live Band": "from-amber-600 to-yellow-700",
+  "MC / Host": "from-brand-500 to-brand-700",
+  Makeup: "from-rose-400 to-pink-600",
+  Ushers: "from-teal-400 to-cyan-600",
+  Rentals: "from-stone-500 to-stone-700",
+  Security: "from-slate-600 to-gray-800",
+  Cleaning: "from-emerald-400 to-teal-600",
+  Transport: "from-blue-500 to-indigo-700",
+  Venue: "from-naija-500 to-emerald-700",
+};

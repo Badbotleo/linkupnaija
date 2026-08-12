@@ -3,7 +3,12 @@ import AppHeader from "@/components/AppHeader";
 import LineIcon from "@/components/ui/LineIcon";
 import { formatNaira } from "@/lib/paystack";
 import { NIGERIAN_STATES } from "@/lib/constants";
-import { listVendors, VENDOR_CATEGORIES } from "@/lib/vendors";
+import {
+  listVendors,
+  VENDOR_CATEGORIES,
+  VENDOR_EMOJI,
+  VENDOR_GRADIENT,
+} from "@/lib/vendors";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -71,7 +76,11 @@ export default async function VendorsPage({
         <div className="no-scrollbar -mx-4 mb-2 flex gap-2 overflow-x-auto px-4">
           {chip("All", withParam("category", undefined), !searchParams.category)}
           {VENDOR_CATEGORIES.map((c) =>
-            chip(c, withParam("category", c), searchParams.category === c)
+            chip(
+              `${VENDOR_EMOJI[c] ?? ""} ${c}`.trim(),
+              withParam("category", c),
+              searchParams.category === c
+            )
           )}
         </div>
 
@@ -99,49 +108,59 @@ export default async function VendorsPage({
                 href={`/vendors/${v.slug}`}
                 className="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card transition hover:-translate-y-0.5 hover:shadow-lg"
               >
-                <div className="relative h-36 w-full bg-gray-100">
+                <div className="relative aspect-[4/5] w-full">
                   {v.galleryUrls[0] ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={v.galleryUrls[0]}
                       alt=""
                       loading="lazy"
-                      className="h-full w-full object-cover"
+                      className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
                     />
                   ) : (
-                    <div className="grid h-full w-full place-items-center text-gray-300">
-                      <LineIcon name="briefcase" size={28} />
+                    /* No photos yet, so the category carries the card. A
+                       directory of grey boxes is a directory nobody browses. */
+                    <div
+                      className={`absolute inset-0 grid place-items-center bg-gradient-to-br ${
+                        VENDOR_GRADIENT[v.category] ?? "from-brand-500 to-brand-700"
+                      }`}
+                    >
+                      <span className="text-5xl opacity-90">
+                        {VENDOR_EMOJI[v.category] ?? "\ud83c\udf89"}
+                      </span>
                     </div>
                   )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-black/20" />
+
                   <span className="absolute left-2.5 top-2.5 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-gray-900">
-                    {v.category}
+                    {VENDOR_EMOJI[v.category] ?? ""} {v.category}
                   </span>
-                  {/* Vetting only counts if it shows where someone chooses. */}
+                  {/* Vetting only counts if it shows where somebody chooses. */}
                   {v.isVerified && (
                     <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-full bg-naija-600 px-2 py-1 text-[10px] font-black text-white">
                       <LineIcon name="check" size={10} />
                       Vetted
                     </span>
                   )}
-                </div>
-                <div className="p-4">
-                  <p className="truncate font-bold text-gray-900 group-hover:text-brand">
-                    {v.name}
-                  </p>
-                  {v.tagline && (
-                    <p className="mt-0.5 line-clamp-2 text-xs text-gray-500">
-                      {v.tagline}
+
+                  <div className="absolute inset-x-0 bottom-0 p-3.5 text-white">
+                    <p className="truncate text-[16px] font-extrabold leading-tight">
+                      {v.name}
                     </p>
-                  )}
-                  <p className="mt-2 flex items-center justify-between text-xs">
-                    <span className="text-gray-400">{v.state ?? "Nigeria"}</span>
-                    {/* Nothing rather than "₦0" — same rule as everywhere else. */}
-                    {!!v.priceFrom && v.priceFrom > 0 && (
-                      <span className="font-extrabold tabular-nums text-gray-900">
-                        from {formatNaira(v.priceFrom)}
-                      </span>
+                    {v.tagline && (
+                      <p className="mt-0.5 line-clamp-1 text-[12px] text-white/75">
+                        {v.tagline}
+                      </p>
                     )}
-                  </p>
+                    <p className="mt-1.5 flex items-center justify-between text-[12px]">
+                      <span className="text-white/60">{v.state ?? "Nigeria"}</span>
+                      {!!v.priceFrom && v.priceFrom > 0 && (
+                        <span className="font-extrabold tabular-nums">
+                          from {formatNaira(v.priceFrom)}
+                        </span>
+                      )}
+                    </p>
+                  </div>
                 </div>
               </Link>
             ))}

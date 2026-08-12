@@ -39,7 +39,6 @@ const MORE = [
   { href: "/hosts/leaderboard", label: "Host leaderboard", icon: "trophy" },
   { href: "/drivers/leaderboard", label: "Top drivers", icon: "star" },
   { href: "/drive", label: "Drive with us", icon: "car" },
-  { href: "/opportunities", label: "Opportunities", icon: "briefcase" },
   { href: "/tournament", label: "FC26 Tournament", icon: "gamepad" },
   { href: "mailto:support@linkupnaija.com", label: "Help", icon: "help" },
 ];
