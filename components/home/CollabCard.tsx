@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import LineIcon from "@/components/ui/LineIcon";
-import { safeColor } from "@/lib/partners";
+import { safeColor, safeUrl } from "@/lib/partners";
 
 /**
  * "LinkUpNaija × PARTNER" — a running collaboration, given its own card.
@@ -40,6 +40,8 @@ export default async function CollabCard() {
     brand_color: string | null;
     accent_color: string | null;
   };
+  const cover = safeUrl(p.cover_url);
+  const logo = safeUrl(p.logo_url);
   const brand = safeColor(p.brand_color, "#534AB7");
   const accent = safeColor(p.accent_color, "#FAC775");
 
@@ -56,21 +58,21 @@ export default async function CollabCard() {
             flat colour block, which threw away the thing people actually
             respond to and left a coloured rectangle with words on it. Now it
             leads, and the scrim only darkens the strip the text sits in. */}
-        {p.cover_url && (
+        {cover && (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
-            src={p.cover_url}
+            src={cover}
             alt=""
             className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
           />
         )}
-        {p.cover_url && (
+        {cover && (
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/10" />
         )}
 
         <div
           className={`relative p-6 sm:p-8 ${
-            p.cover_url ? "min-h-[260px] sm:min-h-[300px]" : ""
+            cover ? "min-h-[260px] sm:min-h-[300px]" : ""
           } flex flex-col justify-end text-white`}
         >
           {/* The lockup: both names, equal billing — that's what a
@@ -79,17 +81,19 @@ export default async function CollabCard() {
             <span className="text-[17px] font-extrabold tracking-tight">
               LinkUpNaija
             </span>
+            {/* LinkUpNaija's purple, not the partner's accent: the × is
+                ours in the lockup. The lighter brand purple rather than
+                #534AB7, which goes muddy on a red ground. */}
             <span
-              className="text-[17px] font-black"
-              style={{ color: accent }}
+              className="text-[17px] font-black text-[#8B83E6]"
               aria-label="x"
             >
               ×
             </span>
-            {p.logo_url ? (
+            {logo ? (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
-                src={p.logo_url}
+                src={logo}
                 alt={p.name}
                 className="h-6 w-auto max-w-[130px] object-contain"
               />

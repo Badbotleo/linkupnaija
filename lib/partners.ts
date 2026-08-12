@@ -26,6 +26,20 @@ export interface Partner {
   collabBlurb: string | null;
 }
 
+/**
+ * Only render something that is actually a URL.
+ *
+ * "PASTE_URL" was saved into cover_url straight from the instructions and
+ * rendered as a broken-image icon on the live page. A field meant to hold a
+ * URL should ignore anything that plainly isn't one rather than trusting it
+ * into an <img src>.
+ */
+export function safeUrl(v: string | null | undefined): string | null {
+  if (!v) return null;
+  const s = v.trim();
+  return /^https?:\/\/\S+$/i.test(s) ? s : null;
+}
+
 /** Hex only. A partner-supplied value goes straight into a style attribute,
     so anything that isn't exactly #rrggbb is dropped rather than trusted. */
 const HEX = /^#[0-9a-fA-F]{6}$/;
@@ -60,8 +74,8 @@ function toPartner(r: Row): Partner {
     name: r.name,
     tagline: r.tagline,
     about: r.about,
-    logoUrl: r.logo_url,
-    coverUrl: r.cover_url,
+    logoUrl: safeUrl(r.logo_url),
+    coverUrl: safeUrl(r.cover_url),
     brandColor: r.brand_color,
     accentColor: r.accent_color,
     instagram: r.instagram,

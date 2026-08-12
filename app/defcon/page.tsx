@@ -87,9 +87,8 @@ export default async function DefconPage() {
             <span className="text-[20px] font-extrabold tracking-tight sm:text-[24px]">
               LinkUpNaija
             </span>
-            <span className="text-[22px] font-black" style={{ color: accent }}>
-              ×
-            </span>
+            {/* Ours in the lockup, so it stays LinkUpNaija purple. */}
+            <span className="text-[22px] font-black text-[#8B83E6]">×</span>
             {partner.logoUrl ? (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
