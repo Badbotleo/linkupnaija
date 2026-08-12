@@ -9,6 +9,7 @@ import { EVENT_CATEGORIES, NIGERIAN_STATES } from "@/lib/constants";
 import { FREQUENCY_OPTIONS, nextDates } from "@/lib/series";
 import { formatEventDate } from "@/lib/format";
 import { validateLocation, MAX_LOCATION_LENGTH } from "@/lib/content-guards";
+import { detectLeaks, LEAK_LABELS } from "@/lib/external-links";
 import type { SeriesFrequency } from "@/lib/types";
 
 export default function HostForm({
@@ -125,6 +126,28 @@ export default function HostForm({
 
     // Both checks run before any upload, so a rejected event doesn't leave
     // orphaned images in the bucket.
+
+    // No phone numbers, emails or sign-up links in the description.
+    //
+    // Two problems, one rule. A listing that says "WhatsApp HIKE to 070…"
+    // sends people off the platform before they ever make an account — 7 of
+    // 53 upcoming listings did exactly that. And it publishes somebody's
+    // personal mobile number to the open internet, which is a worse problem
+    // and not one the person who typed it necessarily intended.
+    //
+    // Blocked at write time rather than stripped silently: quietly deleting
+    // a host's contact details would leave them thinking buyers could reach
+    // them when nobody can.
+    const leaks = detectLeaks(form.description);
+    if (leaks.length > 0) {
+      setError(
+        `Take the contact details out of your description — ${leaks
+          .map((l) => LEAK_LABELS[l.kind].toLowerCase())
+          .join(", ")}. People join through LinkUpNaija, and your number stays private. Put what's included and what to expect here instead.`
+      );
+      setLoading(false);
+      return;
+    }
 
     // A location field with no cap absorbed an entire 474-character event
     // description on one live listing, which then rendered as the venue.
