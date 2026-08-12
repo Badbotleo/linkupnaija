@@ -30,6 +30,7 @@ import { formatEventDate, formatEventTime } from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
 import { attendanceProof, ATTENDANCE_REVEAL_AT } from "@/lib/social-proof";
 import TicketPanel from "@/components/events/TicketPanel";
+import TicketTiersEditor from "@/components/events/TicketTiersEditor";
 import RecapReel from "@/components/home/RecapReel";
 import { getRecapsForEvent } from "@/lib/recaps";
 import { isProActive } from "@/lib/pro";
@@ -119,6 +120,25 @@ export default async function EventDetailPage({
 
   // The home-page reel links here, so the footage has to be here too.
   const eventRecaps = await getRecapsForEvent(params.id);
+
+  // Ticket tiers, in their own query rather than embedded in the event
+  // select: if the migration hasn't run, an embed would fail the WHOLE event
+  // query and take the page down. On its own, a missing table just means no
+  // tiers and the single price shows as before.
+  const { data: tierRows } = await supabase
+    .from("ticket_tiers")
+    .select("id, name, price, description, admits")
+    .eq("event_id", params.id)
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true })
+    .order("price", { ascending: true });
+  const tiers = (tierRows ?? []) as {
+    id: string;
+    name: string;
+    price: number;
+    description: string | null;
+    admits: number | null;
+  }[];
 
   const attendeeCount = accepted.length;
   const attendance = attendanceProof(attendeeCount, {
@@ -475,6 +495,8 @@ export default async function EventDetailPage({
 
           {isHost && (
             <div className="mt-8 space-y-8">
+              {/* Only the host sees this; RLS is what actually enforces it. */}
+              {!eventIsOver && <TicketTiersEditor eventId={event.id} />}
               <ManageRequests initialRequests={rsvps} isPast={eventIsOver} />
               <DeleteEventButton
                 eventId={event.id}
@@ -531,9 +553,9 @@ export default async function EventDetailPage({
                   </div>
                 </div>
 
-                {event.price > 0 && (
+                {(event.price > 0 || tiers.length > 0) && (
                   <div className="mt-6">
-                    <TicketPanel price={event.price} />
+                    <TicketPanel price={event.price} tiers={tiers} />
                   </div>
                 )}
 
