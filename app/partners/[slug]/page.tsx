@@ -6,7 +6,12 @@ import EventCover from "@/components/EventCover";
 import LineIcon from "@/components/ui/LineIcon";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
-import { getPartner, getPartnerEvents, safeColor } from "@/lib/partners";
+import {
+  getPartner,
+  getPartnerEvents,
+  getPartnerPriceRange,
+  safeColor,
+} from "@/lib/partners";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +51,10 @@ export default async function PartnerPage({
   const partner = await getPartner(params.slug);
   if (!partner) notFound();
 
-  const events = await getPartnerEvents(partner.id);
+  const [events, priceRange] = await Promise.all([
+    getPartnerEvents(partner.id),
+    getPartnerPriceRange(partner.id),
+  ]);
   const brand = safeColor(partner.brandColor, "#534AB7");
   const accent = safeColor(partner.accentColor, "#FAC775");
 
@@ -90,12 +98,28 @@ export default async function PartnerPage({
               {partner.tagline}
             </p>
           )}
-          {partner.state && (
-            <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold backdrop-blur-sm">
-              <LineIcon name="pin" size={12} />
-              {partner.state}
-            </p>
-          )}
+          <div className="mt-3 flex flex-wrap gap-2">
+            {partner.state && (
+              <p className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold backdrop-blur-sm">
+                <LineIcon name="pin" size={12} />
+                {partner.state}
+              </p>
+            )}
+            {/* The question people actually arrive with, answered before they
+                have to open three events to find out. */}
+            {priceRange && (
+              <p className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold backdrop-blur-sm">
+                <LineIcon name="ticket" size={12} />
+                {priceRange.min === priceRange.max
+                  ? formatNaira(priceRange.min)
+                  : `${formatNaira(priceRange.min)} – ${formatNaira(priceRange.max)}`}
+                <span className="font-medium text-white/60">
+                  · {priceRange.count} option
+                  {priceRange.count === 1 ? "" : "s"}
+                </span>
+              </p>
+            )}
+          </div>
         </div>
       </section>
 

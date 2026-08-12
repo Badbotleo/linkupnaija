@@ -93,6 +93,41 @@ export async function listPartners(): Promise<Partner[]> {
   return ((data ?? []) as Row[]).map(toPartner);
 }
 
+/**
+ * The price range across everything a partner is selling.
+ *
+ * "From ₦15,000" is the question people actually arrive with, and answering
+ * it up front saves them opening three events to find out. Null when nothing
+ * is priced — a range of ₦0 tells nobody anything.
+ */
+export async function getPartnerPriceRange(
+  partnerId: string
+): Promise<{ min: number; max: number; count: number } | null> {
+  const supabase = createClient();
+  const today = new Date().toISOString().slice(0, 10);
+  const { data: eventRows } = await supabase
+    .from("events")
+    .select("id")
+    .eq("partner_id", partnerId)
+    .gte("date", today);
+  const ids = (eventRows ?? []).map((e) => e.id as string);
+  if (ids.length === 0) return null;
+
+  const { data, error } = await supabase
+    .from("ticket_tiers")
+    .select("price")
+    .in("event_id", ids)
+    .eq("is_active", true)
+    .gt("price", 0);
+  if (error || !data || data.length === 0) return null;
+  const prices = data.map((r) => r.price as number);
+  return {
+    min: Math.min(...prices),
+    max: Math.max(...prices),
+    count: prices.length,
+  };
+}
+
 /** Upcoming events for a partner, soonest first. */
 export async function getPartnerEvents(partnerId: string) {
   const supabase = createClient();
