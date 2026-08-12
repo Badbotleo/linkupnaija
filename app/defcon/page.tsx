@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import AppHeader from "@/components/AppHeader";
 import { notFound } from "next/navigation";
 import EventCover from "@/components/EventCover";
 import LineIcon from "@/components/ui/LineIcon";
@@ -71,7 +72,8 @@ export default async function DefconPage() {
   const brand = safeColor(partner.brandColor, "#E4373C");
 
   return (
-    <div className="pb-24">
+    <div className="pb-28">
+      <AppHeader title={`LinkUpNaija × ${partner.name}`} back />
       {/* --- hero ---------------------------------------------------------
           One hero, not two. The posters used to sit in a block ABOVE a solid
           colour panel, so the page opened with two competing headers and you
@@ -159,7 +161,7 @@ export default async function DefconPage() {
                 <p className="mt-5 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400">
                   Combo packs · no reserved seats
                 </p>
-                <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                <div className="no-scrollbar -mx-4 mt-2 flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
                   {combos.map((t) => (
                     <TierCard key={t.id} tier={t} brand={brand} />
                   ))}
@@ -172,7 +174,7 @@ export default async function DefconPage() {
                 <p className="mt-7 text-[11px] font-black uppercase tracking-[0.18em] text-gray-400">
                   Table reservations
                 </p>
-                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                <div className="no-scrollbar -mx-4 mt-2 flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
                   {tables.map((t) => (
                     <TierCard key={t.id} tier={t} brand={brand} />
                   ))}
@@ -196,12 +198,12 @@ export default async function DefconPage() {
               Nothing listed yet. Check back shortly.
             </p>
           ) : (
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div className="no-scrollbar -mx-4 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 sm:mx-0 sm:px-0">
               {events.map((e) => (
                 <Link
                   key={e.id}
                   href={`/events/${e.id}`}
-                  className="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card transition hover:-translate-y-0.5 hover:shadow-lg"
+                  className="group w-[76vw] max-w-[300px] shrink-0 snap-start overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card transition hover:-translate-y-0.5 hover:shadow-lg"
                 >
                   <EventCover
                     url={e.cover_image_url}
@@ -225,6 +227,22 @@ export default async function DefconPage() {
           )}
         </section>
       </div>
+
+      {/* Sticky, because the whole page is about doing one thing. On a
+          website this is a link you scroll past once; in an app it stays
+          where your thumb is. */}
+      {events.length > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-black/5 bg-white/85 p-3 backdrop-blur-lg lg:hidden dark:bg-[#1A1040]/85">
+          <Link
+            href={`/events/${events[0].id}`}
+            className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-black text-white"
+            style={{ backgroundColor: brand }}
+          >
+            Make we link up
+            <LineIcon name="chevronRight" size={14} />
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
@@ -237,7 +255,7 @@ function TierCard({
   brand: string;
 }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-4">
+    <div className="w-[74vw] max-w-[260px] shrink-0 snap-start rounded-2xl border border-gray-200 bg-white p-4">
       <div className="flex items-start justify-between gap-2">
         <p className="text-[12px] font-black uppercase tracking-[0.1em] text-gray-500">
           {tier.name}
