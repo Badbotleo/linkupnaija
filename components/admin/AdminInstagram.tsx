@@ -50,6 +50,7 @@ export default function AdminInstagram() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const [q, setQ] = useState("");
 
   useEffect(() => {
     const supabase = createClient();
@@ -61,7 +62,12 @@ export default function AdminInstagram() {
       )
       .gte("date", today)
       .order("date", { ascending: true })
-      .limit(30)
+      // Was 30, which quietly hid everything past about five weeks out.
+      // DEFCON's SUMMER GAMES sits 41st of 55 upcoming events, so it simply
+      // wasn't in the list and looked like it didn't exist. A cap is still
+      // sensible, but it needs to be past the horizon people actually plan
+      // to, and there's a search box below for anything beyond it.
+      .limit(200)
       .then(({ data, error }) => {
         // Surface the failure instead of rendering an empty list that looks
         // like "no upcoming events".
@@ -70,6 +76,16 @@ export default function AdminInstagram() {
         setLoading(false);
       });
   }, []);
+
+  // Scanning 55 covers for one event is not a thing anyone should do.
+  const term = q.trim().toLowerCase();
+  const shown = term
+    ? rows.filter((r) =>
+        [r.title, r.location, r.state, r.category]
+          .filter(Boolean)
+          .some((v) => String(v).toLowerCase().includes(term))
+      )
+    : rows;
 
   function caption(r: Row): string {
     const tag = instagramHandle(r.host?.instagram_url);
@@ -127,7 +143,25 @@ export default function AdminInstagram() {
         host so it lands in their notifications and they reshare it.
       </p>
 
-      {rows.map((r) => {
+      <input
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="Search by name, venue, state or category"
+        className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-brand focus:outline-none"
+      />
+      <p className="text-xs text-gray-400">
+        {term
+          ? `${shown.length} of ${rows.length} upcoming`
+          : `${rows.length} upcoming`}
+      </p>
+
+      {term && shown.length === 0 && (
+        <p className="rounded-2xl border border-dashed border-gray-200 px-4 py-8 text-center text-sm text-gray-500">
+          Nothing matches &ldquo;{q.trim()}&rdquo;.
+        </p>
+      )}
+
+      {shown.map((r) => {
         const tag = instagramHandle(r.host?.instagram_url);
         return (
           <div
