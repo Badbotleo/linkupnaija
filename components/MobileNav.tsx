@@ -22,6 +22,7 @@ const QUICK = [
 const DISCOVER = [
   { href: "/things-to-do", label: "Things to do", icon: "sparkles" },
   { href: "/venues", label: "Venues", icon: "pin" },
+  { href: "/vendors", label: "Vendors", icon: "briefcase" },
   { href: "/circles", label: "Circles", icon: "circles" },
   { href: "/rides", label: "Rides", icon: "car" },
 ];
