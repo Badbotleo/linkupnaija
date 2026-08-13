@@ -22,8 +22,8 @@ const QUICK = [
 const DISCOVER = [
   { href: "/things-to-do", label: "Things to do", icon: "sparkles" },
   { href: "/venues", label: "Venues", icon: "pin" },
-  { href: "/vendors", label: "Vendors", icon: "briefcase" },
-  { href: "/circles", label: "Circles", icon: "circles" },
+  // Circles is already in QUICK above; listing it twice made the drawer
+  // look fuller than it is without adding anywhere to go.
   { href: "/rides", label: "Rides", icon: "car" },
 ];
 
@@ -36,10 +36,10 @@ const YOU = [
 // The long tail, one tap away rather than always on screen.
 const MORE = [
   { href: "/live", label: "Live feed", icon: "activity" },
-  { href: "/hosts/leaderboard", label: "Host leaderboard", icon: "trophy" },
-  { href: "/drivers/leaderboard", label: "Top drivers", icon: "star" },
-  { href: "/drive", label: "Drive with us", icon: "car" },
-  { href: "/tournament", label: "FC26 Tournament", icon: "gamepad" },
+  { href: "/hosts/leaderboard", label: "Leaderboard", icon: "trophy" },
+  // Dropped: "Drive with us" is the second tab on /rides now, "Top drivers"
+  // is reachable from there, and the FC26 pop-up was pulled for spamming
+  // people — a menu row for it was the same idea with a quieter voice.
   { href: "mailto:support@linkupnaija.com", label: "Help", icon: "help" },
 ];
 

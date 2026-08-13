@@ -21,7 +21,6 @@ const MAIN = [
   { href: "/events", label: "Explore", icon: "search" },
   { href: "/circles", label: "Circles", icon: "circles" },
   { href: "/venues", label: "Venues", icon: "pin" },
-  { href: "/vendors", label: "Vendors", icon: "briefcase" },
   { href: "/things-to-do", label: "Things to do", icon: "sparkles" },
   { href: "/rides", label: "Rides", icon: "car" },
   { href: "/drive", label: "Drive with us", icon: "car" },
