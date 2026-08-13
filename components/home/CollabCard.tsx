@@ -115,7 +115,10 @@ export default async function CollabCard() {
           </p>
 
           <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-black text-gray-900">
-            Make we link up
+            {/* Names the partner rather than sloganising. This card sits
+                between other home-page shelves, so "what is this and where
+                does it go" has to survive being read at a glance. */}
+            See {p.name} nights
             <LineIcon name="chevronRight" size={13} />
           </span>
         </div>
