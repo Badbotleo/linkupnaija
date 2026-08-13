@@ -26,8 +26,20 @@ export function firstName(name: string | null | undefined): string {
 
 export function formatDate(date: string, time?: string | null): string {
   // date is YYYY-MM-DD; render it human-friendly without a timezone surprise.
+  //
+  // Postgres returns a `time` column as HH:MM:SS, not HH:MM. Appending ":00"
+  // to that produced "2026-09-05T19:00:00:00", which is not a date — and
+  // toLocaleDateString does NOT throw on an Invalid Date, it returns the
+  // string "Invalid Date". So the try/catch below never fired and every
+  // reminder email said "Invalid Date" where the date should be.
+  const hhmm = (time ?? "00:00").slice(0, 5);
+  const fallback = time ? `${date} at ${hhmm}` : date;
+
   try {
-    const d = new Date(`${date}T${time ?? "00:00"}:00`);
+    const d = new Date(`${date}T${hhmm}:00`);
+    // Checked explicitly, because the formatters won't tell us.
+    if (Number.isNaN(d.getTime())) return fallback;
+
     const day = d.toLocaleDateString("en-NG", {
       weekday: "short",
       day: "numeric",
@@ -40,7 +52,7 @@ export function formatDate(date: string, time?: string | null): string {
     });
     return `${day} · ${t}`;
   } catch {
-    return time ? `${date} at ${time}` : date;
+    return fallback;
   }
 }
 
