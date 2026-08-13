@@ -71,6 +71,23 @@ export default async function DefconPage() {
 
   const brand = safeColor(partner.brandColor, "#E4373C");
 
+  /**
+   * The button says what pressing it does.
+   *
+   * A slogan at the bottom of a page about tables and combo packs makes
+   * people guess. Entry to SUMMER GAMES is free, so what anyone is actually
+   * deciding is whether to reserve a table — and that is what it should say.
+   *
+   * Derived, not hardcoded, so a partner selling only combos, or nothing at
+   * all, still gets a label that is true for them.
+   */
+  const cta =
+    tables.length > 0
+      ? "Reserve a table"
+      : combos.length > 0
+        ? "Get your ticket"
+        : "Join the night";
+
   return (
     <div className="pb-28">
       <AppHeader title={`LinkUpNaija × ${partner.name}`} back />
@@ -133,7 +150,7 @@ export default async function DefconPage() {
               {/* The app's verb is "link up" everywhere else, and their
                   TikTok is literally @makewelinkupnaija. "Get on the list"
                   was a nightclub's words, not ours. */}
-              Make we link up
+              {cta}
               <LineIcon name="chevronRight" size={14} />
             </Link>
           )}
@@ -238,7 +255,7 @@ export default async function DefconPage() {
             className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-black text-white"
             style={{ backgroundColor: brand }}
           >
-            Make we link up
+            {cta}
             <LineIcon name="chevronRight" size={14} />
           </Link>
         </div>
