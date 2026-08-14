@@ -89,24 +89,39 @@ export default function AdminFeatured() {
     const chosen = Date.now() + days * 86400000;
     const until = new Date(Math.max(eventEnd, chosen)).toISOString();
 
-    const { error } = await supabase
+    // .select() matters. An UPDATE that RLS filters out returns NO error and
+    // ZERO rows, so checking only `error` reported success and changed
+    // nothing — which is exactly how this looked broken.
+    const { data, error } = await supabase
       .from("events")
       .update({ featured: true, featured_until: until })
-      .eq("id", r.id);
+      .eq("id", r.id)
+      .select("id");
     setBusy(null);
     if (error) return toast.error(error.message);
+    if (!data || data.length === 0) {
+      toast.error(
+        "Nothing was updated — admins can't edit another host's event yet. Run supabase/migration-admin-feature.sql."
+      );
+      return;
+    }
     toast.success(`${r.title.slice(0, 28)} is featured`);
     load();
   }
 
   async function unfeature(r: Row) {
     setBusy(r.id);
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("events")
       .update({ featured: false, featured_until: null })
-      .eq("id", r.id);
+      .eq("id", r.id)
+      .select("id");
     setBusy(null);
     if (error) return toast.error(error.message);
+    if (!data || data.length === 0) {
+      toast.error("Nothing was updated — check the admin update policy.");
+      return;
+    }
     load();
   }
 
