@@ -10,6 +10,7 @@ import AdminExpiredEvents from "@/components/admin/AdminExpiredEvents";
 import AdminOffPlatform from "@/components/admin/AdminOffPlatform";
 import AdminRecaps from "@/components/admin/AdminRecaps";
 import AdminPartners from "@/components/admin/AdminPartners";
+import AdminFeatured from "@/components/admin/AdminFeatured";
 import AdminVenueImport from "@/components/admin/AdminVenueImport";
 import AdminMessages from "@/components/admin/AdminMessages";
 import AdminVenues from "@/components/admin/AdminVenues";
@@ -352,6 +353,7 @@ export default async function AdminPage() {
           { id: "offplatform", label: "Off-platform sign-ups", emoji: "🔗", group: "Content" },
           { id: "recaps", label: "Past-event recaps", emoji: "🎬", group: "Content" },
           { id: "partners", label: "Partners", emoji: "🤝", group: "Content" },
+          { id: "featured", label: "Featured events", emoji: "⭐", group: "Content" },
           { id: "thingstodo", label: "Things to do this week", emoji: "🗓️", group: "Content" },
           { id: "venues", label: "Onboarded venues", emoji: "📍", group: "Content" },
           { id: "venueimport", label: "Find more venues", emoji: "🧭", group: "Content" },
@@ -440,6 +442,10 @@ export default async function AdminPage() {
 
         <div key="partners">
           <AdminPartners />
+        </div>
+
+        <div key="featured">
+          <AdminFeatured />
         </div>
 
         <div key="thingstodo">
