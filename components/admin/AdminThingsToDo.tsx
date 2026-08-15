@@ -88,7 +88,16 @@ export default function AdminThingsToDo() {
     const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
     const { error } = await supabase.storage
       .from("things-to-do")
-      .upload(path, file, { contentType: file.type, upsert: true });
+      .upload(path, file, {
+        contentType: file.type,
+        upsert: true,
+        // A year. Without this Supabase defaults to max-age=3600, so every
+        // visitor re-downloaded the whole shelf hourly — 41MB of video in
+        // this bucket alone. The path carries a timestamp and a random
+        // suffix, so the bytes behind a URL never change and there is
+        // nothing to invalidate.
+        cacheControl: "31536000",
+      });
     setUploading(false);
     if (error) {
       toast.error(error.message);

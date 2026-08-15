@@ -1,6 +1,7 @@
 import Link from "next/link";
 import AppHeader from "@/components/AppHeader";
 import LineIcon from "@/components/ui/LineIcon";
+import LazyMedia from "@/components/home/LazyMedia";
 import { createClient } from "@/lib/supabase/server";
 import { getVisitorState } from "@/lib/visitor-geo";
 import { buildIdeas, hostHref } from "@/lib/things-to-do";
@@ -84,26 +85,13 @@ export default async function ThingsToDoPage() {
                 key={idea.key}
                 className="group relative h-[248px] overflow-hidden rounded-2xl shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-xl"
               >
-                {idea.mediaType === "video" ? (
-                  <video
-                    src={idea.image}
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    preload="metadata"
-                    aria-hidden
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
-                ) : (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={idea.image}
-                    alt=""
-                    loading="lazy"
-                    className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                  />
-                )}
+                {/* Same fix as the shelf: 60 cards mounting 24 videos at once is
+                    how 117MB of storage became 18GB of egress. */}
+                <LazyMedia
+                  src={idea.image}
+                  kind={idea.mediaType}
+                  className="absolute inset-0"
+                />
                 {/* Lighter scrim when there's no caption to make readable —
                     these videos carry their own text and shouldn't be dimmed
                     behind one that isn't there. */}

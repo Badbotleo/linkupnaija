@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Rail from "./Rail";
 import LineIcon from "../ui/LineIcon";
+import LazyMedia from "./LazyMedia";
 import { buildIdeas, hostHref } from "@/lib/things-to-do";
 import { isRealText } from "@/lib/content-guards";
 
@@ -34,28 +35,14 @@ export default async function ThingsToDo({ state }: { state?: string | null }) {
           className="group w-[72vw] max-w-[268px] shrink-0 snap-start sm:w-[268px]"
         >
           <div className="relative h-[176px] overflow-hidden rounded-2xl shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
-            {idea.mediaType === "video" ? (
-              /* Muted + playsInline is what lets it autoplay on iOS at all;
-                 without both, Safari shows a paused black frame. */
-              <video
-                src={idea.image}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                aria-hidden
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            ) : (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={idea.image}
-                alt=""
-                loading="lazy"
-                className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
-              />
-            )}
+            {/* Fetched only when it's about to be seen. Mounting every card
+                with a src downloaded the whole shelf on every home-page
+                load, which is most of an 18GB egress bill. */}
+            <LazyMedia
+              src={idea.image}
+              kind={idea.mediaType}
+              className="absolute inset-0"
+            />
             {/* The scrim exists to make the caption readable. With no caption
                 it only muddies a video that was shot to be looked at, so it
                 lightens to just enough for the button. */}
