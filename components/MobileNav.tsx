@@ -29,6 +29,7 @@ const DISCOVER = [
 
 const YOU = [
   { href: "/dashboard", label: "My link-ups", icon: "calendar" },
+  { href: "/tickets", label: "Tickets", icon: "ticket" },
   { href: "/refer", label: "Invite & earn ₦500", icon: "gift" },
   { href: "/profile/edit", label: "Settings", icon: "settings" },
 ];

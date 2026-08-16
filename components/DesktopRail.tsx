@@ -28,6 +28,7 @@ const MAIN = [
 
 const YOU = [
   { href: "/dashboard", label: "My link-ups", icon: "calendar" },
+  { href: "/tickets", label: "Tickets", icon: "ticket" },
   { href: "/friends", label: "Friends", icon: "users" },
   { href: "/notifications", label: "Alerts", icon: "bell" },
   { href: "/refer", label: "Invite & earn", icon: "gift" },
