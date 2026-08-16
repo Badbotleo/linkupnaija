@@ -88,26 +88,37 @@ export default function CirclesExplorer({
 
   return (
     <div>
-      {/* Controls */}
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search circles by name…"
-          className="input flex-1"
-        />
-        <select value={category} onChange={(e) => setCategory(e.target.value)} className="input cursor-pointer sm:max-w-[10rem]">
-          <option value="">All categories</option>
-          {EVENT_CATEGORIES.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-        <select value={state} onChange={(e) => setState(e.target.value)} className="input cursor-pointer sm:max-w-[10rem]">
-          <option value="">All states</option>
-          {NIGERIAN_STATES.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
+      {/* Two dropdowns is a web form. Everywhere else in this app you filter
+          by swiping a row of chips — events, vendors, the vibe picker — and a
+          native <select> on a phone throws you into a full-screen wheel to
+          choose one of ninety-seven things. */}
+      <input
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search circles"
+        className="input w-full"
+      />
+
+      <div className="no-scrollbar -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+        <Chip on={!category} onClick={() => setCategory("")}>
+          All
+        </Chip>
+        {EVENT_CATEGORIES.map((c) => (
+          <Chip key={c} on={category === c} onClick={() => setCategory(c)}>
+            {c}
+          </Chip>
+        ))}
+      </div>
+
+      <div className="no-scrollbar -mx-4 mt-2 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+        <Chip on={!state} onClick={() => setState("")}>
+          Anywhere
+        </Chip>
+        {NIGERIAN_STATES.map((s) => (
+          <Chip key={s} on={state === s} onClick={() => setState(s)}>
+            {s}
+          </Chip>
+        ))}
       </div>
 
       {filtering ? (
@@ -224,5 +235,30 @@ function Card({
         </div>
       </div>
     </div>
+  );
+}
+
+function Chip({
+  on,
+  onClick,
+  children,
+}: {
+  on: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={on}
+      className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-bold transition ${
+        on
+          ? "bg-brand text-white"
+          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+      }`}
+    >
+      {children}
+    </button>
   );
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/image";
+import LineIcon from "../ui/LineIcon";
 import { EVENT_CATEGORIES, NIGERIAN_STATES } from "@/lib/constants";
 
 export default function CreateCircleForm({ userState }: { userState: string | null }) {
@@ -85,7 +86,7 @@ export default function CreateCircleForm({ userState }: { userState: string | nu
             <img src={coverPreview} alt="Cover" className="h-full w-full object-cover" />
           ) : (
             <div className="text-center text-gray-400">
-              <p className="text-3xl">🖼️</p>
+              <LineIcon name="image" size={26} className="mx-auto text-gray-300" />
               <p className="mt-1 text-sm font-medium">Tap to add a cover</p>
             </div>
           )}

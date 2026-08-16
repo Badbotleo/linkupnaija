@@ -35,7 +35,7 @@ export default function JoinCircleButton({
   if (isCreator) {
     return (
       <span className="block rounded-xl bg-brand-50 px-4 py-2.5 text-center text-sm font-semibold text-brand">
-        👑 You&apos;re the admin
+        You&apos;re the admin
       </span>
     );
   }
