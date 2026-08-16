@@ -140,15 +140,9 @@ export default async function ProfilePage({
           />
         </div>
 
-        {/* Actions */}
-        <div className="mt-4 flex gap-2">
-          <Link
-            href="/profile/edit"
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-gray-200 py-2.5 text-sm font-bold text-gray-700 transition hover:border-brand/40 hover:text-brand"
-          >
-            <LineIcon name="settings" size={14} />
-            Edit profile
-          </Link>
+        {/* Edit already sits in the header, top-right, where every other
+            screen puts it. A second one here was the same action twice. */}
+        <div className="mt-4">
           <ShareProfileButton />
         </div>
 
