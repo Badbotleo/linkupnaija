@@ -150,7 +150,7 @@ export default async function ProfilePage({
             spread across the drawer and the dashboard, so the profile was a
             page you looked AT rather than one you did anything from. */}
         <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <Quick href="/dashboard" icon="ticket" label="My tickets" />
+          <Quick href="/dashboard?tab=attending" icon="ticket" label="My tickets" />
           <Quick href="/host" icon="mic" label="Host" />
           <Quick href="/refer" icon="gift" label="Invite & earn" />
           <Quick

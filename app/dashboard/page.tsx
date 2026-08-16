@@ -516,9 +516,9 @@ export default async function DashboardPage() {
           <DashboardTabs
             tabs={[
               { id: "hosting", label: "Hosting", count: hosting.length },
-              { id: "past", label: "Past", count: pastHosting.length },
               { id: "attending", label: "Going", count: attending.length },
               { id: "pending", label: "Pending", count: pending.length },
+              { id: "past", label: "Past", count: pastHosting.length },
               { id: "declined", label: "Declined", count: declined.length },
             ]}
           >

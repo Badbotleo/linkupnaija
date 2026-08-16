@@ -1,6 +1,7 @@
 "use client";
 
-import { Children, useState } from "react";
+import { Children, isValidElement, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export interface DashTab {
   id: string;
@@ -17,7 +18,9 @@ export interface DashTab {
  * meant scrolling through everything else first.
  *
  * Same underline rail as the explore tabs, so the two screens teach the same
- * gesture. Children must be in the same order as `tabs`.
+ * gesture. Each child carries a `key` matching its tab's `id` — panes used
+ * to be matched by POSITION, which meant reordering the tabs quietly
+ * showed the wrong list under each one, with nothing to catch it.
  */
 export default function DashboardTabs({
   tabs,
@@ -27,13 +30,22 @@ export default function DashboardTabs({
   children: React.ReactNode;
 }) {
   const panes = Children.toArray(children);
-  // Open on the first tab that actually has something in it — landing on an
-  // empty "Hosting" when you have three events on Saturday is the wrong
-  // first impression.
-  const [active, setActive] = useState(
-    () => (tabs.find((t) => t.count > 0) ?? tabs[0])?.id ?? ""
-  );
-  const index = tabs.findIndex((t) => t.id === active);
+  // ?tab= wins when it names a real tab, so "My tickets" on the profile can
+  // land you on Going rather than on whatever happened to be non-empty.
+  const wanted = useSearchParams().get("tab");
+  const [active, setActive] = useState(() => {
+    if (wanted && tabs.some((t) => t.id === wanted)) return wanted;
+    // Otherwise open on the first tab with something in it — landing on an
+    // empty "Hosting" when you have three events on Saturday is the wrong
+    // first impression.
+    return (tabs.find((t) => t.count > 0) ?? tabs[0])?.id ?? "";
+  });
+  // React prefixes keys from Children.toArray with ".$".
+  const paneFor = (id: string) =>
+    panes.find(
+      (c) =>
+        isValidElement(c) && String(c.key ?? "").replace(/^\.\$/, "") === id
+    ) ?? null;
 
   return (
     <div>
@@ -68,7 +80,7 @@ export default function DashboardTabs({
         })}
       </div>
 
-      <div className="mt-5">{index >= 0 ? panes[index] : null}</div>
+      <div className="mt-5">{paneFor(active)}</div>
     </div>
   );
 }
