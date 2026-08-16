@@ -53,7 +53,7 @@ export default function JoinCircleButton({
     if (error) toast.error("Couldn't join. Try again.");
     else {
       setStatus(next);
-      toast.success(isPrivate ? "Request sent 🔔" : "Joined 🎉");
+      toast.success(isPrivate ? "Request sent" : "Joined");
       router.refresh();
     }
     setBusy(false);
@@ -93,7 +93,7 @@ export default function JoinCircleButton({
   }
   return (
     <button type="button" onClick={join} disabled={busy} className="btn-primary w-full">
-      {busy ? "…" : isPrivate ? "🔒 Request to Join" : "Join Circle"}
+      {busy ? "…" : isPrivate ? "Request to join" : "Join"}
     </button>
   );
 }

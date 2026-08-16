@@ -153,7 +153,7 @@ export default function CreateCircleForm({ userState }: { userState: string | nu
       )}
 
       <button type="submit" disabled={loading} className="btn-primary w-full">
-        {loading ? "Creating…" : "Create circle 🎉"}
+        {loading ? "Creating…" : "Create circle"}
       </button>
     </form>
   );

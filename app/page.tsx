@@ -194,7 +194,7 @@ export default async function HomePage() {
     null;
 
   return (
-    <div className="pb-12">
+    <div>
       {/* ---------------------------------------------------------------- */}
       {/* Top: who we are in one line, then straight into search + browsing */}
       {/* ---------------------------------------------------------------- */}

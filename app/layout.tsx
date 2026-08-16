@@ -114,7 +114,7 @@ export default async function RootLayout({
         <DesktopRail isLoggedIn={!!user} unread={unread} isAdmin={isAdmin} />
         <Navbar />
         {/* pb clears the mobile bottom nav */}
-        <main className="flex-1 pb-16 lg:pb-0 lg:pl-[248px]">{children}</main>
+        <main className="flex-1 lg:pl-[248px]">{children}</main>
         <div className="lg:pl-[248px]">
           <Footer />
         </div>

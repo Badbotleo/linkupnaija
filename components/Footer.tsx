@@ -27,7 +27,7 @@ export default function Footer() {
     /* An app doesn't end in a sitemap. On phones the bottom bar already
        carries navigation, so this is a quiet sign-off; on desktop the left
        rail carries it, so the links stay collapsed there too. */
-    <footer className="mt-12 border-t border-gray-100 dark:border-white/10">
+    <footer className="mt-12 border-t border-gray-100 dark:border-white/10 pb-20 lg:pb-0">
       <div className="container-page py-7">
         <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
           <Link href="/" className="flex items-center gap-2">

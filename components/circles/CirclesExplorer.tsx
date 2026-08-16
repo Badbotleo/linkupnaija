@@ -58,7 +58,7 @@ export default function CirclesExplorer({
     if (error) toast.error("Couldn't join. Try again.");
     else {
       setMemberships((prev) => new Map(prev).set(circle.id, status));
-      toast.success(circle.is_private ? "Request sent 🔔" : "Joined 🎉");
+      toast.success(circle.is_private ? "Request sent" : "Joined");
     }
     setBusyId(null);
   }

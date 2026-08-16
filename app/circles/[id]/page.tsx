@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AppHeader from "@/components/AppHeader";
+import LineIcon from "@/components/ui/LineIcon";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import EventCover from "@/components/EventCover";
@@ -95,87 +96,125 @@ export default async function CirclePage({ params }: { params: { id: string } })
       />
       <div className="container-page py-5">
 
-      <div className="overflow-hidden rounded-2xl shadow-card">
+      {/* Laid out like a profile on X: banner, avatar breaking out of it,
+          the action top-right, then one column of feed. The old two-column
+          split put the join button and the members in a sidebar that fell
+          BELOW the feed on a phone — so the first thing you did on arriving
+          was scroll past everything to find the join button. */}
+      <div className="relative">
         <EventCover
           url={circle.cover_image_url}
           category={circle.category ?? "Networking"}
           title={circle.name}
-          className="h-40 w-full sm:h-56"
+          className="h-36 w-full rounded-2xl sm:h-48"
         />
       </div>
 
-      <div className="mt-4 grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Feed */}
-        <div className="lg:col-span-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand">
+      <div className="mt-3 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-gray-900">
+            {circle.name}
+          </h1>
+          {/* One quiet meta line instead of a row of emoji pills. */}
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-500">
+            <span className="font-semibold text-brand">
               {circle.category ?? "Community"}
             </span>
             {circle.state && (
-              <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600">
-                📍 {circle.state}
-              </span>
+              <>
+                <span aria-hidden>·</span>
+                <span className="inline-flex items-center gap-1">
+                  <LineIcon name="pin" size={12} className="text-gray-400" />
+                  {circle.state}
+                </span>
+              </>
             )}
             {circle.is_private && (
-              <span className="rounded-full bg-gray-900 px-2.5 py-1 text-xs font-bold text-white">
-                🔒 Private
-              </span>
+              <>
+                <span aria-hidden>·</span>
+                <span className="inline-flex items-center gap-1">
+                  <LineIcon name="shield" size={12} className="text-gray-400" />
+                  Private
+                </span>
+              </>
             )}
-          </div>
-          {circle.description && <p className="mt-2 text-gray-600">{circle.description}</p>}
-
-          <div className="mt-6">
-            {circle.is_private && !isMember ? (
-              <p className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-12 text-center text-sm text-gray-500">
-                🔒 This is a private circle. Join to see posts and events.
-              </p>
-            ) : (
-              <CircleFeed
-                circleId={circle.id}
-                meId={user?.id ?? null}
-                isMember={isMember}
-                isAdmin={!!isAdmin}
-              />
-            )}
-          </div>
+          </p>
         </div>
 
-        {/* Sidebar */}
-        <aside className="lg:col-span-1">
-          <div className="sticky top-24 space-y-4">
-            <div className="surface p-6">
-              <JoinCircleButton
-                circleId={circle.id}
-                isPrivate={circle.is_private}
-                isLoggedIn={!!user}
-                isCreator={isCreator}
-                initialStatus={
-                  (membership?.status as "active" | "pending" | undefined) ?? null
-                }
-              />
+        {/* Where a follow button sits on X, and where it should have been
+            all along on a phone. */}
+        <div className="shrink-0">
+          <JoinCircleButton
+            circleId={circle.id}
+            isPrivate={circle.is_private}
+            isLoggedIn={!!user}
+            isCreator={isCreator}
+            initialStatus={
+              (membership?.status as "active" | "pending" | undefined) ?? null
+            }
+          />
+        </div>
+      </div>
 
-              <div className="mt-6 border-t border-gray-100 pt-4">
-                <p className="text-sm font-bold text-gray-900">
-                  👥 {memberProof(circle.member_count) ?? "Members"}
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {members.map((m) => (
-                    <Avatar
-                      key={m.user_id}
-                      name={m.users?.name ?? null}
-                      url={m.users?.avatar_url ?? null}
-                      size="sm"
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
+      {circle.description && (
+        <p className="mt-3 whitespace-pre-line leading-relaxed text-gray-600">
+          {circle.description}
+        </p>
+      )}
 
-            {isCreator && pending.length > 0 && (
-              <CirclePendingRequests initial={pending} />
-            )}
+      {/* Members as an overlapping stack, the way every social app shows
+          "who else is here" — a wrapped grid of avatars read as a directory. */}
+      {members.length > 0 && (
+        <div className="mt-3 flex items-center gap-2">
+          <div className="flex -space-x-2">
+            {members.slice(0, 6).map((m) => (
+              <span
+                key={m.user_id}
+                className="rounded-full ring-2 ring-white dark:ring-[#1A1040]"
+              >
+                <Avatar
+                  name={m.users?.name ?? null}
+                  url={m.users?.avatar_url ?? null}
+                  size="sm"
+                />
+              </span>
+            ))}
           </div>
-        </aside>
+          <span className="text-sm text-gray-500">
+            {memberProof(circle.member_count) ?? "Members"}
+          </span>
+        </div>
+      )}
+
+      {isCreator && pending.length > 0 && (
+        <div className="mt-4">
+          <CirclePendingRequests initial={pending} />
+        </div>
+      )}
+
+      <div className="mt-5 border-t border-gray-100 pt-5 dark:border-white/10">
+        {circle.is_private && !isMember ? (
+          <div className="rounded-2xl border border-dashed border-gray-200 px-6 py-14 text-center">
+            <LineIcon
+              name="shield"
+              size={22}
+              className="mx-auto text-gray-300"
+            />
+            <p className="mt-2 font-semibold text-gray-700">
+              This circle is private
+            </p>
+            <p className="mt-1 text-sm text-gray-500">
+              Join to see posts and events.
+            </p>
+          </div>
+        ) : (
+          <CircleFeed
+            circleId={circle.id}
+            meId={user?.id ?? null}
+            isMember={isMember}
+            isAdmin={!!isAdmin}
+          />
+        )}
       </div>
     </div>
     </div>
