@@ -8,6 +8,7 @@ import { payWithPaystack, formatNaira } from "@/lib/paystack";
 import { FREE_REQUEST_LIMIT } from "@/lib/pro";
 import { confettiJoin, confettiCoins } from "@/lib/confetti";
 import { toast } from "@/lib/toast";
+import LineIcon from "./ui/LineIcon";
 import { haptic } from "@/lib/haptics";
 import type { RsvpStatus } from "@/lib/types";
 
@@ -365,19 +366,64 @@ export default function RsvpButton({
                 </span>
               </label>
             )}
+            {/* The one decision this whole page exists for, so it stops
+                looking like every other button on it.
+                  · gradient in the brand, not a flat fill
+                  · the price is the loud part, the verb is the quiet part —
+                    people are deciding on the number
+                  · lifts on press rather than just dimming, so a tap on a
+                    slow connection feels like it did something
+                  · sold out is grey and honest, not a disabled blue */}
             <button
               type="button"
               onClick={request}
               disabled={loading || isFull}
-              className="btn-primary w-full"
+              className={`group relative w-full overflow-hidden rounded-2xl px-5 py-4 text-left transition-all duration-200 ${
+                isFull
+                  ? "cursor-not-allowed bg-gray-100 text-gray-400"
+                  : "bg-gradient-to-r from-brand-600 to-brand text-white shadow-lg shadow-brand/25 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-brand/30 active:translate-y-0 active:shadow-md disabled:opacity-70"
+              }`}
             >
-              {loading
-                ? "Processing…"
-                : isFull
-                  ? "Event is full"
-                  : price > 0
-                    ? remainderLabel
-                    : "Request to join"}
+              <span className="flex items-center justify-between gap-3">
+                <span className="min-w-0">
+                  {isFull ? (
+                    <span className="text-[15px] font-bold">
+                      Sold out — nothing left
+                    </span>
+                  ) : loading ? (
+                    <span className="text-[15px] font-bold">Processing…</span>
+                  ) : dueNow > 0 ? (
+                    <>
+                      <span className="block text-[20px] font-extrabold leading-none tabular-nums">
+                        {remainderDue === 0
+                          ? "Paid with wallet"
+                          : formatNaira(remainderDue)}
+                      </span>
+                      <span className="mt-1 block text-[12px] font-semibold text-white/75">
+                        {chosen
+                          ? `${chosen.name} · request to join`
+                          : walletApplied > 0
+                            ? `${formatNaira(walletApplied)} from wallet · request to join`
+                            : "Request to join"}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="block text-[18px] font-extrabold leading-none">
+                        Request to join
+                      </span>
+                      <span className="mt-1 block text-[12px] font-semibold text-white/75">
+                        Free · the host approves you
+                      </span>
+                    </>
+                  )}
+                </span>
+                {!isFull && !loading && (
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/20 transition group-hover:translate-x-0.5">
+                    <LineIcon name="chevronRight" size={17} />
+                  </span>
+                )}
+              </span>
             </button>
           </>
         ))}
