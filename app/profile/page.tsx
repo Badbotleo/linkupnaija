@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import EventCover from "@/components/EventCover";
 import LineIcon from "@/components/ui/LineIcon";
+import BrandIcon from "@/components/ui/BrandIcon";
 import SocialLinks from "@/components/SocialLinks";
 import ShareProfileButton from "@/components/profile/ShareProfileButton";
 import BannerUpload from "@/components/profile/BannerUpload";
@@ -164,7 +165,7 @@ export default async function ProfilePage({
               aria-label="Instagram"
               className="grid w-12 shrink-0 place-items-center rounded-2xl border border-gray-200 text-gray-700 transition hover:border-brand/40 hover:text-brand dark:border-white/15 dark:text-white"
             >
-              <LineIcon name="camera" size={18} />
+              <BrandIcon name="instagram" size={18} />
             </a>
           )}
         </div>

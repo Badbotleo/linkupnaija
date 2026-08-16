@@ -1,4 +1,4 @@
-import LineIcon from "../ui/LineIcon";
+import BrandIcon from "../ui/BrandIcon";
 
 /**
  * A host's socials, on the page where somebody decides to join.
@@ -21,14 +21,15 @@ export default function HostSocials({
   facebook?: string | null;
 }) {
   const links = [
-    { href: instagram, label: "Instagram" },
-    { href: twitter, label: "X" },
-    { href: facebook, label: "Facebook" },
-  ].filter((l): l is { href: string; label: string } =>
+    { href: instagram, label: "Instagram", icon: "instagram" },
+    { href: twitter, label: "X", icon: "x" },
+    { href: facebook, label: "Facebook", icon: "facebook" },
+  ]
     // Only real links. A half-typed handle in the profile shouldn't become a
-    // broken link on somebody else's event page.
-    typeof l.href === "string" && /^https?:\/\/\S+$/i.test(l.href.trim())
-  );
+    // broken link on somebody else's event page. Mapping after the filter
+    // rather than using a predicate keeps href a plain string.
+    .filter((l) => typeof l.href === "string" && /^https?:\/\/\S+$/i.test(l.href.trim()))
+    .map((l) => ({ href: l.href as string, label: l.label, icon: l.icon }));
 
   if (links.length === 0) return null;
 
@@ -42,8 +43,8 @@ export default function HostSocials({
           rel="noopener noreferrer nofollow"
           className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-2.5 py-1 text-[11px] font-bold text-gray-600 transition hover:border-brand/40 hover:text-brand"
         >
+          <BrandIcon name={l.icon} size={12} />
           {l.label}
-          <LineIcon name="share" size={10} />
         </a>
       ))}
     </div>
