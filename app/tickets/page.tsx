@@ -85,7 +85,7 @@ export default async function TicketsPage() {
   const hosted = (hosting ?? []) as unknown as Ev[];
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50 dark:bg-[#12092E]">
       <AppHeader title="Tickets" subtitle="Everything you need at the door" />
       <div className="container-page py-5">
         {upcoming.length === 0 && hosted.length === 0 && past.length === 0 ? (
@@ -109,47 +109,88 @@ export default async function TicketsPage() {
                 const e = r.events!;
                 const tier = r.tier_id ? tiers.get(r.tier_id) : null;
                 return (
-                  <div
-                    key={r.id}
-                    className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card"
-                  >
-                    <div className="flex gap-3 p-3">
-                      <Link href={`/events/${e.id}`} className="shrink-0">
+                  <div key={r.id} className="relative">
+                    {/* An actual ticket stub: cover art as the top band, a
+                        torn perforation with notches punched out of the
+                        sides, and the QR on the stub below it. A ticket that
+                        looks like a receipt is a ticket nobody wants to
+                        screenshot. */}
+                    <div className="overflow-hidden rounded-3xl bg-white shadow-lg shadow-gray-900/10 ring-1 ring-gray-900/5">
+                      {/* --- top: the art --- */}
+                      <Link href={`/events/${e.id}`} className="relative block">
                         <EventCover
                           url={e.cover_image_url}
                           category={e.category}
                           title={e.title}
-                          className="h-20 w-20 rounded-xl"
+                          className="h-40 w-full"
                           fit="cover"
                         />
-                      </Link>
-                      <div className="min-w-0 flex-1">
-                        <Link
-                          href={`/events/${e.id}`}
-                          className="line-clamp-2 font-bold text-gray-900 hover:text-brand"
-                        >
-                          {e.title}
-                        </Link>
-                        <p className="mt-0.5 text-xs text-gray-500">
-                          {formatEventDate(e.date)} · {formatEventTime(e.time)}
-                        </p>
-                        <p className="truncate text-xs text-gray-400">{e.location}</p>
-                        {/* What they bought, so the door knows what to hand
-                            over without anybody having to ask. */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+
                         {tier && (
-                          <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-bold text-brand">
+                          <span className="absolute right-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-gray-900">
                             {tier.name}
-                            {!!tier.admits && ` · ${tier.admits} people`}
                           </span>
                         )}
+
+                        <div className="absolute inset-x-0 bottom-0 p-4 text-white">
+                          <p className="line-clamp-2 text-[19px] font-extrabold leading-tight">
+                            {e.title}
+                          </p>
+                          <p className="mt-1 flex flex-wrap items-center gap-x-2 text-[12px] text-white/85">
+                            <span className="font-bold">
+                              {formatEventDate(e.date)}
+                            </span>
+                            <span aria-hidden>·</span>
+                            <span>{formatEventTime(e.time)}</span>
+                          </p>
+                          <p className="mt-0.5 truncate text-[11px] text-white/60">
+                            {e.location}
+                          </p>
+                        </div>
+                      </Link>
+
+                      {/* --- the tear --- */}
+                      <div className="relative">
+                        {/* Notches, punched from the page background so the
+                            card reads as torn rather than merely divided. */}
+                        <span
+                          aria-hidden
+                          className="absolute -left-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-gray-50 dark:bg-[#12092E]"
+                        />
+                        <span
+                          aria-hidden
+                          className="absolute -right-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-gray-50 dark:bg-[#12092E]"
+                        />
+                        <div className="mx-5 border-t-2 border-dashed border-gray-200" />
                       </div>
-                    </div>
-                    <div className="border-t border-gray-100 p-3">
-                      <TicketButton
-                        rsvpId={r.id}
-                        eventTitle={e.title}
-                        attendeeName={me?.name ?? null}
-                      />
+
+                      {/* --- stub: the bit you actually show --- */}
+                      <div className="flex items-center gap-3 p-4">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-gray-400">
+                            Admits
+                          </p>
+                          <p className="text-[15px] font-extrabold text-gray-900">
+                            {tier?.admits
+                              ? `${tier.admits} people`
+                              : me?.name ?? "You"}
+                          </p>
+                          {r.attended && (
+                            <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-naija-50 px-2 py-0.5 text-[10px] font-bold text-naija-700">
+                              <LineIcon name="check" size={9} />
+                              Checked in
+                            </span>
+                          )}
+                        </div>
+                        <div className="shrink-0">
+                          <TicketButton
+                            rsvpId={r.id}
+                            eventTitle={e.title}
+                            attendeeName={me?.name ?? null}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 );
