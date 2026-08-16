@@ -24,6 +24,7 @@ import ReviewsSection from "@/components/ReviewsSection";
 import FeatureButton from "@/components/FeatureButton";
 import RatingSummary from "@/components/RatingSummary";
 import HostBadges from "@/components/host/HostBadges";
+import HostSocials from "@/components/host/HostSocials";
 import { computeBadges } from "@/lib/hostBadges";
 import FeaturedBadge, { isFeatured } from "@/components/FeaturedBadge";
 import { formatEventDate, formatEventTime } from "@/lib/format";
@@ -99,7 +100,7 @@ export default async function EventDetailPage({
   const { data: event } = await supabase
     .from("events")
     .select(
-      "*, host:users!events_host_id_fkey(id, name, avatar_url, state, rating_avg, rating_count, paystack_subaccount_code)"
+      "*, host:users!events_host_id_fkey(id, name, avatar_url, state, rating_avg, rating_count, paystack_subaccount_code, instagram_url, twitter_url, facebook_url)"
     )
     .eq("id", params.id)
     .single();
@@ -558,15 +559,23 @@ export default async function EventDetailPage({
               <>
                 <p className="text-sm text-gray-500">Hosted by</p>
                 <div className="mt-2 flex items-center gap-3">
-                  <Avatar
-                    name={event.host?.name ?? null}
-                    url={event.host?.avatar_url ?? null}
-                    size="md"
-                  />
+                  {/* The one page where somebody decides whether to trust a
+                      stranger with money and an address. "Who is this?" has
+                      to lead somewhere. */}
+                  <Link href={`/u/${event.host_id}`} className="shrink-0">
+                    <Avatar
+                      name={event.host?.name ?? null}
+                      url={event.host?.avatar_url ?? null}
+                      size="md"
+                    />
+                  </Link>
                   <div>
-                    <p className="font-bold text-gray-900">
+                    <Link
+                      href={`/u/${event.host_id}`}
+                      className="font-bold text-gray-900 hover:text-brand hover:underline"
+                    >
                       {event.host?.name ?? "A LinkUpNaija host"}
-                    </p>
+                    </Link>
                     {event.host?.state && (
                       <p className="text-sm text-gray-500">
                         {event.host.state}
@@ -582,6 +591,11 @@ export default async function EventDetailPage({
                         <HostBadges badges={hostBadges} max={3} />
                       </div>
                     )}
+                    <HostSocials
+                      instagram={event.host?.instagram_url ?? null}
+                      twitter={event.host?.twitter_url ?? null}
+                      facebook={event.host?.facebook_url ?? null}
+                    />
                   </div>
                 </div>
 
