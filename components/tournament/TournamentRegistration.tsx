@@ -108,7 +108,7 @@ export default function TournamentRegistration() {
 
       {/* Form / success */}
       {done ? (
-        <div className="rounded-2xl border-2 border-[#FAC775]/60 bg-[#1A1040] p-8 text-center">
+        <div className="rounded-2xl border-2 border-[#FAC775]/60 bg-[#121212] p-8 text-center">
           <p className="text-4xl">🎮</p>
           <h3 className="mt-3 text-xl font-extrabold text-white">
             You&apos;re on the waitlist!
@@ -118,7 +118,7 @@ export default function TournamentRegistration() {
           </p>
         </div>
       ) : isFull ? (
-        <div className="rounded-2xl border-2 border-red-400/50 bg-[#1A1040] p-8 text-center">
+        <div className="rounded-2xl border-2 border-red-400/50 bg-[#121212] p-8 text-center">
           <h3 className="text-xl font-extrabold text-white">
             TOURNAMENT FULL
           </h3>
@@ -130,7 +130,7 @@ export default function TournamentRegistration() {
       ) : (
         <form
           onSubmit={register}
-          className="space-y-4 rounded-2xl border border-white/10 bg-[#1A1040] p-6"
+          className="space-y-4 rounded-2xl border border-white/10 bg-[#121212] p-6"
         >
           <h3 className="text-lg font-extrabold text-white">
             Register for FC26
@@ -164,11 +164,11 @@ export default function TournamentRegistration() {
             onChange={(e) => update("state", e.target.value)}
             className={`${inputCls} cursor-pointer`}
           >
-            <option value="" className="bg-[#1A1040]">
+            <option value="" className="bg-[#121212]">
               Select your state
             </option>
             {NIGERIAN_STATES.map((s) => (
-              <option key={s} value={s} className="bg-[#1A1040]">
+              <option key={s} value={s} className="bg-[#121212]">
                 {s}
               </option>
             ))}

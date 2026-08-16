@@ -51,7 +51,7 @@ export default async function OgImage({ params }: { params: { id: string } }) {
           height: "100%",
           display: "flex",
           position: "relative",
-          backgroundColor: "#1A1040",
+          backgroundColor: "#121212",
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}

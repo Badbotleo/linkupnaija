@@ -86,7 +86,7 @@ export default async function HostPage({
         <div className="container-page max-w-lg py-10 text-center">
           <div
             className="overflow-hidden rounded-3xl p-7 text-white shadow-card"
-            style={{ background: "linear-gradient(135deg, #534AB7 0%, #1A1040 100%)" }}
+            style={{ background: "linear-gradient(135deg, #534AB7 0%, #121212 100%)" }}
           >
             <p className="text-4xl">🎪</p>
             <h1 className="mt-3 text-2xl font-extrabold">
@@ -99,7 +99,7 @@ export default async function HostPage({
             </p>
             <Link
               href="/pro"
-              className="mt-5 inline-flex rounded-full bg-[#FAC775] px-6 py-3 text-sm font-black text-[#1A1040] transition hover:brightness-105"
+              className="mt-5 inline-flex rounded-full bg-[#FAC775] px-6 py-3 text-sm font-black text-[#121212] transition hover:brightness-105"
             >
               Go Pro for unlimited hosting
             </Link>

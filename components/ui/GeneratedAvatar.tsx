@@ -13,7 +13,7 @@
  */
 
 const SKIN = ["#8D5524", "#7A4520", "#5C3317", "#A9713B", "#6B3E1E"];
-const HAIR = ["#1B1210", "#2B1B12", "#3A2317", "#1A1040"];
+const HAIR = ["#1B1210", "#2B1B12", "#3A2317", "#121212"];
 const BG = ["#EDEBFA", "#E6F4ED", "#FDF2E3", "#FBE9EF", "#E7F0FB", "#F3ECFB"];
 
 // Simple, stable string hash — the same name always draws the same face.
@@ -41,7 +41,7 @@ export default function GeneratedAvatar({
   const hair = HAIR[(h >> 3) % HAIR.length];
   const bg = BG[(h >> 6) % BG.length];
   const style = ((h >> 9) % 6) as Style;
-  const shirt = ["#534AB7", "#008753", "#FAC775", "#1A1040"][(h >> 12) % 4];
+  const shirt = ["#534AB7", "#008753", "#FAC775", "#121212"][(h >> 12) % 4];
 
   return (
     <svg

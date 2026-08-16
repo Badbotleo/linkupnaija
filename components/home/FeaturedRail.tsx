@@ -39,7 +39,7 @@ export default async function FeaturedRail() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
 
-            <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#FAC775] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#1A1040]">
+            <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#FAC775] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#121212]">
               <LineIcon name="star" size={10} />
               Featured
             </span>

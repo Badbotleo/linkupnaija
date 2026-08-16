@@ -205,7 +205,7 @@ export default function RecapActions({
           onClick={() => setOpen(false)}
         >
           <div
-            className="max-h-[70%] rounded-t-3xl bg-white dark:bg-[#1A1040]"
+            className="max-h-[70%] rounded-t-3xl bg-white dark:bg-[#121212]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-white/10">

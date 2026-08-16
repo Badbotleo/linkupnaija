@@ -93,7 +93,7 @@ export default function AdminHosts({ initial }: { initial: AdminHostRow[] }) {
                 disabled={busy === r.host_id}
                 onClick={() => feature(r.host_id)}
                 className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                  r.featured_host ? "bg-[#FAC775] text-[#1A1040]" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  r.featured_host ? "bg-[#FAC775] text-[#121212]" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
                 {r.featured_host ? "★ Featured" : "Feature"}

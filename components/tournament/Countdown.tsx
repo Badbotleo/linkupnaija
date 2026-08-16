@@ -7,7 +7,7 @@ function Unit({ value, label }: { value: number; label: string }) {
   return (
     <div className="flex flex-col items-center">
       <span
-        className="grid h-16 w-16 place-items-center overflow-hidden rounded-xl border border-white/10 bg-[#1A1040] text-3xl font-black tabular-nums sm:h-20 sm:w-20 sm:text-4xl"
+        className="grid h-16 w-16 place-items-center overflow-hidden rounded-xl border border-white/10 bg-[#121212] text-3xl font-black tabular-nums sm:h-20 sm:w-20 sm:text-4xl"
         style={{ perspective: 400 }}
       >
         {/* key change replays the flip + purple glow each tick */}

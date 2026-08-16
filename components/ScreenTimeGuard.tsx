@@ -54,7 +54,7 @@ export default function ScreenTimeGuard() {
   return (
     <div
       className="fixed inset-0 z-[9998] flex items-center justify-center p-6 text-center text-white"
-      style={{ backgroundColor: "#1A1040" }}
+      style={{ backgroundColor: "#121212" }}
     >
       <div className="max-w-md">
         <p className="text-6xl">🌱</p>
@@ -67,7 +67,7 @@ export default function ScreenTimeGuard() {
           <a
             href="/events"
             onClick={snooze}
-            className="rounded-xl bg-[#FAC775] px-6 py-3 font-bold text-[#1A1040]"
+            className="rounded-xl bg-[#FAC775] px-6 py-3 font-bold text-[#121212]"
           >
             Find a real-life link-up →
           </a>

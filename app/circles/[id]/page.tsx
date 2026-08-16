@@ -170,7 +170,7 @@ export default async function CirclePage({ params }: { params: { id: string } })
             {members.slice(0, 6).map((m) => (
               <span
                 key={m.user_id}
-                className="rounded-full ring-2 ring-white dark:ring-[#1A1040]"
+                className="rounded-full ring-2 ring-white dark:ring-[#121212]"
               >
                 <Avatar
                   name={m.users?.name ?? null}

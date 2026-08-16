@@ -85,7 +85,7 @@ export default async function TicketsPage() {
   const hosted = (hosting ?? []) as unknown as Ev[];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#12092E]">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#000000]">
       <AppHeader title="Tickets" subtitle="Everything you need at the door" />
       <div className="container-page py-5">
         {upcoming.length === 0 && hosted.length === 0 && past.length === 0 ? (
@@ -156,11 +156,11 @@ export default async function TicketsPage() {
                             card reads as torn rather than merely divided. */}
                         <span
                           aria-hidden
-                          className="absolute -left-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-gray-50 dark:bg-[#12092E]"
+                          className="absolute -left-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-gray-50 dark:bg-[#000000]"
                         />
                         <span
                           aria-hidden
-                          className="absolute -right-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-gray-50 dark:bg-[#12092E]"
+                          className="absolute -right-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-gray-50 dark:bg-[#000000]"
                         />
                         <div className="mx-5 border-t-2 border-dashed border-gray-200" />
                       </div>

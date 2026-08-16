@@ -30,7 +30,7 @@ export default function PageHero({
   return (
     <section
       className="relative overflow-hidden"
-      style={{ background: "linear-gradient(150deg, #110F25 0%, #1A1040 60%, #221E49 100%)" }}
+      style={{ background: "linear-gradient(150deg, #110F25 0%, #121212 60%, #221E49 100%)" }}
     >
       {/* Texture + glows */}
       <div

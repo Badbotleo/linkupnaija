@@ -39,9 +39,9 @@ export function LogoMark({
 export function Wordmark({ className = "" }: { className?: string }) {
   return (
     <span className={`font-extrabold tracking-tight ${className}`}>
-      <span className="text-[#1A1040] dark:text-white">Link</span>
+      <span className="text-[#121212] dark:text-white">Link</span>
       <span className="text-brand dark:text-[#7F77DD]">Up</span>
-      <span className="text-[#1A1040] dark:text-white">Naija</span>
+      <span className="text-[#121212] dark:text-white">Naija</span>
     </span>
   );
 }

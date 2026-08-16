@@ -87,7 +87,7 @@ export default function EventsMap({ events }: { events: MapEvent[] }) {
             >
               <Popup>
                 <div style={{ minWidth: 180 }}>
-                  <p style={{ margin: "0 0 6px", fontWeight: 700, color: "#1A1040" }}>
+                  <p style={{ margin: "0 0 6px", fontWeight: 700, color: "#121212" }}>
                     📍 {state} · {list.length} event{list.length === 1 ? "" : "s"}
                   </p>
                   {list.slice(0, 6).map((e) => (

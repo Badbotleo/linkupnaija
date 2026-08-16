@@ -97,14 +97,22 @@ export default async function RootLayout({
   return (
     <html lang="en" className={jakarta.variable} suppressHydrationWarning>
       <head>
-        {/* Clears the stale theme flag before paint. The dark toggle was
-            removed on 5 Aug because only 6 of 194 components supported it —
-            without this, anyone who had switched it on would be stuck in a
-            half-dark app forever, with no toggle left to switch it back.
-            Restore the original read when dark mode is genuinely finished. */}
+        {/* Resolves the theme BEFORE first paint, so nobody sees a white
+            flash and then the app going dark.
+            
+            Three states, not two. "system" is the default and the one iOS
+            users expect: the app follows the phone, including when the phone
+            flips at sunset. An explicit choice overrides it and sticks.
+
+            This replaces a kill-switch added on 5 Aug that deleted the theme
+            on every load. The note said only 6 of 194 components supported
+            dark — but the support was never per-component: globals.css
+            overrides bg-white, bg-gray-*, text-gray-*, border-gray-* and the
+            input/button primitives under .dark, so the whole app was already
+            covered by 26 global rules. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{localStorage.removeItem('theme');document.documentElement.classList.remove('dark')}catch(e){}})();`,
+            __html: `(function(){try{var s=localStorage.getItem('theme');var d=s==='dark'||((!s||s==='system')&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d)}catch(e){}})();`,
           }}
         />
       </head>

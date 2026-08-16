@@ -210,7 +210,7 @@ function Screen({ n }: { n: number }) {
   if (n === 1)
     return (
       <Chrome title="Rooftop sundowner">
-        <div className="h-16 rounded-xl bg-gradient-to-br from-brand to-[#1A1040]" />
+        <div className="h-16 rounded-xl bg-gradient-to-br from-brand to-[#121212]" />
         <p className="mt-2 text-[11px] leading-snug text-gray-600">
           Hosted by Tobi · 12 going · approval required
         </p>

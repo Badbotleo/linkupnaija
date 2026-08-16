@@ -344,7 +344,7 @@ export default async function EventDetailPage({
           <div className="flex flex-wrap items-center gap-2">
             {featured && <FeaturedBadge />}
             {event.is_corporate && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#1A1040] px-2.5 py-1 text-xs font-bold text-white">
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#121212] px-2.5 py-1 text-xs font-bold text-white">
                 Corporate Event
               </span>
             )}
@@ -358,7 +358,7 @@ export default async function EventDetailPage({
             {partner && (
               <Link
                 href={`/partners/${partner.slug}`}
-                className="inline-flex items-center gap-1.5 rounded-full bg-[#1A1040] px-2.5 py-1 text-xs font-bold text-white transition hover:opacity-90"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#121212] px-2.5 py-1 text-xs font-bold text-white transition hover:opacity-90"
               >
                 {partner.logo_url ? (
                   /* eslint-disable-next-line @next/next/no-img-element */

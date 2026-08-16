@@ -147,7 +147,7 @@ export default function ChatWidget() {
         {/* Header */}
         <div
           className="flex items-center justify-between px-4 py-3 text-white"
-          style={{ background: "linear-gradient(135deg, #534AB7 0%, #1A1040 100%)" }}
+          style={{ background: "linear-gradient(135deg, #534AB7 0%, #121212 100%)" }}
         >
           <div className="flex items-center gap-2.5">
             <span className="grid h-9 w-9 place-items-center rounded-full bg-white/15">

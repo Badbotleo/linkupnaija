@@ -22,7 +22,7 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#1A1040",
+          backgroundColor: "#121212",
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}

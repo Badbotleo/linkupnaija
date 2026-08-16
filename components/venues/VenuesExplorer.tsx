@@ -364,7 +364,7 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/92 via-black/35 to-black/10" />
 
-                  <span className="absolute left-4 top-4 rounded-full bg-[#FAC775] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#1A1040]">
+                  <span className="absolute left-4 top-4 rounded-full bg-[#FAC775] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#121212]">
                     Partner
                   </span>
                   {p.rating !== null && (
@@ -544,7 +544,7 @@ function VenueCard({ card, onReserve }: { card: Card; onReserve: () => void }) {
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
       {card.isPartner && (
-        <span className="absolute left-3 top-3 rounded-full bg-[#FAC775] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#1A1040]">
+        <span className="absolute left-3 top-3 rounded-full bg-[#FAC775] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#121212]">
           Partner
         </span>
       )}

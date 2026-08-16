@@ -54,7 +54,7 @@ export default function CorporatePage() {
   return (
     <div>
       {/* Hero */}
-      <section className="text-white" style={{ backgroundColor: "#1A1040" }}>
+      <section className="text-white" style={{ backgroundColor: "#121212" }}>
         <div className="container-page py-16 text-center sm:py-20">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm font-semibold text-[#FAC775]">
             For Business
@@ -65,7 +65,7 @@ export default function CorporatePage() {
           <p className="mx-auto mt-4 max-w-2xl text-lg text-[#DAD8F0]">
             From team outings to client entertainment, we handle everything.
           </p>
-          <a href="#quote" className="btn mt-8 inline-block bg-[#FAC775] px-6 py-3 text-base font-bold text-[#1A1040] hover:opacity-90">
+          <a href="#quote" className="btn mt-8 inline-block bg-[#FAC775] px-6 py-3 text-base font-bold text-[#121212] hover:opacity-90">
             Get a quote →
           </a>
         </div>

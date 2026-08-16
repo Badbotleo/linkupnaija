@@ -39,7 +39,7 @@ export default function TelegramMiniApp() {
       if (!wa) return;
       wa.ready();
       wa.expand();
-      wa.setHeaderColor?.("#1A1040");
+      wa.setHeaderColor?.("#121212");
     };
 
     if (document.getElementById("tg-webapp-sdk")) {

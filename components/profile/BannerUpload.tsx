@@ -52,7 +52,7 @@ export default function BannerUpload({
     // eslint-disable-next-line @next/next/no-img-element
     <img src={url} alt="Profile banner" className="h-full w-full object-cover" />
   ) : (
-    <div className="h-full w-full" style={{ background: "linear-gradient(120deg,#1A1040,#534AB7)" }} />
+    <div className="h-full w-full" style={{ background: "linear-gradient(120deg,#121212,#534AB7)" }} />
   );
 
   if (!editable) {

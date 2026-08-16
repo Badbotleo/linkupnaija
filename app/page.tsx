@@ -267,7 +267,7 @@ export default async function HomePage() {
             <div className="absolute inset-0 bg-gradient-to-t from-[#120B2E] via-[#120B2E]/70 to-[#120B2E]/25" />
 
             <div className="relative flex min-h-[210px] flex-col justify-end p-5 sm:min-h-[240px] sm:p-7">
-              <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-[#FAC775] px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-[#1A1040]">
+              <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-[#FAC775] px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-[#121212]">
                 <span aria-hidden className="flex overflow-hidden rounded-[2px]">
                   <span className="block h-2.5 w-1 bg-naija" />
                   <span className="block h-2.5 w-1 bg-white" />
@@ -453,7 +453,7 @@ export default async function HomePage() {
                       alt=""
                       className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
                     />
-                    <span className="absolute left-2.5 top-2.5 rounded-full bg-[#FAC775] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[#1A1040]">
+                    <span className="absolute left-2.5 top-2.5 rounded-full bg-[#FAC775] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[#121212]">
                       {v.category}
                     </span>
                   </div>
@@ -511,7 +511,7 @@ export default async function HomePage() {
                   className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-                <span className="absolute left-2.5 top-2.5 rounded-full bg-[#FAC775] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[#1A1040]">
+                <span className="absolute left-2.5 top-2.5 rounded-full bg-[#FAC775] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[#121212]">
                   {s.frequency ?? "Recurring"}
                 </span>
                 <div className="absolute inset-x-0 bottom-0 p-3 text-white">

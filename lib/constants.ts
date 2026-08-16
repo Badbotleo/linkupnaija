@@ -367,7 +367,9 @@ export const CATEGORY_STYLES: Record<
   "Fashion Pop-up": { badge: "bg-gray-100 text-gray-700", emoji: "🛒" },
   "Listening Party": { badge: "bg-gray-100 text-gray-700", emoji: "🎧" },
   "After-Party": { badge: "bg-gray-100 text-gray-700", emoji: "🌃" },
-  "Cultural Day": { badge: "bg-gray-100 text-gray-700", emoji: "🇳🇬" },
+  // 🇳🇬 is white through the middle, so on a white or near-white chip the
+  // flag reads as two green bars with a gap. Green chip gives it a ground.
+  "Cultural Day": { badge: "bg-naija-100 text-naija-800", emoji: "🇳🇬" },
   "Carnival": { badge: "bg-fuchsia-100 text-fuchsia-700", emoji: "🎭" },
   "Family Fun Day": { badge: "bg-gray-100 text-gray-700", emoji: "🎈" },
   "Kids Event": { badge: "bg-gray-100 text-gray-700", emoji: "🧸" },

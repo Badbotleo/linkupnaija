@@ -75,7 +75,7 @@ export async function GET(
           height: "100%",
           display: "flex",
           position: "relative",
-          backgroundColor: "#1A1040",
+          backgroundColor: "#121212",
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -160,7 +160,7 @@ export async function GET(
                   backgroundColor: "#FAC775",
                   fontSize: 30,
                   fontWeight: 800,
-                  color: "#1A1040",
+                  color: "#121212",
                 }}
               >
                 {category}

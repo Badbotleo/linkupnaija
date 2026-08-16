@@ -86,11 +86,11 @@ export default function InstallAppBanner() {
     <>
       {/* Banner — bottom-36 clears both the bottom nav and the chat bubble. */}
       <div className="fixed bottom-36 left-3 right-3 z-40 lg:hidden">
-        <div className="flex items-center gap-3 rounded-2xl border border-brand/20 bg-white p-3 shadow-xl dark:border-white/10 dark:bg-[#1A1040]">
+        <div className="flex items-center gap-3 rounded-2xl border border-brand/20 bg-white p-3 shadow-xl dark:border-white/10 dark:bg-[#121212]">
           {/* Official app icon */}
           <span
             className="grid h-11 w-11 shrink-0 place-items-center rounded-xl"
-            style={{ background: "linear-gradient(135deg,#262052,#1A1040)" }}
+            style={{ background: "linear-gradient(135deg,#262052,#121212)" }}
             aria-hidden
           >
             <LogoMark size={30} />
@@ -128,14 +128,14 @@ export default function InstallAppBanner() {
           onClick={() => setShowIosGuide(false)}
         >
           <div
-            className="w-full rounded-t-3xl bg-white p-6 pb-10 dark:bg-[#1A1040]"
+            className="w-full rounded-t-3xl bg-white p-6 pb-10 dark:bg-[#121212]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-gray-300" />
             <div className="flex items-center gap-3">
               <span
                 className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl"
-                style={{ background: "linear-gradient(135deg,#262052,#1A1040)" }}
+                style={{ background: "linear-gradient(135deg,#262052,#121212)" }}
                 aria-hidden
               >
                 <LogoMark size={32} />

@@ -432,7 +432,7 @@ async function shareCollage(photos: EventPhoto[], eventTitle: string) {
   canvas.height = SIZE;
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
-  ctx.fillStyle = "#1A1040";
+  ctx.fillStyle = "#121212";
   ctx.fillRect(0, 0, SIZE, SIZE);
 
   const positions = [

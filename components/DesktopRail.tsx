@@ -48,13 +48,13 @@ export default function DesktopRail({
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   return (
-    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-[248px] flex-col border-r border-gray-100 bg-white/80 px-3 py-4 backdrop-blur lg:flex dark:border-white/10 dark:bg-[#1A1040]/80">
+    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-[248px] flex-col border-r border-gray-100 bg-white/80 px-3 py-4 backdrop-blur lg:flex dark:border-white/10 dark:bg-[#121212]/80">
       <Link href="/" className="mb-5 flex items-center gap-2.5 px-3">
         <LogoMark size={32} />
         <span className="text-[19px] font-extrabold tracking-tight">
-          <span className="text-[#1A1040] dark:text-white">Link</span>
+          <span className="text-[#121212] dark:text-white">Link</span>
           <span className="text-brand dark:text-[#7F77DD]">Up</span>
-          <span className="text-[#1A1040] dark:text-white">Naija</span>
+          <span className="text-[#121212] dark:text-white">Naija</span>
         </span>
       </Link>
 

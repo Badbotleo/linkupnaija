@@ -249,7 +249,7 @@ export default async function DefconPage() {
           website this is a link you scroll past once; in an app it stays
           where your thumb is. */}
       {events.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-black/5 bg-white/85 p-3 backdrop-blur-lg lg:hidden dark:bg-[#1A1040]/85">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-black/5 bg-white/85 p-3 backdrop-blur-lg lg:hidden dark:bg-[#121212]/85">
           <Link
             href={`/events/${events[0].id}`}
             className="flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 text-[15px] font-black text-white"

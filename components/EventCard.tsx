@@ -68,7 +68,7 @@ export default function EventCard({
               </span>
             )}
             {event.is_corporate && (
-              <span className="rounded-full bg-[#1A1040] px-2.5 py-1 text-xs font-bold text-white shadow-sm">
+              <span className="rounded-full bg-[#121212] px-2.5 py-1 text-xs font-bold text-white shadow-sm">
                 Corporate
               </span>
             )}
