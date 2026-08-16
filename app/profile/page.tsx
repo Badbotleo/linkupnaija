@@ -78,9 +78,10 @@ export default async function ProfilePage({
         action={
           <Link
             href="/profile/edit"
-            className="btn-outline rounded-full px-4 py-2 text-sm"
+            aria-label="Settings"
+            className="grid h-9 w-9 place-items-center rounded-full border border-gray-200 text-gray-600 transition hover:border-brand/40 hover:text-brand dark:border-white/15 dark:text-white/70"
           >
-            Edit
+            <LineIcon name="settings" size={16} />
           </Link>
         }
       />
@@ -140,10 +141,32 @@ export default async function ProfilePage({
           />
         </div>
 
-        {/* Edit already sits in the header, top-right, where every other
-            screen puts it. A second one here was the same action twice. */}
-        <div className="mt-4">
-          <ShareProfileButton />
+        {/* Edit, Share, and their Instagram — one row, the way every profile
+            people already use lays it out. The header keeps a gear rather
+            than a second "Edit", which was the same action twice. */}
+        <div className="mt-4 flex items-stretch gap-2">
+          <Link
+            href="/profile/edit"
+            className="flex flex-1 items-center justify-center rounded-2xl border border-gray-200 py-2.5 text-sm font-bold text-gray-800 transition hover:border-brand/40 hover:text-brand dark:border-white/15 dark:text-white"
+          >
+            Edit profile
+          </Link>
+          <div className="flex-1 [&>*]:h-full [&>*]:w-full">
+            <ShareProfileButton />
+          </div>
+          {/* Only when they've actually got one — an icon that goes nowhere
+              is worse than a gap. */}
+          {profile?.instagram_url && (
+            <a
+              href={profile.instagram_url}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              aria-label="Instagram"
+              className="grid w-12 shrink-0 place-items-center rounded-2xl border border-gray-200 text-gray-700 transition hover:border-brand/40 hover:text-brand dark:border-white/15 dark:text-white"
+            >
+              <LineIcon name="camera" size={18} />
+            </a>
+          )}
         </div>
 
         {/* The things people actually open this page to reach. They were
