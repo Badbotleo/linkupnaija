@@ -17,6 +17,14 @@ export default async function ProfileEditPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?redirect=/profile/edit");
 
+  // Only people who host see the socials prompt — their profile is the one a
+  // stranger checks before paying. head:true so this costs a count, not rows.
+  const { count: hostedCount } = await supabase
+    .from("events")
+    .select("id", { count: "exact", head: true })
+    .eq("host_id", user.id);
+  const hostsEvents = (hostedCount ?? 0) > 0;
+
   const [{ data: profile }, { data: emailPrefs }] = await Promise.all([
     supabase
       .from("users")

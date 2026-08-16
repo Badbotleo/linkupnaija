@@ -23,6 +23,7 @@ export default function ProfileForm({
   userId,
   initial,
   mode,
+  hostsEvents = false,
 }: {
   userId: string;
   initial: Pick<
@@ -39,6 +40,8 @@ export default function ProfileForm({
     | "interests"
   >;
   mode: "setup" | "edit";
+  /** Only prompt people whose socials will actually be seen by a guest. */
+  hostsEvents?: boolean;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -219,6 +222,22 @@ export default function ProfileForm({
         </p>
         <InterestPicker selected={interests} onChange={setInterests} />
       </div>
+
+      {/* Shown only while all three are empty, and only to somebody who
+          actually hosts. A permanent banner is noise; this is a prompt that
+          removes itself the moment it's been acted on. */}
+      {hostsEvents && !instagram.trim() && !twitter.trim() && !facebook.trim() && (
+        <div className="rounded-2xl border border-brand/25 bg-brand-50/60 p-4">
+          <p className="text-sm font-bold text-gray-900">
+            Add a social so guests know you&apos;re real
+          </p>
+          <p className="mt-1 text-sm text-gray-600">
+            These show on your event page, right under your name. Somebody
+            deciding whether to pay and turn up at an address usually checks
+            for a live account before anything else.
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>

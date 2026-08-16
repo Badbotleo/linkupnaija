@@ -23,6 +23,7 @@ import EventCover from "@/components/EventCover";
 import ReviewsSection from "@/components/ReviewsSection";
 import FeatureButton from "@/components/FeatureButton";
 import RatingSummary from "@/components/RatingSummary";
+import ProBadge from "@/components/ProBadge";
 import HostBadges from "@/components/host/HostBadges";
 import HostSocials from "@/components/host/HostSocials";
 import { computeBadges } from "@/lib/hostBadges";
@@ -100,7 +101,7 @@ export default async function EventDetailPage({
   const { data: event } = await supabase
     .from("events")
     .select(
-      "*, host:users!events_host_id_fkey(id, name, avatar_url, state, rating_avg, rating_count, paystack_subaccount_code, instagram_url, twitter_url, facebook_url)"
+      "*, host:users!events_host_id_fkey(id, name, avatar_url, state, rating_avg, rating_count, paystack_subaccount_code, instagram_url, twitter_url, facebook_url, is_pro, pro_expires_at)"
     )
     .eq("id", params.id)
     .single();
@@ -570,12 +571,22 @@ export default async function EventDetailPage({
                     />
                   </Link>
                   <div>
-                    <Link
-                      href={`/u/${event.host_id}`}
-                      className="font-bold text-gray-900 hover:text-brand hover:underline"
-                    >
-                      {event.host?.name ?? "A LinkUpNaija host"}
-                    </Link>
+                    <span className="flex items-center gap-1.5">
+                      <Link
+                        href={`/u/${event.host_id}`}
+                        className="font-bold text-gray-900 hover:text-brand hover:underline"
+                      >
+                        {event.host?.name ?? "A LinkUpNaija host"}
+                      </Link>
+                      {/* is_pro was fetched for the VIEWER and never for the
+                          host, so a Pro host's badge could never render here.
+                          Checked through isProActive rather than the raw flag,
+                          because an expired subscription is not Pro. */}
+                      {isProActive(
+                        event.host?.is_pro,
+                        event.host?.pro_expires_at
+                      ) && <ProBadge size={15} />}
+                    </span>
                     {event.host?.state && (
                       <p className="text-sm text-gray-500">
                         {event.host.state}
