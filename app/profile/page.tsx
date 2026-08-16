@@ -142,10 +142,32 @@ export default async function ProfilePage({
 
         {/* Actions */}
         <div className="mt-4 flex gap-2">
-          <Link href="/profile/edit" className="btn-primary flex-1 rounded-full py-2 text-center">
+          <Link
+            href="/profile/edit"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-gray-200 py-2.5 text-sm font-bold text-gray-700 transition hover:border-brand/40 hover:text-brand"
+          >
+            <LineIcon name="settings" size={14} />
             Edit profile
           </Link>
           <ShareProfileButton />
+        </div>
+
+        {/* The things people actually open this page to reach. They were
+            spread across the drawer and the dashboard, so the profile was a
+            page you looked AT rather than one you did anything from. */}
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <Quick href="/dashboard" icon="ticket" label="My tickets" />
+          <Quick href="/host" icon="mic" label="Host" />
+          <Quick href="/refer" icon="gift" label="Invite & earn" />
+          <Quick
+            href="/pro"
+            icon="star"
+            label={
+              isProActive(profile?.is_pro, profile?.pro_expires_at)
+                ? "Pro member"
+                : "Go Pro"
+            }
+          />
         </div>
 
         {hostStats && hostStats.total_events > 0 && (
@@ -155,15 +177,17 @@ export default async function ProfilePage({
         )}
 
         {/* Tabs */}
-        <div className="mt-5 flex gap-1 border-b border-gray-100">
+        <div className="no-scrollbar mt-5 flex gap-1 overflow-x-auto rounded-full bg-gray-100 p-1">
           {TABS.map((t) => (
             <Link
               key={t.key}
               href={t.key === "events" ? "/profile" : `/profile?tab=${t.key}`}
-              className={`border-b-2 px-4 py-2.5 text-sm font-semibold transition ${
+              scroll={false}
+              aria-current={tab === t.key ? "page" : undefined}
+              className={`flex-1 whitespace-nowrap rounded-full px-4 py-2 text-center text-sm font-bold transition ${
                 tab === t.key
-                  ? "border-brand text-brand"
-                  : "border-transparent text-gray-500 hover:text-gray-800"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-500 hover:text-gray-800"
               }`}
             >
               {t.label}
@@ -187,6 +211,28 @@ export default async function ProfilePage({
   );
 }
 
+function Quick({
+  href,
+  icon,
+  label,
+}: {
+  href: string;
+  icon: string;
+  label: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-2 rounded-2xl border border-gray-100 bg-white px-3 py-3 text-sm font-bold text-gray-800 shadow-sm transition hover:-translate-y-0.5 hover:border-brand/30 hover:text-brand hover:shadow-md"
+    >
+      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand">
+        <LineIcon name={icon} size={16} />
+      </span>
+      <span className="min-w-0 truncate">{label}</span>
+    </Link>
+  );
+}
+
 function Stat({
   value,
   label,
@@ -199,12 +245,15 @@ function Stat({
   return (
     <Link
       href={href}
-      className="surface-tap px-3 py-2.5 text-center"
+      className="group rounded-2xl border border-gray-100 bg-white px-3 py-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-md"
       aria-label={`${value} ${label}`}
     >
-      <p className="text-xl font-extrabold tabular-nums text-gray-900">{value}</p>
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+      <p className="text-[22px] font-extrabold leading-none tabular-nums text-gray-900">
+        {value}
+      </p>
+      <p className="mt-1 inline-flex items-center gap-0.5 text-[11px] font-semibold uppercase tracking-wide text-gray-400 group-hover:text-brand">
         {label}
+        <LineIcon name="chevronRight" size={10} />
       </p>
     </Link>
   );
