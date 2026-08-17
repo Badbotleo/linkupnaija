@@ -437,3 +437,29 @@ footer,
     scroll-behavior: auto !important;
   }
 }
+
+/* Map credits.
+   MapTiler's terms and OpenStreetMap's ODbL both require the credit, so it
+   can't come out — but Leaflet's default is a white bar with black text
+   sitting on the corner of the map, and on a dark theme it glows. This makes
+   it the smallest legible thing on the page: no plate, low contrast, out of
+   the way. Present if you look for it, invisible if you don't. */
+.leaflet-control-attribution {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 4px !important;
+  margin: 0 !important;
+  font-size: 9px !important;
+  line-height: 1.4 !important;
+  color: rgba(107, 114, 128, 0.55) !important;
+}
+.leaflet-control-attribution a {
+  color: rgba(107, 114, 128, 0.7) !important;
+  text-decoration: none !important;
+}
+.dark .leaflet-control-attribution {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+.dark .leaflet-control-attribution a {
+  color: rgba(255, 255, 255, 0.4) !important;
+}

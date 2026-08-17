@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { TileLayer } from "react-leaflet";
+import { TileLayer, useMap } from "react-leaflet";
 
 /**
  * The tile layer, in one place so three maps can't drift apart.
@@ -31,6 +31,19 @@ export default function MapTiles() {
   // Follows the app's theme, which now follows the phone. A white map inside
   // a black app is the one thing that would give the theme away.
   const [dark, setDark] = useState(false);
+  const map = useMap();
+
+  useEffect(() => {
+    // Leaflet stamps its own name in front of the credits. That prefix is a
+    // courtesy, not a licence condition, so it goes — the library doesn't
+    // need billing on a page about parties.
+    //
+    // What stays is MapTiler and OpenStreetMap. Both are required: MapTiler's
+    // free tier is conditional on the credit, and the map data itself is
+    // ODbL, which wants attribution no matter who serves the tiles. Dropping
+    // them risks the key, so they're styled down instead of taken out.
+    map.attributionControl?.setPrefix("");
+  }, [map]);
 
   useEffect(() => {
     const el = document.documentElement;
