@@ -1,6 +1,6 @@
 "use client";
 
-import { Children, useCallback, useEffect, useRef, useState } from "react";
+import { Children, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import LineIcon from "../ui/LineIcon";
 
 /**
@@ -18,6 +18,10 @@ import LineIcon from "../ui/LineIcon";
 const SWIPE_THRESHOLD = 90; // px before a release counts as a swipe
 const AUTO_MS = 4500;
 const RESUME_AFTER_MS = 9000;
+
+// Seven is enough to read position at a glance and narrow enough to fit the
+// smallest phone alongside the arrows.
+const MAX_DOTS = 7;
 
 export default function SwipeDeck({
   children,
@@ -148,6 +152,14 @@ export default function SwipeDeck({
     advance(dir);
   }
 
+  // A window of dot indices centred on the active card, clamped at both ends
+  // so it never renders fewer than MAX_DOTS while there are cards to show.
+  const dotWindow = useMemo(() => {
+    const n = Math.min(MAX_DOTS, count);
+    const start = Math.max(0, Math.min(top - Math.floor(n / 2), count - n));
+    return Array.from({ length: n }, (_, k) => start + k);
+  }, [top, count]);
+
   if (count === 0) return null;
 
   return (
@@ -212,8 +224,12 @@ export default function SwipeDeck({
             <LineIcon name="chevronLeft" size={16} />
           </button>
 
-          <div className="flex gap-1.5">
-            {cards.map((_, i) => (
+          {/* One dot per card blew the page open: at 79 venues this row was
+              908px inside a 375px viewport, so the whole document scrolled
+              sideways. Dots are a position hint, not a table of contents —
+              show a window of them and let the count carry the rest. */}
+          <div className="flex items-center gap-1.5">
+            {dotWindow.map((i) => (
               <span
                 key={i}
                 className={`h-1.5 rounded-full transition-all ${
@@ -221,6 +237,11 @@ export default function SwipeDeck({
                 }`}
               />
             ))}
+            {cards.length > MAX_DOTS && (
+              <span className="ml-1 text-[11px] font-bold tabular-nums text-gray-400">
+                {top + 1}/{cards.length}
+              </span>
+            )}
           </div>
 
           <button
