@@ -18,6 +18,7 @@ import { mergePartnersWithOsm } from "@/lib/venue-match";
 import { formatPriceRange } from "@/lib/format";
 import { openLabel } from "@/lib/opening-hours";
 import SwipeDeck from "../home/SwipeDeck";
+import VenueArt from "./VenueArt";
 
 interface PartnerVenue {
   id: string;
@@ -42,7 +43,8 @@ type Card = {
   address: string | null;
   description: string | null;
   price: string | null;
-  image: string;
+  /** A venue's own photo, or null — the card draws its own art instead. */
+  image: string | null;
   /** Out of 5. Partner venues carry ours; OSM results carry their star count. */
   rating: number | null;
   /** "Open · till 22:00" — already resolved, so cards don't each re-parse. */
@@ -52,15 +54,6 @@ type Card = {
   href: string | null;
   venue: Venue;
 };
-
-// Stable per-venue pick from the category's photo pool, so a grid of the
-// same category shows varied covers but each venue keeps its photo.
-function venuePhoto(pool: string[] | undefined, id: string) {
-  const photos = pool && pool.length > 0 ? pool : ["/venues/restaurants.jpg"];
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return photos[h % photos.length];
-}
 
 // "Request Reservation" said the same flat thing at a nightclub and a cinema.
 // Ask for what you'd actually ask for at that kind of place.
@@ -231,7 +224,9 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
       address: v.address || null,
       description: null,
       price: null,
-      image: venuePhoto(cat?.photos, v.id),
+      // OSM results never carry a photo of the actual place, so the pool
+      // was always a stand-in. Draw it instead — see VenueArt.
+      image: null,
       rating: v.stars ?? null,
       hours: openLabel(v.openingHours),
       isPartner: false,
@@ -350,19 +345,31 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
                   }
                   className="relative block h-full w-full overflow-hidden rounded-3xl text-left shadow-card"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={
-                      p.image_url ??
-                      venuePhoto(
-                        VENUE_CATEGORIES.find((c) => c.key === p.category)?.photos,
-                        p.id
-                      )
-                    }
-                    alt=""
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/92 via-black/35 to-black/10" />
+                  {/* A venue's own photo always wins. Without one we draw
+                      rather than reach for the stock pool — see VenueArt. */}
+                  {p.image_url ? (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={p.image_url}
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/92 via-black/35 to-black/10" />
+                    </>
+                  ) : (
+                    <>
+                      <VenueArt
+                        name={p.name}
+                        category={p.category}
+                        className="absolute inset-0 h-full w-full"
+                      />
+                      {/* Lighter than the photo scrim: the art is already dark
+                          and tuned for white text, so the full gradient just
+                          muddied it. */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                    </>
+                  )}
 
                   <span className="absolute left-4 top-4 rounded-full bg-[#FAC775] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#121212]">
                     Partner
@@ -535,14 +542,24 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
 function VenueCard({ card, onReserve }: { card: Card; onReserve: () => void }) {
   const cover = (
     <div className="relative aspect-[4/3] w-full overflow-hidden">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={card.image}
-        alt=""
-        loading="lazy"
-        className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
+      {card.image ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={card.image}
+            alt=""
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
+        </>
+      ) : (
+        <VenueArt
+          name={card.name}
+          category={card.category}
+          className="absolute inset-0 h-full w-full transition duration-300 group-hover:scale-105"
+        />
+      )}
       {card.isPartner && (
         <span className="absolute left-3 top-3 rounded-full bg-[#FAC775] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#121212]">
           Partner
