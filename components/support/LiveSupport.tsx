@@ -128,7 +128,13 @@ export default function LiveSupport({ onBack }: { onBack?: () => void }) {
         .select("id");
       if (error || !data || data.length === 0) {
         setSending(false);
-        toast.error("Couldn't start the chat. Try again.");
+        // Say what actually went wrong. "Try again" is useless advice when the
+        // table doesn't exist yet, and it cost a round trip to find that out.
+        toast.error(
+          error?.code === "PGRST205"
+            ? "Support isn't set up yet — the database migration hasn't been run."
+            : error?.message ?? "Couldn't start the chat."
+        );
         return;
       }
       id = data[0].id as string;
@@ -142,7 +148,7 @@ export default function LiveSupport({ onBack }: { onBack?: () => void }) {
     setSending(false);
 
     if (error || !data || data.length === 0) {
-      toast.error("That didn't send. Try again.");
+      toast.error(error?.message ?? "That didn't send. Try again.");
       return;
     }
     setMessages((list) => [...list, data[0] as Message]);
