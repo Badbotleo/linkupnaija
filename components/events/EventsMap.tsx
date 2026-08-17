@@ -2,7 +2,8 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import MapTiles from "../map/MapTiles";
+import { MapContainer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { STATE_COORDS, NIGERIA_CENTER } from "@/lib/geo";
@@ -73,10 +74,7 @@ export default function EventsMap({ events }: { events: MapEvent[] }) {
         scrollWheelZoom={false}
         style={{ height: "100%", width: "100%" }}
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        <MapTiles />
         {Array.from(byState.entries()).map(([state, list]) => {
           const c = STATE_COORDS[state];
           return (

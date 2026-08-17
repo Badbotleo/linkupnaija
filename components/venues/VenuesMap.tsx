@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
+import MapTiles from "../map/MapTiles";
+import { MapContainer, Marker, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Venue } from "@/lib/overpass";
@@ -94,10 +95,7 @@ export default function VenuesMap({
         scrollWheelZoom={false}
         style={{ height: "100%", width: "100%", zIndex: 0 }}
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        <MapTiles />
         <Recenter lat={center.lat} lng={center.lng} />
         <FlyToSelected venue={selected} />
         {partners.map((p) => (

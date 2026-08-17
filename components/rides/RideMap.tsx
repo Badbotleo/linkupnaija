@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet";
+import MapTiles from "../map/MapTiles";
+import { MapContainer, Marker, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -59,10 +60,7 @@ export default function RideMap({
       className="h-full w-full"
       style={{ background: "#E8E6F2" }}
     >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+      <MapTiles />
       {from && <Marker position={[from.lat, from.lng]} icon={PICKUP} />}
       {to && <Marker position={[to.lat, to.lng]} icon={DROPOFF} />}
       {from && to && (
