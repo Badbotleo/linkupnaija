@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, Fragment } from "react";
+import LiveSupport from "./support/LiveSupport";
 import { LogoMark } from "./Logo";
 
 interface ChatMessage {
@@ -59,6 +60,8 @@ function renderContent(text: string) {
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
+  // Swapped for the human thread; Paddy stays mounted behind it.
+  const [human, setHuman] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -173,6 +176,12 @@ export default function ChatWidget() {
           </button>
         </div>
 
+        {/* Handing off to a person replaces the panel body rather than opening
+            a second window — two chat threads on one screen is a maze. */}
+        {human ? (
+          <LiveSupport onBack={() => setHuman(false)} />
+        ) : (
+        <>
         {/* Thread */}
         <div
           ref={threadRef}
@@ -241,6 +250,19 @@ export default function ChatWidget() {
             <SendIcon />
           </button>
         </form>
+
+        {/* Always reachable. Paddy is useful until it isn't, and the moment it
+            isn't is exactly when people give up rather than hunt for a way to
+            reach someone. */}
+        <button
+          type="button"
+          onClick={() => setHuman(true)}
+          className="border-t border-gray-100 bg-white px-3 py-2 text-[12px] font-bold text-brand transition hover:bg-brand-50"
+        >
+          Talk to a human →
+        </button>
+        </>
+        )}
       </div>
     </>
   );
