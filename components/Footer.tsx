@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "./Logo";
+import NaijaFlag from "./ui/NaijaFlag";
 
 const SOCIALS = [
   {
@@ -65,11 +66,7 @@ export default function Footer() {
           </Link>
           <span className="flex items-center gap-1.5">
             © {new Date().getFullYear()} LinkUpNaija
-            <span aria-hidden className="flex overflow-hidden rounded-[2px]">
-              <span className="block h-2.5 w-1 bg-naija" />
-              <span className="block h-2.5 w-1 bg-white" />
-              <span className="block h-2.5 w-1 bg-naija" />
-            </span>
+            <NaijaFlag size={10} />
           </span>
         </div>
       </div>

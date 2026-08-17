@@ -14,6 +14,8 @@ import CollabCard from "@/components/home/CollabCard";
 import ScreenTour from "@/components/home/ScreenTour";
 import ThingsToDo from "@/components/home/ThingsToDo";
 import LineIcon from "@/components/ui/LineIcon";
+import CategoryEmoji from "@/components/ui/CategoryEmoji";
+import NaijaFlag from "@/components/ui/NaijaFlag";
 import { memberProof, subscriberProof } from "@/lib/social-proof";
 import { dedupeEvents } from "@/lib/content-guards";
 import { LogoMark } from "@/components/Logo";
@@ -200,11 +202,11 @@ export default async function HomePage() {
       {/* ---------------------------------------------------------------- */}
       <section className="container-page pt-6">
         <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-brand">
-          <span aria-hidden className="flex overflow-hidden rounded-[3px]">
-            <span className="block h-3 w-1.5 bg-naija" />
-            <span className="block h-3 w-1.5 bg-white" />
-            <span className="block h-3 w-1.5 bg-naija" />
-          </span>
+          {/* Was three divs, and the middle one was `bg-white` — which the
+              global .dark layer repaints along with every other white surface,
+              so the stripe went black in dark mode. NaijaFlag paints #FFFFFF
+              into an SVG, where no utility override can reach it. */}
+          <NaijaFlag size={12} />
           Nigeria&apos;s social events platform
         </p>
 
@@ -232,9 +234,15 @@ export default async function HomePage() {
           <Link
             key={c}
             href={`/events?category=${encodeURIComponent(c)}`}
-            className="shrink-0 snap-start whitespace-nowrap rounded-full border border-gray-200 bg-white px-3.5 py-2 text-sm font-bold text-gray-700 transition hover:border-brand hover:text-brand"
+            className="inline-flex shrink-0 snap-start items-center gap-1.5 whitespace-nowrap rounded-full border border-gray-200 bg-white px-3.5 py-2 text-sm font-bold text-gray-700 transition hover:border-brand hover:text-brand"
           >
-            {CATEGORY_STYLES[c as keyof typeof CATEGORY_STYLES]?.emoji} {c}
+            {/* Drawn, not typed — the flag is the one emoji that inherits
+                text colour when it falls back. See CategoryEmoji. */}
+            <CategoryEmoji
+              emoji={CATEGORY_STYLES[c as keyof typeof CATEGORY_STYLES]?.emoji}
+              size={13}
+            />
+            {c}
           </Link>
         ))}
         <Link
@@ -268,11 +276,7 @@ export default async function HomePage() {
 
             <div className="relative flex min-h-[210px] flex-col justify-end p-5 sm:min-h-[240px] sm:p-7">
               <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-[#FAC775] px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-[#121212]">
-                <span aria-hidden className="flex overflow-hidden rounded-[2px]">
-                  <span className="block h-2.5 w-1 bg-naija" />
-                  <span className="block h-2.5 w-1 bg-white" />
-                  <span className="block h-2.5 w-1 bg-naija" />
-                </span>
+                <NaijaFlag size={10} />
                 Near you in {visitorState}
               </span>
               <h2 className="mt-3 text-[24px] font-extrabold leading-tight tracking-[-0.02em] sm:text-[30px]">
@@ -616,11 +620,7 @@ export default async function HomePage() {
           {/* Real facts, not invented social proof. */}
           <div className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 border-t border-gray-100 pt-4 text-[13px] font-semibold text-gray-500">
             <span className="inline-flex items-center gap-1.5">
-              <span aria-hidden className="flex overflow-hidden rounded-[2px]">
-                <span className="block h-2.5 w-1 bg-naija" />
-                <span className="block h-2.5 w-1 bg-white" />
-                <span className="block h-2.5 w-1 bg-naija" />
-              </span>
+              <NaijaFlag size={10} />
               All 36 states + FCT
             </span>
             <span>Free to join</span>
