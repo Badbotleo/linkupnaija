@@ -128,7 +128,7 @@ export default async function TicketsPage() {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
 
                         {tier && (
-                          <span className="absolute right-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-gray-900">
+                          <span className="absolute right-3 top-3 rounded-full bg-[#FFFFFF]/95 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#121212]">
                             {tier.name}
                           </span>
                         )}

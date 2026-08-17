@@ -117,7 +117,12 @@ export default function RecapReel({ recaps }: { recaps: Recap[] }) {
                 }`}
               />
 
-              <span className="absolute left-2.5 top-2.5 inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-gray-900">
+              {/* Hexes, not bg-white/text-gray-900. This chip sits on a photo,
+                  so it stays light in both themes — but the global .dark layer
+                  rewrites text-gray-900 to a pale colour while bg-white/95
+                  slips through unchanged (a different class from bg-white),
+                  which left white text on a white chip. */}
+              <span className="absolute left-2.5 top-2.5 inline-flex items-center gap-1 rounded-full bg-[#FFFFFF]/95 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[#121212]">
                 <LineIcon name="check" size={10} />
                 Happened
               </span>

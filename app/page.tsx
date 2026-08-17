@@ -343,7 +343,7 @@ export default async function HomePage() {
                   <span
                     className={`absolute left-2.5 top-2.5 rounded-full px-2 py-0.5 text-[11px] font-black backdrop-blur ${
                       e.price && e.price > 0
-                        ? "bg-white/92 text-gray-800"
+                        ? "bg-[#FFFFFF]/92 text-[#1f2937]"
                         : "bg-naija text-white"
                     }`}
                   >
@@ -406,7 +406,7 @@ export default async function HomePage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
 
                 {c.category && (
-                  <span className="absolute left-4 top-4 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-black text-gray-900 backdrop-blur">
+                  <span className="absolute left-4 top-4 rounded-full bg-[#FFFFFF]/90 px-2.5 py-1 text-[11px] font-black text-[#121212] backdrop-blur">
                     {c.category}
                   </span>
                 )}

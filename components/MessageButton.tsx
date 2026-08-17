@@ -71,7 +71,7 @@ export default function MessageButton({
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="rounded-full bg-white/90 px-3 py-1 text-sm font-semibold text-gray-700 shadow-sm hover:bg-white"
+                  className="rounded-full bg-[#FFFFFF]/90 px-3 py-1 text-sm font-semibold text-[#374151] shadow-sm hover:bg-[#FFFFFF]"
                 >
                   ✕ Close
                 </button>
