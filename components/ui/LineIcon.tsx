@@ -45,6 +45,10 @@ const PATHS: Record<string, string> = {
   image:
     "M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM8.5 11.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM22 15l-5-5L7 19",
   check: "M20 6 9 17l-5-5",
+  // The set had no close mark, so every dismiss button fell back to a ✕
+  // character — which is a glyph, so it sat on the text baseline and never
+  // quite centred in its circle. This is drawn like the rest.
+  x: "M18 6 6 18M6 6l12 12",
   eye: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
   zap: "M13 2 3 14h9l-1 8 10-12h-9l1-8z",
   infinity: "M8.5 15.5C6.6 15.5 5 13.9 5 12s1.6-3.5 3.5-3.5c3.5 0 3.5 7 7 7 1.9 0 3.5-1.6 3.5-3.5s-1.6-3.5-3.5-3.5c-3.5 0-3.5 7-7 7z",
