@@ -23,18 +23,60 @@ const PROMPTS = [
   "Help me write my event description",
 ];
 
-// Render text with markdown links [label](url) turned into clickable anchors.
+/**
+ * Renders Paddy's replies.
+ *
+ * It only understood [label](url), so every **bold** the model produced —
+ * and it produces a lot — arrived as literal asterisks in the chat. The fix
+ * is to render the bold rather than to tell the model to stop: an assistant
+ * that emphasises the important half of a sentence is doing the right thing,
+ * and stripping markdown at display time also covers the day it starts using
+ * a form nobody anticipated.
+ *
+ * Links are handled first, then bold inside whatever text is left, so a bold
+ * label inside a link doesn't get split in half.
+ */
+function renderBold(text: string, keyBase: string): React.ReactNode[] {
+  const out: React.ReactNode[] = [];
+  const re = /\*\*([^*]+)\*\*/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  let k = 0;
+
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) {
+      out.push(<Fragment key={`${keyBase}t${k++}`}>{text.slice(last, m.index)}</Fragment>);
+    }
+    out.push(
+      <strong key={`${keyBase}b${k++}`} className="font-bold">
+        {m[1]}
+      </strong>
+    );
+    last = re.lastIndex;
+  }
+  if (last < text.length) {
+    out.push(<Fragment key={`${keyBase}t${k++}`}>{text.slice(last)}</Fragment>);
+  }
+  return out;
+}
+
 function renderContent(text: string) {
+  // A single leftover asterisk — an unmatched ** or a stray bullet — would
+  // otherwise sit in the message looking like a typo.
+  const cleaned = text.replace(/(^|\n)\s*\*\s+/g, "$1• ");
+
   const parts: React.ReactNode[] = [];
   const regex = /\[([^\]]+)\]\(([^)]+)\)/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
   let key = 0;
 
-  while ((match = regex.exec(text)) !== null) {
+  while ((match = regex.exec(cleaned)) !== null) {
     if (match.index > lastIndex) {
       parts.push(
-        <Fragment key={key++}>{text.slice(lastIndex, match.index)}</Fragment>
+        <Fragment key={key++}>
+          {renderBold(cleaned.slice(lastIndex, match.index), `p${key}`)}
+        </Fragment>
       );
     }
     const [, label, url] = match;
@@ -52,8 +94,12 @@ function renderContent(text: string) {
     );
     lastIndex = regex.lastIndex;
   }
-  if (lastIndex < text.length) {
-    parts.push(<Fragment key={key++}>{text.slice(lastIndex)}</Fragment>);
+  if (lastIndex < cleaned.length) {
+    parts.push(
+      <Fragment key={key++}>
+        {renderBold(cleaned.slice(lastIndex), `p${key}`)}
+      </Fragment>
+    );
   }
   return parts;
 }
