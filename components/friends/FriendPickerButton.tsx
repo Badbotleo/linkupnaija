@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { fetchFriends } from "@/lib/friends";
 import { toast } from "@/lib/toast";
 import Avatar from "../Avatar";
+import LineIcon from "../ui/LineIcon";
 import type { FriendUser } from "@/lib/types";
 
 export default function FriendPickerButton({
@@ -96,6 +97,33 @@ export default function FriendPickerButton({
       );
     } finally {
       setBusyId(null);
+    }
+  }
+
+  /**
+   * The friend who isn't on LinkUpNaija yet.
+   *
+   * The picker used to dead-end here: "you haven't added any friends" and a
+   * link to go find some. That answers a different question — the person
+   * you want to bring is usually someone you already know and who has never
+   * heard of this site. So the invite leaves the app entirely: WhatsApp,
+   * Instagram DM, SMS, whatever they actually use.
+   */
+  async function shareInvite() {
+    const url = `${window.location.origin}/events/${eventId}`;
+    const text = `Come to "${eventTitle}" with me on LinkUpNaija`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: eventTitle, text, url });
+        setOpen(false);
+        return;
+      }
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      toast.success("Invite copied — paste it to them");
+      setOpen(false);
+    } catch {
+      // A cancelled share sheet throws too. Saying nothing is right: the
+      // person chose to back out.
     }
   }
 
@@ -204,6 +232,28 @@ export default function FriendPickerButton({
                     ))}
                   </ul>
                 )}
+
+                {/* Always here, not just when you have no friends. The most
+                    common +1 is someone who isn't on LinkUpNaija at all, and
+                    burying that behind an empty state means it's only offered
+                    to people who need it least. */}
+                <button
+                  type="button"
+                  onClick={shareInvite}
+                  className="mt-2 flex w-full items-center gap-3 rounded-xl border border-dashed border-brand/40 px-3 py-3 text-left transition hover:bg-brand-50"
+                >
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand/10 text-brand">
+                    <LineIcon name="share" size={16} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-bold text-gray-900">
+                      Not on LinkUpNaija?
+                    </span>
+                    <span className="block text-xs text-gray-500">
+                      Send them the invite on WhatsApp, IG, anywhere
+                    </span>
+                  </span>
+                </button>
               </div>
             </div>
           </div>,
