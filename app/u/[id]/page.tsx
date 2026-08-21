@@ -15,6 +15,7 @@ import ProfilePhotos from "@/components/profile/ProfilePhotos";
 import HostScorecard from "@/components/host/HostScorecard";
 import HostBadges from "@/components/host/HostBadges";
 import BrandIcon from "@/components/ui/BrandIcon";
+import AvatarLightbox from "@/components/profile/AvatarLightbox";
 import { computeBadges } from "@/lib/hostBadges";
 import { formatEventDate } from "@/lib/format";
 import type { UserProfile, HostStats } from "@/lib/types";
@@ -146,7 +147,13 @@ export default async function PublicProfilePage({
       <div className="container-page max-w-2xl">
         <div className="-mt-12 flex items-end gap-4">
           <div className="rounded-full border-4 border-white bg-white">
-            <Avatar name={profile.name} url={profile.avatar_url} size="lg" />
+            {/* Tappable: a 96px circle is a thumbnail of a photo someone chose
+                carefully, and there was no way to see it properly. */}
+            <AvatarLightbox
+              name={profile.name}
+              url={profile.avatar_url}
+              size="lg"
+            />
           </div>
         </div>
 

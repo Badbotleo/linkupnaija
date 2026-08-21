@@ -10,39 +10,39 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "LinkUpNaija Pro",
   description:
-    "Go Pro for ₦9,900/month: host unlimited events, unlimited join requests, early access, see who viewed your profile, and a profile boost.",
+    "₦4,999/month — less than one ticket to most events on here. Host unlimited link-ups, get in 24 hours early, and send as many join requests as you like.",
 };
 
 const BENEFITS = [
   {
     icon: "infinity",
-    title: "Host as many events as you want",
-    text: `Free members host ${FREE_HOST_LIMIT} events a month. Pro is unlimited — run a weekly night without ever hitting a wall.`,
+    title: "Host as many link-ups as you want",
+    text: `Free members host ${FREE_HOST_LIMIT} a month. Pro is unlimited — run a weekly night without ever hitting a wall.`,
+  },
+  {
+    icon: "zap",
+    title: "Get in 24 hours before everyone else",
+    text: "Request to join events a full day before they go public. On a link-up that fills, that's the difference between going and reading about it.",
   },
   {
     icon: "infinity",
     title: "Unlimited join requests",
-    text: `Free members send ${FREE_REQUEST_LIMIT} join requests a month. Pro members get unlimited.`,
+    text: `Free members send ${FREE_REQUEST_LIMIT} a month. Pro members never count.`,
   },
   {
-    icon: "zap",
-    title: "Early access to events",
-    text: "Request to join events 24 hours before they go public.",
+    icon: "trending",
+    title: "Hosts see you first",
+    text: "Your requests rank higher in a host's queue, which matters most on the events everyone wants.",
   },
   {
     icon: "eye",
     title: "See who viewed your profile",
-    text: "Know who's checking you out and never miss a potential connection.",
-  },
-  {
-    icon: "trending",
-    title: "Profile boost in search",
-    text: "Your profile and requests rank higher so hosts notice you first.",
+    text: "Know who's been looking, and follow up before the moment passes.",
   },
   {
     icon: "star",
     title: "Gold Pro badge",
-    text: "Stand out with a Pro badge on your profile that hosts trust.",
+    text: "A badge on your profile that tells a host you're a regular, not a stranger.",
   },
 ];
 
@@ -73,7 +73,41 @@ export default async function ProPage() {
       />
       <div className="container-page max-w-3xl py-10">
 
-      <div className="mt-10 space-y-3">
+      {/* Price first.
+
+          The page used to make you scroll past six benefit cards before it
+          said what it cost, which is the wrong order: nobody evaluates
+          features before they know the number, they just wonder what the
+          catch is.
+
+          The comparison is real and checkable, not a slogan — the median
+          ticket on this platform is ₦10,000 and 40 of the 50 paid events cost
+          more than Pro does. */}
+      <div className="rounded-3xl bg-gradient-to-br from-brand to-brand-700 px-6 py-8 text-center text-white sm:px-8">
+        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-brand-100">
+          LinkUpNaija Pro
+        </p>
+        <p className="mt-2 text-5xl font-extrabold leading-none">
+          {formatNaira(PRO_PRICE)}
+          <span className="text-lg font-medium text-brand-100">/month</span>
+        </p>
+        <p className="mx-auto mt-3 max-w-sm text-[15px] leading-snug text-brand-100">
+          Less than one ticket to most events on here — 8 out of 10 paid
+          link-ups cost more than a month of Pro.
+        </p>
+        <div className="mt-6 flex justify-center">
+          <GoProButton
+            isLoggedIn={!!user}
+            isProActive={proActive}
+            expiresAt={expiresAt}
+          />
+        </div>
+        <p className="mt-3 text-[13px] text-brand-100">
+          Cancel anytime. Renews monthly.
+        </p>
+      </div>
+
+      <div className="mt-8 space-y-3">
         {BENEFITS.map((b) => (
           <div
             key={b.title}
@@ -90,19 +124,18 @@ export default async function ProPage() {
         ))}
       </div>
 
-      <div className="mt-10 rounded-3xl bg-gradient-to-br from-brand to-brand-700 px-8 py-10 text-center text-white">
-        <p className="text-4xl font-extrabold">
-          {formatNaira(PRO_PRICE)}
-          <span className="text-lg font-medium text-brand-100">/month</span>
+      {/* A second chance to act after reading the list, without repeating the
+          whole price slab — the same panel twice reads as a page that's run
+          out of things to say. */}
+      <div className="mt-8 flex flex-col items-center gap-2">
+        <GoProButton
+          isLoggedIn={!!user}
+          isProActive={proActive}
+          expiresAt={expiresAt}
+        />
+        <p className="text-[13px] text-gray-500">
+          {formatNaira(PRO_PRICE)}/month · cancel anytime
         </p>
-        <p className="mt-2 text-brand-100">Cancel anytime. Renews monthly.</p>
-        <div className="mt-6 flex justify-center">
-          <GoProButton
-            isLoggedIn={!!user}
-            isProActive={proActive}
-            expiresAt={expiresAt}
-          />
-        </div>
       </div>
       </div>
     </div>

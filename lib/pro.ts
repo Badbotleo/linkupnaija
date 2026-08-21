@@ -1,6 +1,6 @@
 // LinkUpNaija Pro constants and helpers.
 
-export const PRO_PRICE = 9900; // ₦9,900 / month
+export const PRO_PRICE = 4999; // ₦4,999 / month
 export const PRO_DAYS = 30;
 export const FREE_REQUEST_LIMIT = 5; // join requests per month for free users
 export const FREE_HOST_LIMIT = 2; // events a free member can host per month

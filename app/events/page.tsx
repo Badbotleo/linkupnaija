@@ -32,6 +32,24 @@ type FeedEvent = EventRow & {
   host: { rating_avg: number; rating_count: number } | null;
 };
 
+/**
+ * Events pinned to the top of "Been and gone", in this order.
+ *
+ * The past tab is sorted newest-first, which is right for a feed and wrong
+ * for a shop window: the best-documented nights — the ones with real photos
+ * and a recap worth scrolling — sink as soon as anything newer happens. These
+ * two are the showcase, so they stay first regardless of date.
+ *
+ * Fetched separately and prepended, not sorted within the page, or they'd
+ * only appear once pagination happened to reach them.
+ *
+ * To change the showcase, change these ids.
+ */
+const PINNED_PAST = [
+  "ad7c044a-2833-4120-88d9-27079a96c448", // DenimFest
+  "b21c7b91-d465-436d-9430-1b9c3031b4b1", // 🍖 Kilishi Festival
+] as const;
+
 const PAGE_SIZE = 24;
 
 const SELECT =
@@ -157,6 +175,11 @@ export default async function EventsPage({
       .select(SELECT, { count: "exact" })
       .eq("event_type", "general");
     query = past ? query.lt("date", today) : query.gte("date", today);
+    // Pinned events are fetched separately below; excluding them here stops
+    // the same card rendering twice on page one.
+    if (past && page === 1) {
+      query = query.not("id", "in", `(${PINNED_PAST.join(",")})`);
+    }
     if (searchParams.state) query = query.eq("state", searchParams.state);
     if (searchParams.category) query = query.eq("category", searchParams.category);
     if (searchParams.q?.trim()) {
@@ -196,9 +219,27 @@ export default async function EventsPage({
     const now = Date.now();
     const activeFeatured = (ev: FeedEvent) =>
       ev.featured && !!ev.featured_until && new Date(ev.featured_until).getTime() > now;
-    feedEvents = ((data ?? []) as unknown as FeedEvent[])
-      .sort((a, b) => (activeFeatured(b) ? 1 : 0) - (activeFeatured(a) ? 1 : 0))
-      .map(decorate);
+    let rows = ((data ?? []) as unknown as FeedEvent[])
+      .sort((a, b) => (activeFeatured(b) ? 1 : 0) - (activeFeatured(a) ? 1 : 0));
+
+    // The showcase, first and in order, on page one only.
+    if (past && page === 1) {
+      const { data: pinnedRows } = await supabase
+        .from("events")
+        .select(SELECT)
+        .in("id", PINNED_PAST as unknown as string[]);
+      const byId = new Map(
+        ((pinnedRows ?? []) as unknown as FeedEvent[]).map((e) => [e.id, e])
+      );
+      // Ordered by the list, not by whatever order Postgres returned, and
+      // silently skipped if an id no longer exists.
+      const pinned = PINNED_PAST.map((id) => byId.get(id)).filter(
+        (e): e is FeedEvent => !!e
+      );
+      rows = [...pinned, ...rows];
+    }
+
+    feedEvents = rows.map(decorate);
   }
 
   // Two identical rows can exist in the database — a host double-submitting
