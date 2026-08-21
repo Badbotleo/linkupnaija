@@ -1,22 +1,16 @@
 import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
-import { EVENT_CATEGORIES, CATEGORY_STYLES } from "@/lib/constants";
-import { categoryPhoto } from "@/lib/category-photos";
+import { CATEGORY_STYLES } from "@/lib/constants";
 import EventCover from "@/components/EventCover";
-import { formatEventDate, formatPriceRange } from "@/lib/format";
+import { formatEventDate } from "@/lib/format";
 import LoggedInHome from "@/components/home/LoggedInHome";
 import Rail from "@/components/home/Rail";
 import SwipeDeck from "@/components/home/SwipeDeck";
-import PastEventsReel from "@/components/home/PastEventsReel";
-import FeaturedRail from "@/components/home/FeaturedRail";
-import CollabCard from "@/components/home/CollabCard";
 import ScreenTour from "@/components/home/ScreenTour";
-import ThingsToDo from "@/components/home/ThingsToDo";
 import LineIcon from "@/components/ui/LineIcon";
 import CategoryEmoji from "@/components/ui/CategoryEmoji";
 import NaijaFlag from "@/components/ui/NaijaFlag";
-import { memberProof, subscriberProof } from "@/lib/social-proof";
 import { dedupeEvents } from "@/lib/content-guards";
 import { professionalCategoriesFilter } from "@/lib/event-kind";
 import { LogoMark } from "@/components/Logo";
@@ -29,12 +23,6 @@ const TOP_CATEGORIES = [
   "Dinner", "Hiking", "Karaoke", "Bowling", "Pool Party",
 ];
 
-const VENUE_TYPES = [
-  { label: "Clubs & Lounges", img: "/venues/clubs.jpg" },
-  { label: "Restaurants", img: "/venues/restaurants.jpg" },
-  { label: "Rooftops & Bars", img: "/venues/rooftops.jpg" },
-  { label: "Cinemas", img: "/venues/cinemas.jpg" },
-];
 
 // What the platform actually does for you — the marketing, delivered as cards
 // in a shelf rather than a full-screen pitch section.
@@ -51,50 +39,8 @@ const cache = () =>
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-const getPopularSeries = unstable_cache(
-  async () => {
-    const { data } = await cache()
-      .from("event_series")
-      .select("id, title, category, state, frequency, cover_image_url, subscriber_count")
-      // Same rule as the events shelf — a recurring seminar is still a seminar.
-      .not("category", "in", professionalCategoriesFilter())
-      .order("subscriber_count", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(8);
-    return data ?? [];
-  },
-  ["homepage-popular-series"],
-  { revalidate: 300 }
-);
 
-const getPartnerVenues = unstable_cache(
-  async () => {
-    const { data } = await cache()
-      .from("venues")
-      .select("id, name, category, state, address, image_url, price_range")
-      .eq("is_active", true)
-      .not("image_url", "is", null)
-      .order("is_featured", { ascending: false })
-      .limit(10);
-    return data ?? [];
-  },
-  ["homepage-partner-venues"],
-  { revalidate: 300 }
-);
 
-const getPopularCircles = unstable_cache(
-  async () => {
-    const { data } = await cache()
-      .from("circles")
-      .select("id, name, category, state, member_count, is_private, description, cover_image_url")
-      .not("category", "in", professionalCategoriesFilter())
-      .order("member_count", { ascending: false })
-      .limit(8);
-    return data ?? [];
-  },
-  ["homepage-popular-circles"],
-  { revalidate: 300 }
-);
 
 // Real upcoming events fill the shelves — the page leads with what's actually
 // on, not with a pitch about what could be on.
@@ -124,15 +70,6 @@ const getUpcomingEvents = unstable_cache(
   { revalidate: 300 }
 );
 
-interface VenueRow {
-  id: string;
-  name: string;
-  category: string;
-  state: string | null;
-  address: string | null;
-  image_url: string | null;
-  price_range: string | null;
-}
 
 interface EventRow {
   id: string;
@@ -185,13 +122,10 @@ export default async function HomePage() {
   const user = await getSessionUser();
   if (user) return <LoggedInHome userId={user.id} />;
 
-  const [series, events, circles, partnerVenues] = await Promise.all([
-    getPopularSeries(),
-    getUpcomingEvents(),
-    getPopularCircles(),
-    getPartnerVenues(),
-  ]);
-  const upcoming = events as EventRow[];
+  // One query now. The visitor page used to fetch series, circles and partner
+  // venues as well, for shelves that no longer exist — three round trips per
+  // load for data nobody saw.
+  const upcoming = (await getUpcomingEvents()) as EventRow[];
 
   // The featured slot is for something the visitor could actually turn up to.
   // FC26 is an Abuja event, so it only runs for Abuja; everyone else gets the
@@ -392,175 +326,9 @@ export default async function HomePage() {
         ))}
       </Rail>
 
-      <CollabCard />
-
-      <FeaturedRail />
-
-      <PastEventsReel state={visitorState} />
-
-      <ThingsToDo state={visitorState} />
-
       {/* Real listings, not invented ones — the demo shows the same events the
           shelves below are showing. */}
       <ScreenTour events={upcoming.slice(0, 3)} />
-
-      {/* ---------------------------------------------------------------- */}
-      {/* Shelves                                                           */}
-      {/* ---------------------------------------------------------------- */}
-
-      {circles.length > 0 && (
-        <>
-          <DeckHeading
-            title="Circles to join"
-            subtitle="Swipe through communities built around what you love"
-            href="/circles"
-          />
-          {/* Full-bleed photo card, the way a dating deck reads: one circle at
-              a time, big enough to actually see who's in it. */}
-          <SwipeDeck className="h-[336px]">
-            {circles.map((c: {
-              id: string; name: string; category: string | null; state: string | null;
-              member_count: number; cover_image_url: string | null;
-            }) => (
-              <Link
-                key={c.id}
-                href={`/circles/${c.id}`}
-                className="group relative block h-full overflow-hidden rounded-3xl shadow-card transition duration-200 group-hover:shadow-lg"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={c.cover_image_url ?? categoryPhoto(c.category)}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
-
-                {c.category && (
-                  <span className="absolute left-4 top-4 rounded-full bg-[#FFFFFF]/90 px-2.5 py-1 text-[11px] font-black text-[#121212] backdrop-blur">
-                    {c.category}
-                  </span>
-                )}
-
-                <div className="absolute inset-x-0 bottom-0 p-5 text-white">
-                  <p className="text-[22px] font-extrabold leading-tight">
-                    {c.name}
-                  </p>
-                  <p className="mt-1.5 flex items-center gap-1.5 text-sm text-white/80">
-                    <LineIcon name="users" size={14} />
-                    {[memberProof(c.member_count), c.state]
-                      .filter(Boolean)
-                      .join(" · ") || "New circle"}
-                  </p>
-                  <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-bold text-gray-900">
-                    Join the circle
-                    <LineIcon name="chevronRight" size={13} />
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </SwipeDeck>
-        </>
-      )}
-
-      {/* Turn browsing into hosting */}
-
-      <DeckHeading
-        title="Book the spot"
-        subtitle={
-          partnerVenues.length > 0
-            ? "Swipe through real spots on LinkUpNaija"
-            : "Swipe through clubs, restaurants, rooftops and cinemas"
-        }
-        href="/venues"
-      />
-      <SwipeDeck className="h-[336px]">
-        {/* Real onboarded venues when we have them; the stock category tiles
-            are only a fallback for an empty venues table. */}
-        {partnerVenues.length > 0
-          ? (partnerVenues as VenueRow[]).map((v) => (
-              <Link key={v.id} href="/venues" className="group block h-full">
-                <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-card transition duration-200 group-hover:shadow-lg">
-                  <div className="relative min-h-0 flex-1">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={v.image_url!}
-                      alt=""
-                      className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                    />
-                    <span className="absolute left-2.5 top-2.5 rounded-full bg-[#FAC775] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[#121212]">
-                      {v.category}
-                    </span>
-                  </div>
-                  <div className="shrink-0 p-4">
-                    <p className="truncate font-extrabold text-gray-900 group-hover:text-brand">
-                      {v.name}
-                    </p>
-                    <p className="mt-0.5 truncate text-[13px] text-gray-500">
-                      {v.address ?? v.state ?? "Nigeria"}
-                    </p>
-                    {formatPriceRange(v.price_range) && (
-                      <p className="mt-1 truncate text-[13px] font-bold text-naija-700">
-                        {formatPriceRange(v.price_range)}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </Link>
-            ))
-          : VENUE_TYPES.map((v) => (
-              <Link key={v.label} href="/venues" className="group block h-full">
-                <div className="relative h-full overflow-hidden rounded-3xl shadow-card transition duration-200 group-hover:shadow-lg">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={v.img}
-                    alt=""
-                    className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent" />
-                  <p className="absolute inset-x-0 bottom-0 p-4 text-lg font-extrabold text-white">
-                    {v.label}
-                  </p>
-                </div>
-              </Link>
-            ))}
-      </SwipeDeck>
-
-      {series.length > 0 && (
-        <Rail
-          title="The regulars"
-          auto
-          subtitle="Link-ups that keep coming back"
-          href="/events?series=1"
-        >
-          {series.map((s: {
-            id: string; title: string; category: string | null; state: string | null;
-            frequency: string | null; cover_image_url: string | null; subscriber_count: number;
-          }) => (
-            <Link key={s.id} href={`/series/${s.id}`} className={`${CARD} group`}>
-              <div className="relative h-[132px] overflow-hidden rounded-2xl shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={s.cover_image_url ?? categoryPhoto(s.category)}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-                <span className="absolute left-2.5 top-2.5 rounded-full bg-[#FAC775] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-[#121212]">
-                  {s.frequency ?? "Recurring"}
-                </span>
-                <div className="absolute inset-x-0 bottom-0 p-3 text-white">
-                  <p className="truncate font-bold">{s.title}</p>
-                  <p className="mt-0.5 truncate text-xs text-white/75">
-                    {[subscriberProof(s.subscriber_count), s.state]
-                      .filter(Boolean)
-                      .join(" · ") || s.frequency || "Recurring"}
-                  </p>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </Rail>
-      )}
 
       {/* The pitch, as a shelf rather than a full-screen section */}
       <DeckHeading
@@ -585,33 +353,6 @@ export default async function HomePage() {
           </div>
         ))}
       </SwipeDeck>
-
-      {/* More of the platform */}
-      <DeckHeading title="More on LinkUpNaija" subtitle="Swipe through — beyond the party" />
-      <SwipeDeck className="h-[212px]">
-        {[
-          { href: "/live", icon: "activity", title: "Live feed", text: "Who's hosting and joining right now" },
-          { href: "/hosts/leaderboard", icon: "trophy", title: "Host leaderboard", text: "Nigeria's most-loved hosts" },
-          { href: "/rides", icon: "car", title: "Hail a car", text: "Get a ride to your next link-up" },
-          { href: "/refer", icon: "gift", title: "Invite & earn", text: "Give ₦500, get ₦500" },
-          { href: "/pro", icon: "star", title: "Go Pro", text: "Early access and a gold badge" },
-        ].map((f) => (
-          <Link
-            key={f.href}
-            href={f.href}
-            className="group flex h-full flex-col justify-center rounded-3xl border border-gray-100 bg-white p-6 shadow-card transition duration-200 hover:border-brand/30 hover:shadow-lg"
-          >
-            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-brand-50 text-brand">
-              <LineIcon name={f.icon} size={22} />
-            </span>
-            <p className="mt-4 text-lg font-extrabold text-gray-900 group-hover:text-brand">
-              {f.title}
-            </p>
-            <p className="mt-1.5 text-[15px] leading-relaxed text-gray-600">{f.text}</p>
-          </Link>
-        ))}
-      </SwipeDeck>
-
 
       {/* ---------------------------------------------------------------- */}
       {/* Closing action                                                    */}

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import LineIcon from "../ui/LineIcon";
 import { LogoMark } from "../Logo";
+import EventCover from "../EventCover";
 
 /**
  * A phone playing through what using LinkUpNaija
@@ -270,16 +271,18 @@ function Screen({ n, events }: { n: number; events: TourEvent[] }) {
               key={e.id}
               className="flex items-center gap-2 rounded-xl border border-gray-100 p-1.5"
             >
-              {e.cover_image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={e.cover_image_url}
-                  alt=""
-                  className="h-9 w-9 shrink-0 rounded-lg object-cover"
-                />
-              ) : (
-                <span className="h-9 w-9 shrink-0 rounded-lg bg-gradient-to-br from-brand-200 to-brand" />
-              )}
+              {/* EventCover, not a raw <img>. These flyers are 400KB+ and were
+                  being downloaded at full size into a 36px box — slow enough
+                  on a phone connection that the browser was still showing its
+                  broken-image mark when the page settled. next/image serves a
+                  thumbnail, and falls back to the category art if a URL ever
+                  breaks. */}
+              <EventCover
+                url={e.cover_image_url}
+                category={e.category}
+                title={e.title}
+                className="h-9 w-9 shrink-0 overflow-hidden rounded-lg"
+              />
               <span className="min-w-0">
                 <span className="block truncate text-[10px] font-bold text-gray-900">
                   {e.title}
@@ -301,12 +304,12 @@ function Screen({ n, events }: { n: number; events: TourEvent[] }) {
     const e = feed[0];
     return (
       <Chrome title={e?.title ?? "Request to join"} tab={1}>
-        {e?.cover_image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={e.cover_image_url}
-            alt=""
-            className="h-16 w-full rounded-xl object-cover"
+        {e ? (
+          <EventCover
+            url={e.cover_image_url}
+            category={e.category}
+            title={e.title}
+            className="h-16 w-full overflow-hidden rounded-xl"
           />
         ) : (
           <div className="h-16 rounded-xl bg-gradient-to-br from-brand to-[#121212]" />
