@@ -24,7 +24,7 @@ export default function BottomNav({
       className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-100 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden dark:border-white/10 dark:bg-[#121212]/95"
       aria-label="Primary"
     >
-      <div className="mx-auto flex h-16 max-w-lg items-stretch justify-around px-2">
+      <div className="mx-auto flex h-[52px] max-w-lg items-stretch justify-around px-2">
         <Tab href="/" label="Home" active={active("/")} icon={<HomeIcon />} />
         <Tab
           href="/events"
@@ -40,7 +40,7 @@ export default function BottomNav({
           className="flex flex-1 flex-col items-center justify-center"
         >
           <span
-            className="grid h-11 w-11 -translate-y-1 place-items-center rounded-full text-white shadow-lg shadow-brand/30"
+            className="grid h-9 w-9 place-items-center rounded-full text-white shadow-md shadow-brand/25 transition active:scale-90"
             style={{ backgroundColor: BRAND }}
           >
             <PlusIcon />
@@ -81,22 +81,29 @@ function Tab({
   return (
     <Link
       href={href}
-      className="relative flex flex-1 flex-col items-center justify-center gap-0.5"
+      /* Icon only, the way X does it.
+         Five icons each carrying a caption made the bar two rows tall, which
+         is what pushed everything down the screen. These are the most
+         conventional icons in mobile software — a house, a magnifier, a bell,
+         a person — so the caption was telling people what they already knew,
+         while being the only text on screen competing with the page's own.
+         The name survives as aria-label, so screen readers lose nothing. */
+      aria-label={label}
+      className="relative flex flex-1 items-center justify-center"
       style={active ? { color: BRAND } : undefined}
       aria-current={active ? "page" : undefined}
     >
-      <span className={active ? "" : "text-gray-500 dark:text-gray-300"}>
-        {icon}
-      </span>
       <span
-        className={`text-[11px] font-semibold ${
-          active ? "" : "text-gray-500 dark:text-gray-300"
+        className={`grid h-9 w-9 place-items-center rounded-full transition ${
+          active ? "bg-brand/10" : "text-gray-500 dark:text-gray-300"
         }`}
       >
-        {label}
+        {icon}
       </span>
+      {/* With no label beneath it, the dot sits on the icon rather than
+          beside it. */}
       {dot && (
-        <span className="absolute right-[22%] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-500 dark:border-[#121212]" />
+        <span className="absolute right-[26%] top-1 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-500 dark:border-[#121212]" />
       )}
     </Link>
   );
