@@ -7,40 +7,42 @@ import { usePathname } from "next/navigation";
 import ProBadge from "./ProBadge";
 import Avatar from "./Avatar";
 
-// Top actions as a compact tappable grid.
+// Top actions as a compact tappable grid — the four places you actually go.
+// Venues replaces Friends here: Friends is reachable from your profile and
+// from any circle, while Venues is a surface with nowhere else to be found.
 const QUICK = [
   { href: "/events", label: "Explore", icon: "search" },
   { href: "/host", label: "Host", icon: "mic" },
   { href: "/circles", label: "Circles", icon: "circles" },
-  { href: "/friends", label: "Friends", icon: "users" },
-];
-
-// Grouped, scannable lists.
-// The bottom bar already carries Home, Explore, Host, Alerts and Profile, so
-// this drawer only needs the places it can't reach. Everything here used to be
-// one flat list of fourteen rows, which is a directory, not a menu.
-const DISCOVER = [
-  { href: "/things-to-do", label: "Things to do", icon: "sparkles" },
   { href: "/venues", label: "Venues", icon: "pin" },
-  // Circles is already in QUICK above; listing it twice made the drawer
-  // look fuller than it is without adding anywhere to go.
-  { href: "/rides", label: "Rides", icon: "car" },
 ];
 
+/**
+ * One list, three rows, and everything else folded behind More.
+ *
+ * This drawer had fifteen rows across four sections, which is a site map
+ * rather than a menu — and a site map is a product telling you it hasn't
+ * decided what it's for. Nothing has been deleted; the long tail just stops
+ * being the first thing you see.
+ *
+ * The bottom bar already carries Home, Explore, Host, Alerts and Profile, so
+ * anything duplicated there earns its place here only by being somewhere the
+ * bar can't reach.
+ */
 const YOU = [
   { href: "/dashboard", label: "My link-ups", icon: "calendar" },
   { href: "/tickets", label: "Tickets", icon: "ticket" },
   { href: "/refer", label: "Invite & earn ₦500", icon: "gift" },
-  { href: "/profile/edit", label: "Settings", icon: "settings" },
 ];
 
 // The long tail, one tap away rather than always on screen.
 const MORE = [
+  { href: "/things-to-do", label: "Things to do", icon: "sparkles" },
+  { href: "/friends", label: "Friends", icon: "users" },
+  { href: "/rides", label: "Rides", icon: "car" },
   { href: "/live", label: "Live feed", icon: "activity" },
   { href: "/hosts/leaderboard", label: "Leaderboard", icon: "trophy" },
-  // Dropped: "Drive with us" is the second tab on /rides now, "Top drivers"
-  // is reachable from there, and the FC26 pop-up was pulled for spamming
-  // people — a menu row for it was the same idea with a quieter voice.
+  { href: "/profile/edit", label: "Settings", icon: "settings" },
   { href: "mailto:support@linkupnaija.com", label: "Help", icon: "help" },
 ];
 
@@ -175,8 +177,8 @@ export default function MobileNav({
                   ))}
                 </div>
 
-                {/* Discover */}
-                <Section title="Discover">
+                {/* You */}
+                <Section title="You">
                   <button
                     type="button"
                     onClick={openChat}
@@ -185,15 +187,8 @@ export default function MobileNav({
                     <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand">
                       <Icon name="sparkles" />
                     </span>
-                    AI Assistant
+                    Ask Paddy
                   </button>
-                  {DISCOVER.map((m) => (
-                    <MenuRow key={m.label} href={m.href} label={m.label} icon={m.icon} />
-                  ))}
-                </Section>
-
-                {/* You */}
-                <Section title="You">
                   {YOU.map((m) => (
                     <MenuRow key={m.label} href={m.href} label={m.label} icon={m.icon} />
                   ))}
@@ -290,6 +285,13 @@ function Icon({ name }: { name: string }) {
     mic: "M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3",
     users: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.87M16 3.13A4 4 0 0 1 16 11",
     bookmark: "M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z",
+    // "more" and "chevronDown" were used inline but never defined, so the
+    // More row rendered the help mark twice — a question mark for its icon
+    // and another where the disclosure arrow should be.
+    more: "M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM19 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM5 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2z",
+    chevronDown: "M6 9l6 6 6-6",
+    ticket:
+      "M3 9a2 2 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a2 2 0 0 1 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v3zM15 5v14",
     settings: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z",
     help: "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z",
     shield: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
