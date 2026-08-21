@@ -10,7 +10,7 @@ import ChatPanel from "@/components/ChatPanel";
 import ManageRequests from "@/components/ManageRequests";
 import DeleteEventButton from "@/components/DeleteEventButton";
 import Avatar from "@/components/Avatar";
-import AttendeeChips from "@/components/AttendeeChips";
+import ApprovedGuests from "@/components/events/ApprovedGuests";
 import FriendPickerButton from "@/components/friends/FriendPickerButton";
 import SharePlansButton from "@/components/safety/SharePlansButton";
 import AddToCalendar from "@/components/AddToCalendar";
@@ -468,13 +468,10 @@ export default async function EventDetailPage({
                         ? ` (${attendeeCount})`
                         : ""}
                     </h2>
-                    {attendeeCount === 0 ? (
-                      <p className="mt-2 text-gray-500">
-                        No one yet. Be the first to join! 🎈
-                      </p>
-                    ) : (
-                      <AttendeeChips
-                        attendees={accepted.map((a) => ({
+                    <div className="mt-2">
+                      <ApprovedGuests
+                        count={attendeeCount}
+                        guests={accepted.map((a) => ({
                           user_id: a.user_id,
                           name: a.users?.name ?? null,
                           avatar_url: a.users?.avatar_url ?? null,
@@ -483,7 +480,7 @@ export default async function EventDetailPage({
                         }))}
                         friendIds={friendIds}
                       />
-                    )}
+                    </div>
 
                     {/* Invite a friend — only for attendees who've joined. */}
                     {myStatus === "accepted" && (
