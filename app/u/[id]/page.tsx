@@ -74,12 +74,12 @@ export default async function PublicProfilePage({
     }
   }
 
-  const [friends, attending, hosting] = await Promise.all([
-    supabase
-      .from("connections")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "accepted")
-      .or(`requester_id.eq.${params.id},receiver_id.eq.${params.id}`),
+  const [friendsRes, attending, hosting] = await Promise.all([
+    // Via RPC, not a direct count. RLS on connections only exposes rows the
+    // viewer is part of, so counting another member's friends through the
+    // table returns 1 when you're the friend and 0 otherwise. friend_count is
+    // SECURITY DEFINER — it returns the number without exposing who.
+    supabase.rpc("friend_count", { uid: params.id }),
     supabase
       .from("rsvps")
       .select("*", { count: "exact", head: true })
@@ -90,6 +90,20 @@ export default async function PublicProfilePage({
       .select("*", { count: "exact", head: true })
       .eq("host_id", params.id),
   ]);
+
+  // friend_count arrives with migration-friend-count.sql. Until that runs the
+  // RPC 404s, so fall back to the direct count — which under-reports on other
+  // people's profiles, but under-reporting beats a profile that fails to
+  // render at all.
+  let friendCount = (friendsRes.data as number | null) ?? 0;
+  if (friendsRes.error) {
+    const { count } = await supabase
+      .from("connections")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "accepted")
+      .or(`requester_id.eq.${params.id},receiver_id.eq.${params.id}`);
+    friendCount = count ?? 0;
+  }
 
   const { data: hs } = await supabase
     .from("host_stats")
@@ -172,7 +186,7 @@ export default async function PublicProfilePage({
         )}
 
         <div className="mt-4 grid grid-cols-3 gap-2">
-          <Stat value={friends.count ?? 0} label="Friends" />
+          <Stat value={friendCount} label="Friends" />
           <Stat value={attending.count ?? 0} label="Attending" />
           <Stat value={hosting.count ?? 0} label="Hosting" />
         </div>

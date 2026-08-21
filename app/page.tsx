@@ -7,6 +7,7 @@ import { formatEventDate } from "@/lib/format";
 import LoggedInHome from "@/components/home/LoggedInHome";
 import Rail from "@/components/home/Rail";
 import SwipeDeck from "@/components/home/SwipeDeck";
+import FeaturedRail from "@/components/home/FeaturedRail";
 import ScreenTour from "@/components/home/ScreenTour";
 import LineIcon from "@/components/ui/LineIcon";
 import CategoryEmoji from "@/components/ui/CategoryEmoji";
@@ -31,6 +32,11 @@ const PROMISES = [
   { icon: "ticket", title: "Your ticket is a QR code", text: "Pay in-app, get scanned at the door. No printouts." },
   { icon: "chat", title: "Group chat before you arrive", text: "Every link-up has one, so you never pull up cold." },
   { icon: "users", title: "Built around your taste", text: "Pick what you're into and the feed shapes itself." },
+  // The two questions that follow every "yes, I'll come": where, and how do I
+  // get there. They had their own shelves on the old page; as promises they
+  // do more work in less space.
+  { icon: "pin", title: "Book the spot too", text: "Clubs, rooftops and restaurants you can reserve in-app." },
+  { icon: "car", title: "Get there and back", text: "Hail a ride to the link-up without leaving the app." },
 ];
 
 const cache = () =>
@@ -326,8 +332,14 @@ export default async function HomePage() {
         ))}
       </Rail>
 
+      {/* Featured link-ups. Cut with the rest of the shelves, put back on
+          purpose: these are the events we're actively promoting, and a
+          landing page that hides its best inventory is stripped past the
+          point of useful. */}
+      <FeaturedRail />
+
       {/* Real listings, not invented ones — the demo shows the same events the
-          shelves below are showing. */}
+          rails above are showing. */}
       <ScreenTour events={upcoming.slice(0, 3)} />
 
       {/* The pitch, as a shelf rather than a full-screen section */}
