@@ -17,17 +17,17 @@ export type QuorumState =
   /** Still gathering. */
   | { kind: "pending"; going: number; need: number; toGo: number }
   /** Enough people. This is sticky — see below. */
-  | { kind: "met"; going: number; need: number }
+  | { kind: "met"; going: number; need: number; paid: boolean }
   /** The date arrived and it never filled. */
   | { kind: "failed"; going: number; need: number };
 
 export interface QuorumInput {
   minAttendees: number | null | undefined;
   /**
-   * Ticket price. Quorum is free-events-only: on a paid event the guest pays
-   * at request time, so a room that never fills would strand their money and
-   * there is no refund pipeline to return it. Treated as no-quorum rather
-   * than throwing, so a mis-set event degrades to an ordinary listing.
+   * Ticket price. A paid quorum event collects nothing until the room fills —
+   * guests reserve for free and are asked to pay only once it's confirmed, so
+   * no refund is ever required because no money moves for an event that
+   * doesn't happen.
    */
   price?: number | null;
   going: number;
@@ -51,14 +51,13 @@ export function quorumState({
   // showing "1 to go" on every empty event would be noise dressed as a
   // mechanic.
   if (!minAttendees || minAttendees <= 1) return { kind: "none" };
-  if ((price ?? 0) > 0) return { kind: "none" };
 
   // Sticky on purpose. Once a room has filled, the plan is real and people
   // have arranged their evening around it; a single person dropping out must
   // not un-confirm everyone else. quorum_met_at is the record that it
   // happened, and it is never cleared.
   if (quorumMetAt || going >= minAttendees) {
-    return { kind: "met", going, need: minAttendees };
+    return { kind: "met", going, need: minAttendees, paid: (price ?? 0) > 0 };
   }
 
   if (date < today) return { kind: "failed", going, need: minAttendees };
@@ -83,7 +82,12 @@ export function quorumLabel(s: QuorumState): string | null {
     case "none":
       return null;
     case "met":
-      return "Happening — the room filled";
+      // On a paid event "it's on" is only half the news; the other half is
+      // that money is now due, and burying that produces expired
+      // reservations and people who thought they had a ticket.
+      return s.paid
+        ? "It's on — your spot is held, pay to confirm"
+        : "Happening — the room filled";
     case "failed":
       return "This one didn't fill";
     case "pending":

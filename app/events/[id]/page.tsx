@@ -190,6 +190,10 @@ export default async function EventDetailPage({
     quorumMetAt: (event as { quorum_met_at?: string | null }).quorum_met_at,
   });
 
+  // Reserve-first: a paid event with a minimum the room hasn't reached yet.
+  // Nothing is charged until quorum is met, so no refund is ever needed.
+  const reserveFirst = quorum.kind === "pending" && (event.price ?? 0) > 0;
+
   // Friends of the viewer (accepted connections) → 🤝 markers in the attendee
   // list and a "your friend is going" banner.
   let friendIds: string[] = [];
@@ -484,7 +488,10 @@ export default async function EventDetailPage({
                         nearly empty the gap to the target is the reason to
                         join, and the faces are not. */}
                     <div className="mt-2">
-                      <QuorumMeter state={quorum} />
+                      <QuorumMeter
+                        state={quorum}
+                        paid={(event.price ?? 0) > 0}
+                      />
                     </div>
                     <div className="mt-2">
                       <ApprovedGuests
@@ -645,6 +652,7 @@ export default async function EventDetailPage({
                     eventTitle={event.title}
                     hostSubaccount={event.host?.paystack_subaccount_code ?? null}
                     walletBalance={walletBalance}
+                    reserveFirst={reserveFirst}
                   />
 
                   {/* Add to calendar — cheapest no-show reducer. */}

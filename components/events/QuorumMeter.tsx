@@ -11,7 +11,17 @@ import { quorumLabel, quorumProgress, type QuorumState } from "@/lib/quorum";
  *
  * So it shows the real number at any size, and never says "be the first".
  */
-export default function QuorumMeter({ state }: { state: QuorumState }) {
+export default function QuorumMeter({
+  state,
+  paid = false,
+  deadline,
+}: {
+  state: QuorumState;
+  /** Whether this event charges — changes the copy, not the mechanic. */
+  paid?: boolean;
+  /** Human-readable payment deadline, once quorum is met. */
+  deadline?: string | null;
+}) {
   if (state.kind === "none") return null;
 
   const label = quorumLabel(state);
@@ -30,6 +40,23 @@ export default function QuorumMeter({ state }: { state: QuorumState }) {
   }
 
   if (state.kind === "met") {
+    // Paid gets gold rather than green. Green reads as "done, nothing to do",
+    // and on a paid event there is very much something to do — the reservation
+    // lapses if nobody acts on it.
+    if (state.paid) {
+      return (
+        <div className="rounded-2xl border border-[#FAC775] bg-[#FAC775]/15 p-3.5">
+          <p className="flex items-center gap-2 text-[15px] font-extrabold text-gray-900">
+            <LineIcon name="check" size={16} />
+            {label}
+          </p>
+          <p className="mt-0.5 text-[13px] leading-snug text-gray-700">
+            {state.going} people reserved, so it&apos;s happening. Nobody was
+            charged until now{deadline ? ` — pay by ${deadline}` : ""}.
+          </p>
+        </div>
+      );
+    }
     return (
       <div className="rounded-2xl border border-naija/30 bg-naija-50 p-3.5">
         <p className="flex items-center gap-2 text-[15px] font-extrabold text-naija-700">
@@ -67,8 +94,9 @@ export default function QuorumMeter({ state }: { state: QuorumState }) {
       </div>
 
       <p className="mt-2 text-[13px] leading-snug text-gray-600">
-        Ask to join now and you&apos;re only in if it fills. Nobody turns up to
-        an empty room.
+        {paid
+          ? "Reserve free — you're only asked to pay if it fills, so you can never be charged for an event that doesn't happen."
+          : "Ask to join now and you're only in if it fills. Nobody turns up to an empty room."}
       </p>
     </div>
   );

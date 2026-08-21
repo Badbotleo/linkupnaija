@@ -27,6 +27,7 @@ export default function RsvpButton({
   eventTitle,
   hostSubaccount,
   walletBalance = 0,
+  reserveFirst = false,
 }: {
   eventId: string;
   isLoggedIn: boolean;
@@ -47,6 +48,12 @@ export default function RsvpButton({
   eventTitle: string;
   hostSubaccount: string | null;
   walletBalance?: number;
+  /**
+   * Paid event with a minimum that hasn't been reached. Reserving costs
+   * nothing; payment is only asked for once the room fills, so nobody can
+   * ever be charged for an event that doesn't happen.
+   */
+  reserveFirst?: boolean;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -102,10 +109,16 @@ export default function RsvpButton({
     if (!user) return;
 
     // Paid events: apply wallet balance first, then charge the remainder.
+    //
+    // Unless the room hasn't filled yet — then this is a reservation and no
+    // money moves at all. The guest is asked to pay once quorum is met, which
+    // is why this flow never needs a refund.
     let paymentReference: string | null = null;
     const walletUsed =
-      dueNow > 0 && useWallet ? Math.min(walletBalance, dueNow) : 0;
-    const remainder = dueNow - walletUsed;
+      !reserveFirst && dueNow > 0 && useWallet
+        ? Math.min(walletBalance, dueNow)
+        : 0;
+    const remainder = reserveFirst ? 0 : dueNow - walletUsed;
 
     if (remainder > 0) {
       try {
@@ -151,8 +164,8 @@ export default function RsvpButton({
       {
         event_id: eventId,
         user_id: user.id,
-        status: "pending",
-        paid: dueNow > 0,
+        status: reserveFirst ? "reserved" : "pending",
+        paid: !reserveFirst && dueNow > 0,
         tier_id: tierId,
         payment_reference: paymentReference ?? (walletUsed > 0 ? "wallet" : null),
       },
@@ -165,7 +178,8 @@ export default function RsvpButton({
     }
 
     // Record the ticket sale (drives host payout) + notify.
-    if (dueNow > 0) {
+    // A reservation has no sale to record — that comes later, if it fills.
+    if (!reserveFirst && dueNow > 0) {
       // This row IS the host's payout. If it doesn't land, the money was
       // taken and the host is never paid — and until now that failure was
       // written to console.error and the buyer was told "Payment confirmed".
@@ -350,7 +364,7 @@ export default function RsvpButton({
           </div>
         ) : (
           <>
-            {price > 0 && walletBalance > 0 && (
+            {!reserveFirst && price > 0 && walletBalance > 0 && (
               <label className="flex cursor-pointer items-start gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm">
                 <input
                   type="checkbox"
@@ -392,6 +406,19 @@ export default function RsvpButton({
                     </span>
                   ) : loading ? (
                     <span className="text-[15px] font-bold">Processing…</span>
+                  ) : reserveFirst ? (
+                    /* A paid event whose room hasn't filled. Leading with the
+                       price here would be a lie — nothing is charged today —
+                       and it's also the wrong number to lead with, since
+                       "free" is exactly what makes reserving easy. */
+                    <>
+                      <span className="block text-[18px] font-extrabold leading-none">
+                        Reserve your spot — free
+                      </span>
+                      <span className="mt-1 block text-[12px] font-semibold text-white/75">
+                        Pay {formatNaira(dueNow)} only if it fills
+                      </span>
+                    </>
                   ) : dueNow > 0 ? (
                     <>
                       <span className="block text-[20px] font-extrabold leading-none tabular-nums">
