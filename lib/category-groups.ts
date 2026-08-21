@@ -27,6 +27,8 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     emoji: "🪩",
     tint: "from-purple-100 to-purple-50 text-purple-800",
     categories: [
+      "Rave / Electronic / Themed Night",
+      "Beach Party",
       "Listening Party", "After-Party",
       "Clubbing", "Party", "Afrobeats Night", "Rooftop Party", "Pool Party",
       "Detty December", "Day Party", "Silent Disco",
@@ -39,6 +41,8 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     emoji: "🍽️",
     tint: "from-rose-100 to-rose-50 text-rose-800",
     categories: [
+      "Food / Grill / Culinary",
+      "Breakfast Hangouts",
       "Food Tasting", "Cooking Class", "Wine / Cocktail Night", "Street Food Tour", "Suya Night", "Coffee Meetup",
       "Dinner", "Brunch", "Food Festival", "Paint and Sip", "Picnic",
       "Street Food",
@@ -52,6 +56,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     emoji: "🤗",
     tint: "from-teal-100 to-teal-50 text-teal-800",
     categories: [
+      "Religious / Faith-based Gatherings",
       "Family Fun Day", "Kids Event", "Game Tournament",
       "Family Hangout", "Friend Reunion", "Game Night", "Board Games",
       "Book Club", "Cinema", "Sports Viewing", "Trivia Night", "Spa Day",
@@ -63,7 +68,9 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     hint: "Beach, hikes, gym",
     emoji: "🏝️",
     tint: "from-naija-100 to-naija-50 text-naija-800",
-    categories: [ "Gym Session", "Meditation", "Wellness Walk", "Sports", "Cycling", "Adventure Park", "Photography Walk",
+    categories: [
+      "Bonfire / Outdoor Party",
+      "Travel / Road Trip / Group Adventure", "Gym Session", "Meditation", "Wellness Walk", "Sports", "Cycling", "Adventure Park", "Photography Walk",
       "Beach Day", "Hiking", "Yoga", "Fitness", "Road Trip", "Bowling",
       "Sightseeing", "Jogging", "Outdoor", "Vacation",
       "Camping", "Boat Cruise", "Go-Karting",
