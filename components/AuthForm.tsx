@@ -4,6 +4,10 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import {
+  DEFAULT_NAME_PLACEHOLDER,
+  randomNamePlaceholder,
+} from "@/lib/name-placeholder";
 import { NIGERIAN_STATES } from "@/lib/constants";
 import { isInAppBrowser } from "@/lib/webview";
 
@@ -22,6 +26,12 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const supabase = createClient();
 
   const [name, setName] = useState("");
+  // Rotates across the country instead of always showing one
+  // ethnic group. Set after mount so the server and client agree.
+  const [namePlaceholder, setNamePlaceholder] = useState(
+    DEFAULT_NAME_PLACEHOLDER as string
+  );
+  useEffect(() => setNamePlaceholder(randomNamePlaceholder()), []);
   const [state, setState] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -295,7 +305,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Chidi Okeke"
+              placeholder={namePlaceholder}
               className="input"
             />
           </div>

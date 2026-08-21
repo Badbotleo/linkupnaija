@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import {
+  DEFAULT_NAME_PLACEHOLDER,
+  randomNamePlaceholder,
+} from "@/lib/name-placeholder";
 import { compressImage } from "@/lib/image";
 import { NIGERIAN_STATES, MIN_INTERESTS } from "@/lib/constants";
 import {
@@ -47,6 +51,12 @@ export default function ProfileForm({
   const supabase = createClient();
 
   const [name, setName] = useState(initial.name ?? "");
+  // Rotates across the country instead of always showing one
+  // ethnic group. Set after mount so the server and client agree.
+  const [namePlaceholder, setNamePlaceholder] = useState(
+    DEFAULT_NAME_PLACEHOLDER as string
+  );
+  useEffect(() => setNamePlaceholder(randomNamePlaceholder()), []);
   const [state, setState] = useState(initial.state ?? "");
   const [bio, setBio] = useState(initial.bio ?? "");
   const [instagram, setInstagram] = useState(handleOf(initial.instagram_url));
@@ -155,7 +165,7 @@ export default function ProfileForm({
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="input"
-            placeholder="Chidi Okeke"
+            placeholder={namePlaceholder}
           />
         </div>
         <div>
