@@ -400,7 +400,9 @@ export default async function HomePage() {
 
       <ThingsToDo state={visitorState} />
 
-      <ScreenTour />
+      {/* Real listings, not invented ones — the demo shows the same events the
+          shelves below are showing. */}
+      <ScreenTour events={upcoming.slice(0, 3)} />
 
       {/* ---------------------------------------------------------------- */}
       {/* Shelves                                                           */}

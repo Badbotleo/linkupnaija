@@ -5,7 +5,7 @@ import Link from "next/link";
 import LineIcon from "../ui/LineIcon";
 
 /**
- * A phone sitting in a laptop frame, playing through what using LinkUpNaija
+ * A phone playing through what using LinkUpNaija
  * actually looks like — the "watch it work before you sign up" panel.
  *
  * The screens are real markup rather than screenshots, so they can't go stale
@@ -33,7 +33,17 @@ const STEPS = [
 
 const STEP_MS = 4200;
 
-export default function ScreenTour() {
+export interface TourEvent {
+  id: string;
+  title: string;
+  category: string;
+  state: string | null;
+  date: string;
+  price: number | null;
+  cover_image_url: string | null;
+}
+
+export default function ScreenTour({ events = [] }: { events?: TourEvent[] }) {
   const [i, setI] = useState(0);
   const [playing, setPlaying] = useState(true);
   const box = useRef<HTMLDivElement>(null);
@@ -60,38 +70,48 @@ export default function ScreenTour() {
   return (
     <section ref={box} className="container-page mt-10">
       <div className="overflow-hidden rounded-3xl border border-gray-200 bg-gradient-to-br from-brand-50 via-white to-naija-50 p-5 shadow-card sm:p-7">
-        <div className="grid grid-cols-1 items-center gap-7 lg:grid-cols-[1.05fr_1fr]">
+        <div className="grid grid-cols-1 items-center gap-7 lg:grid-cols-[0.85fr_1fr]">
           {/* ---------------- the screen ---------------- */}
           <div className="order-2 lg:order-1">
-            <div className="mx-auto w-full max-w-[420px]">
-              {/* laptop lid */}
-              <div className="rounded-t-2xl border border-b-0 border-gray-300 bg-gray-900 p-2 pb-0 shadow-xl">
-                <div className="flex items-center gap-1.5 px-1 pb-2">
-                  <span className="h-2 w-2 rounded-full bg-[#FF5F57]" />
-                  <span className="h-2 w-2 rounded-full bg-[#FEBC2E]" />
-                  <span className="h-2 w-2 rounded-full bg-[#28C840]" />
-                  <span className="ml-2 truncate rounded-md bg-white/10 px-2 py-0.5 text-[10px] font-medium text-white/60">
-                    linkupnaija.com
-                  </span>
-                </div>
-                <div className="relative h-[292px] overflow-hidden rounded-t-lg bg-gray-50">
-                  {STEPS.map((_, n) => (
-                    <div
-                      key={n}
-                      className={`absolute inset-0 p-3 transition-all duration-500 ${
-                        n === i
-                          ? "translate-y-0 opacity-100"
-                          : "pointer-events-none translate-y-3 opacity-0"
-                      }`}
-                    >
-                      <Screen n={n} />
-                    </div>
-                  ))}
+            <div className="mx-auto w-full max-w-[300px]">
+              {/* An iPhone, not a laptop.
+
+                  The old frame was a browser window — traffic-light dots and
+                  a URL bar — a desktop chrome around a product almost nobody
+                  opens on a desktop. It quietly told a visitor to go and use
+                  their computer, which is the opposite of the truth. This is
+                  a phone product used standing up, and the frame should say
+                  so before the copy gets a chance to. */}
+              <div className="relative mx-auto w-full max-w-[300px] rounded-[2.6rem] border-[3px] border-gray-800 bg-gray-900 p-2.5 shadow-2xl">
+                {/* Side buttons — small, but their absence is what makes a
+                    rounded rectangle read as a mockup rather than a phone. */}
+                <span className="absolute -left-[5px] top-[92px] h-9 w-[3px] rounded-l bg-gray-700" />
+                <span className="absolute -left-[5px] top-[136px] h-9 w-[3px] rounded-l bg-gray-700" />
+                <span className="absolute -right-[5px] top-[110px] h-14 w-[3px] rounded-r bg-gray-700" />
+
+                <div className="relative overflow-hidden rounded-[2rem] bg-gray-50">
+                  <div className="absolute left-1/2 top-2 z-20 h-[22px] w-[86px] -translate-x-1/2 rounded-full bg-black" />
+
+                  <div className="relative h-[368px]">
+                    {STEPS.map((_, n) => (
+                      <div
+                        key={n}
+                        className={`absolute inset-0 p-3 pt-9 transition-all duration-500 ${
+                          n === i
+                            ? "translate-y-0 opacity-100"
+                            : "pointer-events-none translate-y-3 opacity-0"
+                        }`}
+                      >
+                        <Screen n={n} events={events} />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="absolute inset-x-0 bottom-1.5 z-20 flex justify-center">
+                    <span className="h-[5px] w-[110px] rounded-full bg-gray-900/25" />
+                  </div>
                 </div>
               </div>
-              {/* laptop base */}
-              <div className="mx-auto h-3 rounded-b-xl border border-t-0 border-gray-300 bg-gradient-to-b from-gray-200 to-gray-300" />
-              <div className="mx-auto h-1 w-1/4 rounded-b-full bg-gray-300/70" />
             </div>
           </div>
 
@@ -162,26 +182,79 @@ export default function ScreenTour() {
 /* The four fake-but-faithful app screens                              */
 /* ------------------------------------------------------------------ */
 
-function Chrome({ title, children }: { title: string; children: React.ReactNode }) {
+/**
+ * The app's own chrome, not a generic card.
+ *
+ * The point of this panel is "here is the thing you are about to use", so a
+ * neutral white box with a title undercuts it. This carries the real header
+ * and the real bottom bar, in the same colours and at the same proportions,
+ * so what a visitor sees in the frame is what they get when they tap through.
+ */
+function Chrome({
+  title,
+  children,
+  tab = 0,
+}: {
+  title: string;
+  children: React.ReactNode;
+  /** Which bottom-bar icon is lit, so the demo moves like navigation does. */
+  tab?: number;
+}) {
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-lg bg-white shadow-sm">
-      <div className="flex items-center gap-2 border-b border-gray-100 px-3 py-2">
-        <span className="text-[13px] font-extrabold text-gray-900">{title}</span>
+    <div className="flex h-full flex-col overflow-hidden rounded-lg bg-white">
+      <div className="flex items-center gap-1.5 border-b border-gray-100 px-3 py-2">
+        <span className="grid h-4 w-4 place-items-center rounded-full bg-brand text-[8px] font-black text-white">
+          L
+        </span>
+        <span className="truncate text-[12px] font-extrabold text-gray-900">
+          {title}
+        </span>
       </div>
+
       <div className="min-h-0 flex-1 overflow-hidden p-2.5">{children}</div>
+
+      {/* The real bottom bar, five icons, no labels — same as the app. */}
+      <div className="flex items-center justify-around border-t border-gray-100 px-2 py-1.5">
+        {["home", "search", "plus", "bell", "user"].map((ic, k) => (
+          <span
+            key={ic}
+            className={`grid h-6 w-6 place-items-center rounded-full ${
+              ic === "plus"
+                ? "bg-brand text-white"
+                : k === tab
+                  ? "bg-brand/10 text-brand"
+                  : "text-gray-400"
+            }`}
+          >
+            <LineIcon
+              name={ic === "plus" ? "sparkles" : ic === "search" ? "search" : ic === "bell" ? "bell" : ic === "user" ? "users" : "home"}
+              size={12}
+            />
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
 
-function Screen({ n }: { n: number }) {
+function Screen({ n, events }: { n: number; events: TourEvent[] }) {
+  // Real listings. An invented "Rooftop sundowner" is a promise the site
+  // can't keep — a visitor taps through and finds a different world. These
+  // are the same rows the feed is showing right now, so the demo is the
+  // product rather than a drawing of it.
+  const feed = events.slice(0, 3);
+
   if (n === 0)
     return (
-      <Chrome title="Tonight in Abuja">
+      <Chrome title="Explore" tab={1}>
         <div className="flex gap-1.5">
-          {["Party", "Game Night", "Beach"].map((c, k) => (
+          {(feed.length > 0
+            ? Array.from(new Set(feed.map((e) => e.category))).slice(0, 3)
+            : ["Party", "Game Night", "Beach Day"]
+          ).map((c, k) => (
             <span
               key={c}
-              className={`rounded-full px-2 py-1 text-[10px] font-bold ${
+              className={`truncate rounded-full px-2 py-1 text-[9px] font-bold ${
                 k === 0 ? "bg-brand text-white" : "bg-gray-100 text-gray-600"
               }`}
             >
@@ -190,16 +263,31 @@ function Screen({ n }: { n: number }) {
           ))}
         </div>
         <div className="mt-2 space-y-1.5">
-          {[
-            ["Rooftop sundowner", "Sat · Maitama · Free"],
-            ["FIFA night at the crib", "Sat · Wuse 2 · ₦2,000"],
-            ["Beach day, Landmark", "Sun · Lagos · ₦5,000"],
-          ].map(([t, m]) => (
-            <div key={t} className="flex items-center gap-2 rounded-xl border border-gray-100 p-2">
-              <span className="h-9 w-9 shrink-0 rounded-lg bg-gradient-to-br from-brand-200 to-brand" />
+          {feed.map((e) => (
+            <div
+              key={e.id}
+              className="flex items-center gap-2 rounded-xl border border-gray-100 p-1.5"
+            >
+              {e.cover_image_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={e.cover_image_url}
+                  alt=""
+                  className="h-9 w-9 shrink-0 rounded-lg object-cover"
+                />
+              ) : (
+                <span className="h-9 w-9 shrink-0 rounded-lg bg-gradient-to-br from-brand-200 to-brand" />
+              )}
               <span className="min-w-0">
-                <span className="block truncate text-[11px] font-bold text-gray-900">{t}</span>
-                <span className="block truncate text-[10px] text-gray-500">{m}</span>
+                <span className="block truncate text-[10px] font-bold text-gray-900">
+                  {e.title}
+                </span>
+                <span className="block truncate text-[9px] text-gray-500">
+                  {e.state ?? "Nigeria"} ·{" "}
+                  {e.price && e.price > 0
+                    ? `₦${e.price.toLocaleString("en-NG")}`
+                    : "Free"}
+                </span>
               </span>
             </div>
           ))}
@@ -207,40 +295,67 @@ function Screen({ n }: { n: number }) {
       </Chrome>
     );
 
-  if (n === 1)
+  if (n === 1) {
+    const e = feed[0];
     return (
-      <Chrome title="Rooftop sundowner">
-        <div className="h-16 rounded-xl bg-gradient-to-br from-brand to-[#121212]" />
-        <p className="mt-2 text-[11px] leading-snug text-gray-600">
-          Hosted by Tobi · 12 going · approval required
-        </p>
-        <div className="mt-2 rounded-xl bg-brand px-3 py-2 text-center text-[11px] font-bold text-white">
+      <Chrome title={e?.title ?? "Request to join"} tab={1}>
+        {e?.cover_image_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={e.cover_image_url}
+            alt=""
+            className="h-16 w-full rounded-xl object-cover"
+          />
+        ) : (
+          <div className="h-16 rounded-xl bg-gradient-to-br from-brand to-[#121212]" />
+        )}
+        {/* The same promise the event page leads with, in the same words. */}
+        <div className="mt-2 flex items-start gap-1.5 rounded-lg border border-brand/15 bg-brand/[0.04] p-1.5">
+          <span className="mt-[1px] text-brand">
+            <LineIcon name="shield" size={11} />
+          </span>
+          <span className="text-[9px] font-bold leading-snug text-gray-800">
+            The host approves every guest
+          </span>
+        </div>
+        <div className="mt-2 rounded-xl bg-brand px-3 py-2 text-center text-[10px] font-bold text-white">
           Request to join
         </div>
-        <div className="mt-2 flex items-center gap-1.5 rounded-xl bg-naija-50 px-2.5 py-2">
-          <span className="grid h-4 w-4 place-items-center rounded-full bg-naija text-[9px] font-black text-white">
+        <div className="mt-1.5 flex items-center gap-1.5 rounded-xl bg-naija-50 px-2 py-1.5">
+          <span className="grid h-3.5 w-3.5 place-items-center rounded-full bg-naija text-[8px] font-black text-white">
             ✓
           </span>
-          <span className="text-[10px] font-semibold text-naija-800">
-            Request sent — Tobi will approve you
+          <span className="text-[9px] font-semibold text-naija-800">
+            Request sent — you&apos;ll hear back
           </span>
         </div>
       </Chrome>
     );
+  }
 
   if (n === 2)
     return (
-      <Chrome title="Sundowner group chat">
+      <Chrome title={feed[0] ? `${feed[0].title.slice(0, 22)} chat` : "Group chat"} tab={3}>
         <div className="space-y-1.5">
-          <Bubble side="left" name="Tobi">Pull up by 6, rooftop is on the 9th floor 🌇</Bubble>
-          <Bubble side="left" name="Amaka">Who&apos;s coming from Wuse? Let&apos;s share a ride</Bubble>
-          <Bubble side="right" name="You">I&apos;m in Wuse 2, I can pick up 👋</Bubble>
+          {/* Real listings above, illustrative messages here — actual chats
+              are private and showing them would be a straightforward breach.
+              So the copy stays generic enough to be true of any link-up
+              rather than describing a venue the event doesn't have. */}
+          <Bubble side="left" name="Host">
+            Doors from 6 — I&apos;ll drop the exact spot here 📍
+          </Bubble>
+          <Bubble side="left" name="Amaka">
+            Anyone coming from my side? Let&apos;s share a ride
+          </Bubble>
+          <Bubble side="right" name="You">
+            I&apos;m close by, I can pick up 👋
+          </Bubble>
         </div>
       </Chrome>
     );
 
   return (
-    <Chrome title="Bring your paddy">
+    <Chrome title="Bring your paddy" tab={4}>
       <div className="rounded-xl border border-dashed border-brand/40 bg-brand-50 p-2.5">
         <p className="text-[10px] font-semibold text-gray-500">Your invite link</p>
         <p className="mt-0.5 truncate text-[11px] font-bold text-brand">
