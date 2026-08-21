@@ -277,36 +277,51 @@ export default async function HomePage() {
             href={`/events/${localFeature.id}`}
             className="group relative block min-h-[210px] overflow-hidden rounded-3xl text-white shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-xl sm:min-h-[240px]"
           >
-            <div className="absolute inset-0">
-              <EventCover
-                url={localFeature.cover_image_url}
-                category={localFeature.category}
-                title={localFeature.title}
-                className="h-full w-full"
-              />
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#120B2E] via-[#120B2E]/70 to-[#120B2E]/25" />
+            {/* Poster beside the words, not behind them.
 
-            <div className="relative flex min-h-[210px] flex-col justify-end p-5 sm:min-h-[240px] sm:p-7">
-              <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-[#FAC775] px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-[#121212]">
-                <NaijaFlag size={10} />
-                Near you in {visitorState}
-              </span>
-              <h2 className="mt-3 text-[24px] font-extrabold leading-tight tracking-[-0.02em] sm:text-[30px]">
-                {localFeature.title}
-              </h2>
-              <p className="mt-1 text-[15px] text-white/75">
-                {formatEventDate(localFeature.date)}
-                {localFeature.location ? ` · ${localFeature.location}` : ""}
-                {" · "}
-                {localFeature.price && localFeature.price > 0
-                  ? `₦${localFeature.price.toLocaleString("en-NG")}`
-                  : "Free"}
-              </p>
-              <span className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-white px-5 py-2.5 text-sm font-black text-gray-900">
-                See the link-up
-                <LineIcon name="chevronRight" size={14} />
-              </span>
+                Nigerian hosts upload flyers that already carry the title, time,
+                venue and price burned into the artwork. Laying our text over
+                that printed two sets of the same information on top of each
+                other — the hero read as a mistake, on the one screen most
+                likely to end up in a screenshot or a video. Giving the poster
+                its own panel means it stays intact and our text stays legible,
+                and the block is the same shape for every event instead of
+                depending on how busy someone's flyer is. */}
+            <div className="relative flex min-h-[210px] bg-[#120B2E] sm:min-h-[240px]">
+              <div className="relative w-[38%] shrink-0 overflow-hidden sm:w-[34%]">
+                <EventCover
+                  url={localFeature.cover_image_url}
+                  category={localFeature.category}
+                  title={localFeature.title}
+                  className="h-full w-full transition duration-300 group-hover:scale-105"
+                />
+                {/* A short fade into the panel so the two halves read as one
+                    card rather than a photo glued to a box. */}
+                <div className="absolute inset-y-0 right-0 w-10 bg-gradient-to-r from-transparent to-[#120B2E]" />
+              </div>
+
+              <div className="flex min-w-0 flex-1 flex-col justify-center p-4 sm:p-6">
+                <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-[#FAC775] px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-[#121212]">
+                  <NaijaFlag size={10} />
+                  Near you in {visitorState}
+                </span>
+                <h2 className="mt-2.5 line-clamp-2 text-[19px] font-extrabold leading-tight tracking-[-0.02em] sm:text-[26px]">
+                  {localFeature.title}
+                </h2>
+                <p className="mt-1.5 line-clamp-2 text-[13px] leading-snug text-white/70 sm:text-[15px]">
+                  {formatEventDate(localFeature.date)}
+                  {localFeature.location ? ` · ${localFeature.location}` : ""}
+                </p>
+                <span className="mt-1 text-[13px] font-bold text-[#FAC775] sm:text-[15px]">
+                  {localFeature.price && localFeature.price > 0
+                    ? `₦${localFeature.price.toLocaleString("en-NG")}`
+                    : "Free to join"}
+                </span>
+                <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-white px-4 py-2 text-[13px] font-black text-gray-900 sm:px-5 sm:py-2.5 sm:text-sm">
+                  See the link-up
+                  <LineIcon name="chevronRight" size={14} />
+                </span>
+              </div>
             </div>
           </Link>
         </section>
