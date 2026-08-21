@@ -32,6 +32,7 @@ export default function HostForm({
     location: prefill?.location ?? "",
     state: prefill?.state ?? hostState ?? "",
     max_attendees: "",
+    min_attendees: "",
     price: "",
     event_type: "general" as "general" | "private",
   });
@@ -246,6 +247,27 @@ export default function HostForm({
       gallery_urls: galleryUrls,
     };
 
+    /**
+     * min_attendees arrives with migration-quorum.sql. Until that runs the
+     * column doesn't exist, and including it would make every insert fail
+     * with "column does not exist" — breaking event creation for everyone to
+     * ship a feature nobody can use yet.
+     *
+     * So it's attached separately and stripped on that one specific error,
+     * exactly as the venues query already falls back to its legacy column set.
+     * Below 2 is meaningless: one person is not a room.
+     */
+    const minAttendees =
+      form.min_attendees && Number(form.min_attendees) >= 2
+        ? Number(form.min_attendees)
+        : null;
+    const withQuorum =
+      minAttendees === null
+        ? baseEvent
+        : { ...baseEvent, min_attendees: minAttendees };
+    const isMissingColumn = (msg?: string | null) =>
+      !!msg && /min_attendees/.test(msg) && /column/i.test(msg);
+
     // Recurring series: create the series + its first 3 events.
     if (isSeries) {
       const { data: series, error: sErr } = await supabase
@@ -271,11 +293,24 @@ export default function HostForm({
       }
 
       const rows = nextDates(form.date, frequency, 3).map((date) => ({
-        ...baseEvent,
+        ...withQuorum,
         date,
         series_id: series.id,
       }));
       let { error: evErr } = await supabase.from("events").insert(rows);
+      // Retry without the quorum column if this database hasn't had
+      // migration-quorum.sql run against it yet.
+      if (evErr && isMissingColumn(evErr.message)) {
+        ({ error: evErr } = await supabase.from("events").insert(
+          rows.map((r) => {
+            // rows is a union (with/without the column), so destructuring it
+            // off doesn't typecheck — drop the key on a copy instead.
+            const copy: Record<string, unknown> = { ...r };
+            delete copy.min_attendees;
+            return copy;
+          })
+        ));
+      }
       if (evErr && /gallery_urls/.test(evErr.message)) {
         ({ error: evErr } = await supabase
           .from("events")
@@ -295,9 +330,16 @@ export default function HostForm({
     // Same fallback as the series path above.
     let { data, error } = await supabase
       .from("events")
-      .insert({ ...baseEvent, date: form.date })
+      .insert({ ...withQuorum, date: form.date })
       .select("id")
       .single();
+    if (error && isMissingColumn(error.message)) {
+      ({ data, error } = await supabase
+        .from("events")
+        .insert({ ...baseEvent, date: form.date })
+        .select("id")
+        .single());
+    }
     if (error && /gallery_urls/.test(error.message)) {
       const { gallery_urls: _drop, ...withoutGallery } = baseEvent;
       ({ data, error } = await supabase
@@ -596,6 +638,34 @@ export default function HostForm({
             is the venue, put the details in the description.
           </p>
         )}
+      </div>
+
+      {/* Minimum before it's on.
+
+          This is the mechanic, not a setting: the median room on the platform
+          has one person in it, and nobody wants to be that person. Setting a
+          minimum means a guest is agreeing to come only if others do, which
+          costs them nothing and is the whole reason to tap join on an event
+          that currently has two people. */}
+      <div className="rounded-2xl border border-brand/20 bg-brand/[0.04] p-4">
+        <label htmlFor="min_attendees" className="label">
+          Only happen if enough people join{" "}
+          <span className="font-normal text-gray-400">(optional)</span>
+        </label>
+        <input
+          id="min_attendees"
+          type="number"
+          min={2}
+          max={500}
+          value={form.min_attendees}
+          onChange={(e) => update("min_attendees", e.target.value)}
+          placeholder="e.g. 6"
+          className="input"
+        />
+        <p className="mt-1.5 text-[13px] leading-snug text-gray-600">
+          Guests see a countdown instead of an empty guest list, and they&apos;re
+          only committed once it fills. Leave blank for a normal event.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">

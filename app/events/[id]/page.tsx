@@ -11,6 +11,8 @@ import ManageRequests from "@/components/ManageRequests";
 import DeleteEventButton from "@/components/DeleteEventButton";
 import Avatar from "@/components/Avatar";
 import ApprovedGuests from "@/components/events/ApprovedGuests";
+import QuorumMeter from "@/components/events/QuorumMeter";
+import { quorumState } from "@/lib/quorum";
 import FriendPickerButton from "@/components/friends/FriendPickerButton";
 import SharePlansButton from "@/components/safety/SharePlansButton";
 import AddToCalendar from "@/components/AddToCalendar";
@@ -177,6 +179,15 @@ export default async function EventDetailPage({
     : "none";
   const isFull =
     !!event.max_attendees && attendeeCount >= event.max_attendees;
+
+  // "Nobody goes alone" — null min_attendees means this is an ordinary event
+  // and the meter renders nothing.
+  const quorum = quorumState({
+    minAttendees: (event as { min_attendees?: number | null }).min_attendees,
+    going: attendeeCount,
+    date: event.date,
+    quorumMetAt: (event as { quorum_met_at?: string | null }).quorum_met_at,
+  });
 
   // Friends of the viewer (accepted connections) → 🤝 markers in the attendee
   // list and a "your friend is going" banner.
@@ -468,6 +479,12 @@ export default async function EventDetailPage({
                         ? ` (${attendeeCount})`
                         : ""}
                     </h2>
+                    {/* The counter goes above the faces: when a room is
+                        nearly empty the gap to the target is the reason to
+                        join, and the faces are not. */}
+                    <div className="mt-2">
+                      <QuorumMeter state={quorum} />
+                    </div>
                     <div className="mt-2">
                       <ApprovedGuests
                         count={attendeeCount}
