@@ -18,6 +18,7 @@ import CategoryEmoji from "@/components/ui/CategoryEmoji";
 import NaijaFlag from "@/components/ui/NaijaFlag";
 import { memberProof, subscriberProof } from "@/lib/social-proof";
 import { dedupeEvents } from "@/lib/content-guards";
+import { professionalCategoriesFilter } from "@/lib/event-kind";
 import { LogoMark } from "@/components/Logo";
 import { getSessionUser } from "@/lib/supabase/auth";
 import { getVisitorState } from "@/lib/visitor-geo";
@@ -55,6 +56,8 @@ const getPopularSeries = unstable_cache(
     const { data } = await cache()
       .from("event_series")
       .select("id, title, category, state, frequency, cover_image_url, subscriber_count")
+      // Same rule as the events shelf — a recurring seminar is still a seminar.
+      .not("category", "in", professionalCategoriesFilter())
       .order("subscriber_count", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(8);
@@ -84,6 +87,7 @@ const getPopularCircles = unstable_cache(
     const { data } = await cache()
       .from("circles")
       .select("id, name, category, state, member_count, is_private, description, cover_image_url")
+      .not("category", "in", professionalCategoriesFilter())
       .order("member_count", { ascending: false })
       .limit(8);
     return data ?? [];
@@ -102,6 +106,15 @@ const getUpcomingEvents = unstable_cache(
       .select("id, title, category, state, location, date, price, cover_image_url")
       .eq("event_type", "general")
       .gte("date", today)
+      // Hangouts only. The visitor home page promises parties, beach days and
+      // game nights, and then opened with a conference — the single loudest
+      // way to tell a first-time visitor they've misread what this is. The
+      // professional listings still exist, still rank, and still have their
+      // own tab; they just don't get the shop window.
+      //
+      // Excluded in SQL rather than after the fetch, so `limit` returns 12
+      // hangouts instead of 12 rows that might contain four.
+      .not("category", "in", professionalCategoriesFilter())
       .order("date", { ascending: true })
       .limit(12);
     // Duplicate rows exist in the table; never show the same listing twice.
