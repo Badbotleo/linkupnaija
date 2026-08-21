@@ -681,24 +681,6 @@ export default async function EventDetailPage({
                     reserveFirst={reserveFirst}
                   />
 
-                  {/* "Pull up with +1", offered at the moment of deciding.
-                      Bringing someone was only possible after you'd already
-                      committed alone — which is backwards, because turning up
-                      alone is the thing people are hesitating about. Asking
-                      together also fills two spots instead of one, which
-                      matters on an event with a minimum. */}
-                  {!isHost && myStatus === "none" && !isFull && !eventIsOver && (
-                    <div className="mt-2">
-                      <FriendPickerButton
-                        mode="join"
-                        eventId={event.id}
-                        eventTitle={event.title}
-                        buttonLabel="🤝 Ask to join with a friend"
-                        buttonClassName="btn-outline w-full"
-                      />
-                    </div>
-                  )}
-
                   {/* Add to calendar — cheapest no-show reducer. */}
                   <div className="mt-3">
                     <AddToCalendar
@@ -738,8 +720,9 @@ export default async function EventDetailPage({
                     </div>
                   )}
 
-                  {/* Secondary option: bring a friend along (both join together). */}
-                  {!!user && myStatus === "none" && !isFull && (
+                  {/* Secondary option: bring a friend along (both join
+                      together). Not on an event that's already been and gone. */}
+                  {!!user && myStatus === "none" && !isFull && !eventIsOver && (
                     <div className="mt-3">
                       <FriendPickerButton
                         mode="join"
