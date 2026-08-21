@@ -12,6 +12,7 @@ import DeleteEventButton from "@/components/DeleteEventButton";
 import Avatar from "@/components/Avatar";
 import ApprovedGuests from "@/components/events/ApprovedGuests";
 import QuorumMeter from "@/components/events/QuorumMeter";
+import ViewRecorder from "@/components/events/ViewRecorder";
 import { quorumState } from "@/lib/quorum";
 import FriendPickerButton from "@/components/friends/FriendPickerButton";
 import SharePlansButton from "@/components/safety/SharePlansButton";
@@ -551,6 +552,29 @@ export default async function EventDetailPage({
 
           {isHost && (
             <div className="mt-8 space-y-8">
+              {/* Numbers first: before deciding whether the guest list is the
+                  problem, a host wants to know how many people got as far as
+                  looking. */}
+              <Link
+                href={`/events/${event.id}/analytics`}
+                className="flex items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:border-brand/30"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="grid h-9 w-9 place-items-center rounded-full bg-brand/10 text-brand">
+                    <LineIcon name="trending" size={17} />
+                  </span>
+                  <span>
+                    <span className="block text-[15px] font-extrabold text-gray-900">
+                      See your event analytics
+                    </span>
+                    <span className="block text-[13px] text-gray-500">
+                      Where people drop off between looking and turning up
+                    </span>
+                  </span>
+                </span>
+                <LineIcon name="chevronRight" size={16} className="shrink-0 text-gray-400" />
+              </Link>
+
               {/* Only the host sees this; RLS is what actually enforces it. */}
               {!eventIsOver && <TicketTiersEditor eventId={event.id} />}
               <ManageRequests initialRequests={rsvps} isPast={eventIsOver} />
@@ -560,6 +584,8 @@ export default async function EventDetailPage({
               />
             </div>
           )}
+
+          <ViewRecorder eventId={event.id} isHost={isHost} />
 
           <ReviewsSection
             eventId={event.id}
