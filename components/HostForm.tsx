@@ -258,7 +258,11 @@ export default function HostForm({
      * Below 2 is meaningless: one person is not a room.
      */
     const minAttendees =
-      form.min_attendees && Number(form.min_attendees) >= 2
+      form.min_attendees &&
+      Number(form.min_attendees) >= 2 &&
+      // Someone can set a minimum, then go back and add a price. The field
+      // hides but the value stays in state, so drop it here too.
+      Number(form.price || 0) === 0
         ? Number(form.min_attendees)
         : null;
     const withQuorum =
@@ -647,6 +651,12 @@ export default function HostForm({
           minimum means a guest is agreeing to come only if others do, which
           costs them nothing and is the whole reason to tap join on an event
           that currently has two people. */}
+      {/* Free events only. On a paid event the guest pays at request time, so
+          a room that never fills would leave us holding their money with no
+          refund pipeline to return it. Hidden rather than disabled: a control
+          you can see but not use invites the question "why not", and the
+          honest answer is "we haven't built refunds yet". */}
+      {Number(form.price || 0) === 0 && (
       <div className="rounded-2xl border border-brand/20 bg-brand/[0.04] p-4">
         <label htmlFor="min_attendees" className="label">
           Only happen if enough people join{" "}
@@ -667,6 +677,7 @@ export default function HostForm({
           only committed once it fills. Leave blank for a normal event.
         </p>
       </div>
+      )}
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>

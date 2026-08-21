@@ -23,6 +23,13 @@ export type QuorumState =
 
 export interface QuorumInput {
   minAttendees: number | null | undefined;
+  /**
+   * Ticket price. Quorum is free-events-only: on a paid event the guest pays
+   * at request time, so a room that never fills would strand their money and
+   * there is no refund pipeline to return it. Treated as no-quorum rather
+   * than throwing, so a mis-set event degrades to an ordinary listing.
+   */
+  price?: number | null;
   going: number;
   /** ISO date (YYYY-MM-DD). */
   date: string;
@@ -37,12 +44,14 @@ export function quorumState({
   going,
   date,
   quorumMetAt,
+  price,
   today = new Date().toISOString().slice(0, 10),
 }: QuorumInput): QuorumState {
   // A minimum of 1 is the same as no minimum — one person is not a room, and
   // showing "1 to go" on every empty event would be noise dressed as a
   // mechanic.
   if (!minAttendees || minAttendees <= 1) return { kind: "none" };
+  if ((price ?? 0) > 0) return { kind: "none" };
 
   // Sticky on purpose. Once a room has filled, the plan is real and people
   // have arranged their evening around it; a single person dropping out must

@@ -184,6 +184,7 @@ export default async function EventDetailPage({
   // and the meter renders nothing.
   const quorum = quorumState({
     minAttendees: (event as { min_attendees?: number | null }).min_attendees,
+    price: event.price,
     going: attendeeCount,
     date: event.date,
     quorumMetAt: (event as { quorum_met_at?: string | null }).quorum_met_at,

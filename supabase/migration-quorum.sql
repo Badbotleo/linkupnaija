@@ -18,6 +18,22 @@ alter table public.events
 alter table public.events
   add column if not exists quorum_met_at timestamptz;
 
+-- Free events only, enforced here because this is the one layer a bad client
+-- can't route around.
+--
+-- On a paid event the guest pays at request time — the money is taken before
+-- the host approves. If the room then never fills, we would be holding cash
+-- for an event that never happened, with no refund pipeline in this codebase
+-- to give it back. A quorum that can strand someone's money is worse than no
+-- quorum.
+--
+-- Lifting this needs Paystack refunds (or auth-and-capture) built first.
+alter table public.events
+  drop constraint if exists events_quorum_free_only;
+alter table public.events
+  add constraint events_quorum_free_only
+  check (min_attendees is null or price = 0) not valid;
+
 comment on column public.events.min_attendees is
   'Minimum accepted guests before the event is confirmed. NULL = no quorum.';
 comment on column public.events.quorum_met_at is
