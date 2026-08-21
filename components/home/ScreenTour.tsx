@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import LineIcon from "../ui/LineIcon";
+import { LogoMark } from "../Logo";
 
 /**
  * A phone playing through what using LinkUpNaija
@@ -73,7 +74,7 @@ export default function ScreenTour({ events = [] }: { events?: TourEvent[] }) {
         <div className="grid grid-cols-1 items-center gap-7 lg:grid-cols-[0.85fr_1fr]">
           {/* ---------------- the screen ---------------- */}
           <div className="order-2 lg:order-1">
-            <div className="mx-auto w-full max-w-[300px]">
+            <div className="mx-auto w-full max-w-[200px]">
               {/* An iPhone, not a laptop.
 
                   The old frame was a browser window — traffic-light dots and
@@ -82,17 +83,17 @@ export default function ScreenTour({ events = [] }: { events?: TourEvent[] }) {
                   their computer, which is the opposite of the truth. This is
                   a phone product used standing up, and the frame should say
                   so before the copy gets a chance to. */}
-              <div className="relative mx-auto w-full max-w-[300px] rounded-[2.6rem] border-[3px] border-gray-800 bg-gray-900 p-2.5 shadow-2xl">
+              <div className="relative mx-auto w-full max-w-[200px] rounded-[2.2rem] border-[3px] border-gray-800 bg-gray-900 p-2 shadow-2xl">
                 {/* Side buttons — small, but their absence is what makes a
                     rounded rectangle read as a mockup rather than a phone. */}
-                <span className="absolute -left-[5px] top-[92px] h-9 w-[3px] rounded-l bg-gray-700" />
-                <span className="absolute -left-[5px] top-[136px] h-9 w-[3px] rounded-l bg-gray-700" />
-                <span className="absolute -right-[5px] top-[110px] h-14 w-[3px] rounded-r bg-gray-700" />
+                <span className="absolute -left-[5px] top-[70px] h-7 w-[3px] rounded-l bg-gray-700" />
+                <span className="absolute -left-[5px] top-[104px] h-7 w-[3px] rounded-l bg-gray-700" />
+                <span className="absolute -right-[5px] top-[84px] h-11 w-[3px] rounded-r bg-gray-700" />
 
-                <div className="relative overflow-hidden rounded-[2rem] bg-gray-50">
-                  <div className="absolute left-1/2 top-2 z-20 h-[22px] w-[86px] -translate-x-1/2 rounded-full bg-black" />
+                <div className="relative overflow-hidden rounded-[1.7rem] bg-gray-50">
+                  <div className="absolute left-1/2 top-2 z-20 h-[18px] w-[68px] -translate-x-1/2 rounded-full bg-black" />
 
-                  <div className="relative h-[368px]">
+                  <div className="relative h-[412px]">
                     {STEPS.map((_, n) => (
                       <div
                         key={n}
@@ -108,7 +109,7 @@ export default function ScreenTour({ events = [] }: { events?: TourEvent[] }) {
                   </div>
 
                   <div className="absolute inset-x-0 bottom-1.5 z-20 flex justify-center">
-                    <span className="h-[5px] w-[110px] rounded-full bg-gray-900/25" />
+                    <span className="h-[4px] w-[80px] rounded-full bg-gray-900/25" />
                   </div>
                 </div>
               </div>
@@ -203,9 +204,10 @@ function Chrome({
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-lg bg-white">
       <div className="flex items-center gap-1.5 border-b border-gray-100 px-3 py-2">
-        <span className="grid h-4 w-4 place-items-center rounded-full bg-brand text-[8px] font-black text-white">
-          L
-        </span>
+        {/* The real mark. A letter in a circle was a stand-in, and a demo
+            whose job is "this is the app" cannot show a logo the app has
+            never used. */}
+        <LogoMark size={15} />
         <span className="truncate text-[12px] font-extrabold text-gray-900">
           {title}
         </span>
