@@ -14,6 +14,7 @@ import { isProActive } from "@/lib/pro";
 import ProfilePhotos from "@/components/profile/ProfilePhotos";
 import HostScorecard from "@/components/host/HostScorecard";
 import HostBadges from "@/components/host/HostBadges";
+import BrandIcon from "@/components/ui/BrandIcon";
 import { computeBadges } from "@/lib/hostBadges";
 import { formatEventDate } from "@/lib/format";
 import type { UserProfile, HostStats } from "@/lib/types";
@@ -161,7 +162,16 @@ export default async function PublicProfilePage({
           </div>
         )}
 
-        <div className="mt-4 flex gap-6">
+        {/* Bio sits under the name, the way Instagram does it — before the
+            numbers, not buried in a tab. It's the one line that tells you
+            whether you want to know this person. */}
+        {profile.bio && (
+          <p className="mt-2.5 whitespace-pre-line text-[14px] leading-snug text-gray-700">
+            {profile.bio}
+          </p>
+        )}
+
+        <div className="mt-4 grid grid-cols-3 gap-2">
           <Stat value={friends.count ?? 0} label="Friends" />
           <Stat value={attending.count ?? 0} label="Attending" />
           <Stat value={hosting.count ?? 0} label="Hosting" />
@@ -176,12 +186,28 @@ export default async function PublicProfilePage({
               targetName={profile.name}
               targetAvatar={profile.avatar_url}
             />
-            <ReportButton
-              targetType="user"
-              targetId={params.id}
-              isLoggedIn={!!user}
-              className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-gray-400 transition hover:text-red-500"
-            />
+            {/* Where Report used to sit. Reporting someone is a rare, deliberate
+                act; opening their Instagram is the common one, and the common
+                action should have the prominent slot. Report moves to the foot
+                of the page rather than going away — see below. */}
+            {[
+              { url: profile.instagram_url, name: "instagram", label: "Instagram" },
+              { url: profile.twitter_url, name: "x", label: "X" },
+              { url: profile.facebook_url, name: "facebook", label: "Facebook" },
+            ]
+              .filter((sc) => !!sc.url)
+              .map((sc) => (
+                <a
+                  key={sc.name}
+                  href={sc.url as string}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  aria-label={sc.label}
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-gray-200 text-gray-700 transition hover:border-brand/40 hover:text-brand dark:border-white/15 dark:text-white"
+                >
+                  <BrandIcon name={sc.name} size={17} />
+                </a>
+              ))}
           </div>
         )}
 
@@ -214,6 +240,24 @@ export default async function PublicProfilePage({
             <HostedEvents userId={params.id} />
           )}
         </div>
+
+        {/* Report, kept but quiet.
+            It lost the action row to the social icons, which is the right
+            trade — reporting is rare and deliberate, opening someone's
+            Instagram is the common act. But a social platform with no way to
+            report a member is a safety hole, so it sits here at the foot of
+            the page: still one tap, just no longer competing with the things
+            people came to do. */}
+        {user && user.id !== params.id && (
+          <div className="mt-8 flex justify-center border-t border-gray-100 pt-4 dark:border-white/10">
+            <ReportButton
+              targetType="user"
+              targetId={params.id}
+              isLoggedIn={!!user}
+              className="inline-flex items-center gap-1 text-xs font-medium text-gray-400 transition hover:text-red-500"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -221,9 +265,23 @@ export default async function PublicProfilePage({
 
 function Stat({ value, label }: { value: number; label: string }) {
   return (
-    <div>
-      <p className="text-xl font-extrabold tabular-nums text-gray-900">{value}</p>
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{label}</p>
+    // Same card as the owner's own profile. It used to be plain text on a
+    // flex row, so your profile and someone else's looked like two different
+    // products — and the one strangers see was the plainer of the two.
+    //
+    // Not a link: a visitor can't open another member's friends list, and a
+    // card that lifts on hover and goes nowhere is a worse lie than a card
+    // that doesn't move.
+    <div
+      className="rounded-2xl border border-gray-100 bg-white px-3 py-3 text-center shadow-sm"
+      aria-label={`${value} ${label}`}
+    >
+      <p className="text-[22px] font-extrabold leading-none tabular-nums text-gray-900">
+        {value}
+      </p>
+      <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+        {label}
+      </p>
     </div>
   );
 }
@@ -233,12 +291,7 @@ function AboutCard({ profile }: { profile: UserProfile }) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
       <ul className="space-y-3 text-sm text-gray-700">
-        {profile.bio && (
-          <li className="flex items-start gap-2">
-            <LineIcon name="chat" size={15} className="mt-0.5 shrink-0 text-gray-400" />
-            {profile.bio}
-          </li>
-        )}
+        {/* Bio moved up under the name; repeating it here read as a bug. */}
         {profile.state && (
           <li className="flex items-start gap-2">
             <LineIcon name="pin" size={15} className="mt-0.5 shrink-0 text-gray-400" />

@@ -127,6 +127,14 @@ export default async function ProfilePage({
           </div>
         )}
 
+        {/* Bio under the name, Instagram-style — same as the public profile,
+            so the two pages don't diverge again. */}
+        {profile?.bio && (
+          <p className="mt-2.5 whitespace-pre-line text-[14px] leading-snug text-gray-700">
+            {profile.bio}
+          </p>
+        )}
+
         {/* Stats */}
         <div className="mt-4 grid grid-cols-3 gap-2">
           <Stat value={friends.count ?? 0} label="Friends" href="/friends" />
@@ -318,7 +326,6 @@ async function EventsTab({ userId }: { userId: string }) {
 
 function About({ profile }: { profile: UserProfile | null }) {
   const rows = [
-    profile?.bio && { icon: "chat", text: profile.bio },
     profile?.state && { icon: "pin", text: `Lives in ${profile.state}` },
     profile?.created_at && {
       icon: "calendar",
