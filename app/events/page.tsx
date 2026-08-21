@@ -346,6 +346,7 @@ export default async function EventsPage({
         }
         action={<Link href="/host" className="btn-primary rounded-full px-4 py-2 text-sm">Host</Link>}
       />
+
       <div className="container-page py-5">
 
       {/* Search leads the page, the way it does on Pinterest — one wide pill
@@ -362,7 +363,9 @@ export default async function EventsPage({
 
       {!forYou && !searchParams.state && (
         <div className="mt-5">
-          <LocationMatch />
+          {/* Doubles as the "what is this site" line for anyone who landed
+              here from a TikTok link without seeing the home page. */}
+          <LocationMatch intro={!user} />
         </div>
       )}
 

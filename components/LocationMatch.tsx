@@ -8,7 +8,7 @@ import { toast } from "@/lib/toast";
 
 const KEY = "lun_loc_dismissed";
 
-export default function LocationMatch() {
+export default function LocationMatch({ intro = false }: { intro?: boolean }) {
   const router = useRouter();
   const supabase = createClient();
   const [show, setShow] = useState(false);
@@ -89,12 +89,28 @@ export default function LocationMatch() {
   if (!show) return null;
 
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-brand/20 bg-brand-50/50 p-3.5">
+    /**
+     * One strip, not two.
+     *
+     * A first-time visitor arriving from TikTok needs telling what this site
+     * is; everyone needs the location prompt. Those were briefly two stacked
+     * banners above the search, which is the clutter this page keeps trying
+     * to shed — and it pushed the first event card off the screen on a phone,
+     * on a page whose whole job is getting people to events faster.
+     *
+     * So the intro line replaces the generic one for logged-out visitors, and
+     * the strip keeps a single action.
+     */
+    <div className="flex items-center gap-3 rounded-2xl border border-brand/20 bg-brand-50/50 p-3.5 dark:border-brand/30 dark:bg-brand/10">
       <span className="text-2xl">📍</span>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-bold text-gray-900">See events near you</p>
-        <p className="text-xs text-gray-500">
-          Use your location for the best matches in your area.
+        <p className="text-sm font-bold text-gray-900 dark:text-white">
+          {intro ? "Real link-ups near you" : "See events near you"}
+        </p>
+        <p className="text-xs text-gray-500 dark:text-white/70">
+          {intro
+            ? "Ask to join — the host approves every guest."
+            : "Use your location for the best matches in your area."}
         </p>
       </div>
       <button type="button" onClick={useLocation} disabled={busy} className="btn-primary shrink-0 px-3 py-1.5 text-sm">
