@@ -343,7 +343,7 @@ export default async function HomePage() {
 
       {/* Real listings, not invented ones — the demo shows the same events the
           rails above are showing. */}
-      <ScreenTour events={upcoming.slice(0, 3)} />
+      <ScreenTour events={upcoming.slice(0, 6)} />
 
       {/* The pitch, as a shelf rather than a full-screen section */}
       <DeckHeading

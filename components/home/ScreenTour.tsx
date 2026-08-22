@@ -94,6 +94,43 @@ export default function ScreenTour({ events = [] }: { events?: TourEvent[] }) {
                 <div className="relative overflow-hidden rounded-[1.7rem] bg-gray-50">
                   <div className="absolute left-1/2 top-2 z-20 h-[18px] w-[68px] -translate-x-1/2 rounded-full bg-black" />
 
+                  {/* Status bar. A phone frame with a blank strip above the
+                      app reads as a mockup; the time, signal and battery are
+                      what make the same pixels read as a screenshot. Fixed
+                      values, not the real clock — a demo that ticks is a demo
+                      that re-renders, and nobody is checking the time in a
+                      marketing panel. */}
+                  <div className="absolute inset-x-0 top-0 z-10 flex h-7 items-center justify-between px-3 text-[9px] font-semibold text-gray-900">
+                    <span className="tabular-nums">9:41</span>
+                    <span className="flex items-center gap-[3px]">
+                      {/* signal */}
+                      <svg width="11" height="8" viewBox="0 0 14 10" aria-hidden>
+                        {[0, 1, 2, 3].map((i) => (
+                          <rect
+                            key={i}
+                            x={i * 3.6}
+                            y={9 - (i + 1) * 2.2}
+                            width="2.4"
+                            height={(i + 1) * 2.2}
+                            rx="0.6"
+                            fill="currentColor"
+                          />
+                        ))}
+                      </svg>
+                      {/* wifi */}
+                      <svg width="10" height="8" viewBox="0 0 12 10" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
+                        <path d="M1 3.4a7.5 7.5 0 0 1 10 0M3 5.7a4.5 4.5 0 0 1 6 0" />
+                        <circle cx="6" cy="8.3" r="0.8" fill="currentColor" stroke="none" />
+                      </svg>
+                      {/* battery */}
+                      <svg width="16" height="8" viewBox="0 0 20 10" aria-hidden>
+                        <rect x="0.5" y="0.5" width="16" height="9" rx="2.5" fill="none" stroke="currentColor" strokeOpacity="0.4" />
+                        <rect x="2" y="2" width="11" height="6" rx="1.5" fill="currentColor" />
+                        <path d="M18 3.6v2.8a1.6 1.6 0 0 0 0-2.8z" fill="currentColor" fillOpacity="0.4" />
+                      </svg>
+                    </span>
+                  </div>
+
                   <div className="relative h-[412px]">
                     {STEPS.map((_, n) => (
                       <div
@@ -203,7 +240,7 @@ function Chrome({
   tab?: number;
 }) {
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-lg bg-white">
+    <div className="flex h-full flex-col overflow-hidden rounded-lg bg-white pt-7">
       <div className="flex items-center gap-1.5 border-b border-gray-100 px-3 py-2">
         {/* The real mark. A letter in a circle was a stand-in, and a demo
             whose job is "this is the app" cannot show a logo the app has
@@ -245,7 +282,10 @@ function Screen({ n, events }: { n: number; events: TourEvent[] }) {
   // can't keep — a visitor taps through and finds a different world. These
   // are the same rows the feed is showing right now, so the demo is the
   // product rather than a drawing of it.
-  const feed = events.slice(0, 3);
+  // Six, not three. The screen is 412px tall and three rows left half of it
+  // empty, which reads as a phone with nothing on it — the opposite of what a
+  // demo of a busy events app should show.
+  const feed = events.slice(0, 6);
 
   if (n === 0)
     return (
