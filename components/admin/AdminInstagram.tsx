@@ -24,6 +24,8 @@ interface Row {
   date: string;
   price: number | null;
   cover_image_url: string | null;
+  /** When the host posted it — this list is ordered by it. */
+  created_at: string;
   host: {
     name: string | null;
     instagram_url: string | null;
@@ -45,6 +47,19 @@ export function instagramHandle(url: string | null | undefined): string | null {
 // Bump when the card design changes — old URLs stay cached, this one is new.
 const CARD_VERSION = 2;
 
+/** "Posted today" / "Posted 3 days ago" — relative, because the absolute date
+ *  of a listing is not something anyone holds in their head. */
+function postedAgo(iso: string): string {
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return "";
+  const days = Math.floor((Date.now() - then) / 86_400_000);
+  if (days <= 0) return "Posted today";
+  if (days === 1) return "Posted yesterday";
+  if (days < 7) return `Posted ${days} days ago`;
+  const weeks = Math.floor(days / 7);
+  return weeks === 1 ? "Posted last week" : `Posted ${weeks} weeks ago`;
+}
+
 export default function AdminInstagram() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,10 +73,18 @@ export default function AdminInstagram() {
     supabase
       .from("events")
       .select(
-        "id, title, category, state, location, date, price, cover_image_url, host:users!events_host_id_fkey(name, instagram_url)"
+        "id, title, category, state, location, date, price, cover_image_url, created_at, host:users!events_host_id_fkey(name, instagram_url)"
       )
       .gte("date", today)
-      .order("date", { ascending: true })
+      // Newest listing first, not soonest event.
+      //
+      // This is a posting queue, and the thing you want to promote is whatever
+      // a host just put up — it has had no exposure yet, and its own audience
+      // is warmest right after they announce it. Sorting by event date instead
+      // meant a listing added this morning sat below everything happening
+      // sooner, so the freshest thing on the platform was the hardest to find
+      // here.
+      .order("created_at", { ascending: false })
       // Was 30, which quietly hid everything past about five weeks out.
       // DEFCON's SUMMER GAMES sits 41st of 55 upcoming events, so it simply
       // wasn't in the list and looked like it didn't exist. A cap is still
@@ -189,6 +212,12 @@ export default function AdminInstagram() {
               <p className="mt-0.5 text-xs text-gray-500">
                 {formatEventDate(r.date)}
                 {r.location ? ` · ${r.location}` : r.state ? ` · ${r.state}` : ""}
+              </p>
+              {/* Says why the order is the order. Sorted by posting date, a
+                  December event can sit near the top, which reads as a bug
+                  unless the row says it went up this morning. */}
+              <p className="mt-0.5 text-[11px] font-semibold text-brand">
+                {postedAgo(r.created_at)}
               </p>
 
               <p className="mt-2 text-xs">
