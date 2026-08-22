@@ -104,7 +104,15 @@ export async function GET(
             width: `${SIZE}px`,
             height: `${SIZE}px`,
             backgroundImage:
-              "linear-gradient(to top, rgba(11,9,24,0.97) 34%, rgba(11,9,24,0.75) 55%, rgba(11,9,24,0.45) 78%, rgba(11,9,24,0.55) 100%)",
+              // Bottom-weighted, and genuinely clear at the top.
+              //
+              // The old stops never fell below 0.45 anywhere and sat at 0.55
+              // over the very top, so a host's flyer was dimmed across the
+              // whole card — present, but washed out enough to look like it
+              // had failed to load. The art is the reason anyone stops
+              // scrolling; the scrim only has to protect the text, which
+              // lives in the bottom half.
+              "linear-gradient(to top, rgba(11,9,24,0.97) 42%, rgba(11,9,24,0.86) 52%, rgba(11,9,24,0.34) 70%, rgba(11,9,24,0.06) 88%, rgba(11,9,24,0) 100%)",
           }}
         />
 
@@ -125,8 +133,23 @@ export async function GET(
             width: "100%",
           }}
         >
-          {/* Brand lockup, top */}
-          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+          {/* Brand lockup, top.
+
+              On its own pill now. The scrim used to darken the whole card, so
+              white text sat safely anywhere; with the top left clear so the
+              flyer shows, the lockup needs to carry its own contrast or it
+              disappears into a bright poster. */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 18,
+              alignSelf: "flex-start",
+              padding: "14px 34px 14px 22px",
+              borderRadius: 999,
+              backgroundColor: "rgba(11,9,24,0.62)",
+            }}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={LOGO_MARK_DATA_URI}
