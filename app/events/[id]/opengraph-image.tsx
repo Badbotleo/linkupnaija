@@ -4,6 +4,7 @@ import { categoryPhoto } from "@/lib/category-photos";
 import { SITE_ORIGIN } from "@/lib/qr";
 import { LOGO_MARK_DATA_URI } from "@/lib/logo-svg";
 import { ogFonts } from "@/lib/og-fonts";
+import { ogImageSrc } from "@/lib/og-image-src";
 
 // Rich link preview: every shared event unfurls with its cover art, title,
 // date and location — the way an Instagram or WhatsApp link does. Events with
@@ -30,7 +31,8 @@ export default async function OgImage({ params }: { params: { id: string } }) {
   const location = (data?.location as string) ?? "";
   const price = (data?.price as number) ?? 0;
   const cover =
-    (data?.cover_image_url as string | null) ??
+    // Same WebP problem as the Instagram card — see lib/og-image-src.
+    ogImageSrc(data?.cover_image_url as string | null, 1200) ??
     `${SITE_ORIGIN}${categoryPhoto(category)}`;
 
   const when = data?.date

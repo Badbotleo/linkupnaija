@@ -4,6 +4,7 @@ import { categoryPhoto } from "@/lib/category-photos";
 import { SITE_ORIGIN } from "@/lib/qr";
 import { LOGO_MARK_DATA_URI } from "@/lib/logo-svg";
 import { ogFonts } from "@/lib/og-fonts";
+import { ogImageSrc } from "@/lib/og-image-src";
 
 /**
  * A 1080×1080 Instagram post for an event: the event's own cover art under
@@ -50,8 +51,10 @@ export async function GET(
   const state = (data.state as string) ?? "";
   const location = (data.location as string) ?? "";
   const price = (data.price as number) ?? 0;
+  // Through Supabase's transcoder, or Satori silently renders nothing for the
+  // 13 upcoming events whose covers are WebP.
   const cover =
-    (data.cover_image_url as string | null) ??
+    ogImageSrc(data.cover_image_url as string | null) ??
     `${SITE_ORIGIN}${categoryPhoto(category)}`;
 
   const when = data.date
