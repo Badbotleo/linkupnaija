@@ -83,7 +83,19 @@ const VenuesMap = dynamic(() => import("./VenuesMap"), {
   ),
 });
 
-export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) {
+export default function VenuesExplorer({
+  isLoggedIn,
+  stateScope = null,
+}: {
+  isLoggedIn: boolean;
+  /**
+   * Show only partner venues in this state. Set for Lagos and Abuja, null
+   * everywhere else — a state with three venues can't fill a page on its own.
+   * OpenStreetMap results are already local, since they come from a radius
+   * around the map centre.
+   */
+  stateScope?: string | null;
+}) {
   const [query, setQuery] = useState("");
   const [center, setCenter] = useState(DEFAULT_CENTER);
   const [category, setCategory] = useState(VENUE_CATEGORIES[1].key);
@@ -102,21 +114,24 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
     // there yet — otherwise the whole partner list disappears.
     const BASE = "id, name, category, address, state, image_url, description, price_range, lat, lng";
     const WITH_RATINGS = BASE.replace(", lat", ", rating, opening_hours, lat");
-    supabase
-      .from("venues")
-      .select(WITH_RATINGS)
-      .eq("is_active", true)
-      .order("is_featured", { ascending: false })
+    // Built rather than chained, so "no scope" means no filter at all. A
+    // .filter(..., "not.is", null) would have quietly dropped every venue
+    // whose state was unset.
+    const scoped = (cols: string) => {
+      let q = supabase.from("venues").select(cols).eq("is_active", true);
+      if (stateScope) q = q.eq("state", stateScope);
+      return q.order("is_featured", { ascending: false });
+    };
+
+    scoped(WITH_RATINGS)
       .then(async ({ data, error }) => {
         if (!error) {
           setPartners((data ?? []) as unknown as PartnerVenue[]);
           return;
         }
-        const { data: legacy } = await supabase
-          .from("venues")
-          .select(BASE)
-          .eq("is_active", true)
-          .order("is_featured", { ascending: false });
+        // Same scope on the fallback, or a database without the ratings
+        // columns would quietly go national again.
+        const { data: legacy } = await scoped(BASE);
         setPartners(
           ((legacy ?? []) as unknown as Omit<
             PartnerVenue,
@@ -126,7 +141,7 @@ export default function VenuesExplorer({ isLoggedIn }: { isLoggedIn: boolean }) 
           )
         );
       });
-  }, []);
+  }, [stateScope]);
 
   // Remember whether the map was folded away. Phones and tablets only — on a
   // desktop it lives in its own column and is always up.

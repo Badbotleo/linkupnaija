@@ -1,4 +1,7 @@
 import AppHeader from "@/components/AppHeader";
+import LineIcon from "@/components/ui/LineIcon";
+import { getVisitorState } from "@/lib/visitor-geo";
+import { scopeState } from "@/lib/geo-scope";
 import Link from "next/link";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
@@ -65,6 +68,8 @@ export default async function EventsPage({
     series?: string;
     tab?: string;
     q?: string;
+    /** "all" opts out of the automatic state scope. */
+    scope?: string;
   };
 }) {
   const supabase = createClient();
@@ -78,6 +83,11 @@ export default async function EventsPage({
   // where an event went the day after; it went nowhere, it just fell off a
   // feed that only ever looked forwards.
   const past = searchParams.tab === "past";
+  const visitorState = getVisitorState();
+  // Set when a state scope found nothing and we widened to the whole country.
+  let scopeRelaxed = false;
+  // The state the feed narrowed to, if any — needed at render to say so.
+  let autoScope: string | null = null;
   // Professional events stay reachable, just not in the default feed.
   const work = searchParams.tab === "work";
 
@@ -181,6 +191,21 @@ export default async function EventsPage({
       query = query.not("id", "in", `(${PINNED_PAST.join(",")})`);
     }
     if (searchParams.state) query = query.eq("state", searchParams.state);
+
+    // Scope a dense state to itself. A Lagos visitor seeing an Abuja party is
+    // being shown something they can't attend, and with 34 of 69 upcoming
+    // events in Abuja that was most of the feed. Only applies where the state
+    // can carry a feed on its own — see lib/geo-scope.
+    const autoState = scopeState({
+      visitorState,
+      explicitState: searchParams.state,
+      query: searchParams.q,
+      // An explicit "everywhere" survives navigation; without it the link out
+      // of the scope would just re-scope on the next render.
+      showAll: searchParams.scope === "all",
+    });
+    autoScope = autoState;
+    if (autoState) query = query.eq("state", autoState);
     if (searchParams.category) query = query.eq("category", searchParams.category);
     if (searchParams.q?.trim()) {
       // Searched server-side rather than filtering the current page, so a
@@ -209,11 +234,45 @@ export default async function EventsPage({
     }
 
     // Past events read newest-first; upcoming read soonest-first.
-    const { data, error: e, count } = await query
+    let { data, error: e, count } = await query
       .order("date", { ascending: !past })
       .order("time", { ascending: !past })
       .range(from, to);
     error = e;
+
+    // Quiet week: scoping found nothing, so drop the scope rather than show an
+    // empty app. A Lagos visitor with no Lagos events this week is better
+    // served by the rest of the country than by a blank page — and the banner
+    // below says which they're looking at, so it never silently pretends
+    // these are local.
+    //
+    // Rebuilt from scratch rather than mutated: a PostgREST filter can't be
+    // removed from a query once it's on.
+    if (autoState && !e && (count ?? 0) === 0) {
+      scopeRelaxed = true;
+      let wide = supabase
+        .from("events")
+        .select(SELECT, { count: "exact" })
+        .eq("event_type", "general");
+      wide = past ? wide.lt("date", today) : wide.gte("date", today);
+      if (searchParams.category) wide = wide.eq("category", searchParams.category);
+      if (searchParams.series === "1") wide = wide.not("series_id", "is", null);
+      if (work) {
+        wide = wide.or(
+          `category.in.${professionalCategoriesFilter()},is_corporate.eq.true`
+        );
+      } else if (shouldFilterByKind(searchParams)) {
+        wide = wide
+          .not("category", "in", professionalCategoriesFilter())
+          .or("is_corporate.is.null,is_corporate.eq.false");
+      }
+      ({ data, error: e, count } = await wide
+        .order("date", { ascending: !past })
+        .order("time", { ascending: !past })
+        .range(from, to));
+      error = e;
+    }
+
     totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
 
     const now = Date.now();
@@ -366,6 +425,33 @@ export default async function EventsPage({
           {/* Doubles as the "what is this site" line for anyone who landed
               here from a TikTok link without seeing the home page. */}
           <LocationMatch intro={!user} />
+        </div>
+      )}
+
+      {/* Say which set of events this is.
+
+          Scoping to a state and then quietly widening when it's empty would
+          mean a Lagos visitor scrolling through Abuja parties believing they
+          were local. Either way the strip is one line and it names the place. */}
+      {autoScope && (
+        <div className="container-page mt-4">
+          <p className="flex items-center gap-2 text-[13px] text-gray-500">
+            <LineIcon name="pin" size={13} className="shrink-0 text-gray-400" />
+            {scopeRelaxed ? (
+              <>
+                Nothing in <span className="font-bold text-gray-700">{autoScope}</span>{" "}
+                this week — showing link-ups across Nigeria.
+              </>
+            ) : (
+              <>
+                Showing link-ups in{" "}
+                <span className="font-bold text-gray-700">{autoScope}</span>.{" "}
+                <Link href="/events?scope=all" className="font-bold text-brand hover:underline">
+                  See everywhere
+                </Link>
+              </>
+            )}
+          </p>
         </div>
       )}
 
