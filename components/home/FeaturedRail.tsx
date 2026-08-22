@@ -13,8 +13,19 @@ import { getFeaturedEvents } from "@/lib/featured";
  * advertises that we had nothing worth pushing.
  */
 export default async function FeaturedRail() {
-  const events = await getFeaturedEvents(6);
+  // Eight, so the desktop grid is two full rows of four.
+  const events = await getFeaturedEvents(8);
   if (events.length === 0) return null;
+
+  // Desktop shows only whole rows. Six featured events in a four-column grid
+  // is 4 + 2, and a half-empty second row reads as something failing to load
+  // rather than as a deliberate shelf. Below four we show what there is — one
+  // short row beats an empty section.
+  //
+  // The extras are hidden rather than dropped, because the mobile shelf
+  // scrolls and a ragged end is invisible there.
+  const wholeRows =
+    events.length >= 4 ? Math.floor(events.length / 4) * 4 : events.length;
 
   return (
     <Rail
@@ -23,11 +34,13 @@ export default async function FeaturedRail() {
       href="/events"
       seeAll="See all events"
     >
-      {events.map((e) => (
+      {events.map((e, i) => (
         <Link
           key={e.id}
           href={`/events/${e.id}`}
-          className="group w-[72vw] max-w-[268px] shrink-0 snap-start sm:w-[268px] lg:w-full lg:max-w-none"
+          className={`group w-[72vw] max-w-[268px] shrink-0 snap-start sm:w-[268px] lg:w-full lg:max-w-none ${
+            i >= wholeRows ? "lg:hidden" : ""
+          }`}
         >
           <div className="relative h-[176px] overflow-hidden rounded-2xl shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
             <EventCover
