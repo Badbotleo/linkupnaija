@@ -74,7 +74,7 @@ export default function ScreenTour({ events = [] }: { events?: TourEvent[] }) {
       <div className="overflow-hidden rounded-3xl border border-gray-200 bg-gradient-to-br from-brand-50 via-white to-naija-50 p-5 shadow-card sm:p-7">
         <div className="grid grid-cols-1 items-center gap-7 lg:grid-cols-[0.85fr_1fr]">
           {/* ---------------- the screen ---------------- */}
-          <div className="order-2 lg:order-1">
+          <div className="order-1">
             <div className="mx-auto w-full max-w-[200px]">
               {/* An iPhone, not a laptop.
 
@@ -155,15 +155,48 @@ export default function ScreenTour({ events = [] }: { events?: TourEvent[] }) {
           </div>
 
           {/* ---------------- the steps ---------------- */}
-          <div className="order-1 lg:order-2">
-            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-brand">
+          <div className="order-2">
+            {/* Small on a phone, full size on a desktop.
+
+                This block used to sit above the demo on mobile — an eyebrow,
+                a 24px headline and four expanded steps, so a visitor scrolled
+                most of a screen of text before anything moved. The phone is
+                the part that holds attention; it now goes first, and the
+                words explain what they are already looking at. */}
+            <p className="hidden text-[11px] font-black uppercase tracking-[0.2em] text-brand lg:block">
               See how it works
             </p>
-            <h2 className="mt-1.5 text-[24px] font-extrabold leading-tight tracking-[-0.03em] text-gray-900 sm:text-[28px]">
+            <h2 className="mt-3 text-center text-[19px] font-extrabold leading-tight tracking-[-0.03em] text-gray-900 lg:mt-1.5 lg:text-left lg:text-[28px]">
               Four taps from bored to booked.
             </h2>
 
-            <ol className="mt-4 space-y-1">
+            {/* Dots on a phone, the full list on a desktop. Four stacked
+                buttons is another screenful of reading under a demo that has
+                already made the point. */}
+            <div className="mt-3 flex justify-center gap-1.5 lg:hidden">
+              {STEPS.map((s2, n) => (
+                <button
+                  key={s2.label}
+                  type="button"
+                  onClick={() => setI(n)}
+                  aria-label={`Step ${n + 1}: ${s2.label}`}
+                  aria-current={n === i}
+                  className={`h-1.5 rounded-full transition-all ${
+                    n === i ? "w-6 bg-brand" : "w-1.5 bg-gray-300"
+                  }`}
+                />
+              ))}
+            </div>
+            <div className="mt-2.5 text-center lg:hidden">
+              <p className="text-[15px] font-extrabold text-gray-900">
+                {STEPS[i].label}
+              </p>
+              <p className="mx-auto mt-0.5 max-w-xs text-[13px] leading-relaxed text-gray-600">
+                {STEPS[i].text}
+              </p>
+            </div>
+
+            <ol className="mt-4 hidden space-y-1 lg:block">
               {STEPS.map((s, n) => {
                 const on = n === i;
                 return (
@@ -205,7 +238,7 @@ export default function ScreenTour({ events = [] }: { events?: TourEvent[] }) {
 
             <Link
               href="/signup"
-              className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-brand px-5 py-3 text-sm font-bold text-white transition hover:bg-brand-600"
+              className="mx-auto mt-4 flex w-fit items-center gap-1.5 rounded-full bg-brand px-5 py-3 text-sm font-bold text-white transition hover:bg-brand-600 lg:mx-0 lg:inline-flex"
             >
               Try it yourself
               <LineIcon name="chevronRight" size={14} />
