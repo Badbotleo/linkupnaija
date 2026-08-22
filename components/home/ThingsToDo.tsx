@@ -32,7 +32,7 @@ export default async function ThingsToDo({ state }: { state?: string | null }) {
       {ideas.map((idea) => (
         <div
           key={idea.key}
-          className="group w-[72vw] max-w-[268px] shrink-0 snap-start sm:w-[268px]"
+          className="group w-[72vw] max-w-[268px] shrink-0 snap-start sm:w-[268px] lg:w-full lg:max-w-none"
         >
           <div className="relative h-[176px] overflow-hidden rounded-2xl shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
             {/* Fetched only when it's about to be seen. Mounting every card

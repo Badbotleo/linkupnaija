@@ -76,10 +76,10 @@ export default function AutoScroll({
       ref={ref}
       // No scroll-snap here: proximity snapping drags a sub-pixel drift
       // straight back to the nearest card, so the shelf never advances.
-      className="no-scrollbar mt-3 flex gap-3 overflow-x-auto px-4 pb-1 sm:px-6 lg:px-8"
+      className="no-scrollbar mt-3 flex gap-3 overflow-x-auto px-4 pb-1 sm:px-6 lg:grid lg:grid-cols-4 lg:gap-4 lg:overflow-visible lg:px-8"
     >
       {children}
-      <span aria-hidden className="w-1 shrink-0" />
+      <span aria-hidden className="w-1 shrink-0 lg:hidden" />
     </div>
   );
 }

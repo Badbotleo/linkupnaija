@@ -27,7 +27,7 @@ export default async function FeaturedRail() {
         <Link
           key={e.id}
           href={`/events/${e.id}`}
-          className="group w-[72vw] max-w-[268px] shrink-0 snap-start sm:w-[268px]"
+          className="group w-[72vw] max-w-[268px] shrink-0 snap-start sm:w-[268px] lg:w-full lg:max-w-none"
         >
           <div className="relative h-[176px] overflow-hidden rounded-2xl shadow-card transition duration-200 group-hover:-translate-y-0.5 group-hover:shadow-lg">
             <EventCover

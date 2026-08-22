@@ -2,9 +2,17 @@ import Link from "next/link";
 import LineIcon from "../ui/LineIcon";
 import AutoScroll from "./AutoScroll";
 
-// Horizontally scrolling shelf — the App Store / Spotify pattern. Cards bleed
-// to the screen edge and snap, which is what makes a page read as an app
-// surface rather than a stack of website sections.
+/**
+  * A shelf: horizontally scrolling on a phone, a grid on a desktop.
+  *
+  * Cards bleeding to the edge and snapping is what makes a page read as an app
+  * rather than a stack of website sections — on a touchscreen. With a mouse
+  * it's the wrong gesture, and at 1440px a 1192px shelf of 268px cards showed
+  * four and hid the rest behind a drag most people never attempt.
+  *
+  * So above lg it becomes a four-across grid and the cards go fluid. Same
+  * markup, same components, different arrangement.
+  */
 export default function Rail({
   title,
   subtitle,
@@ -46,10 +54,11 @@ export default function Rail({
       {auto ? (
         <AutoScroll>{children}</AutoScroll>
       ) : (
-        <div className="no-scrollbar mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 sm:px-6 lg:px-8">
+        <div className="no-scrollbar mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 sm:px-6 lg:grid lg:grid-cols-4 lg:gap-4 lg:overflow-visible lg:px-8">
           {children}
-          {/* trailing spacer so the last card clears the edge */}
-          <span aria-hidden className="w-1 shrink-0" />
+          {/* Trailing spacer so the last card clears the edge while scrolling.
+              Pointless once the shelf is a grid, and it would occupy a cell. */}
+          <span aria-hidden className="w-1 shrink-0 lg:hidden" />
         </div>
       )}
     </section>

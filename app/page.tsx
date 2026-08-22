@@ -88,7 +88,10 @@ interface EventRow {
   cover_image_url: string | null;
 }
 
-const CARD = "w-[72vw] max-w-[268px] shrink-0 snap-start sm:w-[268px]";
+const CARD =
+  // Fixed 268px is the phone card. In a desktop grid it has to fill its cell,
+  // or four cards sit in a row leaving the rest of the shelf empty.
+  "w-[72vw] max-w-[268px] shrink-0 snap-start sm:w-[268px] lg:w-full lg:max-w-none";
 
 
 // Decks carry their own heading — Rail draws one, SwipeDeck deliberately
