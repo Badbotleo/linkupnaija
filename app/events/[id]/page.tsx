@@ -31,7 +31,7 @@ import HostBadges from "@/components/host/HostBadges";
 import HostSocials from "@/components/host/HostSocials";
 import { computeBadges } from "@/lib/hostBadges";
 import FeaturedBadge, { isFeatured } from "@/components/FeaturedBadge";
-import { formatEventDate, formatEventTime } from "@/lib/format";
+import { formatEventDate, formatEventTimeRange } from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
 import { attendanceProof, ATTENDANCE_REVEAL_AT } from "@/lib/social-proof";
 import TicketPanel from "@/components/events/TicketPanel";
@@ -428,7 +428,10 @@ export default async function EventDetailPage({
                       <Detail
                         icon="clock"
                         label="Time"
-                        value={formatEventTime(event.time)}
+                        value={formatEventTimeRange(
+                          event.time,
+                          (event as { end_time?: string | null }).end_time
+                        )}
                       />
                       <Detail
                         icon="pin"

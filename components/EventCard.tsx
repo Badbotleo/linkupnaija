@@ -6,9 +6,10 @@ import FeaturedBadge, { isFeatured } from "./FeaturedBadge";
 import RatingSummary from "./RatingSummary";
 import LineIcon from "./ui/LineIcon";
 import HostBadges from "./host/HostBadges";
-import { formatEventDate, formatEventTime } from "@/lib/format";
+import { formatEventDate, formatEventTimeRange } from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
 import { attendanceProof } from "@/lib/social-proof";
+import { capacityBand } from "@/lib/capacity-band";
 import type { EventRow } from "@/lib/types";
 import type { Badge } from "@/lib/hostBadges";
 
@@ -123,13 +124,26 @@ export default function EventCard({
           <div className="flex items-center gap-2">
             <LineIcon name="calendar" size={15} className="shrink-0 text-gray-400" />
             <span>
-              {formatEventDate(event.date)} · {formatEventTime(event.time)}
+              {formatEventDate(event.date)} ·{" "}
+              {formatEventTimeRange(
+                event.time,
+                (event as { end_time?: string | null }).end_time
+              )}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <LineIcon name="pin" size={15} className="shrink-0 text-gray-400" />
             <span className="line-clamp-1">{event.location}</span>
           </div>
+          {/* Scale from the host's capacity, not the RSVP count — true from
+              the moment a listing exists, and it never reveals that nobody
+              has joined yet. */}
+          {capacityBand(event.max_attendees) && (
+            <div className="flex items-center gap-2">
+              <LineIcon name="users" size={15} className="shrink-0 text-gray-400" />
+              <span>{capacityBand(event.max_attendees)} people</span>
+            </div>
+          )}
         </dl>
 
         {friendsGoing && friendsGoing.count > 0 && (

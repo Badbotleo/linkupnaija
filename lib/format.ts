@@ -32,6 +32,35 @@ export function timeAgo(iso: string): string {
   });
 }
 
+/**
+ * "9:00 PM – 4:00 AM", or just "9:00 PM" when the host didn't say.
+ *
+ * No overnight cleverness in the string itself: an end earlier than the start
+ * is a party running past midnight, which is the normal case here, and
+ * spelling out "next day" on every rave would be noise. Use
+ * `endsNextDay` where the distinction actually matters.
+ */
+export function formatEventTimeRange(
+  time: string,
+  endTime?: string | null
+): string {
+  const start = formatEventTime(time);
+  if (!endTime) return start;
+  return `${start} – ${formatEventTime(endTime)}`;
+}
+
+/** True when the end time falls before the start, i.e. it runs past midnight. */
+export function endsNextDay(time: string, endTime?: string | null): boolean {
+  if (!endTime) return false;
+  const mins = (t: string) => {
+    const [h, m] = t.split(":");
+    return Number(h) * 60 + Number(m ?? 0);
+  };
+  const a = mins(time);
+  const b = mins(endTime);
+  return !Number.isNaN(a) && !Number.isNaN(b) && b < a;
+}
+
 export function formatEventTime(time: string): string {
   // time is "HH:MM" or "HH:MM:SS"
   const [h, m] = time.split(":");

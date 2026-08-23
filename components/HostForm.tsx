@@ -33,6 +33,7 @@ export default function HostForm({
     state: prefill?.state ?? hostState ?? "",
     max_attendees: "",
     min_attendees: "",
+    end_time: "",
     price: "",
     event_type: "general" as "general" | "private",
   });
@@ -265,12 +266,17 @@ export default function HostForm({
       Number(form.price || 0) === 0
         ? Number(form.min_attendees)
         : null;
-    const withQuorum =
-      minAttendees === null
-        ? baseEvent
-        : { ...baseEvent, min_attendees: minAttendees };
+    // Columns that arrive with a migration. Attached separately so a database
+    // that hasn't run one yet still accepts the insert — hosting must not
+    // break to ship a field nobody can use yet.
+    const optional: Record<string, unknown> = {};
+    if (minAttendees !== null) optional.min_attendees = minAttendees;
+    // Empty string would fail a time column; null is "the host didn't say".
+    if (form.end_time) optional.end_time = form.end_time;
+
+    const withQuorum = { ...baseEvent, ...optional };
     const isMissingColumn = (msg?: string | null) =>
-      !!msg && /min_attendees/.test(msg) && /column/i.test(msg);
+      !!msg && /min_attendees|end_time/.test(msg) && /column/i.test(msg);
 
     // Recurring series: create the series + its first 3 events.
     if (isSeries) {
@@ -607,7 +613,7 @@ export default function HostForm({
         </div>
         <div>
           <label htmlFor="time" className="label">
-            Time
+            Starts
           </label>
           <input
             id="time"
@@ -615,6 +621,21 @@ export default function HostForm({
             required
             value={form.time}
             onChange={(e) => update("time", e.target.value)}
+            className="input"
+          />
+        </div>
+        <div>
+          {/* Optional. Plenty of hangouts genuinely end when they end, and
+              forcing a host to guess is worse than the card saying nothing. */}
+          <label htmlFor="end_time" className="label">
+            Ends{" "}
+            <span className="font-normal text-gray-400">(optional)</span>
+          </label>
+          <input
+            id="end_time"
+            type="time"
+            value={form.end_time}
+            onChange={(e) => update("end_time", e.target.value)}
             className="input"
           />
         </div>

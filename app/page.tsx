@@ -8,6 +8,7 @@ import LoggedInHome from "@/components/home/LoggedInHome";
 import Rail from "@/components/home/Rail";
 import SwipeDeck from "@/components/home/SwipeDeck";
 import FeaturedRail from "@/components/home/FeaturedRail";
+import ProvenRail from "@/components/home/ProvenRail";
 import ScreenTour from "@/components/home/ScreenTour";
 import LineIcon from "@/components/ui/LineIcon";
 import CategoryEmoji from "@/components/ui/CategoryEmoji";
@@ -340,6 +341,10 @@ export default async function HomePage() {
           landing page that hides its best inventory is stripped past the
           point of useful. */}
       <FeaturedRail />
+
+      {/* Proof, from reviews the site already collects. Renders nothing until
+          there are enough well-rated hosts to fill a row. */}
+      <ProvenRail />
 
       {/* Real listings, not invented ones — the demo shows the same events the
           rails above are showing. */}
