@@ -44,7 +44,42 @@ function viewerKey(): string | null {
   }
 }
 
-export default function VisitRecorder() {
+/**
+ * The referrer host that started this session.
+ *
+ * Captured once and kept, because after the first click document.referrer is
+ * our own domain — record it per page and every visitor's source becomes
+ * "linkupnaija.com", which is both useless and wrong.
+ *
+ * Host only. A full referrer can carry a search query, a private group's
+ * path, or a session id somebody pasted; the host is the whole useful signal
+ * and none of the risk.
+ */
+const SOURCE_KEY = "linkup:src";
+
+function sessionSource(): string | null {
+  try {
+    const kept = sessionStorage.getItem(SOURCE_KEY);
+    if (kept !== null) return kept || null;
+
+    let host = "";
+    if (document.referrer) {
+      try {
+        const h = new URL(document.referrer).hostname.replace(/^www\./, "");
+        // Our own pages aren't a source.
+        if (h && h !== window.location.hostname.replace(/^www\./, "")) host = h;
+      } catch {
+        /* malformed referrer — treat as direct */
+      }
+    }
+    sessionStorage.setItem(SOURCE_KEY, host);
+    return host || null;
+  } catch {
+    return null;
+  }
+}
+
+export default function VisitRecorder({ state }: { state?: string | null }) {
   const pathname = usePathname();
 
   useEffect(() => {
@@ -68,7 +103,12 @@ export default function VisitRecorder() {
 
     const id = window.setTimeout(() => {
       createClient()
-        .rpc("record_visit", { p_key: key, p_path: path })
+        .rpc("record_visit", {
+          p_key: key,
+          p_path: path,
+          p_source: sessionSource(),
+          p_state: state ?? null,
+        })
         .then(() => {
           try {
             sessionStorage.setItem(seenKey, "1");
@@ -77,7 +117,7 @@ export default function VisitRecorder() {
     }, 900);
 
     return () => window.clearTimeout(id);
-  }, [pathname]);
+  }, [pathname, state]);
 
   return null;
 }
