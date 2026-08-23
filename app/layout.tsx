@@ -12,6 +12,7 @@ import NavProgress from "@/components/NavProgress";
 import Toaster from "@/components/Toaster";
 import { getSessionUser } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
+import VisitRecorder from "@/components/VisitRecorder";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -123,6 +124,8 @@ export default async function RootLayout({
         <Navbar />
         {/* pb clears the mobile bottom nav */}
         <main className="flex-1 lg:pl-[248px]">{children}</main>
+        {/* Counts a visit once per browser per page per day. Renders nothing. */}
+        <VisitRecorder />
         <div className="lg:pl-[248px]">
           <Footer />
         </div>

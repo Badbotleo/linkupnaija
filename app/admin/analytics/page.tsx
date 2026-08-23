@@ -45,13 +45,18 @@ export default async function AdminAnalyticsPage() {
   // thousand users. Doing it here rather than in SQL keeps the whole page
   // readable and avoids a migration for a view that would need changing every
   // time a question changes.
-  const [usersRes, eventsRes, rsvpsRes, txRes] = await Promise.all([
+  const [usersRes, eventsRes, rsvpsRes, txRes, trafficRes, pagesRes] =
+    await Promise.all([
     supabase.from("users").select("id, created_at, state"),
     supabase
       .from("events")
       .select("id, created_at, state, category, host_id, date, price, event_type"),
     supabase.from("rsvps").select("id, status, attended, event_id, created_at"),
     supabase.from("transactions").select("amount, platform_fee"),
+    // Site-wide visitors, the GA-style number. Returns nothing until
+    // migration-site-visits.sql has been run, and nothing to non-admins.
+    supabase.rpc("site_traffic", { p_days: 30 }),
+    supabase.rpc("site_top_pages", { p_days: 30, p_limit: 8 }),
   ]);
 
   const users = usersRes.data ?? [];
@@ -60,6 +65,14 @@ export default async function AdminAnalyticsPage() {
   );
   const rsvps = rsvpsRes.data ?? [];
   const tx = txRes.data ?? [];
+
+  // Null when the migration hasn't run — the section says so rather than
+  // rendering a confident zero, which would read as "nobody came".
+  const traffic =
+    (Array.isArray(trafficRes.data) ? trafficRes.data[0] : trafficRes.data) as
+      | { visitors: number; views: number; days: number }
+      | undefined;
+  const topPages = (pagesRes.data ?? []) as { path: string; visitors: number }[];
 
   const now = Date.now();
   const since = (days: number) => now - days * DAY;
@@ -161,6 +174,15 @@ export default async function AdminAnalyticsPage() {
         {/* --- headline numbers --- */}
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <Stat
+            label="Visitors · 30d"
+            value={traffic ? traffic.visitors.toLocaleString("en-NG") : "—"}
+            sub={
+              traffic
+                ? `${traffic.views.toLocaleString("en-NG")} page views`
+                : "run migration-site-visits.sql"
+            }
+          />
+          <Stat
             label="Members"
             value={users.length.toLocaleString("en-NG")}
             delta={newUsers7}
@@ -180,12 +202,60 @@ export default async function AdminAnalyticsPage() {
             sub={`${emptyUpcoming} with nobody going`}
             warn={emptyUpcoming > upcoming.length / 2}
           />
+        </div>
+
+        <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
           <Stat
             label="Ticket sales"
             value={formatNaira(gross)}
             sub={`${formatNaira(fees)} platform fees`}
           />
+          <Stat
+            label="Visitor → member"
+            value={
+              traffic && traffic.visitors
+                ? pct(newUsers7, traffic.visitors)
+                : "—"
+            }
+            sub="signups vs 30d visitors"
+          />
         </div>
+
+        {/* --- top pages --- */}
+        <Section
+          title="Where visitors land"
+          hint="Unique browsers per page, last 30 days. Your own admin visits aren't counted."
+        >
+          {topPages.length === 0 ? (
+            <p className="text-[13px] text-gray-500">
+              No traffic recorded yet.{" "}
+              {traffic
+                ? "Visits start counting from the first page load after deploy."
+                : "Run migration-site-visits.sql to switch this on."}
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {topPages.map((p2) => (
+                <div key={p2.path} className="flex items-center gap-3">
+                  <p className="w-40 shrink-0 truncate text-[13px] font-semibold text-gray-700">
+                    {p2.path}
+                  </p>
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100">
+                    <div
+                      className="h-full rounded-full bg-brand/60"
+                      style={{
+                        width: `${(p2.visitors / (topPages[0].visitors || 1)) * 100}%`,
+                      }}
+                    />
+                  </div>
+                  <span className="w-12 shrink-0 text-right text-[12px] font-bold tabular-nums text-gray-600">
+                    {p2.visitors}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
 
         {/* --- the funnel --- */}
         <Section
