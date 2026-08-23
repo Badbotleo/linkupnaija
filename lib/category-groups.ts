@@ -57,9 +57,20 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     tint: "from-teal-100 to-teal-50 text-teal-800",
     categories: [
       "Religious / Faith-based Gatherings",
-      "Family Fun Day", "Kids Event", "Game Tournament",
-      "Family Hangout", "Friend Reunion", "Game Night", "Board Games",
-      "Book Club", "Cinema", "Sports Viewing", "Trivia Night", "Spa Day",
+      "Family Fun Day", "Kids Event",
+      "Family Hangout", "Friend Reunion",
+      "Book Club", "Spa Day",
+    ],
+  },
+  {
+    key: "play",
+    label: "Games & screens",
+    hint: "Console, board, big match",
+    emoji: "🎮",
+    tint: "from-indigo-100 to-indigo-50 text-indigo-800",
+    categories: [
+      "Game Night", "Board Games", "Game Tournament", "Trivia Night",
+      "Cinema", "Sports Viewing", "Bowling", "Go-Karting",
     ],
   },
   {
@@ -70,10 +81,21 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     tint: "from-naija-100 to-naija-50 text-naija-800",
     categories: [
       "Bonfire / Outdoor Party",
-      "Travel / Road Trip / Group Adventure", "Gym Session", "Meditation", "Wellness Walk", "Sports", "Cycling", "Adventure Park", "Photography Walk",
-      "Beach Day", "Hiking", "Yoga", "Fitness", "Road Trip", "Bowling",
-      "Sightseeing", "Jogging", "Outdoor", "Vacation",
-      "Camping", "Boat Cruise", "Go-Karting",
+      "Gym Session", "Meditation", "Wellness Walk", "Sports", "Cycling",
+      "Adventure Park", "Photography Walk",
+      "Beach Day", "Hiking", "Yoga", "Fitness",
+      "Jogging", "Outdoor",
+    ],
+  },
+  {
+    key: "getaway",
+    label: "Getaways",
+    hint: "Leave the city",
+    emoji: "🧳",
+    tint: "from-cyan-100 to-cyan-50 text-cyan-800",
+    categories: [
+      "Travel / Road Trip / Group Adventure", "Road Trip", "Vacation",
+      "Camping", "Boat Cruise", "Sightseeing",
     ],
   },
   {
