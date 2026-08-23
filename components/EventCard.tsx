@@ -137,8 +137,13 @@ export default function EventCard({
           </div>
           {/* Scale from the host's capacity, not the RSVP count — true from
               the moment a listing exists, and it never reveals that nobody
-              has joined yet. */}
-          {capacityBand(event.max_attendees) && (
+              has joined yet.
+
+              Only when there's no attendance line to show. The two together
+              read as "500+ people" directly above "8/1000 going", which is
+              both redundant and self-defeating: the band exists to avoid
+              exact numbers and the line underneath prints one. */}
+          {!proof && capacityBand(event.max_attendees) && (
             <div className="flex items-center gap-2">
               <LineIcon name="users" size={15} className="shrink-0 text-gray-400" />
               <span>{capacityBand(event.max_attendees)} people</span>

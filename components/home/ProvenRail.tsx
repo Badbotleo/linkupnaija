@@ -19,7 +19,14 @@ import { professionalCategoriesFilter } from "@/lib/event-kind";
  * host with one five-star review from their friend is worse than no shelf —
  * it teaches people the badge means nothing.
  */
-const MIN_REVIEWS = 3;
+// Two, not three.
+//
+// Three was the instinct — enough that one friend's five stars can't carry a
+// host. But the platform has two reviews in total, both for one host, so a
+// bar of three meant the shelf could never appear at all. Two real attendees
+// who came back and rated it is proof at this size; the bar can rise when the
+// review count does.
+const MIN_REVIEWS = 2;
 const MIN_RATING = 4;
 
 export interface ProvenEvent {
