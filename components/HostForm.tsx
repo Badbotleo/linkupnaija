@@ -694,9 +694,9 @@ export default function HostForm({
               Let anyone join instantly
             </span>
             <span className="mt-0.5 block text-[13px] leading-snug text-gray-600">
-              Skip approving each guest. They&apos;re confirmed the moment they
-              tap, which is what impulse traffic needs — you keep your capacity
-              limit either way.
+              They&apos;re confirmed the moment they tap — no waiting, which is
+              what people arriving from a link need. You still decide who gets
+              into the group chat, and you keep your capacity limit.
             </span>
           </span>
         </label>

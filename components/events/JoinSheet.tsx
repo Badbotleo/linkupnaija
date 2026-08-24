@@ -291,7 +291,10 @@ export default function JoinSheet({
           <div className="mt-4">
             <div className="rounded-2xl bg-gray-50 p-3.5 text-[13px] leading-snug text-gray-700 dark:bg-white/5 dark:text-white/80">
               {autoConfirm ? (
-                <>You&apos;re confirmed the moment you tap — no waiting.</>
+                <>
+                  You&apos;re in the moment you tap — no waiting. The host adds
+                  you to the group chat separately.
+                </>
               ) : (
                 <>
                   The host approves every guest, so this sends them a request.
@@ -331,7 +334,9 @@ export default function JoinSheet({
                 </p>
                 <p className="mt-0.5 text-[13px] leading-snug text-naija-800/80">
                   {autoConfirm
-                    ? "Your spot is confirmed. The group chat is open."
+                    ? // Precise on purpose. Saying "the chat is open" when it
+                      // isn't yet turns a deliberate design into a bug report.
+                      "Your spot is confirmed — you're going. The host will add you to the group chat shortly."
                     : "The host will get back to you. We'll notify you the moment they do."}
                 </p>
               </div>

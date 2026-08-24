@@ -389,6 +389,8 @@ export interface RsvpWithProfile {
   created_at: string;
   companion_id?: string | null;
   attended?: boolean | null;
+  /** Host let them into the group chat. Separate from attending. */
+  chat_approved?: boolean;
   users: (PublicProfile & { gender?: string | null }) | null;
 }
 

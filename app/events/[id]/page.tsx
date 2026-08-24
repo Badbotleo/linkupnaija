@@ -111,11 +111,34 @@ export default async function EventDetailPage({
 
   if (!event) notFound();
 
-  const { data: rsvpRows } = await supabase
-    .from("rsvps")
-    .select(RSVP_PROFILE_SELECT)
-    .eq("event_id", params.id)
-    .order("created_at", { ascending: true });
+  // chat_approved arrives with migration-chat-approval.sql. Asked for first,
+  // and dropped if the column isn't there yet.
+  //
+  // Selecting a missing column doesn't error into anything the page shows —
+  // it returns no rows, so the guest list, the attendance count and the host's
+  // request queue would all quietly render empty on an event that has
+  // attendees. A blank guest list looks like nobody came, which is the single
+  // worst thing this page can say wrongly.
+  // The two selects return different shapes, so the result is typed once here
+  // rather than fighting the inferred union at every use site.
+  let rsvpRows: unknown[] | null = null;
+  {
+    const enriched = await supabase
+      .from("rsvps")
+      .select(`${RSVP_PROFILE_SELECT}, chat_approved`)
+      .eq("event_id", params.id)
+      .order("created_at", { ascending: true });
+    if (enriched.data) {
+      rsvpRows = enriched.data;
+    } else {
+      const base = await supabase
+        .from("rsvps")
+        .select(RSVP_PROFILE_SELECT)
+        .eq("event_id", params.id)
+        .order("created_at", { ascending: true });
+      rsvpRows = base.data;
+    }
+  }
 
   const rsvps = (rsvpRows ?? []) as unknown as RsvpWithProfile[];
   const accepted = rsvps.filter((r) => r.status === "accepted");

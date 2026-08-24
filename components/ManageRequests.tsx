@@ -36,11 +36,51 @@ export default function ManageRequests({
   const pending = requests.filter((r) => r.status === "pending");
   const accepted = requests.filter((r) => r.status === "accepted");
   const declined = requests.filter((r) => r.status === "declined");
+  // Joined instantly on a free event, so nobody has looked at them yet. They
+  // are coming either way — this is only about the group chat.
+  const awaitingChat = requests.filter(
+    (r) =>
+      r.status === "accepted" &&
+      r.chat_approved === false
+  );
 
   // For "attend with a friend": map a user to their companion's name.
   const nameById = new Map(
     requests.map((r) => [r.user_id, r.users?.name ?? "a friend"])
   );
+
+  /**
+   * Let somebody into the group chat.
+   *
+   * Same .select() guard as setStatus, and for the same reason: an update
+   * filtered out by RLS returns no error and no rows, so without it the click
+   * silently does nothing and the host assumes it worked.
+   */
+  async function admitToChat(id: string) {
+    setBusyId(id);
+    setError(null);
+    const { data, error } = await supabase
+      .from("rsvps")
+      .update({ chat_approved: true })
+      .eq("id", id)
+      .select("id");
+
+    if (error) {
+      setError(error.message);
+    } else if (!data || data.length === 0) {
+      setError(
+        "Couldn't add them to the chat — refresh and try again. If it keeps failing you may no longer be the host."
+      );
+    } else {
+      setRequests((prev) =>
+        prev.map((r) =>
+          r.id === id ? { ...r, chat_approved: true } : r
+        )
+      );
+      router.refresh();
+    }
+    setBusyId(null);
+  }
 
   async function setStatus(id: string, status: "accepted" | "declined") {
     setBusyId(id);
@@ -211,6 +251,48 @@ export default function ManageRequests({
             ))}
           </ul>
         </div>
+      )}
+
+      {/* In the event, not yet in the chat.
+
+          Above Accepted because it's the only list here with something to do
+          in it — these people are already coming, so this is the host's one
+          remaining decision. */}
+      {awaitingChat.length > 0 && (
+        <section className="mt-6 rounded-2xl border border-brand/20 bg-brand/[0.04] p-4">
+          <h3 className="text-[15px] font-extrabold text-gray-900">
+            Waiting for the group chat ({awaitingChat.length})
+          </h3>
+          <p className="mt-0.5 text-[13px] leading-snug text-gray-600">
+            They joined instantly and are coming. Let them into the chat when
+            you&apos;re happy to.
+          </p>
+          <ul className="mt-3 space-y-2">
+            {awaitingChat.map((r) => (
+              <li
+                key={r.id}
+                className="flex items-center gap-3 rounded-xl bg-white p-2.5 shadow-sm"
+              >
+                <Avatar
+                  name={r.users?.name ?? null}
+                  url={r.users?.avatar_url ?? null}
+                  size="sm"
+                />
+                <span className="min-w-0 flex-1 truncate text-[14px] font-bold text-gray-900">
+                  {r.users?.name ?? "Someone"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => admitToChat(r.id)}
+                  disabled={busyId === r.id}
+                  className="shrink-0 rounded-full bg-brand px-3.5 py-1.5 text-[13px] font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+                >
+                  {busyId === r.id ? "…" : "Add to chat"}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       {/* Accepted */}
