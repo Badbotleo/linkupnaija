@@ -524,10 +524,12 @@ export default function RsvpButton({
                   ) : (
                     <>
                       <span className="block text-[18px] font-extrabold leading-none">
-                        Request to join
+                        {autoConfirm ? "Count me in" : "Request to join"}
                       </span>
                       <span className="mt-1 block text-[12px] font-semibold text-white/75">
-                        Free · the host approves you
+                        {autoConfirm
+                          ? "Free · you're in straight away"
+                          : "Free · the host approves you"}
                       </span>
                     </>
                   )}

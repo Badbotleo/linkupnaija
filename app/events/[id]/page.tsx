@@ -685,6 +685,10 @@ export default async function EventDetailPage({
                     eventDate={event.date}
                     eventTime={event.time}
                     eventLocation={event.location}
+                    autoConfirm={
+                      (event as { auto_confirm?: boolean | null })
+                        .auto_confirm === true && (event.price ?? 0) === 0
+                    }
                   />
 
                   {/* Add to calendar — cheapest no-show reducer. */}

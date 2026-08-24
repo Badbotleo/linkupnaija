@@ -34,6 +34,7 @@ export default function HostForm({
     max_attendees: "",
     min_attendees: "",
     end_time: "",
+    auto_confirm: false,
     price: "",
     event_type: "general" as "general" | "private",
   });
@@ -90,7 +91,12 @@ export default function HostForm({
   const seriesDates =
     isSeries && form.date ? nextDates(form.date, frequency, 3) : [];
 
-  function update<K extends keyof typeof form>(key: K, value: string) {
+  // Typed to the field, not to string — the form gained a boolean and a
+  // string-only signature would have quietly forced every caller to cast.
+  function update<K extends keyof typeof form>(
+    key: K,
+    value: (typeof form)[K]
+  ) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
@@ -273,10 +279,14 @@ export default function HostForm({
     if (minAttendees !== null) optional.min_attendees = minAttendees;
     // Empty string would fail a time column; null is "the host didn't say".
     if (form.end_time) optional.end_time = form.end_time;
+    // Free only, and only when actually chosen — a host can tick this, then
+    // add a price, and the checkbox disappears with the value still in state.
+    if (form.auto_confirm && Number(form.price || 0) === 0)
+      optional.auto_confirm = true;
 
     const withQuorum = { ...baseEvent, ...optional };
     const isMissingColumn = (msg?: string | null) =>
-      !!msg && /min_attendees|end_time/.test(msg) && /column/i.test(msg);
+      !!msg && /min_attendees|end_time|auto_confirm/.test(msg) && /column/i.test(msg);
 
     // Recurring series: create the series + its first 3 events.
     if (isSeries) {
@@ -664,6 +674,33 @@ export default function HostForm({
           </p>
         )}
       </div>
+
+      {/* Instant join.
+
+          Off by default and free-only. "The host approves every guest" is the
+          promise the rest of the product is built on, so this is a host
+          choosing to waive it for one event, never something applied for
+          them. On a paid event the payment is already the gate. */}
+      {Number(form.price || 0) === 0 && (
+        <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-gray-200 p-4 transition hover:border-brand/40">
+          <input
+            type="checkbox"
+            checked={form.auto_confirm}
+            onChange={(e) => update("auto_confirm", e.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
+          />
+          <span className="min-w-0">
+            <span className="block text-[15px] font-bold text-gray-900">
+              Let anyone join instantly
+            </span>
+            <span className="mt-0.5 block text-[13px] leading-snug text-gray-600">
+              Skip approving each guest. They&apos;re confirmed the moment they
+              tap, which is what impulse traffic needs — you keep your capacity
+              limit either way.
+            </span>
+          </span>
+        </label>
+      )}
 
       {/* Minimum before it's on.
 
