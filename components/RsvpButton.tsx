@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import JoinSheet from "./events/JoinSheet";
 import { payWithPaystack, formatNaira } from "@/lib/paystack";
 import { FREE_REQUEST_LIMIT } from "@/lib/pro";
 import { confettiJoin, confettiCoins } from "@/lib/confetti";
@@ -28,6 +29,10 @@ export default function RsvpButton({
   hostSubaccount,
   walletBalance = 0,
   reserveFirst = false,
+  eventDate,
+  eventTime,
+  eventLocation = null,
+  autoConfirm = false,
 }: {
   eventId: string;
   isLoggedIn: boolean;
@@ -54,12 +59,79 @@ export default function RsvpButton({
    * ever be charged for an event that doesn't happen.
    */
   reserveFirst?: boolean;
+  /** For the join sheet's add-to-calendar. */
+  eventDate: string;
+  eventTime: string;
+  eventLocation?: string | null;
+  /** Host let anyone join instantly — wording only; the write is the same. */
+  autoConfirm?: boolean;
 }) {
   const router = useRouter();
   const supabase = createClient();
   const [status, setStatus] = useState<JoinState>(initialStatus);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  /**
+   * Reopen the sheet after an auth round trip.
+   *
+   * Google's redirect and the emailed magic link both land back on this page
+   * with ?join=1. Without this the person returns signed in, to a fresh page,
+   * with no memory of what they were doing — which is the exact drop-off the
+   * sheet exists to remove. The param is stripped afterwards so a refresh or
+   * a shared URL doesn't pop the sheet at somebody who didn't ask for it.
+   */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("join") !== "1") return;
+    setSheetOpen(true);
+    url.searchParams.delete("join");
+    window.history.replaceState({}, "", url.toString());
+  }, []);
+
+  const sheetEvent = {
+    id: eventId,
+    title: eventTitle,
+    date: eventDate,
+    time: eventTime,
+    location: eventLocation,
+    price,
+  };
+
+  /**
+   * What the sheet calls once somebody is signed in.
+   *
+   * Free and reserve-first events complete here — one tap, no page load. A
+   * paid event still needs Paystack, which is its own flow with its own
+   * failure modes, so the sheet hands back rather than half-owning it: it
+   * closes, and the button behind it is now the logged-in pay button.
+   */
+  async function joinFromSheet(): Promise<string | null> {
+    const supa = createClient();
+    const {
+      data: { user },
+    } = await supa.auth.getUser();
+    if (!user) return "Sign-in didn't complete. Try again.";
+
+    if (price > 0 && !reserveFirst) {
+      setSheetOpen(false);
+      router.refresh();
+      return null;
+    }
+
+    const { error: e } = await supa.from("rsvps").upsert(
+      {
+        event_id: eventId,
+        user_id: user.id,
+        status: reserveFirst ? "reserved" : "pending",
+        paid: false,
+      },
+      { onConflict: "event_id,user_id" }
+    );
+    return e ? e.message : null;
+  }
   const [useWallet, setUseWallet] = useState(walletBalance > 0);
   // Which package they're buying. Cheapest preselected so the common case is
   // one tap, but nothing is bought until they press the button either way.
@@ -76,13 +148,28 @@ export default function RsvpButton({
   const dueNow = chosen ? chosen.price : price;
 
   if (!isLoggedIn) {
+    // Was a full page load to /login, then possibly another to /signup, then
+    // back here to press the same button again. Four page loads for somebody
+    // who arrived from a TikTok link thirty seconds ago. The sheet does the
+    // same work without leaving the event.
     return (
-      <Link
-        href={`/login?redirect=/events/${eventId}`}
-        className="btn-primary w-full"
-      >
-        Log in to request
-      </Link>
+      <>
+        <button
+          type="button"
+          onClick={() => setSheetOpen(true)}
+          className="btn-primary w-full"
+        >
+          {price > 0 ? "Get a ticket" : "Ask to join — free"}
+        </button>
+        <JoinSheet
+          open={sheetOpen}
+          onClose={() => setSheetOpen(false)}
+          isLoggedIn={false}
+          event={sheetEvent}
+          onJoin={joinFromSheet}
+          autoConfirm={autoConfirm}
+        />
+      </>
     );
   }
 

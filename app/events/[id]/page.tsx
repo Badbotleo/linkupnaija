@@ -682,6 +682,9 @@ export default async function EventDetailPage({
                     hostSubaccount={event.host?.paystack_subaccount_code ?? null}
                     walletBalance={walletBalance}
                     reserveFirst={reserveFirst}
+                    eventDate={event.date}
+                    eventTime={event.time}
+                    eventLocation={event.location}
                   />
 
                   {/* Add to calendar — cheapest no-show reducer. */}
