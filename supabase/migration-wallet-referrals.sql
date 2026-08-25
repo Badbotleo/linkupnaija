@@ -173,7 +173,12 @@ end;
 $$;
 grant execute on function public.redeem_wallet(integer, text, uuid) to authenticated;
 
--- Request a withdrawal (min ₦1,000). Holds the funds; admin settles via payout.
+-- Request a withdrawal (min ₦3,000). Holds the funds; admin settles via payout.
+--
+-- The floor was raised from ₦1,000 by migration-withdrawal-minimum.sql. It is
+-- changed here too because these migrations are written to be re-runnable, and
+-- a re-run of this file with the old value would quietly drop the floor back
+-- down without anybody touching the withdrawal code.
 create or replace function public.request_wallet_withdrawal(p_amount integer)
 returns void
 language plpgsql
@@ -185,7 +190,7 @@ declare
   bal integer;
 begin
   if me is null then raise exception 'not authenticated'; end if;
-  if p_amount < 1000 then raise exception 'minimum withdrawal is ₦1,000'; end if;
+  if p_amount < 3000 then raise exception 'minimum withdrawal is ₦3,000'; end if;
 
   select wallet_balance into bal from public.users where id = me for update;
   if bal < p_amount then raise exception 'insufficient wallet balance'; end if;
@@ -211,7 +216,10 @@ as $$
 declare
   me uuid := auth.uid();
   referrer uuid;
-  reward integer := 500;
+  -- Raised from ₦500 by migration-referral-reward.sql, so that five completed
+  -- referrals reach the ₦3,000 withdrawal floor exactly. Changed here too
+  -- because this file is re-runnable and would otherwise reset the rate.
+  reward integer := 600;
 begin
   if me is null or p_ref_code is null then return; end if;
   if exists (select 1 from public.referrals where referred_id = me) then return; end if;

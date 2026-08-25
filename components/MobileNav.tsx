@@ -32,7 +32,7 @@ const QUICK = [
 const YOU = [
   { href: "/dashboard", label: "My link-ups", icon: "calendar" },
   { href: "/tickets", label: "Tickets", icon: "ticket" },
-  { href: "/refer", label: "Invite & earn ₦500", icon: "gift" },
+  { href: "/refer", label: "Invite & earn ₦600", icon: "gift" },
 ];
 
 // The long tail, one tap away rather than always on screen.

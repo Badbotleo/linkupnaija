@@ -31,14 +31,14 @@ export default function ReferralCard({
     }
   }
 
-  const waText = `Join me on LinkUpNaija and get ₦500 free wallet credit for your first event! ${link}`;
+  const waText = `Join me on LinkUpNaija and get ₦600 free wallet credit for your first event! ${link}`;
   const waHref = `https://wa.me/?text=${encodeURIComponent(waText)}`;
 
   return (
     <div className="surface p-6">
       <div className="flex items-center gap-2">
         <span className="text-2xl">🎁</span>
-        <h2 className="text-lg font-bold text-gray-900">Invite &amp; earn ₦500</h2>
+        <h2 className="text-lg font-bold text-gray-900">Invite &amp; earn ₦600</h2>
       </div>
       <p className="mt-1 text-sm text-gray-600">
         Share your link. When a friend signs up and verifies their email, you

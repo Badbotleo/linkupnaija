@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Invite & earn",
   description:
-    "Invite friends to LinkUpNaija and you both get ₦500 wallet credit.",
+    "Invite friends to LinkUpNaija and you both get ₦600 wallet credit.",
 };
 
 const STEPS = [
@@ -21,7 +21,7 @@ const STEPS = [
     text: "They sign up with your link and verify their email.",
   },
   {
-    title: "You both get ₦500",
+    title: "You both get ₦600",
     text: "Wallet credit lands instantly — spend it on any paid event.",
   },
 ];
@@ -58,7 +58,7 @@ export default async function ReferPage() {
     <div>
       <AppHeader
         title={"Invite & earn"}
-        subtitle={<>₦500 for them, ₦500 for you</>}
+        subtitle={<>₦600 for them, ₦600 for you</>}
         back
       />
       <div className="container-page max-w-2xl py-8">

@@ -94,7 +94,7 @@ HOW LINKUPNAIJA WORKS:
 - VENUES at /venues — clubs, restaurants, cinemas, parks, bars, gyms, bowling, karaoke, museums, beaches, stadiums, hotels, camping, cafés, event centres, art galleries, amusement parks, golf, swimming, malls and arcades. Partner venues can be booked through us: tap the reserve button on the card.
 - CIRCLES at /circles — standing communities around an interest, with their own feed you can post photos to.
 - RIDES at /rides — hail a car to an event, and split the fare with a friend.
-- REFERRALS at /refer — invite someone, you both get ₦500.
+- REFERRALS at /refer — invite someone, you both get ₦600.
 - PRO at /pro — early access and a gold badge.
 - LEADERBOARD at /hosts/leaderboard — Nigeria's most-loved hosts.
 - PROFILES — set up at /profile/setup. Adding at least one social link (Instagram, X or Facebook) earns a Verified badge, and hosts accept verified people faster. Sign up at /signup, log in at /login. New accounts verify their email first.

@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "You're invited",
   description:
-    "Your friend invited you to LinkUpNaija. Sign up and get ₦500 wallet credit for your first event.",
+    "Your friend invited you to LinkUpNaija. Sign up and get ₦600 wallet credit for your first event.",
 };
 
 export default async function JoinPage({
@@ -43,7 +43,7 @@ export default async function JoinPage({
         </h1>
         <p className="mt-2 text-brand-100">
           Sign up now and get{" "}
-          <span className="font-bold text-white">₦500 wallet credit</span> to
+          <span className="font-bold text-white">₦600 wallet credit</span> to
           spend on your first event.
         </p>
       </div>
@@ -55,7 +55,7 @@ export default async function JoinPage({
       </div>
 
       <p className="mt-4 text-center text-xs text-gray-400">
-        Your ₦500 bonus is added once you verify your email.
+        Your ₦600 bonus is added once you verify your email.
       </p>
     </div>
   );

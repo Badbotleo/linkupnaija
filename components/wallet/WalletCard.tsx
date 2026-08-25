@@ -8,7 +8,11 @@ import { formatEventDate } from "@/lib/format";
 import { toast } from "@/lib/toast";
 import type { WalletTransaction } from "@/lib/types";
 
-const MIN_WITHDRAWAL = 1000;
+// Kept in step with request_wallet_withdrawal() in the database, which is
+// where the rule is actually enforced. This copy only shapes the UI: it
+// disables the button and writes the message, so a mismatch shows up as a
+// confusing rejection rather than a payout at the wrong floor.
+const MIN_WITHDRAWAL = 3000;
 
 export default function WalletCard({
   balance,
