@@ -56,6 +56,7 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     emoji: "🤗",
     tint: "from-teal-100 to-teal-50 text-teal-800",
     categories: [
+      "Girls Hangout",
       "Religious / Faith-based Gatherings",
       "Family Fun Day", "Kids Event",
       "Family Hangout", "Friend Reunion",
