@@ -394,15 +394,21 @@ export default async function EventsPage({
 
   return (
     <div>
+      {/* Status, not a tagline.
+          This used to carry "Parties, hangouts and everything buzzing near
+          you", which is marketing copy under a page title: the exact web-hero
+          shape AppHeader exists to avoid, and a line that says the same thing
+          on every visit whatever the feed holds. The pills say where the feed
+          is scoped and which tab is open, which is information the screen
+          cannot otherwise give and which changes as you use it. */}
       <AppHeader
         title={"Events"}
-        subtitle={
-          past ? (
-            <>Link-ups that already happened — see who was there</>
-          ) : (
-            <>Parties, hangouts and everything buzzing near you</>
-          )
-        }
+        meta={[
+          { icon: "pin", label: searchParams.state ?? autoScope ?? "All Nigeria" },
+          past
+            ? { icon: "clock", label: "Been and gone" }
+            : { icon: "calendar", label: "Upcoming" },
+        ]}
         action={<Link href="/host" className="btn-primary rounded-full px-4 py-2 text-sm">Host</Link>}
       />
 
