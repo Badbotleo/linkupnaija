@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import LineIcon from "./ui/LineIcon";
 
 // App-style screen header — the native pattern, not a marketing hero.
@@ -25,15 +26,29 @@ export default function AppHeader({
   back?: boolean;
   /** Primary action for this screen, right-aligned on the title row. */
   action?: React.ReactNode;
-  /** Small pills under the title: counts, filters, status. */
-  meta?: { icon?: string; label: React.ReactNode }[];
+  /**
+   * Small pills under the title: counts, filters, status.
+   *
+   * Give a pill an `href` and it becomes a link with a chevron. A pill that
+   * is shaped like a chip but does nothing when tapped reads as a broken
+   * button, so anything the screen can actually change should carry one.
+   */
+  meta?: { icon?: string; label: React.ReactNode; href?: string }[];
   /** Segmented control / filter row rendered flush under the header. */
   children?: React.ReactNode;
 }) {
   const router = useRouter();
 
   return (
-    <header className="sticky top-16 z-30 lg:top-0 border-b border-gray-100 bg-[#F7F7F9]/85 backdrop-blur-md dark:bg-gray-900/85">
+    // The dark tint is black, not gray-900.
+    //
+    // gray-900 is #111827, a navy, and the dark body is pure black. The
+    // header was rendering as a lighter blue slab across the top of every
+    // screen that uses it: the banner look this component exists to avoid,
+    // visible only in dark mode because the light tint happens to match the
+    // light page. Matching the page in both themes leaves the border doing
+    // the separating, which is the app pattern.
+    <header className="sticky top-16 z-30 lg:top-0 border-b border-gray-100 bg-[#F7F7F9]/85 backdrop-blur-md dark:bg-black/85">
       <div className="container-page py-3.5 sm:py-4">
         <div className="flex items-start gap-3">
           {back && (
@@ -61,15 +76,31 @@ export default function AppHeader({
 
         {meta && meta.length > 0 && (
           <div className="mt-2.5 flex flex-wrap items-center gap-2">
-            {meta.map((m, i) => (
-              <span
-                key={i}
-                className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700"
-              >
-                {m.icon && <LineIcon name={m.icon} size={13} className="text-gray-500" />}
-                {m.label}
-              </span>
-            ))}
+            {meta.map((m, i) => {
+              const base =
+                "inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700";
+              const inner = (
+                <>
+                  {m.icon && <LineIcon name={m.icon} size={13} className="text-gray-500" />}
+                  {m.label}
+                </>
+              );
+
+              return m.href ? (
+                <Link
+                  key={i}
+                  href={m.href}
+                  className={`${base} transition hover:bg-gray-200 active:scale-95 dark:hover:bg-white/10`}
+                >
+                  {inner}
+                  <LineIcon name="chevronRight" size={12} className="-mr-0.5 text-gray-400" />
+                </Link>
+              ) : (
+                <span key={i} className={base}>
+                  {inner}
+                </span>
+              );
+            })}
           </div>
         )}
 

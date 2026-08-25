@@ -382,6 +382,37 @@ export default async function EventsPage({
     }
   }
 
+  // --- Header pill destinations --------------------------------------------
+  // Each pill offers the opposite of what you are currently looking at, and
+  // carries the rest of the query with it so tapping one never silently drops
+  // a search or a category.
+  const withParams = (mutate: (p: URLSearchParams) => void) => {
+    const params = new URLSearchParams();
+    if (searchParams.state) params.set("state", searchParams.state);
+    if (searchParams.category) params.set("category", searchParams.category);
+    if (searchParams.q?.trim()) params.set("q", searchParams.q.trim());
+    if (searchParams.series === "1") params.set("series", "1");
+    if (searchParams.tab) params.set("tab", searchParams.tab);
+    if (searchParams.scope === "all") params.set("scope", "all");
+    mutate(params);
+    params.delete("page");
+    const qs = params.toString();
+    return qs ? `/events?${qs}` : "/events";
+  };
+
+  // An explicit state clears; an automatic one widens to everywhere. With
+  // neither there is nothing to undo, so the pill opens the state picker
+  // rather than being a tap that does nothing.
+  const placeHref = searchParams.state
+    ? withParams((p) => p.delete("state"))
+    : autoScope
+      ? withParams((p) => p.set("scope", "all"))
+      : "#state";
+
+  const tabHref = withParams((p) =>
+    past ? p.delete("tab") : p.set("tab", "past")
+  );
+
   const pageHref = (p: number) => {
     const params = new URLSearchParams();
     if (searchParams.state) params.set("state", searchParams.state);
@@ -404,10 +435,14 @@ export default async function EventsPage({
       <AppHeader
         title={"Events"}
         meta={[
-          { icon: "pin", label: searchParams.state ?? autoScope ?? "All Nigeria" },
+          {
+            icon: "pin",
+            label: searchParams.state ?? autoScope ?? "All Nigeria",
+            href: placeHref,
+          },
           past
-            ? { icon: "clock", label: "Been and gone" }
-            : { icon: "calendar", label: "Upcoming" },
+            ? { icon: "clock", label: "Been and gone", href: tabHref }
+            : { icon: "calendar", label: "Upcoming", href: tabHref },
         ]}
         action={<Link href="/host" className="btn-primary rounded-full px-4 py-2 text-sm">Host</Link>}
       />
