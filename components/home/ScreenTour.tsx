@@ -17,11 +17,11 @@ import EventCover from "../EventCover";
 const STEPS = [
   {
     label: "Find something on",
-    text: "Browse what's actually happening near you this week — filtered by the vibe you're in.",
+    text: "Browse what's actually happening near you this week, filtered by the vibe you're in.",
   },
   {
     label: "Ask to join",
-    text: "Send a request. The host sees who you are and approves you — that's why nobody shows up to a room full of randos.",
+    text: "Send a request. The host sees who you are and approves you. That's why nobody shows up to a room full of randos.",
   },
   {
     label: "Meet the room first",
@@ -404,7 +404,7 @@ function Screen({ n, events }: { n: number; events: TourEvent[] }) {
             ✓
           </span>
           <span className="text-[9px] font-semibold text-naija-800">
-            Request sent — you&apos;ll hear back
+            Request sent. You&apos;ll hear back
           </span>
         </div>
       </Chrome>
@@ -420,7 +420,7 @@ function Screen({ n, events }: { n: number; events: TourEvent[] }) {
               So the copy stays generic enough to be true of any link-up
               rather than describing a venue the event doesn't have. */}
           <Bubble side="left" name="Host">
-            Doors from 6 — I&apos;ll drop the exact spot here 📍
+            Doors from 6. I&apos;ll drop the exact spot here 📍
           </Bubble>
           <Bubble side="left" name="Amaka">
             Anyone coming from my side? Let&apos;s share a ride

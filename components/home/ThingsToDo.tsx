@@ -25,7 +25,7 @@ export default async function ThingsToDo({ state }: { state?: string | null }) {
     <Rail
       title="Things to do this week"
       auto
-      subtitle="Pick one, bring your people — you're the host"
+      subtitle="Pick one, bring your people. You're the host"
       href="/things-to-do"
       seeAll="See all"
     >

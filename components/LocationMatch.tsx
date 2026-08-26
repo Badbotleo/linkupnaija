@@ -109,7 +109,7 @@ export default function LocationMatch({ intro = false }: { intro?: boolean }) {
         </p>
         <p className="text-xs text-gray-500 dark:text-white/70">
           {intro
-            ? "Ask to join — the host approves every guest."
+            ? "Ask to join. The host approves every guest."
             : "Use your location for the best matches in your area."}
         </p>
       </div>

@@ -171,7 +171,7 @@ export default async function HomePage() {
           Find your <span className="text-brand">people</span>.
         </h1>
         <p className="mt-1.5 max-w-lg text-[15px] leading-relaxed text-gray-500">
-          House parties, beach days, game nights and raves — see what&apos;s
+          House parties, beach days, game nights and raves. See what&apos;s
           actually happening near you this week.
         </p>
 
@@ -281,7 +281,7 @@ export default async function HomePage() {
         subtitle={
           upcoming.length > 0
             ? "Real link-ups you can join today"
-            : "Nothing on the calendar yet — start something"
+            : "Nothing on the calendar yet. Start something"
         }
         href="/events"
       >
@@ -353,7 +353,7 @@ export default async function HomePage() {
       {/* The pitch, as a shelf rather than a full-screen section */}
       <DeckHeading
         title="Why LinkUpNaija"
-        subtitle="Swipe through — what you get every time you pull up"
+        subtitle="Swipe through what you get every time you pull up"
       />
       <SwipeDeck className="h-[212px]">
         {PROMISES.map((p) => (
@@ -390,7 +390,7 @@ export default async function HomePage() {
             Find your people this week
           </h2>
           <p className="mx-auto mt-1.5 max-w-sm text-[15px] leading-relaxed text-gray-600">
-            Free to join, and the host approves every guest — so you always know
+            Free to join, and the host approves every guest, so you always know
             who you&apos;re pulling up with.
           </p>
 

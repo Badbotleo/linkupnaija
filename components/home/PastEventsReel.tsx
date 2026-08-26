@@ -25,7 +25,7 @@ export default async function PastEventsReel({
   return (
     <Rail
       title="This actually happened"
-      subtitle="Tap to watch — recent link-ups, as they went down"
+      subtitle="Tap to watch recent link-ups, as they went down"
       href="/events?tab=past"
       seeAll="See past events"
     >
