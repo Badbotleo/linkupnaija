@@ -403,7 +403,7 @@ function Screen({ n, events }: { n: number; events: TourEvent[] }) {
           <span className="grid h-3.5 w-3.5 place-items-center rounded-full bg-naija text-[8px] font-black text-white">
             ✓
           </span>
-          <span className="text-[9px] font-semibold text-naija-800">
+          <span className="text-[9px] font-semibold text-emerald-800">
             Request sent. You&apos;ll hear back
           </span>
         </div>

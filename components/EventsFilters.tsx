@@ -99,9 +99,18 @@ export default function EventsFilters() {
 
       {/* ---- vibe families ---- */}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-        {CATEGORY_GROUPS.map((g) => {
+        {CATEGORY_GROUPS.map((g, i) => {
           const holdsActive = groupForCategory(activeCategory)?.key === g.key;
           const expanded = open === g.key;
+          // Nine families divide evenly into the three columns used from sm
+          // up, but leave the last one stranded beside a gap in the two
+          // columns a phone gets. It stretches to fill the row instead, which
+          // reads as the end of the list rather than a missing tile.
+          //
+          // Tied to the count, not hardcoded: add a tenth family and the two
+          // column layout is even again, so this switches itself off.
+          const fillsRow =
+            i === CATEGORY_GROUPS.length - 1 && CATEGORY_GROUPS.length % 2 === 1;
           return (
             <button
               key={g.key}
@@ -109,6 +118,8 @@ export default function EventsFilters() {
               onClick={() => setOpen(expanded ? null : g.key)}
               aria-expanded={expanded}
               className={`flex items-center gap-2.5 rounded-2xl border bg-gradient-to-br p-3 text-left transition ${g.tint} ${
+                fillsRow ? "col-span-2 sm:col-span-1" : ""
+              } ${
                 holdsActive || expanded
                   ? "border-brand/50 shadow-card"
                   : "border-transparent hover:border-brand/25"

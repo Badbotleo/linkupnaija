@@ -329,7 +329,7 @@ export default function JoinSheet({
                 <LineIcon name="check" size={17} />
               </span>
               <div className="min-w-0">
-                <p className="text-[15px] font-extrabold text-naija-800">
+                <p className="text-[15px] font-extrabold text-emerald-800">
                   {autoConfirm ? "You're going" : "Request sent"}
                 </p>
                 <p className="mt-0.5 text-[13px] leading-snug text-naija-800/80">

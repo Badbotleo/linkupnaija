@@ -79,7 +79,15 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     label: "Outdoors",
     hint: "Beach, hikes, gym",
     emoji: "🏝️",
-    tint: "from-naija-100 to-naija-50 text-naija-800",
+    // emerald-800, not naija-800. The global dark layer rewrites
+    // .text-naija-800 to a light mint, which is right for the flag chips it
+    // was written for because those also carry bg-naija-100, which it
+    // darkens. This card's ground is a GRADIENT, and the dark layer does not
+    // touch gradient stops — so the background stayed light while the text
+    // went light with it, landing at 1.12:1 against 6.4 or better on every
+    // other card here. emerald has no dark override, so this behaves like its
+    // eight neighbours.
+    tint: "from-naija-100 to-naija-50 text-emerald-800",
     categories: [
       "Bonfire / Outdoor Party",
       "Gym Session", "Meditation", "Wellness Walk", "Sports", "Cycling",

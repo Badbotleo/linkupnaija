@@ -18,7 +18,7 @@ const ACTIONS: {
   tint: string;
 }[] = [
   { href: "/host", label: "Host", hint: "Start a link-up", icon: "mic", tint: "from-brand-100 to-brand-50 text-brand-700" },
-  { href: "/events", label: "Explore", hint: "What's on", icon: "search", tint: "from-naija-100 to-naija-50 text-naija-800" },
+  { href: "/events", label: "Explore", hint: "What's on", icon: "search", tint: "from-naija-100 to-naija-50 text-emerald-800" },
   { href: "/circles", label: "Circles", hint: "Your communities", icon: "circles", tint: "from-amber-100 to-amber-50 text-amber-800" },
   { href: "/friends", label: "Friends", hint: "Your people", icon: "users", tint: "from-teal-100 to-teal-50 text-teal-800" },
   { href: "/rides", label: "Rides", hint: "Get there", icon: "car", tint: "from-blue-100 to-blue-50 text-blue-800" },
