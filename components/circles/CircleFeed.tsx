@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/image";
@@ -36,11 +37,19 @@ export default function CircleFeed({
   meId,
   isMember,
   isAdmin,
+  focusPostId,
 }: {
   circleId: string;
   meId: string | null;
   isMember: boolean;
   isAdmin: boolean;
+  /**
+   * Render one post on its own instead of the feed, with its replies already
+   * open. The permalink page passes this rather than reimplementing the card:
+   * likes, reposts, deletes and the reply box are the same code either way,
+   * and a second copy would drift the moment one of them changed.
+   */
+  focusPostId?: string;
 }) {
   const supabase = createClient();
   const [posts, setPosts] = useState<CirclePost[]>([]);
@@ -64,10 +73,12 @@ export default function CircleFeed({
   }, [mediaFile]);
 
   const load = useCallback(async () => {
-    const { data, error } = await supabase
+    let query = supabase
       .from("circle_posts")
       .select(POST_SELECT)
-      .eq("circle_id", circleId)
+      .eq("circle_id", circleId);
+    if (focusPostId) query = query.eq("id", focusPostId);
+    const { data, error } = await query
       .order("pinned", { ascending: false })
       .order("created_at", { ascending: false });
 
@@ -115,7 +126,7 @@ export default function CircleFeed({
         new Set((mine ?? []).map((r: { repost_of: string }) => r.repost_of))
       );
     }
-  }, [circleId, meId, supabase]);
+  }, [circleId, meId, focusPostId, supabase]);
 
   useEffect(() => {
     load();
@@ -276,7 +287,7 @@ export default function CircleFeed({
   // feed reads as a single scroll the way X/Twitter does.
   return (
     <div className="overflow-hidden surface">
-      {isMember && (
+      {isMember && !focusPostId && (
         <form onSubmit={submitPost} className="border-b border-gray-100 px-4 py-3">
           <div className="flex gap-3">
             <Avatar name={me?.name ?? null} url={me?.avatar_url ?? null} size="sm" />
@@ -353,7 +364,11 @@ export default function CircleFeed({
 
       {posts.length === 0 ? (
         <p className="px-6 py-14 text-center text-sm text-gray-500">
-          No posts yet. {isMember ? "Be the first to share something!" : "Join to start posting."}
+          {focusPostId
+            ? "That post isn't here any more."
+            : isMember
+              ? "No posts yet. Be the first to share something!"
+              : "No posts yet. Join to start posting."}
         </p>
       ) : (
         <div className="divide-y divide-gray-100">
@@ -371,6 +386,8 @@ export default function CircleFeed({
               onRepost={() => toggleRepost(post)}
               onDelete={() => deletePost(post.id)}
               onPin={() => togglePin(post)}
+              href={focusPostId ? undefined : `/circles/${circleId}/posts/${post.id}`}
+              autoOpenComments={!!focusPostId}
             />
           ))}
         </div>
@@ -391,6 +408,8 @@ function PostCard({
   onRepost,
   onDelete,
   onPin,
+  href,
+  autoOpenComments,
 }: {
   post: CirclePost;
   circleId: string;
@@ -403,9 +422,14 @@ function PostCard({
   onRepost: () => void;
   onDelete: () => void;
   onPin: () => void;
+  /** Where tapping the post goes. Absent on the permalink page itself. */
+  href?: string;
+  /** Open the replies straight away, which is what a thread view is. */
+  autoOpenComments?: boolean;
 }) {
+  const router = useRouter();
   const supabase = createClient();
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(!!autoOpenComments);
   const [comments, setComments] = useState<CirclePostComment[] | null>(null);
   const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
@@ -418,6 +442,33 @@ function PostCard({
       .order("created_at", { ascending: true });
     setComments((data ?? []) as unknown as CirclePostComment[]);
   }, [post.id, supabase]);
+
+  // Load the replies immediately in thread mode; the feed waits for a tap.
+  useEffect(() => {
+    if (autoOpenComments) loadComments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoOpenComments]);
+
+  /**
+   * Tapping the row opens the post, the way every timeline works.
+   *
+   * One handler on the article rather than stopPropagation on a dozen
+   * children: the card already holds links, buttons, a details menu, a video
+   * with its own controls and a reply box, and every one of them would have
+   * had to remember to opt out. Asking what was actually clicked keeps that
+   * knowledge in a single place, so a control added later cannot silently
+   * start navigating away mid-interaction.
+   *
+   * Text selection is left alone too — dragging to select a quote should not
+   * fire a navigation on release.
+   */
+  function openPost(e: React.MouseEvent) {
+    if (!href) return;
+    const el = e.target as HTMLElement;
+    if (el.closest("a, button, input, textarea, video, details, summary, [role='dialog']")) return;
+    if (window.getSelection()?.toString()) return;
+    router.push(href);
+  }
 
   async function openComments() {
     const next = !showComments;
@@ -457,7 +508,11 @@ function PostCard({
   const handle = shown.name.toLowerCase().replace(/[^a-z0-9]+/g, "");
 
   async function share() {
-    const url = `${SITE_ORIGIN}/circles/${circleId}#post-${post.id}`;
+    // The post's own address, not the circle's with a fragment on the end.
+    // A fragment only lands somewhere if the post happens to be on the first
+    // page of the feed, so a shared link went stale the moment a few more
+    // posts arrived and dropped people into a list to go hunting.
+    const url = `${SITE_ORIGIN}/circles/${circleId}/posts/${post.id}`;
     const text = shown.content?.slice(0, 120) ?? "Check out this post on LinkUpNaija";
     try {
       if (navigator.share) {
@@ -472,7 +527,15 @@ function PostCard({
   }
 
   return (
-    <article id={`post-${post.id}`} className="px-4 py-3 transition hover:bg-gray-50/70">
+    <article
+      id={`post-${post.id}`}
+      onClick={openPost}
+      onKeyDown={(e) => {
+        if (href && e.key === "Enter" && e.target === e.currentTarget) router.push(href);
+      }}
+      tabIndex={href ? 0 : undefined}
+      className={`px-4 py-3 transition hover:bg-gray-50/70 ${href ? "cursor-pointer" : ""}`}
+    >
       {post.pinned && (
         <p className="mb-1.5 flex items-center gap-1.5 pl-[52px] text-xs font-semibold text-gray-500">
           <LineIcon name="pin" size={13} /> Pinned
@@ -554,13 +617,28 @@ function PostCard({
           )}
 
           {shown.video && (
-            <video
-              src={shown.video}
-              controls
-              playsInline
-              preload="metadata"
-              className="mt-2.5 max-h-[30rem] w-full rounded-2xl border border-gray-100 bg-black"
-            />
+            // The expand control sits beside the video rather than on it. A
+            // tap-anywhere-to-expand video fights its own play button, so
+            // inline playback stays exactly as it was and the full-screen
+            // view is a separate, deliberate press.
+            <div className="relative mt-2.5">
+              <video
+                src={shown.video}
+                controls
+                playsInline
+                preload="metadata"
+                className="max-h-[30rem] w-full rounded-2xl border border-gray-100 bg-black"
+              />
+              <ImageLightbox
+                src={shown.video}
+                video
+                alt={shown.name ? `Video from ${shown.name}` : "Video"}
+                caption={shown.name}
+                triggerClassName="absolute right-2 top-2 grid h-9 w-9 place-items-center rounded-full bg-black/60 text-white backdrop-blur transition hover:bg-black/80"
+              >
+                <LineIcon name="eye" size={16} />
+              </ImageLightbox>
+            </div>
           )}
 
           {post.event && (

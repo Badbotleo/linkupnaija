@@ -26,6 +26,8 @@ export default function ImageLightbox({
   alt = "",
   caption,
   className,
+  triggerClassName,
+  video,
   children,
 }: {
   src: string;
@@ -34,6 +36,10 @@ export default function ImageLightbox({
   caption?: string | null;
   /** Classes for the trigger image, so the feed keeps its own crop. */
   className?: string;
+  /** Classes for the trigger button, when the default block button is wrong. */
+  triggerClassName?: string;
+  /** Play as video instead of showing a still. */
+  video?: boolean;
   /** A custom trigger. Defaults to the image itself. */
   children?: React.ReactNode;
 }) {
@@ -60,7 +66,7 @@ export default function ImageLightbox({
         type="button"
         onClick={() => setOpen(true)}
         aria-label={alt ? `View ${alt} full size` : "View picture full size"}
-        className="block w-full cursor-zoom-in"
+        className={triggerClassName ?? "block w-full cursor-zoom-in"}
       >
         {children ?? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -87,13 +93,24 @@ export default function ImageLightbox({
               <LineIcon name="x" size={18} />
             </button>
 
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={src}
-              alt={alt}
-              className="max-h-[85vh] max-w-[92vw] rounded-2xl object-contain shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            />
+            {video ? (
+              <video
+                src={src}
+                controls
+                autoPlay
+                playsInline
+                className="max-h-[85vh] max-w-[92vw] rounded-2xl bg-black shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={src}
+                alt={alt}
+                className="max-h-[85vh] max-w-[92vw] rounded-2xl object-contain shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
 
             {caption && (
               <p className="absolute bottom-6 left-0 right-0 px-6 text-center text-sm font-semibold text-white/80">
