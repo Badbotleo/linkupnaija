@@ -8,6 +8,7 @@ import Avatar from "@/components/Avatar";
 import { memberProof } from "@/lib/social-proof";
 import JoinCircleButton from "@/components/circles/JoinCircleButton";
 import CircleFeed from "@/components/circles/CircleFeed";
+import CircleArt from "@/components/circles/CircleArt";
 import CirclePendingRequests from "@/components/circles/CirclePendingRequests";
 import type { Circle } from "@/lib/types";
 
@@ -102,12 +103,20 @@ export default async function CirclePage({ params }: { params: { id: string } })
           BELOW the feed on a phone — so the first thing you did on arriving
           was scroll past everything to find the join button. */}
       <div className="relative">
-        <EventCover
-          url={circle.cover_image_url}
-          category={circle.category ?? "Networking"}
-          title={circle.name}
-          className="h-36 w-full rounded-2xl sm:h-48"
-        />
+        {circle.cover_image_url ? (
+          <EventCover
+            url={circle.cover_image_url}
+            category={circle.category ?? "Networking"}
+            title={circle.name}
+            className="h-36 w-full rounded-2xl sm:h-48"
+          />
+        ) : (
+          <CircleArt
+            name={circle.name}
+            members={circle.member_count}
+            className="h-36 w-full rounded-2xl sm:h-48"
+          />
+        )}
       </div>
 
       <div className="mt-3 flex items-start justify-between gap-3">

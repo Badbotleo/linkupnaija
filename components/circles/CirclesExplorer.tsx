@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { EVENT_CATEGORIES, NIGERIAN_STATES } from "@/lib/constants";
 import { toast } from "@/lib/toast";
 import EventCover from "../EventCover";
+import CircleArt from "./CircleArt";
 import LineIcon from "../ui/LineIcon";
 import { memberProof } from "@/lib/social-proof";
 import type { Circle } from "@/lib/types";
@@ -192,12 +193,16 @@ function Card({
   return (
     <div className="flex flex-col overflow-hidden surface">
       <Link href={`/circles/${circle.id}`} className="block">
-        <EventCover
-          url={circle.cover_image_url}
-          category={circle.category ?? "Networking"}
-          title={circle.name}
-          className="h-28 w-full"
-        />
+        {circle.cover_image_url ? (
+          <EventCover
+            url={circle.cover_image_url}
+            category={circle.category ?? "Networking"}
+            title={circle.name}
+            className="h-28 w-full"
+          />
+        ) : (
+          <CircleArt name={circle.name} members={circle.member_count} className="h-28 w-full" />
+        )}
       </Link>
       <div className="flex flex-1 flex-col p-4">
         <Link href={`/circles/${circle.id}`} className="font-bold text-gray-900 hover:text-brand">

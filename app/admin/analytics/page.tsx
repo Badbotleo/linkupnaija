@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { POSTER_CODES } from "@/lib/poster-codes";
 import AppHeader from "@/components/AppHeader";
 import LineIcon from "@/components/ui/LineIcon";
 import { formatNaira } from "@/lib/paystack";
@@ -56,6 +57,7 @@ export default async function AdminAnalyticsPage() {
     sourcesRes,
     statesRes,
     dailyRes,
+    posterRes,
   ] = await Promise.all([
     supabase.from("users").select("id, created_at, state"),
     supabase
@@ -71,6 +73,10 @@ export default async function AdminAnalyticsPage() {
     supabase.rpc("site_sources", { p_days: 30, p_limit: 8 }),
     supabase.rpc("site_states", { p_days: 30, p_limit: 8 }),
     supabase.rpc("site_daily", { p_days: 14 }),
+    // Poster scans, split out by code. They are in site_top_pages too,
+    // but buried under /events and the home page where nobody would
+    // ever see them, which defeats the point of printing codes at all.
+    supabase.rpc("site_poster_scans", { p_days: 30 }),
   ]);
 
   const users = usersRes.data ?? [];
@@ -94,6 +100,12 @@ export default async function AdminAnalyticsPage() {
   const sources = (sourcesRes.data ?? []) as { source: string; visitors: number }[];
   const visitorStates = (statesRes.data ?? []) as { state: string; visitors: number }[];
   const daily = (dailyRes.data ?? []) as { day: string; visitors: number }[];
+  const posterScans = (posterRes.data ?? []) as {
+    code: string;
+    scans: number;
+    first_seen: string;
+    last_seen: string;
+  }[];
 
   const now = Date.now();
   const since = (days: number) => now - days * DAY;
@@ -358,6 +370,42 @@ export default async function AdminAnalyticsPage() {
                     {v.visitors}
                   </span>
                 </span>
+              ))}
+            </div>
+          )}
+        </Section>
+
+        {/* --- printed posters --- */}
+        <Section
+          title="Poster scans"
+          hint="Unique browsers per printed code, last 30 days. Each sheet carries its own QR, so this is the A/B between the hooks and between the cities."
+        >
+          {posterScans.length === 0 ? (
+            <p className="text-[13px] text-gray-500">
+              No scans yet.{" "}
+              {traffic
+                ? "Codes start counting the first time somebody scans a printed sheet."
+                : "Run migration-poster-analytics.sql to switch this on."}
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {posterScans.map((s) => (
+                <div key={s.code} className="flex items-center gap-3">
+                  <p className="w-44 shrink-0 truncate text-[13px] font-semibold text-gray-700">
+                    {POSTER_CODES[s.code]?.label ?? s.code}
+                  </p>
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100">
+                    <div
+                      className="h-full rounded-full bg-naija/60"
+                      style={{
+                        width: `${(s.scans / (posterScans[0].scans || 1)) * 100}%`,
+                      }}
+                    />
+                  </div>
+                  <span className="w-12 shrink-0 text-right text-[12px] font-bold tabular-nums text-gray-600">
+                    {s.scans}
+                  </span>
+                </div>
               ))}
             </div>
           )}

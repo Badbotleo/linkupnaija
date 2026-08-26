@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import ScanRedirect from "@/components/ScanRedirect";
+import { POSTER_CODES, POSTER_FALLBACK } from "@/lib/poster-codes";
 
 /**
  * Poster and sticker landing codes.
@@ -14,27 +15,6 @@ import ScanRedirect from "@/components/ScanRedirect";
  * Not a database table on purpose. The path is the record; there is nothing
  * to keep in sync and nothing to migrate when a new batch goes out.
  */
-const DESTINATIONS: Record<string, string> = {
-  // Lagos street posters. Landing on the state-filtered feed rather than the
-  // national one, because somebody standing in front of a pole in Yaba is not
-  // looking for a road trip leaving Calabar.
-  lag1: `/events?state=${encodeURIComponent("Lagos")}`,
-  lag2: `/events?state=${encodeURIComponent("Lagos")}`,
-  abj1: `/events?state=${encodeURIComponent("FCT - Abuja")}`,
-  abj2: `/events?state=${encodeURIComponent("FCT - Abuja")}`,
-  // Campus sheets lead with the referral, so they land on the signup page
-  // that explains it rather than the feed, which never mentions money. The
-  // offer needs an account to exist, so signup first is the honest order here
-  // even though every other route into the product browses first.
-  abj3: "/join",
-  lag3: "/join",
-  // Stickers travel, so they stay national.
-  stk: "/events",
-};
-
-const FALLBACK = "/events";
-
-/** Codes are printed by hand onto artwork; keep the shape boring. */
 const VALID = /^[a-z0-9-]{1,24}$/;
 
 // These are redirects, not content. Indexing them would put a tracking URL in
@@ -48,10 +28,10 @@ export default function ScanPage({ params }: { params: { code: string } }) {
 
   // A malformed code is somebody poking at the URL, not a scan. Send them on
   // without writing a row for it.
-  if (!VALID.test(code)) redirect(FALLBACK);
+  if (!VALID.test(code)) redirect(POSTER_FALLBACK);
 
   // An unknown but well-formed code still counts and still works. A batch can
   // go to print before the destination for it is deployed, and the worst case
   // is that it lands on the national feed.
-  return <ScanRedirect code={code} dest={DESTINATIONS[code] ?? FALLBACK} />;
+  return <ScanRedirect code={code} dest={POSTER_CODES[code]?.dest ?? POSTER_FALLBACK} />;
 }
