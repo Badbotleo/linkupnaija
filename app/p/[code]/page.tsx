@@ -22,6 +22,12 @@ const DESTINATIONS: Record<string, string> = {
   lag2: `/events?state=${encodeURIComponent("Lagos")}`,
   abj1: `/events?state=${encodeURIComponent("FCT - Abuja")}`,
   abj2: `/events?state=${encodeURIComponent("FCT - Abuja")}`,
+  // Campus sheets lead with the referral, so they land on the signup page
+  // that explains it rather than the feed, which never mentions money. The
+  // offer needs an account to exist, so signup first is the honest order here
+  // even though every other route into the product browses first.
+  abj3: "/join",
+  lag3: "/join",
   // Stickers travel, so they stay national.
   stk: "/events",
 };

@@ -38,14 +38,31 @@ export default async function JoinPage({
     <div className="container-page flex max-w-md flex-col py-14">
       <div className="rounded-2xl bg-brand p-6 text-center text-white shadow-card">
         <p className="text-3xl">🎉</p>
+        {/* Without a code there is no referrer, and complete_referral pays
+            nothing — so the invited copy would be promising ₦600 that never
+            arrives. It only ever reached people who followed a real invite
+            link, but the campus posters point here, which makes the bare page
+            the common case rather than the edge one. */}
         <h1 className="mt-2 text-2xl font-extrabold">
-          {firstName ? `${firstName} invited you to LinkUpNaija` : "You're invited to LinkUpNaija"}
+          {firstName
+            ? `${firstName} invited you to LinkUpNaija`
+            : code
+              ? "You're invited to LinkUpNaija"
+              : "Join LinkUpNaija"}
         </h1>
-        <p className="mt-2 text-brand-100">
-          Sign up now and get{" "}
-          <span className="font-bold text-white">₦600 wallet credit</span> to
-          spend on your first event.
-        </p>
+        {code ? (
+          <p className="mt-2 text-brand-100">
+            Sign up now and get{" "}
+            <span className="font-bold text-white">₦600 wallet credit</span> to
+            spend on your first event.
+          </p>
+        ) : (
+          <p className="mt-2 text-brand-100">
+            Free to join. Bring a paddy and you{" "}
+            <span className="font-bold text-white">both get ₦600</span> wallet
+            credit.
+          </p>
+        )}
       </div>
 
       <div className="mt-6 surface p-6 sm:p-8">
@@ -55,7 +72,9 @@ export default async function JoinPage({
       </div>
 
       <p className="mt-4 text-center text-xs text-gray-400">
-        Your ₦600 bonus is added once you verify your email.
+        {code
+          ? "Your ₦600 bonus is added once you verify your email."
+          : "Once you're in, share your invite link. You both get ₦600 when your paddy verifies their email, and you can cash out from ₦3,000."}
       </p>
     </div>
   );
