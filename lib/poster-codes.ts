@@ -42,6 +42,25 @@ export const POSTER_CODES: Record<string, PosterCode> = {
   lag3: { dest: "/join", label: "Lagos campus · Bring a paddy" },
   // Stickers travel, so they stay national.
   stk: { dest: "/events", label: "Sticker" },
+
+  // ---------------------------------------------------------------- paid ads
+  // Same problem as the posters, different surface. VisitRecorder strips the
+  // query string, so a utm tag never survives to the analytics table, and an
+  // in-app browser frequently sends no referrer either — which would put
+  // every paid click in the same "direct" bucket as somebody typing the
+  // address. One code per creative is what makes the spend readable: not just
+  // TikTok against Instagram, but which idea earned the click.
+  //
+  // Point the ad's destination URL straight at these.
+  "ig-trust": { dest: "/events", label: "Instagram · No randos" },
+  "ig-bored": { dest: "/events", label: "Instagram · Bored this weekend" },
+  "ig-cash": { dest: "/join", label: "Instagram · 600 a paddy" },
+  "ig-ease": { dest: "/events", label: "Instagram · One tap" },
+  "tt-trust": { dest: "/events", label: "TikTok · No randos" },
+  "tt-bored": { dest: "/events", label: "TikTok · Bored this weekend" },
+  "tt-cash": { dest: "/join", label: "TikTok · 600 a paddy" },
+  "tt-ease": { dest: "/events", label: "TikTok · One tap" },
+  "wa-share": { dest: "/events", label: "WhatsApp broadcast" },
 };
 
 /** Where an unknown but well-formed code goes. */
