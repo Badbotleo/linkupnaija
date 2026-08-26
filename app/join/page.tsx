@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import AuthForm from "@/components/AuthForm";
 
@@ -20,9 +21,16 @@ export default async function JoinPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (user) redirect("/events");
-
   const code = searchParams.ref?.toUpperCase();
+
+  // Somebody already signed in cannot be referred, so there is nothing on this
+  // page for them. Where to send them depends on how they got here.
+  //
+  // Following a friend's invite link, the feed is right: they are already in.
+  // But arriving with no code means they scanned a campus poster that promised
+  // ₦600 for bringing a paddy, and bouncing them to the events feed answers a
+  // question they did not ask. /refer is the thing the poster advertised.
+  if (user) redirect(code ? "/events" : "/refer");
   let referrerName: string | null = null;
   if (code) {
     const { data } = await supabase
@@ -72,9 +80,22 @@ export default async function JoinPage({
       </div>
 
       <p className="mt-4 text-center text-xs text-gray-400">
-        {code
-          ? "Your ₦600 bonus is added once you verify your email."
-          : "Once you're in, share your invite link. You both get ₦600 when your paddy verifies their email, and you can cash out from ₦3,000."}
+        {code ? (
+          "Your ₦600 bonus is added once you verify your email."
+        ) : (
+          <>
+            {/* The withdrawal floor is a real condition but it is not a
+                doorstep conversation. Leading with "you need five friends
+                before you see a naira" talks somebody out of an account they
+                have not opened yet, so the number lives in the terms and the
+                offer stays the offer. */}
+            Once you&apos;re in, share your invite link and you both get ₦600.{" "}
+            <Link href="/terms-of-service" className="underline hover:text-gray-600">
+              Wallet terms apply
+            </Link>
+            .
+          </>
+        )}
       </p>
     </div>
   );
