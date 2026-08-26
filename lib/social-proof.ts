@@ -47,15 +47,37 @@ function isJustListed(createdAt?: string | null): boolean {
  *              would be better left unsaid.
  * - 5+       → the real number, which is now worth showing.
  *
+ * Pass `past` for an event that has already happened and the whole ladder
+ * switches tense: nothing, "Wrapped", or "12 went".
+ *
  * Returns null when there is nothing honest and useful to say — callers must
  * render nothing in that case, not an empty pill.
  */
 export function attendanceProof(
   count: number,
-  opts: { capacity?: number | null; createdAt?: string | null } = {}
+  opts: {
+    capacity?: number | null;
+    createdAt?: string | null;
+    /** The event has already happened. Every label below is future tense. */
+    past?: boolean;
+  } = {}
 ): AttendanceProof | null {
-  const { capacity, createdAt } = opts;
+  const { capacity, createdAt, past } = opts;
   const n = Math.max(0, Math.floor(count || 0));
+
+  // A finished event cannot fill up, cannot have spots left, and is not
+  // "just listed". Those labels were showing on the past tab and reading as a
+  // pitch to attend something that ended weeks ago.
+  //
+  // Scarcity is dropped entirely rather than translated. "Was full" invites a
+  // shrug; how many people came is the only part still worth knowing, and it
+  // uses the same reveal threshold as everywhere else so a quiet night is
+  // still not given a headcount.
+  if (past) {
+    if (n === 0) return null;
+    if (n < ATTENDANCE_REVEAL_AT) return { label: "Wrapped", tone: "quiet" };
+    return { label: `${n} went`, tone: "quiet" };
+  }
 
   if (n === 0) {
     if (isJustListed(createdAt)) return { label: "Just listed", tone: "warm" };

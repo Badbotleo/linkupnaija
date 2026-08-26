@@ -36,6 +36,9 @@ export default function EventCard({
   const proof = attendanceProof(attendeeCount, {
     capacity: event.max_attendees,
     createdAt: event.created_at,
+    // Compared as date strings, the same shape the feed queries use, so a
+    // card cannot disagree with the tab it was returned for.
+    past: !!event.date && event.date < new Date().toISOString().slice(0, 10),
   });
 
   return (

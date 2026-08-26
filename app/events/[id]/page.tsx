@@ -193,6 +193,7 @@ export default async function EventDetailPage({
   const attendance = attendanceProof(attendeeCount, {
     capacity: event.max_attendees,
     createdAt: event.created_at,
+    past: !!event.date && event.date < new Date().toISOString().slice(0, 10),
   });
   const isHost = !!user && user.id === event.host_id;
   const myRsvpId = user
