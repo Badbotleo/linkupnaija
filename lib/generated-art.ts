@@ -11,7 +11,18 @@
  * to each other, a venue is a place on a map. Same hand, different drawing.
  */
 
-/** Deep, mid, light. Deep grounds the tile, light draws on it. */
+/**
+ * Deep, mid, light. Deep grounds the tile, light draws on it.
+ *
+ * Fourteen, not eight. Six circles on one screen were landing on four
+ * palettes, so two pairs of tiles read as the same picture — hash-mod-N
+ * collides far more often than it feels like it should, which is the birthday
+ * problem and not bad luck. Widening the set makes a visible clash unlikely
+ * rather than routine.
+ *
+ * Hues are spread around the wheel deliberately. Two greens a few degrees
+ * apart are a collision to the eye even when the code thinks they differ.
+ */
 export const ART_PALETTES: [string, string, string][] = [
   ["#1A1040", "#534AB7", "#AFA9EC"], // brand night
   ["#06231F", "#008753", "#7FE3B4"], // naija green
@@ -21,6 +32,12 @@ export const ART_PALETTES: [string, string, string][] = [
   ["#2B0A18", "#B3255F", "#FFA8C6"], // hibiscus
   ["#1B2405", "#5E8C10", "#CBEB84"], // palm
   ["#301A03", "#966A16", "#FAC775"], // brand gold
+  ["#0B1733", "#1D4ED8", "#93C5FD"], // royal
+  ["#2D0A0A", "#B91C1C", "#FCA5A5"], // crimson
+  ["#101A2B", "#4B5F7A", "#CBD5E1"], // slate
+  ["#032620", "#0F766E", "#5EEAD4"], // teal
+  ["#1E0B33", "#6D28D9", "#C4B5FD"], // violet
+  ["#2B1B02", "#A16207", "#FDE68A"], // brass
 ];
 
 /** FNV-1a. Stable across renders and servers, which a random seed is not. */
@@ -33,8 +50,17 @@ export function artHash(s: string): number {
   return h >>> 0;
 }
 
+/**
+ * The palette is hashed from a DIFFERENT string than the geometry.
+ *
+ * Using one hash for both meant colour and layout moved together: two names
+ * that collided on palette tended to look alike in every other way too,
+ * because every varying number came from the same bits. Salting the seed
+ * decorrelates them, so a shared palette still gets a visibly different
+ * drawing.
+ */
 export function artPalette(seed: string): [string, string, string] {
-  return ART_PALETTES[artHash(seed) % ART_PALETTES.length];
+  return ART_PALETTES[artHash(`${seed}#palette`) % ART_PALETTES.length];
 }
 
 /**
