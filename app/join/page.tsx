@@ -44,7 +44,14 @@ export default async function JoinPage({
 
   return (
     <div className="container-page flex max-w-md flex-col py-14">
-      <div className="rounded-2xl bg-brand p-6 text-center text-white shadow-card">
+      {/* Flat brand in light, brand-into-black in dark.
+          #534AB7 is correct and unfiltered in both themes, but a
+          full-saturation panel against a pure black body is the only surface
+          on the screen that is not part of the dark palette — every other
+          card is #121212 — so it glares rather than reads as brand. The
+          gradient is the treatment the host page and the chat widget already
+          use for exactly this. */}
+      <div className="rounded-2xl bg-brand p-6 text-center text-white shadow-card dark:bg-gradient-to-br dark:from-brand-600 dark:to-[#121212]">
         <p className="text-3xl">🎉</p>
         {/* Without a code there is no referrer, and complete_referral pays
             nothing — so the invited copy would be promising ₦600 that never
