@@ -1,45 +1,25 @@
-import { VENUE_CATEGORIES } from "@/lib/overpass";
+import { artHash, artInitials, artPalette } from "@/lib/generated-art";
 
 /**
  * Cover art for a venue that hasn't given us a photo.
  *
- * The stock pool was two images per category, picked by hash. It survives a
- * glance and falls apart in a grid: scroll far enough and the same nightclub
- * interior turns up three times under three different names, and every one of
- * them is visibly a photo of somewhere else. That's worse than no photo — it
- * quietly tells you the listing isn't real.
+ * The stock pool before this was two images per category picked by hash, which
+ * falls apart in a grid: the same nightclub interior under three different
+ * names, every one of them visibly somewhere else. That is worse than no
+ * photo, because it quietly says the listing isn't real.
  *
- * This is drawn instead. The palette is hashed from the venue's own name, so
- * a venue is always the same colour and two neighbours are reliably different;
- * the category's glyph sits behind as a watermark, and a soft radial gives it
- * depth so it doesn't read as a flat colour swatch. It looks deliberate, it's
- * unique per venue, and it downloads nothing — which matters when the covers
- * were a real share of the egress bill.
+ * What replaced it was a colour wash with an oversized faded category emoji
+ * behind it. Unique per venue, but it said nothing — a decoration, and one
+ * that looked like it came from a different product than the circle tiles.
  *
- * A venue with a genuine photo should still show it. This is the fallback,
- * not the replacement.
+ * So it's drawn as what a venue actually is: a place, pinned on a street.
+ * Roads cross the tile, a block or two sits between them, and the pin marks
+ * the spot. Same palette set, hash and monogram as CircleArt — a circle is
+ * people joined to each other, a venue is somewhere you go. Same hand,
+ * different subject.
+ *
+ * A venue with a genuine photo should still show it. This is the fallback.
  */
-
-// Deep enough that white text sits comfortably on top without a heavy scrim.
-const PALETTES: [string, string][] = [
-  ["#3B2E8F", "#6D5FD6"], // brand purple
-  ["#0B4F4A", "#12857C"], // deep teal
-  ["#7A3E06", "#C9800F"], // burnt amber
-  ["#701438", "#B8306B"], // wine
-  ["#12306E", "#2E63C4"], // indigo
-  ["#2C4A0C", "#5E9418"], // olive
-  ["#5A1A1A", "#A33A32"], // clay
-];
-
-function hash(s: string) {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
-  return h;
-}
-
-const glyphFor = (category: string) =>
-  VENUE_CATEGORIES.find((c) => c.key === category)?.emoji ?? "📍";
-
 export default function VenueArt({
   name,
   category,
@@ -49,39 +29,86 @@ export default function VenueArt({
   category: string;
   className?: string;
 }) {
-  const h = hash(name);
-  const [from, to] = PALETTES[h % PALETTES.length];
-  // Two more bits of the same hash move the highlight around, so venues that
-  // land on the same palette still don't look like the same tile.
-  const cx = 20 + ((h >> 3) % 60);
-  const cy = 15 + ((h >> 7) % 45);
+  // Category is in the seed so two branches of the same chain that happen to
+  // be listed differently don't come out identical.
+  const seed = `${name}::${category}`;
+  const h = artHash(seed);
+  const [deep, mid, light] = artPalette(seed);
+
+  // The pin sits off-centre. Dead centre reads as a target rather than a map,
+  // and these tiles are cropped wide and short so the middle band is all that
+  // survives anyway.
+  const px = 34 + (h % 32);
+  const py = 42 + ((h >> 5) % 16);
+
+  // Two roads each way, angled apart so the grid never looks like graph
+  // paper, plus one wider main road through the pin.
+  const skewA = ((h >> 9) % 24) - 12;
+  const skewB = ((h >> 13) % 24) - 12;
+  const roadY1 = 22 + ((h >> 17) % 18);
+  const roadY2 = 62 + ((h >> 19) % 16);
+  const roadX1 = 18 + ((h >> 21) % 22);
+  const roadX2 = 58 + ((h >> 23) % 24);
 
   return (
-    <div
-      aria-hidden
-      className={`overflow-hidden ${className}`}
-      style={{
-        background: `radial-gradient(circle at ${cx}% ${cy}%, ${to}, ${from} 70%)`,
-      }}
-    >
-      {/* The category mark, oversized and low-contrast — texture rather than
-          an icon you're meant to read. Rotated so it doesn't sit like a stamp,
-          and pushed off-centre so the caption never lands on top of it. */}
-      <span
-        className="pointer-events-none absolute -right-3 -top-4 select-none text-[86px] leading-none opacity-[0.13] blur-[0.4px]"
-        style={{ transform: "rotate(-12deg)" }}
+    <div aria-hidden className={`relative overflow-hidden ${className}`} style={{ background: deep }}>
+      <svg
+        viewBox="0 0 100 100"
+        preserveAspectRatio="xMidYMid slice"
+        className="absolute inset-0 h-full w-full"
       >
-        {glyphFor(category)}
-      </span>
-      {/* A single diagonal sheen. Without it the radial reads as flat colour
-          at card size. */}
+        <defs>
+          <radialGradient id={`vglow-${h}`} cx={`${px}%`} cy={`${py}%`} r="72%">
+            <stop offset="0%" stopColor={mid} stopOpacity="0.95" />
+            <stop offset="100%" stopColor={deep} stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        <rect width="100" height="100" fill={`url(#vglow-${h})`} />
+
+        {/* City blocks. Faint, so they read as ground rather than as shapes. */}
+        <g fill={light} fillOpacity="0.06">
+          <rect x={roadX1 + 4} y={roadY1 + 4} width={roadX2 - roadX1 - 8} height={roadY2 - roadY1 - 8} />
+          <rect x={roadX2 + 5} y={roadY1 + 4} width="30" height={roadY2 - roadY1 - 8} />
+        </g>
+
+        {/* Side streets. */}
+        <g stroke={light} strokeOpacity="0.22" strokeWidth="1.1" strokeLinecap="round">
+          <line x1="-10" y1={roadY1} x2="110" y2={roadY1 + skewA} />
+          <line x1="-10" y1={roadY2} x2="110" y2={roadY2 + skewB} />
+          <line x1={roadX1} y1="-10" x2={roadX1 + skewB} y2="110" />
+          <line x1={roadX2} y1="-10" x2={roadX2 + skewA} y2="110" />
+        </g>
+
+        {/* The main road, running through the pin so the eye lands there. */}
+        <line
+          x1="-10"
+          y1={py + 6 - skewA / 2}
+          x2="110"
+          y2={py + 6 + skewA / 2}
+          stroke={light}
+          strokeOpacity="0.4"
+          strokeWidth="3.2"
+          strokeLinecap="round"
+        />
+
+        {/* The pin. The one element that isn't texture. */}
+        <g transform={`translate(${px} ${py})`}>
+          <circle r="9" fill={light} fillOpacity="0.16" />
+          <path
+            d="M0 6 C -4.6 -0.6 -6.4 -3.2 -6.4 -5.6 A 6.4 6.4 0 0 1 6.4 -5.6 C 6.4 -3.2 4.6 -0.6 0 6 Z"
+            fill={light}
+          />
+          <circle cy="-5.6" r="2.3" fill={deep} />
+        </g>
+      </svg>
+
       <span
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(115deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0) 42%)",
-        }}
-      />
+        className="absolute bottom-2 left-3 select-none text-[13px] font-black tracking-[0.18em] text-white/70"
+        style={{ textShadow: "0 1px 3px rgba(0,0,0,0.45)" }}
+      >
+        {artInitials(name)}
+      </span>
     </div>
   );
 }

@@ -1,3 +1,5 @@
+import { artHash, artInitials, artPalette } from "@/lib/generated-art";
+
 /**
  * Cover art for a circle that hasn't uploaded a photo.
  *
@@ -15,45 +17,6 @@
  * A circle with a real photo still shows it. This is the fallback.
  */
 
-// Duotone pairs, deliberately not VenueArt's set — a venue tile and a circle
-// tile should not look like the same object with different words on it.
-const PALETTES: [string, string, string][] = [
-  ["#1A1040", "#534AB7", "#AFA9EC"], // brand night
-  ["#06231F", "#008753", "#7FE3B4"], // naija green
-  ["#2A1206", "#C2620F", "#FFC98A"], // ember
-  ["#25062B", "#9A2BA0", "#F0A8F5"], // orchid
-  ["#04212E", "#0E7490", "#8CE0F0"], // deep water
-  ["#2B0A18", "#B3255F", "#FFA8C6"], // hibiscus
-  ["#1B2405", "#5E8C10", "#CBEB84"], // palm
-  ["#301A03", "#966A16", "#FAC775"], // brand gold
-];
-
-function hash(s: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i);
-    h = Math.imul(h, 16777619) >>> 0;
-  }
-  return h >>> 0;
-}
-
-/**
- * Up to two initials, so the tile still says which circle it is.
- *
- * No \p{L} escape here: tsconfig targets ES5 and the u flag is a compile
- * error. Stripping per word rather than up front also means a name that opens
- * with an emoji, which a lot of them do, gives its first LETTER instead of a
- * blank.
- */
-function initials(name: string): string {
-  const letters = name
-    .split(/\s+/)
-    .map((w) => w.replace(/[^A-Za-z0-9]/g, "").charAt(0))
-    .filter(Boolean);
-  if (letters.length === 0) return "•";
-  return (letters[0] + (letters[1] ?? "")).toUpperCase();
-}
-
 export default function CircleArt({
   name,
   members = 0,
@@ -64,8 +27,8 @@ export default function CircleArt({
   members?: number;
   className?: string;
 }) {
-  const h = hash(name);
-  const [deep, mid, light] = PALETTES[h % PALETTES.length];
+  const h = artHash(name);
+  const [deep, mid, light] = artPalette(name);
 
   // Five to eight people in the constellation. Reading the real membership
   // means the art carries one true fact about the circle rather than being
@@ -137,7 +100,7 @@ export default function CircleArt({
         className="absolute bottom-2 left-3 select-none text-[13px] font-black tracking-[0.18em] text-white/70"
         style={{ textShadow: "0 1px 3px rgba(0,0,0,0.45)" }}
       >
-        {initials(name)}
+        {artInitials(name)}
       </span>
     </div>
   );
