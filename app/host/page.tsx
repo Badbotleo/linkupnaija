@@ -63,6 +63,50 @@ export default async function HostPage({
     );
   }
 
+  // Hosting needs a verified number, asked of the same function the RLS
+  // policy uses so this page and the database can never disagree about who
+  // may host.
+  //
+  // Fails OPEN. Before migration-host-phone-gate.sql runs the function does
+  // not exist and the call errors, which must not look like a locked door to
+  // every host on the platform. The policy fails closed, and that is the half
+  // that actually enforces anything — events are inserted from the browser,
+  // so this check is here to explain the rule, not to be the rule.
+  const { data: mayHost, error: mayHostErr } = await supabase.rpc("may_host");
+  if (!mayHostErr && mayHost === false) {
+    return (
+      <div>
+        <AppHeader title="Host a link-up" back />
+        <div className="container-page max-w-lg py-10 text-center">
+          <div className="surface p-7">
+            <p className="text-4xl">📱</p>
+            <h1 className="mt-3 text-2xl font-extrabold text-gray-900">
+              Verify your number to host
+            </h1>
+            <p className="mt-2 text-[15px] leading-relaxed text-gray-600">
+              Hosts collect money and put people in a room together, so we ask
+              for a working number first. It takes a minute and nobody sees it
+              but us.
+            </p>
+            <Link
+              href="/profile/edit"
+              className="mt-5 inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition hover:bg-brand-600"
+            >
+              Verify my number
+            </Link>
+          </div>
+          <p className="mt-4 text-sm text-gray-500">
+            Nothing changes for joining.{" "}
+            <Link href="/events" className="font-semibold text-brand">
+              Find a link-up
+            </Link>{" "}
+            while you&apos;re here.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // Free members host a set number of events a month; Pro is unlimited.
   // Counted on created_at, so deleting an event doesn't buy back a slot —
   // otherwise the limit is trivially defeated by create-then-delete.

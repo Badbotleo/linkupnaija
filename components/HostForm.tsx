@@ -288,6 +288,15 @@ export default function HostForm({
     const isMissingColumn = (msg?: string | null) =>
       !!msg && /min_attendees|end_time|auto_confirm/.test(msg) && /column/i.test(msg);
 
+    // The host page checks may_host() before showing this form, but the policy
+    // is what actually enforces it and somebody can arrive here with a stale
+    // tab. Postgres says "new row violates row-level security policy", which
+    // tells a host nothing about what to do next.
+    const friendly = (msg?: string | null) =>
+      msg && /row-level security/i.test(msg)
+        ? "Verify your phone number before hosting. Add it in your profile, then try again."
+        : (msg ?? "Something went wrong. Please try again.");
+
     // Recurring series: create the series + its first 3 events.
     if (isSeries) {
       const { data: series, error: sErr } = await supabase
@@ -337,7 +346,7 @@ export default function HostForm({
           .insert(rows.map(({ gallery_urls: _drop, ...r }) => r)));
       }
       if (evErr) {
-        setError(evErr.message);
+        setError(friendly(evErr.message));
         setLoading(false);
         return;
       }
@@ -370,7 +379,7 @@ export default function HostForm({
     }
 
     if (error) {
-      setError(error.message);
+      setError(friendly(error.message));
       setLoading(false);
       return;
     }

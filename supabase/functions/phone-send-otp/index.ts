@@ -84,7 +84,17 @@ Deno.serve(async (req) => {
       from: Deno.env.get("TERMII_SENDER_ID") ?? "N-Alert",
       sms: `Your LinkUpNaija code is ${code}. It expires in ${OTP_TTL_MIN} minutes.`,
       type: "plain",
-      channel: "generic",
+      // "dnd", not "generic".
+      //
+      // A large share of Nigerian numbers are registered on the networks' Do
+      // Not Disturb list, and generic-channel traffic to them is filtered.
+      // For a verification code that means the SMS is billed and never
+      // arrives, and the person sits staring at an empty inbox blaming us.
+      // The DND channel is the transactional route those numbers still
+      // receive, which is also why the sender defaults to N-Alert.
+      //
+      // Overridable: set TERMII_CHANNEL if your account is set up otherwise.
+      channel: Deno.env.get("TERMII_CHANNEL") ?? "dnd",
       api_key: apiKey,
     }),
   });
