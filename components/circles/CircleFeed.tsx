@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/image";
+import ImageLightbox from "@/components/ui/ImageLightbox";
 import { SITE_ORIGIN } from "@/lib/qr";
 import { formatEventDate, formatEventTime, timeAgo } from "@/lib/format";
 import { toast } from "@/lib/toast";
@@ -541,11 +542,13 @@ function PostCard({
           )}
 
           {shown.image && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            // The timeline keeps its crop so rows stay uniform; the whole
+            // picture lives one tap away. Cropped and unopenable meant a tall
+            // photo could only ever be seen as a slice of itself.
+            <ImageLightbox
               src={shown.image}
-              alt=""
-              loading="lazy"
+              alt={shown.name ? `Posted by ${shown.name}` : "Post picture"}
+              caption={shown.name}
               className="mt-2.5 max-h-[30rem] w-full rounded-2xl border border-gray-100 object-cover"
             />
           )}
