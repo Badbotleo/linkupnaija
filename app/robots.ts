@@ -30,6 +30,9 @@ export default function robots(): MetadataRoute.Robots {
           // it as a duplicate of /events.
           "/events?",
           "/venues?",
+          // Poster scan codes. They forward to /events, so indexing one would
+          // put a tracking URL in the results in place of the real page.
+          "/p/",
         ],
       },
     ],

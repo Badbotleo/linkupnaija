@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { viewerKey } from "@/lib/viewer-key";
 
 /**
  * Counts a visit, once per browser per page per day.
@@ -20,28 +21,11 @@ import { createClient } from "@/lib/supabase/client";
  * Paths are normalised before they leave the browser. /events/<uuid> becomes
  * /events/:id, or the top-pages list is a hundred rows of one visit each.
  */
-const KEY = "linkup:vk";
-
 const UUID =
   /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
 
 function normalise(path: string): string {
   return path.replace(UUID, ":id").split("?")[0].slice(0, 200) || "/";
-}
-
-function viewerKey(): string | null {
-  try {
-    let k = localStorage.getItem(KEY);
-    if (!k) {
-      k = crypto.randomUUID();
-      localStorage.setItem(KEY, k);
-    }
-    return k;
-  } catch {
-    // Private mode or storage blocked. Skip rather than reach for anything
-    // that would identify the person instead.
-    return null;
-  }
 }
 
 /**
