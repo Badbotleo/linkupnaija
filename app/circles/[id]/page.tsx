@@ -9,6 +9,7 @@ import { memberProof } from "@/lib/social-proof";
 import JoinCircleButton from "@/components/circles/JoinCircleButton";
 import CircleFeed from "@/components/circles/CircleFeed";
 import CircleArt from "@/components/circles/CircleArt";
+import CircleCoverButton from "@/components/circles/CircleCoverButton";
 import CirclePendingRequests from "@/components/circles/CirclePendingRequests";
 import type { Circle } from "@/lib/types";
 
@@ -115,6 +116,13 @@ export default async function CirclePage({ params }: { params: { id: string } })
             name={circle.name}
             members={circle.member_count}
             className="h-36 w-full rounded-2xl sm:h-48"
+          />
+        )}
+
+        {isCreator && (
+          <CircleCoverButton
+            circleId={circle.id}
+            hasCover={!!circle.cover_image_url}
           />
         )}
       </div>

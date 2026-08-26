@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
+import AdminCircleCover from "@/components/admin/AdminCircleCover";
+import CircleArt from "@/components/circles/CircleArt";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser, getCurrentUserMeta } from "@/lib/supabase/auth";
 import CategoryBadge from "@/components/CategoryBadge";
@@ -81,6 +83,7 @@ export default async function AdminPage() {
     { data: payoutRows },
     { data: tournamentRows },
     { data: opportunityRows },
+    { data: circleRows },
   ] = await Promise.all([
     supabase.from("users").select("*", { count: "exact", head: true }),
     supabase.from("events").select("*", { count: "exact", head: true }),
@@ -127,6 +130,14 @@ export default async function AdminPage() {
       .from("opportunities")
       .select("*")
       .order("created_at", { ascending: false }),
+    // Covers only. Support needs to fix a circle picture when the creator has
+    // gone quiet, and the circle page's own button is creator-only because
+    // the RLS policy is.
+    supabase
+      .from("circles")
+      .select("id, name, cover_image_url, member_count")
+      .order("member_count", { ascending: false })
+      .limit(20)
   ]);
 
   const tournamentRegs = (tournamentRows ?? []) as TournamentRegistration[];
@@ -578,6 +589,52 @@ export default async function AdminPage() {
           </div>
         </section>
       </div>
+
+      {/* Circle covers */}
+      <section className="mt-10">
+        <h2 className="text-lg font-extrabold text-gray-900">Circle covers</h2>
+        <p className="mt-1 text-sm text-gray-600">
+          A circle without a photo falls back to its drawn art. Replace or clear
+          any of them here.
+        </p>
+        <div className="mt-4 divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-100">
+          {(circleRows ?? []).length === 0 ? (
+            <p className="px-4 py-6 text-sm text-gray-500">No circles yet.</p>
+          ) : (
+            (circleRows ?? []).map((c: {
+              id: string;
+              name: string;
+              cover_image_url: string | null;
+              member_count: number;
+            }) => (
+              <div key={c.id} className="flex items-center gap-3 px-4 py-3">
+                <div className="h-11 w-16 shrink-0 overflow-hidden rounded-lg">
+                  {c.cover_image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={c.cover_image_url} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <CircleArt name={c.name} members={c.member_count} className="h-full w-full" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <Link
+                    href={`/circles/${c.id}`}
+                    className="block truncate text-sm font-bold text-gray-900 hover:text-brand"
+                  >
+                    {c.name}
+                  </Link>
+                  <p className="text-xs text-gray-500">
+                    {c.member_count} {c.member_count === 1 ? "member" : "members"}
+                    {c.cover_image_url ? "" : " · using drawn art"}
+                  </p>
+                </div>
+                <AdminCircleCover circleId={c.id} hasCover={!!c.cover_image_url} />
+              </div>
+            ))
+          )}
+        </div>
+      </section>
+
     </div>
   );
 }
