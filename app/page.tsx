@@ -198,13 +198,19 @@ export default async function HomePage() {
       {/* Top: who we are in one line, then straight into search + browsing */}
       {/* ---------------------------------------------------------------- */}
       <section className="container-page pt-6">
-        <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-brand">
+        {/* Tracking is tighter than the label this replaced, and the flag
+            aligns to the first line rather than the block. The old text was
+            three short words; a full sentence at 0.2em wrapped and left
+            "CONNECTIONS." hanging on its own under the flag. */}
+        <p className="flex items-start gap-2 text-[11px] font-black uppercase leading-[1.45] tracking-[0.09em] text-brand">
           {/* Was three divs, and the middle one was `bg-white` — which the
               global .dark layer repaints along with every other white surface,
               so the stripe went black in dark mode. NaijaFlag paints #FFFFFF
               into an SVG, where no utility override can reach it. */}
-          <NaijaFlag size={12} />
-          Nigeria&apos;s vetted link-ups
+          <span className="mt-[3px] shrink-0">
+            <NaijaFlag size={12} />
+          </span>
+          Find your people. Build real connections.
         </p>
 
         {/* The hero is a pitch board, so it has to name the real scarcity.
@@ -225,9 +231,9 @@ export default async function HomePage() {
             the one detail that makes the promise credible instead of warm:
             you have already spoken to the room before you walk into it. */}
         <h1 className="mt-2 text-[30px] font-extrabold leading-[1.05] tracking-[-0.035em] text-gray-900 sm:text-[38px]">
-          Somewhere to be.
+          This weekend,
           <br />
-          <span className="text-brand">People to go with.</span>
+          <span className="text-brand">you&apos;re going out.</span>
         </h1>
 
         {supply.count > 0 ? (
