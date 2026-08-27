@@ -69,11 +69,16 @@ const getSupplyProof = unstable_cache(
       .gte("date", today)
       .not("category", "in", professionalCategoriesFilter());
 
+    // Same filter as the count above, or the two numbers describe different
+    // sets: the hero reads "68 link-ups ... live in 8 states", which is only
+    // true if those are the SAME 68. Without this, a state whose only
+    // upcoming events are professional ones inflated the state count.
     const { data: states } = await cache()
       .from("events")
       .select("state")
       .eq("event_type", "general")
       .gte("date", today)
+      .not("category", "in", professionalCategoriesFilter())
       .not("state", "is", null);
 
     const distinct = new Set((states ?? []).map((s: { state: string }) => s.state));
@@ -202,43 +207,53 @@ export default async function HomePage() {
           Nigeria&apos;s vetted link-ups
         </p>
 
+        {/* The hero is a pitch board, so it argues in the order a stranger
+            actually asks: what IS this, is there anything for me, is it safe,
+            what do I do.
+
+            It used to open with "Find your people." That is a positioning
+            line, not a hook — on its own it could be a dating app, a church
+            or a recruiter, and it asks a first-time visitor to care about the
+            brand before they know what is on offer. Meanwhile the one
+            genuinely arresting thing on the page, the live count, sat third
+            in grey at 15px.
+
+            "Raves and book clubs" does more work in four words: it is
+            concrete, it is a little funny, and the gap between the two names
+            IS the product. Somebody who assumed this was a party app learns
+            otherwise before they read a second line — which matters, because
+            Networking is the biggest category here, ahead of Party. */}
         <h1 className="mt-2 text-[30px] font-extrabold leading-[1.05] tracking-[-0.035em] text-gray-900 sm:text-[38px]">
-          Find your <span className="text-brand">people</span>.
+          Raves and <span className="text-brand">book clubs</span>.
         </h1>
 
-        {/* The claim, and the number that backs it.
-
-            A superlative like "Nigeria's best" cannot be substantiated on 82
-            events, and ARCON can ask for evidence of one. A UNIQUENESS claim
-            is bolder and defensible: no other events platform here vets the
-            guest list, and it is the single thing this product does that a
-            ticketing site structurally cannot. It also happens to be the
-            promise every other surface already makes.
-
-            The live count sits directly underneath, because a bold line with
-            nothing under it is a slogan and a visitor discounts it on sight. */}
-        <p className="mt-2.5 max-w-xl text-[19px] font-extrabold leading-snug tracking-[-0.02em] text-gray-900 sm:text-[22px]">
-          The only place in Nigeria where{" "}
-          <span className="text-brand">the host approves every guest</span>.
-        </p>
-
         {supply.count > 0 ? (
-          <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[15px] leading-relaxed text-gray-500">
-            <span className="font-bold text-gray-900">
-              {supply.count} link-ups on right now
-            </span>
-            {supply.states > 1 && (
-              <span>
-                across {supply.states} state{supply.states === 1 ? "" : "s"}
-              </span>
-            )}
+          <p className="mt-2.5 max-w-xl text-[19px] font-extrabold leading-snug tracking-[-0.02em] text-gray-900 sm:text-[22px]">
+            <span className="text-brand">{supply.count} link-ups</span> coming
+            up near you. Whatever your thing is, somebody&apos;s doing it.
           </p>
         ) : (
-          <p className="mt-1.5 max-w-lg text-[15px] leading-relaxed text-gray-500">
-            House parties, beach days, game nights and raves. See what&apos;s
-            actually happening near you this week.
+          <p className="mt-2.5 max-w-xl text-[19px] font-extrabold leading-snug tracking-[-0.02em] text-gray-900 sm:text-[22px]">
+            House parties, beach days, game nights, hikes and raves. Whatever
+            your thing is, somebody near you is doing it.
           </p>
         )}
+
+        {/* Safety comes third, not first. It is the reason to trust the offer,
+            which only matters once there is an offer worth trusting — and it
+            is still the one thing a ticketing site structurally cannot say. */}
+        <p className="mt-1.5 flex max-w-lg items-start gap-2 text-[15px] leading-relaxed text-gray-500">
+          <span className="mt-0.5 shrink-0 text-brand">
+            <LineIcon name="shield" size={15} />
+          </span>
+          <span>
+            The host approves every guest, so it&apos;s never a room full of
+            randos.
+            {supply.states > 1 && (
+              <> Live in {supply.states} states.</>
+            )}
+          </span>
+        </p>
 
         {/* Search opens the explore screen, the way tapping search in an app does */}
         <Link
