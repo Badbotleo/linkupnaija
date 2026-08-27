@@ -49,6 +49,40 @@ const cache = () =>
 
 
 
+/**
+ * The live number behind the claim in the hero.
+ *
+ * A bold line with nothing under it is a slogan, and a visitor discounts it
+ * on sight. This counts what is genuinely on, right now, with the same
+ * filters the shelves use — so the boast and the shelves can never disagree.
+ *
+ * Counted separately because getUpcomingEvents caps at 12 for the shelves;
+ * using that length would have quietly claimed "12" forever.
+ */
+const getSupplyProof = unstable_cache(
+  async () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const { count } = await cache()
+      .from("events")
+      .select("id", { count: "exact", head: true })
+      .eq("event_type", "general")
+      .gte("date", today)
+      .not("category", "in", professionalCategoriesFilter());
+
+    const { data: states } = await cache()
+      .from("events")
+      .select("state")
+      .eq("event_type", "general")
+      .gte("date", today)
+      .not("state", "is", null);
+
+    const distinct = new Set((states ?? []).map((s: { state: string }) => s.state));
+    return { count: count ?? 0, states: distinct.size };
+  },
+  ["home-supply-proof"],
+  { revalidate: 600 }
+);
+
 // Real upcoming events fill the shelves — the page leads with what's actually
 // on, not with a pitch about what could be on.
 const getUpcomingEvents = unstable_cache(
@@ -136,6 +170,7 @@ export default async function HomePage() {
   // venues as well, for shelves that no longer exist — three round trips per
   // load for data nobody saw.
   const upcoming = (await getUpcomingEvents()) as EventRow[];
+  const supply = await getSupplyProof();
 
   // The featured slot is for something the visitor could actually turn up to.
   // FC26 is an Abuja event, so it only runs for Abuja; everyone else gets the
@@ -164,16 +199,46 @@ export default async function HomePage() {
               so the stripe went black in dark mode. NaijaFlag paints #FFFFFF
               into an SVG, where no utility override can reach it. */}
           <NaijaFlag size={12} />
-          Nigeria&apos;s social events platform
+          Nigeria&apos;s vetted link-ups
         </p>
 
         <h1 className="mt-2 text-[30px] font-extrabold leading-[1.05] tracking-[-0.035em] text-gray-900 sm:text-[38px]">
           Find your <span className="text-brand">people</span>.
         </h1>
-        <p className="mt-1.5 max-w-lg text-[15px] leading-relaxed text-gray-500">
-          House parties, beach days, game nights and raves. See what&apos;s
-          actually happening near you this week.
+
+        {/* The claim, and the number that backs it.
+
+            A superlative like "Nigeria's best" cannot be substantiated on 82
+            events, and ARCON can ask for evidence of one. A UNIQUENESS claim
+            is bolder and defensible: no other events platform here vets the
+            guest list, and it is the single thing this product does that a
+            ticketing site structurally cannot. It also happens to be the
+            promise every other surface already makes.
+
+            The live count sits directly underneath, because a bold line with
+            nothing under it is a slogan and a visitor discounts it on sight. */}
+        <p className="mt-2.5 max-w-xl text-[19px] font-extrabold leading-snug tracking-[-0.02em] text-gray-900 sm:text-[22px]">
+          The only place in Nigeria where{" "}
+          <span className="text-brand">the host approves every guest</span>.
         </p>
+
+        {supply.count > 0 ? (
+          <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[15px] leading-relaxed text-gray-500">
+            <span className="font-bold text-gray-900">
+              {supply.count} link-ups on right now
+            </span>
+            {supply.states > 1 && (
+              <span>
+                across {supply.states} state{supply.states === 1 ? "" : "s"}
+              </span>
+            )}
+          </p>
+        ) : (
+          <p className="mt-1.5 max-w-lg text-[15px] leading-relaxed text-gray-500">
+            House parties, beach days, game nights and raves. See what&apos;s
+            actually happening near you this week.
+          </p>
+        )}
 
         {/* Search opens the explore screen, the way tapping search in an app does */}
         <Link
