@@ -52,14 +52,14 @@ export const POSTER_CODES: Record<string, PosterCode> = {
   // TikTok against Instagram, but which idea earned the click.
   //
   // Point the ad's destination URL straight at these.
-  "ig-trust": { dest: "/events", label: "Instagram · No randos" },
-  "ig-bored": { dest: "/events", label: "Instagram · Bored this weekend" },
+  "ig-range": { dest: "/events", label: "Instagram · Raves and book clubs" },
+  "ig-everyone": { dest: "/events", label: "Instagram · Not a party person" },
   "ig-cash": { dest: "/join", label: "Instagram · 600 a paddy" },
-  "ig-ease": { dest: "/events", label: "Instagram · One tap" },
-  "tt-trust": { dest: "/events", label: "TikTok · No randos" },
-  "tt-bored": { dest: "/events", label: "TikTok · Bored this weekend" },
+  "ig-solo": { dest: "/events", label: "Instagram · Come alone" },
+  "tt-range": { dest: "/events", label: "TikTok · Raves and book clubs" },
+  "tt-everyone": { dest: "/events", label: "TikTok · Not a party person" },
   "tt-cash": { dest: "/join", label: "TikTok · 600 a paddy" },
-  "tt-ease": { dest: "/events", label: "TikTok · One tap" },
+  "tt-solo": { dest: "/events", label: "TikTok · Come alone" },
   "wa-share": { dest: "/events", label: "WhatsApp broadcast" },
 };
 
