@@ -207,41 +207,46 @@ export default async function HomePage() {
           Nigeria&apos;s vetted link-ups
         </p>
 
-        {/* The hero is a pitch board, so it argues in the order a stranger
-            actually asks: what IS this, is there anything for me, is it safe,
-            what do I do.
+        {/* The hero is a pitch board, so it has to name the real scarcity.
+            Two earlier attempts named the wrong one.
 
-            It used to open with "Find your people." That is a positioning
-            line, not a hook — on its own it could be a dating app, a church
-            or a recruiter, and it asks a first-time visitor to care about the
-            brand before they know what is on offer. Meanwhile the one
-            genuinely arresting thing on the page, the live count, sat third
-            in grey at 15px.
+            "Find your people." was positioning, not a hook — it could be a
+            dating app, a church or a recruiter. "Raves and book clubs." was
+            merchandising: it says what is in the shop, not why anyone walks
+            in. Both describe US.
 
-            "Raves and book clubs" does more work in four words: it is
-            concrete, it is a little funny, and the gap between the two names
-            IS the product. Somebody who assumed this was a party app learns
-            otherwise before they read a second line — which matters, because
-            Networking is the biggest category here, ahead of Party. */}
+            Nobody in Lagos or Abuja lacks events. The city is drowning in
+            them. What people lack is somebody to go with, which is why a good
+            flyer still ends with staying home. That is the scarcity this
+            product actually removes, so that is the line — in the words
+            somebody would really use, not "companionship" or "connection".
+
+            The group chat is the proof and it goes directly underneath. It is
+            the one detail that makes the promise credible instead of warm:
+            you have already spoken to the room before you walk into it. */}
         <h1 className="mt-2 text-[30px] font-extrabold leading-[1.05] tracking-[-0.035em] text-gray-900 sm:text-[38px]">
-          Raves and <span className="text-brand">book clubs</span>.
+          Somewhere to be.
+          <br />
+          <span className="text-brand">People to go with.</span>
         </h1>
 
         {supply.count > 0 ? (
           <p className="mt-2.5 max-w-xl text-[19px] font-extrabold leading-snug tracking-[-0.02em] text-gray-900 sm:text-[22px]">
-            <span className="text-brand">{supply.count} link-ups</span> coming
-            up near you. Whatever your thing is, somebody&apos;s doing it.
+            {supply.count} link-ups near you, raves to book clubs. You&apos;re
+            in the group chat{" "}
+            <span className="text-brand">before you show up</span>.
           </p>
         ) : (
           <p className="mt-2.5 max-w-xl text-[19px] font-extrabold leading-snug tracking-[-0.02em] text-gray-900 sm:text-[22px]">
-            House parties, beach days, game nights, hikes and raves. Whatever
-            your thing is, somebody near you is doing it.
+            House parties, beach days, hikes, raves and book clubs. You&apos;re
+            in the group chat{" "}
+            <span className="text-brand">before you show up</span>.
           </p>
         )}
 
-        {/* Safety comes third, not first. It is the reason to trust the offer,
-            which only matters once there is an offer worth trusting — and it
-            is still the one thing a ticketing site structurally cannot say. */}
+        {/* Safety is third: the reason to trust the offer, which only matters
+            once there is an offer worth trusting. Still the one thing a
+            ticketing site structurally cannot say. */}
         <p className="mt-1.5 flex max-w-lg items-start gap-2 text-[15px] leading-relaxed text-gray-500">
           <span className="mt-0.5 shrink-0 text-brand">
             <LineIcon name="shield" size={15} />
@@ -249,9 +254,7 @@ export default async function HomePage() {
           <span>
             The host approves every guest, so it&apos;s never a room full of
             randos.
-            {supply.states > 1 && (
-              <> Live in {supply.states} states.</>
-            )}
+            {supply.states > 1 && <> Live in {supply.states} states.</>}
           </span>
         </p>
 
