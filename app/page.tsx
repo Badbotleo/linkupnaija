@@ -236,20 +236,6 @@ export default async function HomePage() {
           <span className="text-brand">you&apos;re going out.</span>
         </h1>
 
-        {supply.count > 0 ? (
-          <p className="mt-2.5 max-w-xl text-[19px] font-extrabold leading-snug tracking-[-0.02em] text-gray-900 sm:text-[22px]">
-            {supply.count} link-ups near you, raves to book clubs. You&apos;re
-            in the group chat{" "}
-            <span className="text-brand">before you show up</span>.
-          </p>
-        ) : (
-          <p className="mt-2.5 max-w-xl text-[19px] font-extrabold leading-snug tracking-[-0.02em] text-gray-900 sm:text-[22px]">
-            House parties, beach days, hikes, raves and book clubs. You&apos;re
-            in the group chat{" "}
-            <span className="text-brand">before you show up</span>.
-          </p>
-        )}
-
         {/* Safety is third: the reason to trust the offer, which only matters
             once there is an offer worth trusting. Still the one thing a
             ticketing site structurally cannot say. */}
