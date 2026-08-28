@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { isInAppBrowser } from "@/lib/webview";
 import LineIcon from "../ui/LineIcon";
 import AddToCalendar from "../AddToCalendar";
+import { trackJoinLead } from "@/lib/analytics";
 
 /**
  * Joining an event without leaving the event.
@@ -157,6 +158,8 @@ export default function JoinSheet({
     try {
       sessionStorage.removeItem(INTENT_KEY);
     } catch {}
+    // The conversion the ads are really buying: somebody is now going.
+    trackJoinLead(event.id, !event.price);
     setStep("done");
     router.refresh();
   }

@@ -12,6 +12,7 @@ import { toast } from "@/lib/toast";
 import LineIcon from "./ui/LineIcon";
 import { haptic } from "@/lib/haptics";
 import type { RsvpStatus } from "@/lib/types";
+import { trackJoinLead, trackPurchase } from "@/lib/analytics";
 
 type JoinState = "none" | RsvpStatus;
 
@@ -284,6 +285,10 @@ export default function RsvpButton({
         // after returning from the Paystack popup.
         ({ error: txErr } = await supabase.from("transactions").insert(txRow));
       }
+
+      // Only after the row lands. Reporting a purchase we failed to record
+      // would have Google optimising toward money we cannot reconcile.
+      if (!txErr) trackPurchase(eventId, dueNow);
 
       if (txErr) {
         console.error("Failed to record transaction:", txErr.message);

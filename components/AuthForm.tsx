@@ -10,6 +10,7 @@ import {
 } from "@/lib/name-placeholder";
 import { NIGERIAN_STATES } from "@/lib/constants";
 import { isInAppBrowser } from "@/lib/webview";
+import { trackSignUp } from "@/lib/analytics";
 
 // Supabase generates the emailed code, and its length is a project-level
 // Auth setting — this project currently sends 8 digits. Accept the whole
@@ -135,6 +136,10 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
         setLoading(false);
         return;
       }
+      // Fires on account creation, not on every login, so the number stays a
+      // count of new people rather than of visits.
+      trackSignUp("email");
+
       // If email confirmation is on there is no active session yet — send the
       // user to the "check your email" page. Otherwise straight to setup.
       if (data.session) {

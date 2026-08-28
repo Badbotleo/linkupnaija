@@ -61,6 +61,15 @@ export const POSTER_CODES: Record<string, PosterCode> = {
   "tt-cash": { dest: "/join", label: "TikTok · 600 a paddy" },
   "tt-solo": { dest: "/events", label: "TikTok · Come alone" },
   "wa-share": { dest: "/events", label: "WhatsApp broadcast" },
+
+  // Google Search. Google appends ?gclid= and VisitRecorder strips the query,
+  // so without a code every paid search click lands in the same bucket as
+  // somebody typing the address. One per ad group, so the search themes stay
+  // separable in our own numbers as well as in Google's.
+  "gs-brand": { dest: "/events", label: "Google · brand" },
+  "gs-things": { dest: "/events", label: "Google · things to do" },
+  "gs-lagos": { dest: `/events?state=${encodeURIComponent("Lagos")}`, label: "Google · Lagos" },
+  "gs-abuja": { dest: `/events?state=${encodeURIComponent("FCT - Abuja")}`, label: "Google · Abuja" },
 };
 
 /** Where an unknown but well-formed code goes. */
