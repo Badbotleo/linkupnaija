@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 import { createClient } from "@/lib/supabase/server";
 import { formatNaira } from "@/lib/paystack";
+import TicketDelivery from "@/components/admin/TicketDelivery";
 
 export const dynamic = "force-dynamic";
 
@@ -15,13 +16,25 @@ export const metadata = { title: "Ticket payments" };
  * you open when somebody says they paid and cannot get in, and hunting for it
  * under four other sections is exactly the wrong moment to be scrolling.
  *
- * No migration. "Admins read all transactions" already exists on the table,
- * so the admin's own session can select this directly — but that also means
- * the page MUST check is_admin itself. Without the check a non-admin gets a
- * page that renders an empty table rather than a refusal, which reads as "no
- * payments" instead of "not for you".
+ * "Admins read all transactions" already exists on the table, so the admin's
+ * own session selects this directly — but that also means the page MUST check
+ * is_admin itself. Without the check a non-admin gets a page that renders an
+ * empty table rather than a refusal, which reads as "no payments" instead of
+ * "not for you".
+ *
+ * The delivery columns come from migration-ticket-delivery.sql and the query
+ * falls back without them. A select naming a column that does not exist can
+ * come back as zero rows rather than an error, so shipping this ahead of the
+ * migration would have told an admin with real sales that nobody had paid.
  */
 const SELECT =
+  "id, amount, platform_fee, delivered, delivered_at, delivery_note, " +
+  "paystack_reference, created_at, " +
+  "buyer:users!transactions_user_id_fkey(name, email), " +
+  "event:events!transactions_event_id_fkey(id, title, date, tickets_outsourced)";
+
+/** Before migration-ticket-delivery.sql. Delivery simply isn't tracked yet. */
+const SELECT_BASE =
   "id, amount, platform_fee, paystack_reference, created_at, " +
   "buyer:users!transactions_user_id_fkey(name, email), " +
   "event:events!transactions_event_id_fkey(id, title, date)";
@@ -32,8 +45,16 @@ interface Payment {
   platform_fee: number;
   paystack_reference: string | null;
   created_at: string;
+  delivered: boolean | null;
+  delivered_at: string | null;
+  delivery_note: string | null;
   buyer: { name: string | null; email: string | null } | null;
-  event: { id: string; title: string; date: string } | null;
+  event: {
+    id: string;
+    title: string;
+    date: string;
+    tickets_outsourced: boolean | null;
+  } | null;
 }
 
 export default async function AdminPaymentsPage() {
@@ -51,12 +72,28 @@ export default async function AdminPaymentsPage() {
     .maybeSingle<{ is_admin: boolean | null }>();
   if (!me?.is_admin) redirect("/");
 
-  const { data, error } = await supabase
-    .from("transactions")
-    .select(SELECT)
-    .order("created_at", { ascending: false });
+  // Full select first, then the pre-migration shape. Checked on the error AND
+  // on emptiness, because the failure this guards against is the silent one.
+  let rows: unknown[] | null = null;
+  let error: { message: string } | null = null;
+  {
+    const full = await supabase
+      .from("transactions")
+      .select(SELECT)
+      .order("created_at", { ascending: false });
+    if (full.data && full.data.length > 0) {
+      rows = full.data;
+    } else {
+      const base = await supabase
+        .from("transactions")
+        .select(SELECT_BASE)
+        .order("created_at", { ascending: false });
+      rows = base.data ?? full.data;
+      error = base.error ?? full.error;
+    }
+  }
 
-  const payments = (data ?? []) as unknown as Payment[];
+  const payments = (rows ?? []) as unknown as Payment[];
 
   const gross = payments.reduce((n, p) => n + (p.amount || 0), 0);
   const fees = payments.reduce((n, p) => n + (p.platform_fee || 0), 0);
@@ -64,6 +101,11 @@ export default async function AdminPaymentsPage() {
   // one nobody can work out in their head from the other two.
   const toHosts = gross - fees;
   const buyers = new Set(payments.map((p) => p.buyer?.email ?? p.id)).size;
+  // Only outsourced tickets can be outstanding. Ours are in the buyer's
+  // account the moment the payment lands.
+  const owing = payments.filter(
+    (p) => p.event?.tickets_outsourced && !p.delivered
+  ).length;
 
   const naira = (n: number) => formatNaira(n);
   const when = (iso: string) =>
@@ -104,9 +146,12 @@ export default async function AdminPaymentsPage() {
       <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
           { label: "Collected", value: naira(gross) },
-          { label: "Platform fees", value: naira(fees) },
+          { label: "We earned", value: naira(fees) },
           { label: "Owed to hosts", value: naira(toHosts) },
-          { label: "Payments", value: String(payments.length) },
+          {
+            label: owing > 0 ? "Awaiting delivery" : "Payments",
+            value: owing > 0 ? String(owing) : String(payments.length),
+          },
         ].map((s) => (
           <div key={s.label} className="surface p-4">
             <p className="text-[11px] font-black uppercase tracking-[0.14em] text-gray-500">
@@ -130,13 +175,15 @@ export default async function AdminPaymentsPage() {
           // Scrolls inside its own box: a reference on the right that pushes
           // the page sideways on a phone makes the whole table unusable.
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px] text-left text-sm">
+            <table className="w-full min-w-[980px] text-left text-sm">
               <thead className="border-b border-gray-100 text-[11px] font-black uppercase tracking-[0.12em] text-gray-500">
                 <tr>
                   <th className="px-4 py-3">Who</th>
                   <th className="px-4 py-3">Link-up</th>
                   <th className="px-4 py-3 text-right">Paid</th>
-                  <th className="px-4 py-3 text-right">Fee</th>
+                  <th className="px-4 py-3 text-right">We earn</th>
+                  <th className="px-4 py-3 text-right">Host earns</th>
+                  <th className="px-4 py-3">Ticket</th>
                   <th className="px-4 py-3">When</th>
                   <th className="px-4 py-3">Reference</th>
                 </tr>
@@ -170,6 +217,23 @@ export default async function AdminPaymentsPage() {
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums text-gray-500">
                       {naira(p.platform_fee)}
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold tabular-nums text-emerald-800">
+                      {naira(p.amount - p.platform_fee)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <TicketDelivery
+                        txId={p.id}
+                        eventId={p.event?.id ?? null}
+                        delivered={!!p.delivered}
+                        outsourced={!!p.event?.tickets_outsourced}
+                        note={p.delivery_note}
+                      />
+                      {p.delivered && p.delivered_at && (
+                        <p className="mt-1 text-[11px] text-gray-400">
+                          {when(p.delivered_at)}
+                        </p>
+                      )}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-gray-600">
                       {when(p.created_at)}
