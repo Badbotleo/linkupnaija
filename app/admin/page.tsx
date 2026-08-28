@@ -342,6 +342,12 @@ export default async function AdminPage() {
           📊 Analytics
         </Link>
         <Link
+          href="/admin/payments"
+          className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-bold text-gray-700 transition hover:border-brand/40 hover:text-brand"
+        >
+          🎟️ Ticket payments
+        </Link>
+        <Link
           href="/admin/support"
           className="inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-bold text-gray-700 transition hover:border-brand/40 hover:text-brand"
         >
