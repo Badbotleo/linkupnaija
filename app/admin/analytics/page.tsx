@@ -58,6 +58,8 @@ export default async function AdminAnalyticsPage() {
     statesRes,
     dailyRes,
     posterRes,
+    posterHoursRes,
+    posterRecentRes,
   ] = await Promise.all([
     supabase.from("users").select("id, created_at, state"),
     supabase
@@ -77,6 +79,10 @@ export default async function AdminAnalyticsPage() {
     // but buried under /events and the home page where nobody would
     // ever see them, which defeats the point of printing codes at all.
     supabase.rpc("site_poster_scans", { p_days: 30 }),
+    // When, not just how many. The sheets are on keke and around campus now,
+    // and those are read at different times of day.
+    supabase.rpc("site_poster_hours", { p_days: 30 }),
+    supabase.rpc("site_poster_recent", { p_limit: 12 }),
   ]);
 
   const users = usersRes.data ?? [];
@@ -106,6 +112,27 @@ export default async function AdminAnalyticsPage() {
     first_seen: string;
     last_seen: string;
   }[];
+  const posterHours = (posterHoursRes.data ?? []) as { hour: number; scans: number }[];
+  const posterRecent = (posterRecentRes.data ?? []) as {
+    code: string;
+    at: string;
+    state: string | null;
+  }[];
+  const peakHour = posterHours.reduce(
+    (best, h) => (h.scans > (best?.scans ?? 0) ? h : best),
+    null as { hour: number; scans: number } | null
+  );
+  const hourMax = Math.max(1, ...posterHours.map((h) => h.scans));
+  // Lagos time, always. The rows are timestamptz and the reader is in Nigeria;
+  // rendering them in the server's zone would quietly shift every scan.
+  const wat = (iso: string) =>
+    new Date(iso).toLocaleString("en-NG", {
+      timeZone: "Africa/Lagos",
+      weekday: "short",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
 
   const now = Date.now();
   const since = (days: number) => now - days * DAY;
@@ -407,6 +434,64 @@ export default async function AdminAnalyticsPage() {
                   </span>
                 </div>
               ))}
+            </div>
+          )}
+        </Section>
+
+        {/* --- when posters get scanned --- */}
+        <Section
+          title="When they scan"
+          hint={
+            peakHour
+              ? `Lagos time, last 30 days. Busiest hour so far is ${peakHour.hour}:00.`
+              : "Lagos time, last 30 days."
+          }
+        >
+          {posterRecent.length === 0 ? (
+            <p className="text-[13px] text-gray-500">
+              Nothing scanned yet. Run migration-poster-timing.sql if this stays
+              empty after a scan you know happened.
+            </p>
+          ) : (
+            <div className="space-y-5">
+              {/* Twenty-four bars rather than a line: at this volume most
+                  hours are empty, and an empty bar is honest where a line
+                  between two points invents a trend. */}
+              <div className="flex items-end gap-[3px]" style={{ height: 64 }}>
+                {Array.from({ length: 24 }, (_, h) => {
+                  const found = posterHours.find((x) => x.hour === h);
+                  const n = found?.scans ?? 0;
+                  return (
+                    <div key={h} className="flex flex-1 flex-col items-center gap-1">
+                      <div
+                        title={`${h}:00 — ${n} scan${n === 1 ? "" : "s"}`}
+                        className={`w-full rounded-sm ${n > 0 ? "bg-naija/70" : "bg-gray-100"}`}
+                        style={{ height: Math.max(2, (n / hourMax) * 48) }}
+                      />
+                      {h % 6 === 0 && (
+                        <span className="text-[9px] tabular-nums text-gray-400">{h}</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="space-y-1.5">
+                {posterRecent.map((s, i) => (
+                  <div
+                    key={`${s.code}-${s.at}-${i}`}
+                    className="flex items-center justify-between gap-3 text-[13px]"
+                  >
+                    <span className="truncate font-semibold text-gray-700">
+                      {POSTER_CODES[s.code]?.label ?? s.code}
+                    </span>
+                    <span className="shrink-0 tabular-nums text-gray-500">
+                      {wat(s.at)}
+                      {s.state ? ` · ${s.state}` : ""}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </Section>
