@@ -14,6 +14,11 @@ import { getSessionUser } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 import VisitRecorder from "@/components/VisitRecorder";
 import { getVisitorState } from "@/lib/visitor-geo";
+import {
+  jsonLdScript,
+  organizationJsonLd,
+  websiteJsonLd,
+} from "@/lib/structured-data";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -133,6 +138,15 @@ export default async function RootLayout({
         <DeferredWidgets />
         <BottomNav isLoggedIn={!!user} unread={unread} />
         <Toaster />
+        {/* Who the site is, and its search endpoint. Once, sitewide. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(organizationJsonLd()) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(websiteJsonLd()) }}
+        />
       </body>
       <GoogleAnalytics gaId="G-4YZV5789P8" />
     </html>

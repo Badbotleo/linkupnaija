@@ -38,6 +38,7 @@ import TicketPanel from "@/components/events/TicketPanel";
 import TicketTiersEditor from "@/components/events/TicketTiersEditor";
 import EventPictures from "@/components/events/EventPictures";
 import StickyJoinBar from "@/components/events/StickyJoinBar";
+import { eventJsonLd, jsonLdScript } from "@/lib/structured-data";
 import RecapReel from "@/components/home/RecapReel";
 import { getRecapsForEvent } from "@/lib/recaps";
 import { isProActive } from "@/lib/pro";
@@ -90,6 +91,7 @@ export async function generateMetadata({
   return {
     title,
     description,
+    alternates: { canonical: `/events/${params.id}` },
     openGraph: { title, description, type: "article" },
     twitter: { card: "summary_large_image", title, description },
   };
@@ -414,6 +416,31 @@ export default async function EventDetailPage({
           }
         />
       )}
+
+      {/* Event structured data. Turns a blue link into a result showing the
+          date, the place and the price, and makes this page eligible for
+          Google's events carousel — which is where "things to do in Lagos
+          this weekend" actually lands. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLdScript(
+            eventJsonLd({
+              id: event.id,
+              title: event.title,
+              description: event.description,
+              date: event.date,
+              time: event.time,
+              end_time: (event as { end_time?: string | null }).end_time,
+              location: event.location,
+              state: event.state,
+              price: event.price,
+              cover_image_url: event.cover_image_url,
+              host: { id: event.host_id, name: event.host?.name ?? null },
+            })
+          ),
+        }}
+      />
 
       <div className="mt-4 overflow-hidden rounded-2xl shadow-card">
         <EventCover
