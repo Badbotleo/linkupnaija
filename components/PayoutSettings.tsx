@@ -98,7 +98,7 @@ export default function PayoutSettings({
       <h2 className="text-lg font-bold text-gray-900">Payout Settings</h2>
       <p className="mt-1 text-sm text-gray-500">
         Add your bank details to receive payments from your hosted events.
-        LinkUpNaija takes a 10% platform fee.
+        LinkUpNaija takes a 10% platform fee, or 5% on Pro.
       </p>
 
       {initial.payout_bank && initial.payout_account_number && (

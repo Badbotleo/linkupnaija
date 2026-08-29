@@ -12,6 +12,7 @@ import LineIcon from "./ui/LineIcon";
 import { haptic } from "@/lib/haptics";
 import type { RsvpStatus } from "@/lib/types";
 import { trackJoinLead, trackPurchase } from "@/lib/analytics";
+import { platformFee } from "@/lib/pro";
 
 type JoinState = "none" | RsvpStatus;
 
@@ -27,6 +28,8 @@ export default function RsvpButton({
   requestsThisMonth,
   eventTitle,
   hostSubaccount,
+  hostIsPro = false,
+  hostProExpiresAt = null,
   walletBalance = 0,
   reserveFirst = false,
   eventDate,
@@ -52,6 +55,9 @@ export default function RsvpButton({
   requestsThisMonth: number;
   eventTitle: string;
   hostSubaccount: string | null;
+  /** The HOST's Pro status, not the buyer's — it sets the platform's cut. */
+  hostIsPro?: boolean;
+  hostProExpiresAt?: string | null;
   walletBalance?: number;
   /**
    * Paid event with a minimum that hasn't been reached. Reserving costs
@@ -207,15 +213,26 @@ export default function RsvpButton({
         : 0;
     const remainder = reserveFirst ? 0 : dueNow - walletUsed;
 
+    // Our cut of the whole sale. Half for a Pro host.
+    const fee = platformFee(dueNow, hostIsPro, hostProExpiresAt);
+    // What to take at the gateway, which only ever sees `remainder`.
+    //
+    // The host is owed dueNow - fee regardless of how the guest paid, so the
+    // wallet portion comes out of OUR side: it was platform-issued referral
+    // credit, not the host's discount to fund. Without this the host quietly
+    // received 90% of a smaller number every time somebody spent credit.
+    const gatewayFee = Math.max(0, Math.min(fee - walletUsed, remainder));
+
     if (remainder > 0) {
       try {
         const result = await payWithPaystack({
           email: user.email ?? "",
           amountNaira: remainder,
           metadata: { purpose: "event_ticket", eventId, userId: user.id },
-          // If the host has a payout subaccount, Paystack splits the charge
-          // automatically: 90% to the host, 10% to LinkUpNaija.
+          // If the host has a payout subaccount, Paystack splits the charge:
+          // our cut to LinkUpNaija, the rest straight to the host's bank.
           subaccount: hostSubaccount ?? undefined,
+          platformFeeNaira: gatewayFee,
         });
         if (!result) {
           setLoading(false); // user closed the popup without paying
@@ -275,7 +292,10 @@ export default function RsvpButton({
         event_id: eventId,
         user_id: user.id,
         amount: dueNow,
-        platform_fee: Math.round(dueNow * 0.1),
+        // The database recomputes this on insert from the host's Pro status,
+        // so a buyer cannot name their own fee. Sent anyway to keep the row
+        // valid on its own and the two in agreement.
+        platform_fee: fee,
         paystack_reference: paymentReference ?? "wallet",
       };
       let { error: txErr } = await supabase.from("transactions").insert(txRow);

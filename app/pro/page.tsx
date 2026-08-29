@@ -2,7 +2,13 @@ import AppHeader from "@/components/AppHeader";
 import LineIcon from "@/components/ui/LineIcon";
 import { createClient } from "@/lib/supabase/server";
 import GoProButton from "@/components/GoProButton";
-import { PRO_PRICE, FREE_HOST_LIMIT, isProActive } from "@/lib/pro";
+import {
+  PRO_PRICE,
+  FREE_HOST_LIMIT,
+  PLATFORM_FEE_PERCENT,
+  PRO_PLATFORM_FEE_PERCENT,
+  isProActive,
+} from "@/lib/pro";
 import { formatNaira } from "@/lib/paystack";
 
 export const dynamic = "force-dynamic";
@@ -10,27 +16,32 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "LinkUpNaija Pro",
   description:
-    "₦4,999/month — less than one ticket to most events on here. Host unlimited link-ups, get in 24 hours early, and send as many join requests as you like.",
+    "₦4,999/month. Keep 95% of every ticket you sell instead of 90%, host without a limit, and get in 24 hours before everyone else.",
 };
 
 /**
- * Only what the code actually does.
+ * Only what the code actually does. Everything here is enforced somewhere:
+ * the fee in a trigger on `transactions`, the queue order in ManageRequests,
+ * the early window in a trigger on `rsvps`.
  *
- * Two benefits were removed rather than reworded: "Get in 24 hours before
- * everyone else" and "Hosts see you first". Neither exists — there is no
- * early-access window on events and no is_pro ordering in the host's request
- * queue. Selling them at 4,999 a month is a refund waiting to happen, and a
- * thinner honest list is worth more than a longer one somebody can disprove
- * on their first weekend.
- *
- * Both are buildable and worth building; until they are, they do not belong
- * on the page.
+ * The fee leads, because it is the only line that pays for itself rather than
+ * feeling nice. Every other benefit asks the reader to value convenience at
+ * 4,999 a month; this one hands them a sum they can check against their last
+ * event. A host who sells any real volume is now losing money by NOT paying,
+ * which is a much easier thing to sell than a badge.
  *
  * The limits are quoted as what they cost you, not as what the tier grants.
  * "2 a month" means nothing until somebody works out it stops a weekly night
  * in its second week, so the copy does that sum for them.
  */
 const BENEFITS = [
+  {
+    icon: "ticket",
+    title: "Half the fee on every ticket",
+    text: `Free hosts give up ${PLATFORM_FEE_PERCENT}% of a sale. Pro gives up ${PRO_PLATFORM_FEE_PERCENT}%. Sell twenty ₦10,000 tickets and the half you keep is ₦10,000 back in one night, against ₦${PRO_PRICE.toLocaleString(
+      "en-NG"
+    )} for the month.`,
+  },
   {
     icon: "infinity",
     title: "Host without a ceiling",
@@ -104,7 +115,7 @@ export default async function ProPage() {
           <span className="text-lg font-medium text-brand-100">/month</span>
         </p>
         <p className="mx-auto mt-3 max-w-sm text-[15px] leading-snug text-brand-100">
-          Less than one ticket to most events on here — 8 out of 10 paid
+          Less than one ticket to most events on here. 8 out of 10 paid
           link-ups cost more than a month of Pro.
         </p>
         <div className="mt-6 flex justify-center">

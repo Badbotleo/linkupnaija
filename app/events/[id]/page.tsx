@@ -785,6 +785,8 @@ export default async function EventDetailPage({
                     requestsThisMonth={requestsThisMonth}
                     eventTitle={event.title}
                     hostSubaccount={event.host?.paystack_subaccount_code ?? null}
+                    hostIsPro={!!event.host?.is_pro}
+                    hostProExpiresAt={event.host?.pro_expires_at ?? null}
                     walletBalance={walletBalance}
                     reserveFirst={reserveFirst}
                     eventDate={event.date}

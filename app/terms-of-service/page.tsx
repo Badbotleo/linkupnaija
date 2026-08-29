@@ -64,7 +64,7 @@ export default function TermsOfServicePage() {
         <LegalList
           items={[
             "Hosts may set a ticket price for an event. Where a price is set, attendees must complete payment via Paystack before their join request is submitted.",
-            "LinkUpNaija charges a platform fee of 10% on paid ticket sales.",
+            "LinkUpNaija charges a platform fee of 10% on paid ticket sales, reduced to 5% while the host holds an active LinkUpNaija Pro subscription. The rate applied is the one in effect at the moment of each sale.",
             "Hosts may pay ₦5,000 to boost an event for 48 hours; boosted events appear at the top of the feed with a Boost badge. Boost payments are non-refundable.",
             "For confirmed venue reservations, an agreed commission may apply, shown before confirmation.",
             "Payments are processed by Paystack and are subject to its terms. Refunds, where applicable, are handled on a case-by-case basis. Contact us with your transaction reference.",

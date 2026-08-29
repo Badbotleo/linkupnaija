@@ -13,6 +13,7 @@ interface PaystackPop {
     currency?: string;
     ref?: string;
     subaccount?: string;
+    transaction_charge?: number; // in kobo, to the main account
     bearer?: string;
     metadata?: Record<string, unknown>;
     callback: (response: { reference: string }) => void;
@@ -69,6 +70,17 @@ export async function payWithPaystack(opts: {
   amountNaira: number;
   metadata?: Record<string, unknown>;
   subaccount?: string; // host's Paystack subaccount for split payments
+  /**
+   * Naira to route to the main account on this one charge, overriding the
+   * subaccount's stored percentage.
+   *
+   * Every subaccount is created at the standard 90/10 and left there. Pro's
+   * half fee is applied per transaction instead, so a lapsed subscription
+   * needs no Paystack call to undo it — there is nothing to undo. Passing it
+   * on every split also keeps the gateway and our ledger to the naira, rather
+   * than trusting two different roundings to agree.
+   */
+  platformFeeNaira?: number;
 }): Promise<{ reference: string } | null> {
   const key = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
   if (!key) {
@@ -88,11 +100,18 @@ export async function payWithPaystack(opts: {
       email: opts.email,
       amount: Math.round(opts.amountNaira * 100), // Naira → kobo
       currency: "NGN",
-      // When a subaccount is set, Paystack splits using its percentage_charge
-      // (host 90% / platform 10%). "bearer: account" makes the platform (main
-      // account) bear the Paystack transaction fees.
+      // When a subaccount is set, Paystack splits the charge. transaction_charge
+      // names our cut exactly, in kobo, and the subaccount receives the rest;
+      // without it Paystack falls back to the subaccount's own percentage.
+      // "bearer: account" makes the platform bear Paystack's own fees.
       ...(opts.subaccount
-        ? { subaccount: opts.subaccount, bearer: "account" }
+        ? {
+            subaccount: opts.subaccount,
+            bearer: "account",
+            ...(opts.platformFeeNaira != null
+              ? { transaction_charge: Math.round(opts.platformFeeNaira * 100) }
+              : {}),
+          }
         : {}),
       metadata: opts.metadata ?? {},
       callback: (response) => resolve({ reference: response.reference }),
