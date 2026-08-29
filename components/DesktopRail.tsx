@@ -32,6 +32,8 @@ const YOU = [
   { href: "/friends", label: "Friends", icon: "users" },
   { href: "/notifications", label: "Alerts", icon: "bell" },
   { href: "/refer", label: "Invite & earn", icon: "gift" },
+  // See MobileNav: the paid tier had no entry point outside a paywall.
+  { href: "/pro", label: "Go Pro", icon: "sparkles" },
 ];
 
 export default function DesktopRail({

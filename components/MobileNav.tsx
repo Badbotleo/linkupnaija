@@ -33,6 +33,10 @@ const YOU = [
   { href: "/dashboard", label: "My link-ups", icon: "calendar" },
   { href: "/tickets", label: "Tickets", icon: "ticket" },
   { href: "/refer", label: "Invite & earn ₦600", icon: "gift" },
+  // Was reachable only by hitting the free host limit or a blocked RSVP, so
+  // the paid tier could be found only by being stopped. Somebody who simply
+  // wants to pay had no route to it.
+  { href: "/pro", label: "Go Pro", icon: "sparkles" },
 ];
 
 // The long tail, one tap away rather than always on screen.
