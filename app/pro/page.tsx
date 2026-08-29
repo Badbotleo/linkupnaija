@@ -13,36 +13,43 @@ export const metadata = {
     "₦4,999/month — less than one ticket to most events on here. Host unlimited link-ups, get in 24 hours early, and send as many join requests as you like.",
 };
 
+/**
+ * Only what the code actually does.
+ *
+ * Two benefits were removed rather than reworded: "Get in 24 hours before
+ * everyone else" and "Hosts see you first". Neither exists — there is no
+ * early-access window on events and no is_pro ordering in the host's request
+ * queue. Selling them at 4,999 a month is a refund waiting to happen, and a
+ * thinner honest list is worth more than a longer one somebody can disprove
+ * on their first weekend.
+ *
+ * Both are buildable and worth building; until they are, they do not belong
+ * on the page.
+ *
+ * The limits are quoted as what they cost you, not as what the tier grants.
+ * "2 a month" means nothing until somebody works out it stops a weekly night
+ * in its second week, so the copy does that sum for them.
+ */
 const BENEFITS = [
   {
     icon: "infinity",
-    title: "Host as many link-ups as you want",
-    text: `Free members host ${FREE_HOST_LIMIT} a month. Pro is unlimited — run a weekly night without ever hitting a wall.`,
+    title: "Host without a ceiling",
+    text: `Free members host ${FREE_HOST_LIMIT} link-ups a month, which stops a weekly night in its second week. Pro has no limit.`,
   },
   {
-    icon: "zap",
-    title: "Get in 24 hours before everyone else",
-    text: "Request to join events a full day before they go public. On a link-up that fills, that's the difference between going and reading about it.",
-  },
-  {
-    icon: "infinity",
-    title: "Unlimited join requests",
-    text: `Free members send ${FREE_REQUEST_LIMIT} a month. Pro members never count.`,
-  },
-  {
-    icon: "trending",
-    title: "Hosts see you first",
-    text: "Your requests rank higher in a host's queue, which matters most on the events everyone wants.",
+    icon: "send",
+    title: "Ask to join as often as you like",
+    text: `Free members get ${FREE_REQUEST_LIMIT} requests a month. That is one busy weekend. Pro requests never count against you.`,
   },
   {
     icon: "eye",
-    title: "See who viewed your profile",
-    text: "Know who's been looking, and follow up before the moment passes.",
+    title: "See who looked you up",
+    text: "Hosts read your profile before they approve you, and so do people from the group chat. Pro shows you who has been looking.",
   },
   {
     icon: "star",
-    title: "Gold Pro badge",
-    text: "A badge on your profile that tells a host you're a regular, not a stranger.",
+    title: "The gold badge",
+    text: "A host working through a queue of strangers can see at a glance that you are a regular here, not a name they have never met.",
   },
 ];
 
