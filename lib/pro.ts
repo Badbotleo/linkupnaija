@@ -2,11 +2,17 @@
 
 export const PRO_PRICE = 4999; // ₦4,999 / month
 export const PRO_DAYS = 30;
-// 3, not 5. In August 29 requests came from 17 people and the distribution
-// was 8, 3, 2, 2, 2, then ones — so 5 and 3 bind on exactly the same single
-// person, while 2 would have blocked the second and third most active users
-// too. 3 costs nothing at today's volume and starts to matter as it grows.
-export const FREE_REQUEST_LIMIT = 3; // join requests per month for free users
+/**
+ * No cap on asking to join. Kept as a number so nothing importing it breaks,
+ * set high enough never to bind.
+ *
+ * A marketplace should charge for what is scarce, and here that is attendance:
+ * August ran 116 events created against 29 requests. Rationing requests
+ * throttled the behaviour the platform needs most, taxed its single most
+ * active member, and gave hosts with empty rooms nothing. Revisit the day
+ * events start filling.
+ */
+export const FREE_REQUEST_LIMIT = Number.MAX_SAFE_INTEGER;
 export const FREE_HOST_LIMIT = 2; // events a free member can host per month
 
 /** First moment of the current month, UTC — the window both limits count in. */

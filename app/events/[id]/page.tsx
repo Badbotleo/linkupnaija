@@ -53,7 +53,7 @@ import type {
 export const dynamic = "force-dynamic";
 
 const RSVP_PROFILE_SELECT =
-  "id, user_id, status, paid, created_at, companion_id, attended, users!rsvps_user_id_fkey(id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, gender)";
+  "id, user_id, status, paid, created_at, companion_id, attended, users!rsvps_user_id_fkey(id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, gender, is_pro, pro_expires_at)";
 
 interface ChatRow {
   id: string;

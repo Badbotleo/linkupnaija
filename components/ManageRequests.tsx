@@ -10,6 +10,7 @@ import AttendeeProfileModal from "./AttendeeProfileModal";
 import { hasSocialLinks } from "@/lib/social";
 import { confettiGold } from "@/lib/confetti";
 import type { RsvpWithProfile } from "@/lib/types";
+import { isProActive } from "@/lib/pro";
 
 export default function ManageRequests({
   initialRequests,
@@ -33,7 +34,20 @@ export default function ManageRequests({
     router.refresh();
   }
 
-  const pending = requests.filter((r) => r.status === "pending");
+  // Pro requests sit at the top of the queue.
+  //
+  // Not a reorder for its own sake: a host works down this list and often
+  // stops before the bottom, so position IS the perk. Ties keep their original
+  // order, which is oldest first, so nobody who asked earlier is overtaken by
+  // somebody else who is also not Pro.
+  const pending = requests
+    .filter((r) => r.status === "pending")
+    .slice()
+    .sort((a, b) => {
+      const pro = (r: typeof a) =>
+        isProActive(r.users?.is_pro, r.users?.pro_expires_at) ? 1 : 0;
+      return pro(b) - pro(a);
+    });
   const accepted = requests.filter((r) => r.status === "accepted");
   const declined = requests.filter((r) => r.status === "declined");
   // Joined instantly on a free event, so nobody has looked at them yet. They

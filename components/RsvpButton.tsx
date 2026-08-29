@@ -6,7 +6,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import JoinSheet from "./events/JoinSheet";
 import { payWithPaystack, formatNaira } from "@/lib/paystack";
-import { FREE_REQUEST_LIMIT } from "@/lib/pro";
 import { confettiJoin, confettiCoins } from "@/lib/confetti";
 import { toast } from "@/lib/toast";
 import LineIcon from "./ui/LineIcon";
@@ -444,17 +443,19 @@ export default function RsvpButton({
         </div>
       )}
 
+      {/* No cap on asking to join.
+          
+          The platform has roughly four events for every request, so the scarce
+          thing here is attendance, not requests. Rationing them throttled the
+          one behaviour the place needs more of, and it bit hardest on the most
+          active member — 8 requests in August against a median of 1. It also
+          gave a host with an empty room nothing: fewer people allowed to ask
+          is not a feature for either side of an empty marketplace.
+          
+          Worth revisiting the day events start filling, when a spot is
+          genuinely scarce and rationing means something. */}
       {status === "none" &&
-        (!isPro && requestsThisMonth >= FREE_REQUEST_LIMIT ? (
-          <div className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-yellow-50 px-4 py-4 text-center">
-            <p className="text-sm font-semibold text-amber-800">
-              You&apos;ve used all {FREE_REQUEST_LIMIT} free requests this month.
-            </p>
-            <Link href="/pro" className="btn-primary mt-3 w-full">
-              ★ Upgrade to Pro to send more requests
-            </Link>
-          </div>
-        ) : (
+        (
           <>
             {!reserveFirst && price > 0 && walletBalance > 0 && (
               <label className="flex cursor-pointer items-start gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm">
@@ -547,7 +548,7 @@ export default function RsvpButton({
               </span>
             </button>
           </>
-        ))}
+        )}
 
       {error && <p className="text-sm text-red-600">{error}</p>}
     </div>

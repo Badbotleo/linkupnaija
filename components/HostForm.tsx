@@ -35,6 +35,7 @@ export default function HostForm({
     min_attendees: "",
     end_time: "",
     auto_confirm: false,
+    requests_open_at: "",
     price: "",
     event_type: "general" as "general" | "private",
   });
@@ -283,10 +284,16 @@ export default function HostForm({
     // add a price, and the checkbox disappears with the value still in state.
     if (form.auto_confirm && Number(form.price || 0) === 0)
       optional.auto_confirm = true;
+    // datetime-local has no timezone. Hosts are in Nigeria, so it is read as
+    // WAT rather than as the server's clock — otherwise a 6pm opening set in
+    // Lagos would fire at 7pm for a UTC server.
+    if (form.requests_open_at)
+      optional.requests_open_at = `${form.requests_open_at}:00+01:00`;
 
     const withQuorum = { ...baseEvent, ...optional };
     const isMissingColumn = (msg?: string | null) =>
-      !!msg && /min_attendees|end_time|auto_confirm/.test(msg) && /column/i.test(msg);
+      !!msg && /min_attendees|end_time|auto_confirm|requests_open_at/.test(msg) &&
+      /column/i.test(msg);
 
     // The host page checks may_host() before showing this form, but the policy
     // is what actually enforces it and somebody can arrive here with a stale
@@ -690,6 +697,30 @@ export default function HostForm({
           promise the rest of the product is built on, so this is a host
           choosing to waive it for one event, never something applied for
           them. On a paid event the payment is already the gate. */}
+      {/* Hold requests until a set moment.
+          
+          Left empty by almost every host, and that is correct: on an event
+          that is not going to fill, holding requests back only loses you
+          people. It earns its keep on the ones everyone wants, where a
+          scramble at a known time is fairer than a silent first-come race —
+          and it is what gives Pro members their 24-hour head start. */}
+      <label className="block">
+        <span className="block text-[15px] font-bold text-gray-900">
+          Hold requests until a set time
+        </span>
+        <span className="mt-0.5 block text-[13px] leading-snug text-gray-600">
+          Optional. Leave empty and anyone can ask straight away. Set a time and
+          nobody can request before it, except Pro members, who get in 24 hours
+          earlier.
+        </span>
+        <input
+          type="datetime-local"
+          value={form.requests_open_at}
+          onChange={(e) => update("requests_open_at", e.target.value)}
+          className="input mt-2"
+        />
+      </label>
+
       {Number(form.price || 0) === 0 && (
         <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-gray-200 p-4 transition hover:border-brand/40">
           <input

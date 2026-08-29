@@ -391,7 +391,18 @@ export interface RsvpWithProfile {
   attended?: boolean | null;
   /** Host let them into the group chat. Separate from attending. */
   chat_approved?: boolean;
-  users: (PublicProfile & { gender?: string | null }) | null;
+  /**
+   * Carries the Pro flags because the host's queue ranks Pro requests first,
+   * and an expired subscription is not Pro — so the expiry has to travel with
+   * the flag rather than being inferred from it.
+   */
+  users:
+    | (PublicProfile & {
+        gender?: string | null;
+        is_pro?: boolean | null;
+        pro_expires_at?: string | null;
+      })
+    | null;
 }
 
 export interface EventPhoto {

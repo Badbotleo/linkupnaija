@@ -2,7 +2,7 @@ import AppHeader from "@/components/AppHeader";
 import LineIcon from "@/components/ui/LineIcon";
 import { createClient } from "@/lib/supabase/server";
 import GoProButton from "@/components/GoProButton";
-import { PRO_PRICE, FREE_REQUEST_LIMIT, FREE_HOST_LIMIT, isProActive } from "@/lib/pro";
+import { PRO_PRICE, FREE_HOST_LIMIT, isProActive } from "@/lib/pro";
 import { formatNaira } from "@/lib/paystack";
 
 export const dynamic = "force-dynamic";
@@ -37,9 +37,14 @@ const BENEFITS = [
     text: `Free members host ${FREE_HOST_LIMIT} link-ups a month, which stops a weekly night in its second week. Pro has no limit.`,
   },
   {
-    icon: "send",
-    title: "Ask to join as often as you like",
-    text: `Free members get ${FREE_REQUEST_LIMIT} requests a month. That is one busy weekend. Pro requests never count against you.`,
+    icon: "zap",
+    title: "First in the queue",
+    text: "A host works down their requests and often stops before the bottom. Pro sits at the top of that list, which matters most on the link-ups everyone wants.",
+  },
+  {
+    icon: "clock",
+    title: "24 hours before everyone else",
+    text: "When a host sets a time for requests to open, Pro can ask a full day early. On a link-up that fills, that is the difference between going and reading about it.",
   },
   {
     icon: "eye",
