@@ -37,6 +37,7 @@ import { attendanceProof, ATTENDANCE_REVEAL_AT } from "@/lib/social-proof";
 import TicketPanel from "@/components/events/TicketPanel";
 import TicketTiersEditor from "@/components/events/TicketTiersEditor";
 import EventPictures from "@/components/events/EventPictures";
+import StickyJoinBar from "@/components/events/StickyJoinBar";
 import RecapReel from "@/components/home/RecapReel";
 import { getRecapsForEvent } from "@/lib/recaps";
 import { isProActive } from "@/lib/pro";
@@ -401,6 +402,19 @@ export default async function EventDetailPage({
         )}
       </p>
 
+      {/* Only for people who are not already in. A host, or somebody whose
+          request is already accepted, has nothing to tap. */}
+      {!isHost && myStatus !== "accepted" && (
+        <StickyJoinBar
+          targetId="join-cta"
+          label={
+            event.price > 0
+              ? `Get a ticket · ${formatNaira(event.price)}`
+              : "Ask to join — free"
+          }
+        />
+      )}
+
       <div className="mt-4 overflow-hidden rounded-2xl shadow-card">
         <EventCover
           url={event.cover_image_url}
@@ -731,7 +745,7 @@ export default async function EventDetailPage({
                   </div>
                 )}
 
-                <div className="mt-6">
+                <div className="mt-6" id="join-cta">
                   <RsvpButton
                     eventId={event.id}
                     isLoggedIn={!!user}
