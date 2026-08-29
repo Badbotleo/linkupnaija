@@ -357,6 +357,50 @@ export default async function EventDetailPage({
         ← Back to events
       </Link>
 
+      {/* What, when and where — before the flyer.
+          
+          The title used to render at about 930px on an 812px phone: below the
+          fold on every device an ad click arrives from. A stranger saw a back
+          link, a poster and the host's face, then a button asking them to join
+          something the page had not yet named. Date and location were further
+          down again, inside a tab nobody had opened.
+          
+          Deciding whether to go IS what, when and where. It goes first, and
+          the flyer becomes what it actually is: supporting art. */}
+      <h1 className="mt-4 text-[26px] font-extrabold leading-tight tracking-[-0.03em] text-gray-900 sm:text-4xl">
+        {event.title}
+      </h1>
+      <p className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[15px] font-semibold text-gray-600">
+        <span className="inline-flex items-center gap-1.5">
+          <LineIcon name="calendar" size={15} className="shrink-0 text-brand" />
+          {formatEventDate(event.date)}
+          {event.time
+            ? ` · ${formatEventTimeRange(
+                event.time,
+                (event as { end_time?: string | null }).end_time
+              )}`
+            : ""}
+        </span>
+        {event.location && (
+          <span className="inline-flex items-center gap-1.5">
+            <LineIcon name="pin" size={15} className="shrink-0 text-brand" />
+            {event.location}
+            {/* "Merit House, Abuja, FCT" + "FCT - Abuja" read as
+                "…FCT, FCT - Abuja". Hosts usually type the city into the
+                address already, so the state is only appended when it adds
+                something. Compared on the part after the dash, because the
+                state is stored as "FCT - Abuja" and nobody writes that. */}
+            {(() => {
+              const short = (event.state ?? "").split("-").pop()?.trim() ?? "";
+              const already =
+                !!short &&
+                (event.location ?? "").toLowerCase().includes(short.toLowerCase());
+              return event.state && !already ? `, ${event.state}` : "";
+            })()}
+          </span>
+        )}
+      </p>
+
       <div className="mt-4 overflow-hidden rounded-2xl shadow-card">
         <EventCover
           url={event.cover_image_url}
@@ -420,10 +464,6 @@ export default async function EventDetailPage({
             {/* The price used to sit here as a chip, the same weight as the
                 state. It's now the Buy Ticket panel further down. */}
           </div>
-
-          <h1 className="mt-4 text-3xl font-extrabold text-gray-900 sm:text-4xl">
-            {event.title}
-          </h1>
 
           {friendsGoing.length > 0 && (
             <div className="mt-4 flex items-center gap-2 rounded-xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm font-semibold text-brand">
