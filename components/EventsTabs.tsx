@@ -107,9 +107,6 @@ export default function EventsTabs() {
           );
         })}
       </div>
-      <p className="px-4 pt-1.5 text-[11px] text-gray-400 sm:hidden">
-        Swipe to switch · {activeIndex + 1} of {TABS.length}
-      </p>
     </div>
   );
 }

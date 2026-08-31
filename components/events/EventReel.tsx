@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import EventCover from "../EventCover";
-import CategoryBadge from "../CategoryBadge";
 import LineIcon from "../ui/LineIcon";
+import { groupForCategory } from "@/lib/category-groups";
 import { formatEventDate, formatEventTimeRange } from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
 import { attendanceProof } from "@/lib/social-proof";
@@ -51,20 +51,42 @@ export type ReelEvent = EventRow & {
   attendeeCount: number;
 };
 
+/**
+ * Height of one slide.
+ *
+ * Inline it is the viewport minus the chrome the reel sits under: the app bar,
+ * the page header and the tabs. Measured at 375x812 that furniture comes to
+ * about 9rem, and getting it wrong in either direction is visible — too tall
+ * and the CTA is cut off below the fold on arrival, too short and the reel
+ * stops reading as a screen at a time.
+ */
+// 20rem inline, not 14: the mobile bottom nav is fixed over the last 67px of
+// the viewport, so a slide sized only against the chrome above it put the
+// join button underneath the nav bar. Desktop has no such bar, and a rail
+// instead, so it gets the taller frame back.
+const INLINE_SLIDE =
+  "h-[calc(100svh-20rem)] min-h-[400px] lg:h-[calc(100svh-14rem)]";
+const FULL_SLIDE = "h-[100svh]";
+
 export default function EventReel({
   events,
   onClose,
 }: {
   events: ReelEvent[];
-  onClose: () => void;
+  /** Omitted when the reel IS the feed rather than a layer over it. */
+  onClose?: () => void;
 }) {
   const [mounted, setMounted] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const overlay = !!onClose;
+  const slideHeight = overlay ? FULL_SLIDE : INLINE_SLIDE;
 
   useEffect(() => setMounted(true), []);
 
   // Escape closes, and the page behind must not scroll while this is open.
+  // Neither applies when the reel is the page's own feed.
   useEffect(() => {
+    if (!onClose) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
@@ -77,18 +99,21 @@ export default function EventReel({
     };
   }, [onClose]);
 
-  if (!mounted || events.length === 0) return null;
+  if (events.length === 0) return null;
+  // The overlay cannot render until there is a <body> to portal into. Inline
+  // there is no such wait, and there must not be: rendered on the server the
+  // slides put 24 real <a href> event links in the HTML, which is what keeps
+  // the structured data on those pages reachable now that the crawlable grid
+  // is no longer on this page.
+  if (overlay && !mounted) return null;
 
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[100] bg-black"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Link-ups, one per screen"
-    >
+  const reel = (
+    <>
       <div
         ref={scrollerRef}
-        className="h-[100svh] snap-y snap-mandatory overflow-y-auto overscroll-y-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className={`${slideHeight} snap-y snap-mandatory overflow-y-auto overscroll-y-contain ${
+          overlay ? "" : "rounded-3xl"
+        } [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}
       >
         {events.map((event, i) => (
           <Slide
@@ -97,12 +122,15 @@ export default function EventReel({
             first={i === 0}
             showHint={i === 0 && events.length > 1}
             scrollerRef={scrollerRef}
+            heightClass={slideHeight}
           />
         ))}
 
         {/* The end of a short reel needs somewhere to land, or the last slide
             just refuses to move and reads as broken. */}
-        <div className="flex h-[100svh] snap-start flex-col items-center justify-center gap-4 bg-gradient-to-b from-gray-900 to-black px-8 text-center">
+        <div
+          className={`${slideHeight} flex snap-start flex-col items-center justify-center gap-4 bg-gradient-to-b from-gray-900 to-black px-8 text-center`}
+        >
           <p className="text-4xl" aria-hidden>
             🎉
           </p>
@@ -116,24 +144,41 @@ export default function EventReel({
           <Link href="/host" className="btn-primary mt-1">
             Host a link-up
           </Link>
-          <button
-            type="button"
-            onClick={onClose}
-            className="mt-1 text-sm font-semibold text-white/60 underline underline-offset-4"
-          >
-            Back to the grid
-          </button>
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label="Close reel"
-        className="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] grid h-10 w-10 place-items-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-colors hover:bg-black/75"
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close reel"
+          className="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] grid h-10 w-10 place-items-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-colors hover:bg-black/75"
+        >
+          <LineIcon name="x" size={20} />
+        </button>
+      )}
+    </>
+  );
+
+  if (!overlay) {
+    return (
+      <section
+        aria-label="Link-ups, one per screen"
+        className="overflow-hidden rounded-3xl bg-black"
       >
-        <LineIcon name="x" size={20} />
-      </button>
+        {reel}
+      </section>
+    );
+  }
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] bg-black"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Link-ups, one per screen"
+    >
+      {reel}
     </div>,
     document.body
   );
@@ -144,11 +189,13 @@ function Slide({
   first,
   showHint,
   scrollerRef,
+  heightClass,
 }: {
   event: ReelEvent;
   first: boolean;
   showHint: boolean;
   scrollerRef: React.RefObject<HTMLDivElement>;
+  heightClass: string;
 }) {
   const ref = useRef<HTMLElement>(null);
   // Only slides near the viewport own an image.
@@ -182,6 +229,7 @@ function Slide({
     return () => observer.disconnect();
   }, [scrollerRef]);
 
+  const group = groupForCategory(event.category);
   const proof = attendanceProof(event.attendeeCount, {
     capacity: event.max_attendees,
     createdAt: event.created_at,
@@ -191,7 +239,7 @@ function Slide({
   return (
     <article
       ref={ref}
-      className="flex h-[100svh] w-full snap-start justify-center overflow-hidden bg-black"
+      className={`${heightClass} flex w-full snap-start justify-center overflow-hidden bg-black`}
     >
       {/* A phone-width column, letterboxed on desktop the way every vertical
           video player does it. Full-bleed on a wide monitor the flyer grew to
@@ -227,25 +275,32 @@ function Slide({
           aria-hidden
         />
 
-        <div className="absolute inset-x-0 top-0 flex flex-wrap items-start gap-1.5 p-4 pr-16 pt-[max(1rem,env(safe-area-inset-top))]">
-          <CategoryBadge category={event.category} className="shadow-sm" />
-          <span className="rounded-full bg-black/55 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-sm">
-            {event.state}
-          </span>
-        </div>
       </div>
 
       <div className="w-full shrink-0 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-1">
-        {/* In the flow, not floating over it. Absolutely positioned it landed
-            straight on top of the date and location lines. */}
-        {showHint && (
-          <p
-            className="mb-2 animate-bounce text-[11px] font-semibold uppercase tracking-wider text-white/55"
-            aria-hidden
-          >
-            Scroll for more ↓
-          </p>
-        )}
+        {/* Labels live in the panel, not over the artwork.
+            Sat on the image they covered whatever the host had put in that
+            corner, which on a flyer is usually the date. And it is the family,
+            not the category: there are 106 categories, and the long ones
+            ("Rave / Electronic / Themed Night") wrapped onto a second line
+            across the poster. Six families read at a glance and are the same
+            words the vibe filters use. */}
+        <div className="mb-2 flex items-center gap-1.5">
+          <span className="truncate rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-sm">
+            {group ? `${group.emoji} ${group.label}` : event.category}
+          </span>
+          <span className="shrink-0 rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-semibold text-white/80 backdrop-blur-sm">
+            {event.state}
+          </span>
+          {showHint && (
+            <span
+              className="ml-auto shrink-0 animate-bounce text-[11px] font-semibold uppercase tracking-wider text-white/45"
+              aria-hidden
+            >
+              Scroll ↓
+            </span>
+          )}
+        </div>
         <h3 className="text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-white">
           {event.title}
         </h3>

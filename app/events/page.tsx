@@ -6,8 +6,11 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import EventsFilters from "@/components/EventsFilters";
+// EventsList / EventCard are the grid the reel replaced on 31 Aug 2026. Kept,
+// not deleted: reverting is this import plus the block below, and the card is
+// still what /circles and the profile pages render.
 import EventsList from "@/components/EventsList";
-import ReelLauncher from "@/components/events/ReelLauncher";
+import EventReel from "@/components/events/EventReel";
 import { dedupeEvents } from "@/lib/content-guards";
 import {
   filterByKind,
@@ -450,34 +453,47 @@ export default async function EventsPage({
 
       <div className="container-page py-5">
 
-      {/* Search leads the page, the way it does on Pinterest — one wide pill
-          with nothing competing beside it. */}
       <Suspense fallback={null}>
-        <SearchPill />
+        <EventsTabs />
       </Suspense>
 
-      <div className="mt-5">
-        <Suspense fallback={null}>
-          <EventsTabs />
-        </Suspense>
-      </div>
-
-      {/* Sits directly under the tabs, above the fold. The reel is a way of
-          browsing, not a slice of the feed, so its entry point cannot be
-          somewhere you only arrive by scrolling past the whole feed.
-
-          Off on the past tab, where "See this link-up" is the wrong
-          invitation for something that already happened. */}
+      {/* The feed itself, as high as it can go.
+          Everything that used to sit between the tabs and the events — the
+          search pill, the location banner, the featured carousel, the vibe
+          filters, the map — now follows it. Six modules stacked above the
+          listings meant the first event began 350px down an 812px screen with
+          its button below the fold, which is the same leak we measured on the
+          event page in August: the thing people came for, under the furniture
+          built to help them find it. */}
       {!past && !error && feedEvents.length > 0 && (
-        <div className="mt-4 flex justify-end">
-          <ReelLauncher
-            events={feedEvents.map((e) => ({
-              ...e,
-              attendeeCount: e.attendeeCount,
+        <div className="mt-4">
+          <EventReel events={feedEvents} />
+        </div>
+      )}
+
+      {/* Stories kept, but under the feed rather than over it.
+          Above, the circles cost 110px and were part of what pushed the first
+          event's button 237px below the fold. They are a browse-more rail, not
+          the reason anybody opened the page, so they read better as the thing
+          you find after the feed than as a toll on the way in. */}
+      {!error && feedEvents.length > 0 && (
+        <div className="mt-6">
+          <EventsStories
+            events={feedEvents.slice(0, 12).map((e) => ({
+              id: e.id,
+              title: e.title,
+              category: e.category,
+              cover_image_url: e.cover_image_url,
             }))}
           />
         </div>
       )}
+
+      <div className="mt-6">
+        <Suspense fallback={null}>
+          <SearchPill />
+        </Suspense>
+      </div>
 
       {!forYou && !searchParams.state && (
         <div className="mt-5">
@@ -528,18 +544,6 @@ export default async function EventsPage({
         />
       )}
 
-      {!error && feedEvents.length > 0 && (
-        <div className="mt-5">
-          <EventsStories
-            events={feedEvents.slice(0, 12).map((e) => ({
-              id: e.id,
-              title: e.title,
-              category: e.category,
-              cover_image_url: e.cover_image_url,
-            }))}
-          />
-        </div>
-      )}
 
       {!forYou && (
         <div className="mt-8 space-y-4">
@@ -613,16 +617,22 @@ export default async function EventsPage({
         </div>
       ) : (
         <>
-          <div className="mt-6">
-            <EventsList
-              events={feedEvents}
-              stateFilter={searchParams.state}
-              trendingIds={trendingIds}
-              recommendedAll={forYou}
-              hostBadgesByHost={hostBadgesByHost}
-              friendsGoing={friendsGoing}
-            />
-          </div>
+          {/* "Been and gone" keeps the grid. A reel invites you somewhere,
+              and there is nowhere to go on a night that already happened;
+              the past tab is a scrapbook, which wants many at once. It is
+              also why the grid is kept rather than deleted. */}
+          {past && (
+            <div className="mt-6">
+              <EventsList
+                events={feedEvents}
+                stateFilter={searchParams.state}
+                trendingIds={trendingIds}
+                recommendedAll={forYou}
+                hostBadgesByHost={hostBadgesByHost}
+                friendsGoing={friendsGoing}
+              />
+            </div>
+          )}
 
           {!forYou && totalPages > 1 && (
             <nav
