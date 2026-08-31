@@ -7,6 +7,7 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import EventsFilters from "@/components/EventsFilters";
 import EventsList from "@/components/EventsList";
+import ReelLauncher from "@/components/events/ReelLauncher";
 import { dedupeEvents } from "@/lib/content-guards";
 import {
   filterByKind,
@@ -460,6 +461,23 @@ export default async function EventsPage({
           <EventsTabs />
         </Suspense>
       </div>
+
+      {/* Sits directly under the tabs, above the fold. The reel is a way of
+          browsing, not a slice of the feed, so its entry point cannot be
+          somewhere you only arrive by scrolling past the whole feed.
+
+          Off on the past tab, where "See this link-up" is the wrong
+          invitation for something that already happened. */}
+      {!past && !error && feedEvents.length > 0 && (
+        <div className="mt-4 flex justify-end">
+          <ReelLauncher
+            events={feedEvents.map((e) => ({
+              ...e,
+              attendeeCount: e.attendeeCount,
+            }))}
+          />
+        </div>
+      )}
 
       {!forYou && !searchParams.state && (
         <div className="mt-5">
