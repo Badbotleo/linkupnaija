@@ -2,10 +2,11 @@
 --
 -- The percentage now depends on WHO IS HOSTING, and the row that records it is
 -- inserted by the BUYER's browser under a policy that only checks
--- `user_id = auth.uid()`. That was already loose — anyone could have posted a
+-- `user_id = auth.uid()`. That was already loose: anyone could have posted a
 -- transaction claiming platform_fee 0 and the payout maths would have believed
--- it — and a fee that varies makes it load-bearing. So the number stops being
--- something the client asserts and becomes something the database decides.
+-- it. A fee that varies by host makes it load-bearing. So the number stops
+-- being something the client asserts and becomes something the database
+-- decides.
 --
 -- The client still sends a fee, and still computes the same one. This just
 -- means it no longer matters if it lies.

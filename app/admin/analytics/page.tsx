@@ -78,7 +78,7 @@ export default async function AdminAnalyticsPage() {
     // Poster scans, split out by code. They are in site_top_pages too,
     // but buried under /events and the home page where nobody would
     // ever see them, which defeats the point of printing codes at all.
-    supabase.rpc("site_poster_scans", { p_days: 30 }),
+    supabase.rpc("site_poster_funnel", { p_days: 30 }),
     // When, not just how many. The sheets are on keke and around campus now,
     // and those are read at different times of day.
     supabase.rpc("site_poster_hours", { p_days: 30 }),
@@ -109,9 +109,10 @@ export default async function AdminAnalyticsPage() {
   const posterScans = (posterRes.data ?? []) as {
     code: string;
     scans: number;
-    first_seen: string;
-    last_seen: string;
+    signups: number;
   }[];
+  const posterSignups = posterScans.reduce((n, s) => n + (s.signups ?? 0), 0);
+  const posterTotal = posterScans.reduce((n, s) => n + s.scans, 0);
   const posterHours = (posterHoursRes.data ?? []) as { hour: number; scans: number }[];
   const posterRecent = (posterRecentRes.data ?? []) as {
     code: string;
@@ -405,17 +406,31 @@ export default async function AdminAnalyticsPage() {
         {/* --- printed posters --- */}
         <Section
           title="Poster scans"
-          hint="Unique browsers per printed code, last 30 days. Each sheet carries its own QR, so this is the A/B between the hooks and between the cities."
+          hint={
+            posterTotal > 0
+              ? `Last 30 days. ${posterTotal} scan${
+                  posterTotal === 1 ? "" : "s"
+                } produced ${posterSignups} account${
+                  posterSignups === 1 ? "" : "s"
+                }. Each sheet carries its own QR, so this is the A/B between the hooks and between the cities.`
+              : "Unique browsers per printed code, last 30 days. Each sheet carries its own QR, so this is the A/B between the hooks and between the cities."
+          }
         >
           {posterScans.length === 0 ? (
             <p className="text-[13px] text-gray-500">
               No scans yet.{" "}
               {traffic
                 ? "Codes start counting the first time somebody scans a printed sheet."
-                : "Run migration-poster-analytics.sql to switch this on."}
+                : "Run migration-poster-signups.sql to switch this on."}
             </p>
           ) : (
             <div className="space-y-2">
+              <div className="flex items-center gap-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                <span className="w-44 shrink-0">Sheet</span>
+                <span className="flex-1" />
+                <span className="w-10 shrink-0 text-right">Scans</span>
+                <span className="w-14 shrink-0 text-right">Joined</span>
+              </div>
               {posterScans.map((s) => (
                 <div key={s.code} className="flex items-center gap-3">
                   <p className="w-44 shrink-0 truncate text-[13px] font-semibold text-gray-700">
@@ -429,11 +444,30 @@ export default async function AdminAnalyticsPage() {
                       }}
                     />
                   </div>
-                  <span className="w-12 shrink-0 text-right text-[12px] font-bold tabular-nums text-gray-600">
+                  <span className="w-10 shrink-0 text-right text-[12px] font-bold tabular-nums text-gray-600">
                     {s.scans}
+                  </span>
+                  {/* The number that decides whether to print more. A scan is
+                      somebody glancing at a sheet; an account is somebody who
+                      came back and typed their name in. */}
+                  <span
+                    className={`w-14 shrink-0 text-right text-[12px] font-bold tabular-nums ${
+                      s.signups > 0 ? "text-emerald-800" : "text-gray-300"
+                    }`}
+                  >
+                    {s.signups > 0
+                      ? `${s.signups} · ${Math.round(
+                          (s.signups / (s.scans || 1)) * 100
+                        )}%`
+                      : "0"}
                   </span>
                 </div>
               ))}
+              <p className="pt-1 text-[11px] leading-snug text-gray-400">
+                Counted only for accounts created after the scan, in the browser
+                that scanned. Members who joined before 31 Aug 2026 are never
+                attributed to a sheet.
+              </p>
             </div>
           )}
         </Section>

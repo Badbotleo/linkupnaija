@@ -66,6 +66,38 @@ function sessionSource(): string | null {
 export default function VisitRecorder({ state }: { state?: string | null }) {
   const pathname = usePathname();
 
+  /**
+   * Stamp this browser's key on a brand-new account, once.
+   *
+   * It is what turns "6 poster scans" into "6 scans, 2 of them joined", which
+   * is the only version of that number that tells you whether to print more.
+   * The link has to be made here rather than at the signup call: email signup
+   * has no session until the confirmation link is clicked, and Google returns
+   * through its own callback, so the first authenticated page load is the one
+   * place that catches every route into an account.
+   *
+   * The RPC ignores accounts more than three days old and never overwrites,
+   * so this is idempotent and cannot retro-attribute existing members.
+   */
+  useEffect(() => {
+    const key = viewerKey();
+    if (!key) return;
+    let cancelled = false;
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (cancelled || !data.user) return;
+      // Best-effort, like every other count on this page: before the
+      // migration runs the function does not exist.
+      supabase.rpc("claim_signup_key", { p_key: key }).then(
+        () => {},
+        () => {}
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   useEffect(() => {
     // Admin pages are us, not visitors, and counting our own tab inflates
     // exactly the number we would use to judge whether anything is working.
