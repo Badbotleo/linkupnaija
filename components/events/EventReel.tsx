@@ -302,7 +302,13 @@ function Slide({
             The glow is brand-coloured rather than black so the button reads as
             lit from within against a photo that could be any colour, and the
             hairline along the top edge is what keeps it from looking flat when
-            the image behind it is bright. */}
+            the image behind it is bright.
+
+            The label is the one waiting on the event page, not a description
+            of the navigation. "See this link-up" asked for a look, which is
+            the thing 1,800 visitors already did before 29 of them joined; this
+            asks for the decision, and lands on a button that says the same
+            words back, so there is no seam between wanting to go and going. */}
         <Link
           href={`/events/${event.id}`}
           onClick={() => track("reel_open_event", { event_id: event.id })}
@@ -312,7 +318,7 @@ function Slide({
             className="absolute inset-x-0 top-0 h-px bg-white/40"
             aria-hidden
           />
-          See this link-up
+          {event.price > 0 ? "Get a ticket" : "Ask to join"}
           <span
             className="translate-x-0 transition-transform duration-200 group-hover:translate-x-1"
             aria-hidden
