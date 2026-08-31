@@ -2,9 +2,8 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useCallback, useState } from "react";
-import { NIGERIAN_STATES, CATEGORY_STYLES } from "@/lib/constants";
+import { CATEGORY_STYLES } from "@/lib/constants";
 import { CATEGORY_GROUPS, groupForCategory } from "@/lib/category-groups";
-import { EVENT_CATEGORIES } from "@/lib/constants";
 import LineIcon from "./ui/LineIcon";
 
 export default function EventsFilters() {
@@ -18,10 +17,12 @@ export default function EventsFilters() {
 
   // Which family of vibes is expanded. Defaults to the one holding the
   // current filter, so a shared link opens showing where you are.
-  const [catQuery, setCatQuery] = useState("");
   const [open, setOpen] = useState<string | null>(
     activeCategory ? groupForCategory(activeCategory)?.key ?? null : null
   );
+  const openGroup = open
+    ? CATEGORY_GROUPS.find((g) => g.key === open) ?? null
+    : null;
 
   const setParams = useCallback(
     (next: Record<string, string>) => {
@@ -40,27 +41,19 @@ export default function EventsFilters() {
 
   return (
     <div className="space-y-4">
-      <VibeSearch onPick={setParams} />
+      {/* VibeSearch ("Describe your vibe" → an LLM sets the filters) used to
+          lead this block. It is still in this file and still works, but it sat
+          directly under the panel's own search pill, whose placeholder already
+          reads "Search link-ups, vibes, places". Two search boxes stacked, one
+          of which quietly rewrites your filters, is most of the confusion this
+          panel was meant to remove. Search it, pick a vibe, or open the map:
+          three ways to look again, each visibly a different kind of thing. */}
 
       {/* ---- state + toggles row ---- */}
+      {/* The state dropdown that used to lead this row is gone. The header
+          pill names the city and opens StatePicker, so this was the second
+          state control on the page and the two could disagree on sight. */}
       <div className="flex flex-wrap items-center gap-2">
-        <label htmlFor="state" className="sr-only">
-          Filter by state
-        </label>
-        <select
-          id="state"
-          value={activeState}
-          onChange={(e) => setParams({ state: e.target.value })}
-          className="cursor-pointer rounded-full border border-gray-200 bg-white py-1.5 pl-3 pr-8 text-sm font-semibold text-gray-700 transition hover:border-brand/40 focus:border-brand focus:outline-none"
-        >
-          <option value="">📍 All states</option>
-          {NIGERIAN_STATES.map((state) => (
-            <option key={state} value={state}>
-              {state}
-            </option>
-          ))}
-        </select>
-
         <button
           type="button"
           onClick={() => setParams({ series: seriesOnly ? "" : "1" })}
@@ -129,7 +122,12 @@ export default function EventsFilters() {
                 {g.emoji}
               </span>
               <span className="min-w-0">
-                <span className="block truncate text-[12.5px] font-extrabold sm:text-[13px]">
+                {/* Wraps rather than truncates. Two columns on a 375px phone
+                    left roughly 110px for the label, which rendered the list
+                    as "Food & dri…", "Games & s…", "Meet & gro…". A filter you
+                    cannot read the name of is not a filter. The hint below it
+                    still truncates, because that line is a nicety. */}
+                <span className="block text-[12.5px] font-extrabold leading-tight sm:text-[13px]">
                   {g.label}
                 </span>
                 <span className="block truncate text-[11px] opacity-70">
@@ -149,63 +147,47 @@ export default function EventsFilters() {
       </div>
 
       {/* ---- the chosen family's categories ---- */}
-      {open && (
-        <div className="rounded-2xl border border-gray-100 bg-gray-50/70 p-3">
-          {/* 54 vibes is too many to scroll past. Typing searches ALL of them,
-              not just the open family — nobody knows in advance that Karaoke
-              lives under "Live & stage". */}
-          <div className="mb-2.5 flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2">
-            <LineIcon name="search" size={15} className="shrink-0 text-gray-400" />
-            <input
-              value={catQuery}
-              onChange={(e) => setCatQuery(e.target.value)}
-              placeholder="Search all vibes…"
-              aria-label="Search vibes"
-              className="min-w-0 flex-1 bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none"
-            />
-            {catQuery && (
-              <button
-                type="button"
-                onClick={() => setCatQuery("")}
-                aria-label="Clear vibe search"
-                className="shrink-0 text-gray-400 hover:text-gray-700"
-              >
-                <span aria-hidden className="text-[15px] leading-none">×</span>
-              </button>
-            )}
+      {openGroup && (
+        <div className="rounded-2xl border border-gray-100 bg-gray-50/70 p-3 dark:border-white/10 dark:bg-white/[0.04]">
+          {/* Says which family you opened, and how to leave.
+              Before this the panel had no header and no close: the only exit
+              was tapping the same tile again, nine tiles up, which nobody
+              guesses. It also opened with its own "Search all vibes" box, so
+              choosing a vibe presented a third search field under the two
+              already on the page. The families exist precisely so that 54
+              categories do not need searching. */}
+          <div className="mb-2.5 flex items-center justify-between gap-3">
+            <p className="flex min-w-0 items-center gap-2 text-sm font-extrabold text-gray-900 dark:text-white">
+              <span aria-hidden>{openGroup.emoji}</span>
+              <span className="truncate">{openGroup.label}</span>
+            </p>
+            <button
+              type="button"
+              onClick={() => setOpen(null)}
+              className="shrink-0 rounded-full border border-gray-200 bg-white px-3 py-1 text-[13px] font-bold text-gray-600 transition hover:border-brand/40 hover:text-brand dark:border-white/15 dark:bg-transparent dark:text-white/70"
+            >
+              Close
+            </button>
           </div>
 
           <div className="flex flex-wrap gap-2">
-          {(catQuery.trim()
-            ? EVENT_CATEGORIES.filter((c) =>
-                c.toLowerCase().includes(catQuery.trim().toLowerCase())
-              )
-            : CATEGORY_GROUPS.find((g) => g.key === open)!.categories
-          ).map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() =>
-                setParams({ category: activeCategory === cat ? "" : cat })
-              }
-              className={`rounded-full border px-3.5 py-1.5 text-sm font-semibold transition ${
-                activeCategory === cat
-                  ? "border-brand bg-brand text-white"
-                  : "border-gray-200 bg-white text-gray-600 hover:border-brand/40 hover:text-brand"
-              }`}
-            >
-              {CATEGORY_STYLES[cat]?.emoji} {cat}
-            </button>
-          ))}
+            {openGroup.categories.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() =>
+                  setParams({ category: activeCategory === cat ? "" : cat })
+                }
+                className={`rounded-full border px-3.5 py-1.5 text-sm font-semibold transition ${
+                  activeCategory === cat
+                    ? "border-brand bg-brand text-white"
+                    : "border-gray-200 bg-white text-gray-600 hover:border-brand/40 hover:text-brand"
+                }`}
+              >
+                {CATEGORY_STYLES[cat]?.emoji} {cat}
+              </button>
+            ))}
           </div>
-          {catQuery.trim() &&
-            EVENT_CATEGORIES.filter((c) =>
-              c.toLowerCase().includes(catQuery.trim().toLowerCase())
-            ).length === 0 && (
-              <p className="px-1 py-2 text-sm text-gray-500">
-                No vibe matches &ldquo;{catQuery.trim()}&rdquo;.
-              </p>
-            )}
         </div>
       )}
     </div>
