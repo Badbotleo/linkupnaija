@@ -21,6 +21,10 @@ export default function BottomNav({
 
   return (
     <nav
+      // Measured by the events reel, which sizes a slide to end just above
+      // this bar. A class name would have been a selector that breaks the
+      // moment someone restyles the nav; this says what it is for.
+      data-bottom-nav
       className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-100 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden dark:border-white/10 dark:bg-[#121212]/95"
       aria-label="Primary"
     >

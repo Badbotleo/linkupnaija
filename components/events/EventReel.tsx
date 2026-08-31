@@ -54,19 +54,27 @@ export type ReelEvent = EventRow & {
 /**
  * Height of one slide.
  *
- * Inline it is the viewport minus the chrome the reel sits under: the app bar,
- * the page header and the tabs. Measured at 375x812 that furniture comes to
- * about 9rem, and getting it wrong in either direction is visible — too tall
- * and the CTA is cut off below the fold on arrival, too short and the reel
- * stops reading as a screen at a time.
+ * The server-rendered fallback, used until the measurement below runs and on
+ * the rare load where it cannot.
+ *
+ * Underscores, not spaces, and the spaces matter: CSS calc() requires
+ * whitespace around a minus, so `calc(100svh-23rem)` is invalid and the
+ * browser drops the declaration in silence. Tailwind's arbitrary-value syntax
+ * forbids literal spaces, so an underscore is how you write one. Without it
+ * the height never applied at all, slides fell back to auto, and the reel
+ * rendered as 4,688px of stacked cards with every snap point meaningless.
+ *
+ * svh, not vh or dvh: svh is the viewport with browser chrome EXPANDED, so a
+ * CTA can never be swallowed by a collapsing address bar. Most of this traffic
+ * arrives inside the TikTok and Instagram in-app browsers, where that bar
+ * behaves least predictably.
  */
-// 20rem inline, not 14: the mobile bottom nav is fixed over the last 67px of
-// the viewport, so a slide sized only against the chrome above it put the
-// join button underneath the nav bar. Desktop has no such bar, and a rail
-// instead, so it gets the taller frame back.
 const INLINE_SLIDE =
-  "h-[calc(100svh-20rem)] min-h-[400px] lg:h-[calc(100svh-14rem)]";
+  "h-[calc(100svh_-_23rem)] min-h-[360px] lg:h-[calc(100svh_-_17rem)]";
 const FULL_SLIDE = "h-[100svh]";
+
+/** Breathing room between the join button and the bottom nav. */
+const NAV_GAP = 12;
 
 export default function EventReel({
   events,
@@ -77,11 +85,66 @@ export default function EventReel({
   onClose?: () => void;
 }) {
   const [mounted, setMounted] = useState(false);
+  const [slidePx, setSlidePx] = useState<number | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const overlay = !!onClose;
   const slideHeight = overlay ? FULL_SLIDE : INLINE_SLIDE;
 
   useEffect(() => setMounted(true), []);
+
+  /**
+   * Size a slide to the space actually left, rather than to a guess.
+   *
+   * The fallback class subtracts a fixed 23rem for the furniture above the
+   * reel and the fixed nav below it. That number was measured once on a
+   * 375x812 screen, and it is wrong on every other one: the chrome above is
+   * fixed pixels, so on a shorter phone it eats a far bigger share of the
+   * viewport. It was already wrong here by 23px, which put the join button
+   * underneath the bottom nav, visible in a screenshot and untappable on a
+   * phone. The stories rail moving back above the feed shifted it again.
+   *
+   * Measuring removes the whole class of bug. Anything that changes the
+   * chrome above the reel is now accounted for automatically, including the
+   * next thing somebody adds to this page.
+   */
+  useEffect(() => {
+    if (overlay) return; // the overlay is the whole viewport by definition
+
+    const measure = () => {
+      const el = scrollerRef.current;
+      if (!el) return;
+      // Absolute top, so the answer does not depend on where the page happens
+      // to be scrolled when this runs.
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      const nav = document.querySelector("[data-bottom-nav]");
+      const navH = nav ? nav.getBoundingClientRect().height : 0;
+      // The floor is deliberately low. A generous one looks like caution and
+      // behaves like a bug: on a 375x667 phone the furniture above the reel
+      // leaves 244px, so a 360px floor pushed the join button 84px underneath
+      // the nav, which is the exact failure this measurement exists to stop.
+      // Better a compact slide that is entirely tappable than a handsome one
+      // whose button cannot be reached.
+      setSlidePx(Math.max(240, Math.round(window.innerHeight - top - navH - NAV_GAP)));
+    };
+
+    measure();
+    window.addEventListener("resize", measure);
+    window.addEventListener("orientationchange", measure);
+    return () => {
+      window.removeEventListener("resize", measure);
+      window.removeEventListener("orientationchange", measure);
+    };
+  }, [overlay]);
+
+  // minHeight as well as height, and it is not redundant: the fallback class
+  // carries min-h, which outranks an inline height and silently pinned every
+  // slide to the floor. On a 375x667 screen the measurement said 244px, the
+  // class said 360px, the class won, and the join button went back under the
+  // nav with the measuring code apparently working.
+  const sizeStyle =
+    slidePx && !overlay
+      ? { height: `${slidePx}px`, minHeight: `${slidePx}px` }
+      : undefined;
 
   // Escape closes, and the page behind must not scroll while this is open.
   // Neither applies when the reel is the page's own feed.
@@ -111,6 +174,7 @@ export default function EventReel({
     <>
       <div
         ref={scrollerRef}
+        style={sizeStyle}
         className={`${slideHeight} snap-y snap-mandatory overflow-y-auto overscroll-y-contain ${
           overlay ? "" : "rounded-3xl"
         } [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}
@@ -123,12 +187,14 @@ export default function EventReel({
             showHint={i === 0 && events.length > 1}
             scrollerRef={scrollerRef}
             heightClass={slideHeight}
+            heightStyle={sizeStyle}
           />
         ))}
 
         {/* The end of a short reel needs somewhere to land, or the last slide
             just refuses to move and reads as broken. */}
         <div
+          style={sizeStyle}
           className={`${slideHeight} flex snap-start flex-col items-center justify-center gap-4 bg-gradient-to-b from-gray-900 to-black px-8 text-center`}
         >
           <p className="text-4xl" aria-hidden>
@@ -190,12 +256,15 @@ function Slide({
   showHint,
   scrollerRef,
   heightClass,
+  heightStyle,
 }: {
   event: ReelEvent;
   first: boolean;
   showHint: boolean;
   scrollerRef: React.RefObject<HTMLDivElement>;
   heightClass: string;
+  /** Measured height, once the reel knows it. Overrides heightClass. */
+  heightStyle?: { height: string; minHeight: string };
 }) {
   const ref = useRef<HTMLElement>(null);
   // Only slides near the viewport own an image.
@@ -239,6 +308,7 @@ function Slide({
   return (
     <article
       ref={ref}
+      style={heightStyle}
       className={`${heightClass} flex w-full snap-start justify-center overflow-hidden bg-black`}
     >
       {/* A phone-width column, letterboxed on desktop the way every vertical

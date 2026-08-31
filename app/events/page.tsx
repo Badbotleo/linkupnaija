@@ -457,27 +457,17 @@ export default async function EventsPage({
         <EventsTabs />
       </Suspense>
 
-      {/* The feed itself, as high as it can go.
-          Everything that used to sit between the tabs and the events — the
-          search pill, the location banner, the featured carousel, the vibe
-          filters, the map — now follows it. Six modules stacked above the
-          listings meant the first event began 350px down an 812px screen with
-          its button below the fold, which is the same leak we measured on the
-          event page in August: the thing people came for, under the furniture
-          built to help them find it. */}
-      {!past && !error && feedEvents.length > 0 && (
-        <div className="mt-4">
-          <EventReel events={feedEvents} />
-        </div>
-      )}
-
-      {/* Stories kept, but under the feed rather than over it.
-          Above, the circles cost 110px and were part of what pushed the first
-          event's button 237px below the fold. They are a browse-more rail, not
-          the reason anybody opened the page, so they read better as the thing
-          you find after the feed than as a toll on the way in. */}
+      {/* Stories sit above the feed, where they can actually be seen.
+          They were moved below it when the reel landed, to buy the first
+          slide its vertical space. That was wrong for a reason the layout
+          hides: the reel is a snap container with overscroll-y-contain and
+          it stands nearly a full viewport tall, so on a phone almost every
+          swipe is caught by the reel and never reaches the page. Anything
+          underneath is not lower down, it is gone.
+          The reel's own height allows for this rail, so the join button
+          still clears the bottom nav. */}
       {!error && feedEvents.length > 0 && (
-        <div className="mt-6">
+        <div className="mt-4">
           <EventsStories
             events={feedEvents.slice(0, 12).map((e) => ({
               id: e.id,
@@ -486,6 +476,20 @@ export default async function EventsPage({
               cover_image_url: e.cover_image_url,
             }))}
           />
+        </div>
+      )}
+
+      {/* The feed itself, as high as it can go.
+          Everything else that used to stand between the tabs and the events —
+          the search pill, the location banner, the featured carousel, the vibe
+          filters, the map — still follows it. Six modules stacked above the
+          listings meant the first event began 350px down an 812px screen with
+          its button below the fold, which is the same leak we measured on the
+          event page in August: the thing people came for, under the furniture
+          built to help them find it. */}
+      {!past && !error && feedEvents.length > 0 && (
+        <div className="mt-4">
+          <EventReel events={feedEvents} />
         </div>
       )}
 
