@@ -188,6 +188,7 @@ export default function EventReel({
             scrollerRef={scrollerRef}
             heightClass={slideHeight}
             heightStyle={sizeStyle}
+            compact={!!slidePx && slidePx < 340}
           />
         ))}
 
@@ -257,6 +258,7 @@ function Slide({
   scrollerRef,
   heightClass,
   heightStyle,
+  compact = false,
 }: {
   event: ReelEvent;
   first: boolean;
@@ -265,6 +267,19 @@ function Slide({
   heightClass: string;
   /** Measured height, once the reel knows it. Overrides heightClass. */
   heightStyle?: { height: string; minHeight: string };
+  /**
+   * The slide is too short to afford the full panel.
+   *
+   * The panel is shrink-0 and the image takes what is left, so on a 375x667
+   * phone the panel claimed all 244px and the flyer rendered at exactly zero
+   * pixels: a reel of link-ups with no artwork in it, which is most of the
+   * reason to have a reel. Rather than shrink everything everywhere, the
+   * short case drops the two lines that are decoration here (the chips, which
+   * repeat what the flyer says, and the address, which nobody chooses a night
+   * by) and keeps the four that decide it: what, when, how much, and the way
+   * in.
+   */
+  compact?: boolean;
 }) {
   const ref = useRef<HTMLElement>(null);
   // Only slides near the viewport own an image.
@@ -327,14 +342,19 @@ function Slide({
       <div className="relative min-h-0 flex-1">
         {/* contain, not cover: most of these are portrait flyers with the
             details printed on them, and cropping one hides the thing the host
-            made it to say. The blurred backdrop fills the gaps. */}
+            made it to say. The blurred backdrop fills the gaps.
+
+            Except when the box is short, where contain is self-defeating: a
+            portrait flyer fitted whole into a 100px-tall strip is rendered
+            about 70px wide, an unreadable stamp adrift in black. Cover at
+            least shows a legible band of the artwork. */}
         {near && (
           <EventCover
             url={event.cover_image_url}
             category={event.category}
             title={event.title}
             className="absolute inset-0 h-full w-full"
-            fit="contain"
+            fit={compact ? "cover" : "contain"}
             priority={first}
           />
         )}
@@ -347,7 +367,13 @@ function Slide({
 
       </div>
 
-      <div className="w-full shrink-0 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-1">
+      <div
+        className={`w-full shrink-0 px-5 pt-1 ${
+          compact
+            ? "pb-[max(0.6rem,env(safe-area-inset-bottom))]"
+            : "pb-[max(1.25rem,env(safe-area-inset-bottom))]"
+        }`}
+      >
         {/* Labels live in the panel, not over the artwork.
             Sat on the image they covered whatever the host had put in that
             corner, which on a flyer is usually the date. And it is the family,
@@ -355,7 +381,7 @@ function Slide({
             ("Rave / Electronic / Themed Night") wrapped onto a second line
             across the poster. Six families read at a glance and are the same
             words the vibe filters use. */}
-        <div className="mb-2 flex items-center gap-1.5">
+        <div className={`${compact ? "hidden" : "mb-2 flex"} items-center gap-1.5`}>
           <span className="truncate rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-sm">
             {group ? `${group.emoji} ${group.label}` : event.category}
           </span>
@@ -371,14 +397,22 @@ function Slide({
             </span>
           )}
         </div>
-        <h3 className="text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-white">
+        <h3
+          className={`${
+            compact ? "line-clamp-1 text-[19px]" : "text-[24px]"
+          } font-extrabold leading-tight tracking-[-0.02em] text-white`}
+        >
           {event.title}
         </h3>
 
-        <dl className="mt-2.5 space-y-1 text-[15px] text-white/85">
+        <dl
+          className={`${
+            compact ? "mt-1" : "mt-2.5"
+          } space-y-1 text-[15px] text-white/85`}
+        >
           <div className="flex items-center gap-2">
             <LineIcon name="calendar" size={15} className="shrink-0 text-white/50" />
-            <span>
+            <span className="line-clamp-1">
               {formatEventDate(event.date)} ·{" "}
               {formatEventTimeRange(
                 event.time,
@@ -386,10 +420,14 @@ function Slide({
               )}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <LineIcon name="pin" size={15} className="shrink-0 text-white/50" />
-            <span className="line-clamp-1">{event.location}</span>
-          </div>
+          {/* The address is the first thing to go when space is short: it is
+              how you get there, not how you decide to. */}
+          {!compact && (
+            <div className="flex items-center gap-2">
+              <LineIcon name="pin" size={15} className="shrink-0 text-white/50" />
+              <span className="line-clamp-1">{event.location}</span>
+            </div>
+          )}
         </dl>
 
         {/* Price reads as a fact about the night, alongside when and where.
@@ -437,7 +475,11 @@ function Slide({
         <Link
           href={`/events/${event.id}`}
           onClick={() => track("reel_open_event", { event_id: event.id })}
-          className="group relative mt-4 flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-brand via-brand to-brand-700 px-6 py-4 text-[17px] font-extrabold tracking-[-0.01em] text-white shadow-[0_12px_32px_-12px_rgba(83,74,183,0.95)] ring-1 ring-white/25 transition-transform duration-150 active:scale-[0.985]"
+          className={`group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-brand via-brand to-brand-700 px-6 text-[17px] font-extrabold tracking-[-0.01em] text-white shadow-[0_12px_32px_-12px_rgba(83,74,183,0.95)] ring-1 ring-white/25 transition-transform duration-150 active:scale-[0.985] ${
+            // Never below 44px tall: that is the minimum a thumb can be relied
+            // on to hit, and this is the only thing on the slide worth tapping.
+            compact ? "mt-2 py-3" : "mt-4 py-4"
+          }`}
         >
           <span
             className="absolute inset-x-0 top-0 h-px bg-white/40"

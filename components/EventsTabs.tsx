@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 type TabKey = "all" | "foryou" | "work" | "past";
@@ -17,16 +17,23 @@ const TABS: { key: TabKey; label: string }[] = [
 ];
 
 /**
- * X-style tab bar: a full-width underline rail you can swipe between, rather
- * than a segmented pill.
+ * X-style tab bar: a full-width underline rail rather than a segmented pill.
  *
- * Swiping left/right moves to the neighbouring tab, which is how people expect
- * a feed to behave on a phone. The underline animates to the active tab.
+ * There used to be a swipe-to-change-tab gesture bound to this strip, and it
+ * had to go. The strip is itself horizontally scrollable, because four labels
+ * do not fit across a 375px phone, so the two gestures were the same gesture:
+ * dragging sideways to bring "Been and gone" into view moved 60px, cleared the
+ * swipe threshold, and navigated somewhere else instead. The row appeared to
+ * move in every direction at once and taps landed on whatever had slid under
+ * the finger.
+ *
+ * A tab bar is a place you aim at. It should hold still.
  */
 export default function EventsTabs() {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const stripRef = useRef<HTMLDivElement>(null);
+  const activeRef = useRef<HTMLAnchorElement>(null);
 
   const raw = searchParams.get("tab");
   const tab: TabKey =
@@ -47,61 +54,47 @@ export default function EventsTabs() {
     return qs ? `${pathname}?${qs}` : pathname;
   };
 
-  // --- swipe between tabs -------------------------------------------------
-  const zone = useRef<HTMLDivElement>(null);
-  const start = useRef<{ x: number; y: number } | null>(null);
-
+  // Bring the selected tab into view, because the strip scrolls and the tab
+  // you are on can otherwise sit off the edge with no sign it is selected.
+  //
+  // scrollLeft on the strip rather than scrollIntoView: the latter would also
+  // scroll the PAGE to bring the bar into view, which on arrival yanks the
+  // feed out from under the reader.
   useEffect(() => {
-    const el = zone.current;
-    if (!el) return;
-
-    const onStart = (e: TouchEvent) => {
-      const t = e.touches[0];
-      start.current = { x: t.clientX, y: t.clientY };
-    };
-    const onEnd = (e: TouchEvent) => {
-      if (!start.current) return;
-      const t = e.changedTouches[0];
-      const dx = t.clientX - start.current.x;
-      const dy = t.clientY - start.current.y;
-      start.current = null;
-      // Ignore anything that's really a vertical scroll — otherwise reading
-      // the feed keeps flinging you into another tab.
-      if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-      const i = TABS.findIndex((x) => x.key === tab);
-      const next = dx < 0 ? i + 1 : i - 1;
-      if (next < 0 || next >= TABS.length) return;
-      router.push(href(TABS[next].key), { scroll: false });
-    };
-
-    el.addEventListener("touchstart", onStart, { passive: true });
-    el.addEventListener("touchend", onEnd, { passive: true });
-    return () => {
-      el.removeEventListener("touchstart", onStart);
-      el.removeEventListener("touchend", onEnd);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab, searchParams, pathname]);
-
-  const activeIndex = TABS.findIndex((t) => t.key === tab);
+    const strip = stripRef.current;
+    const el = activeRef.current;
+    if (!strip || !el) return;
+    const target = el.offsetLeft - (strip.clientWidth - el.clientWidth) / 2;
+    strip.scrollTo({ left: Math.max(0, target), behavior: "smooth" });
+  }, [tab]);
 
   return (
-    <div ref={zone} className="relative -mx-4 sm:mx-0">
-      <div className="no-scrollbar flex overflow-x-auto border-b border-gray-200 px-4 sm:px-0">
+    <div className="relative -mx-4 sm:mx-0">
+      <div
+        ref={stripRef}
+        // overscroll-x-contain: without it, dragging the strip past its end
+        // chains to the page and, in Safari, reads as the back gesture.
+        className="no-scrollbar flex overflow-x-auto overscroll-x-contain border-b border-gray-200 px-4 sm:px-0"
+      >
         {TABS.map((t) => {
           const on = t.key === tab;
           return (
             <Link
               key={t.key}
+              ref={on ? activeRef : undefined}
               href={href(t.key)}
               scroll={false}
-              className={`relative shrink-0 whitespace-nowrap px-5 py-3 text-[15px] font-bold transition ${
+              aria-current={on ? "page" : undefined}
+              // py-3.5 puts the target at 46px. The old py-3 gave 42, under
+              // the 44px a thumb can be relied on to hit, on a row that was
+              // also sliding while being aimed at.
+              className={`relative shrink-0 whitespace-nowrap px-4 py-3.5 text-[15px] font-bold transition-colors ${
                 on ? "text-gray-900" : "text-gray-500 hover:text-gray-800"
               }`}
             >
               {t.label}
               {on && (
-                <span className="absolute inset-x-4 -bottom-px h-1 rounded-full bg-brand" />
+                <span className="absolute inset-x-3 -bottom-px h-1 rounded-full bg-brand" />
               )}
             </Link>
           );
