@@ -22,6 +22,7 @@ import EventsTabs from "@/components/EventsTabs";
 import SearchPill from "@/components/events/SearchPill";
 import FeaturedCarousel from "@/components/events/FeaturedCarousel";
 import EventsStories from "@/components/EventsStories";
+import StatePicker from "@/components/events/StatePicker";
 import LocationMatch from "@/components/LocationMatch";
 import { computeBadges, type Badge } from "@/lib/hostBadges";
 import type { EventRow, RsvpStatus } from "@/lib/types";
@@ -74,6 +75,8 @@ export default async function EventsPage({
     q?: string;
     /** "all" opts out of the automatic state scope. */
     scope?: string;
+    /** "state" opens the location picker. */
+    pick?: string;
   };
 }) {
   const supabase = createClient();
@@ -312,6 +315,25 @@ export default async function EventsPage({
   // there, so the feed collapses them on the way out.
   feedEvents = dedupeEvents(feedEvents);
 
+  // Where there is actually something on, for the location picker.
+  //
+  // Deliberately not NIGERIAN_STATES. Offering all 37 means 33 of them lead to
+  // an empty feed, and the two that matter are buried in an alphabetical list
+  // that starts at Abia. This asks the database which states have an upcoming
+  // link-up and offers those, so every option in the picker goes somewhere.
+  //
+  // Its own query, not derived from feedEvents: those rows are already scoped
+  // to the current filter, so an Abuja visitor would be offered Abuja and
+  // nothing else, with no way back out.
+  const { data: stateRows } = await supabase
+    .from("events")
+    .select("state")
+    .gte("date", today)
+    .not("state", "is", null);
+  const statesWithEvents = Array.from(
+    new Set(((stateRows ?? []) as { state: string }[]).map((r) => r.state))
+  ).sort();
+
   // --- Social proof: which of the viewer's friends are going -----------------
   // Map event_id -> { count, names, avatars } for a "friends going" badge.
   const friendsGoing: Record<
@@ -404,14 +426,29 @@ export default async function EventsPage({
     return qs ? `/events?${qs}` : "/events";
   };
 
-  // An explicit state clears; an automatic one widens to everywhere. With
-  // neither there is nothing to undo, so the pill opens the state picker
-  // rather than being a tap that does nothing.
-  const placeHref = searchParams.state
-    ? withParams((p) => p.delete("state"))
-    : autoScope
-      ? withParams((p) => p.set("scope", "all"))
-      : "#state";
+  // The pill opens a picker. It used to toggle: with a state in force it
+  // cleared, with an automatic scope it widened to everywhere. That made the
+  // header a two-way switch between one detected city and all of Nigeria,
+  // which is why an Abuja visitor had no way to reach Abuja from it, and why
+  // the only real state list lived in a <select> below the reel where nobody
+  // can scroll to it.
+  const placeHref = withParams((p) => p.set("pick", "state"));
+  const closePickHref = withParams((p) => p.delete("pick"));
+  const stateHref = (s: string) =>
+    withParams((p) => {
+      p.set("state", s);
+      p.delete("pick");
+      p.delete("scope");
+      p.delete("page");
+    });
+  // Explicitly widen, so the picker's "All Nigeria" also switches off an
+  // automatic city scope rather than silently snapping back to it.
+  const allStatesHref = withParams((p) => {
+    p.delete("state");
+    p.delete("pick");
+    p.delete("page");
+    p.set("scope", "all");
+  });
 
   const tabHref = withParams((p) =>
     past ? p.delete("tab") : p.set("tab", "past")
@@ -450,6 +487,18 @@ export default async function EventsPage({
         ]}
         action={<Link href="/host" className="btn-primary rounded-full px-4 py-2 text-sm">Host</Link>}
       />
+
+      {searchParams.pick === "state" && (
+        <StatePicker
+          states={statesWithEvents.map((s) => ({
+            label: s,
+            href: stateHref(s),
+          }))}
+          current={searchParams.state ?? autoScope ?? null}
+          closeHref={closePickHref}
+          allHref={allStatesHref}
+        />
+      )}
 
       <div className="container-page py-5">
 

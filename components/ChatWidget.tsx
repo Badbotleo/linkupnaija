@@ -171,15 +171,26 @@ export default function ChatWidget() {
 
   return (
     <>
-      {/* Floating bubble */}
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-label={open ? "Close chat" : "Ask Paddy, the LinkUpNaija assistant"}
-        className="fixed bottom-20 right-4 z-50 grid h-11 w-11 place-items-center rounded-full bg-brand text-white shadow-lg shadow-brand/25 transition hover:bg-brand-600 active:scale-95 lg:bottom-5 lg:right-5"
-      >
-        {open ? <CloseIcon /> : <ChatIcon />}
-      </button>
+      {/* Close control, shown only while the panel is up.
+          There is no idle floating bubble any more. It was pinned
+          bottom-right on every page, which is the corner the events reel puts
+          its only call to action in, so on a phone it sat on the right edge of
+          "Get a ticket": the primary action of the primary feed with a chat
+          bubble parked on it.
+          Paddy did not go anywhere. "Ask Paddy" in the menu still opens this
+          panel through the linkup:open-chat event, and the live support thread
+          inside it is unchanged. Removing the widget outright would have left
+          that menu row dispatching to nothing. */}
+      {open && (
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          aria-label="Close chat"
+          className="fixed bottom-20 right-4 z-50 grid h-11 w-11 place-items-center rounded-full bg-brand text-white shadow-lg shadow-brand/25 transition hover:bg-brand-600 active:scale-95 lg:bottom-5 lg:right-5"
+        >
+          <CloseIcon />
+        </button>
+      )}
 
       {/* Panel */}
       <div
