@@ -6,10 +6,10 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import EventsFilters from "@/components/EventsFilters";
-// EventsList / EventCard are the grid the reel replaced on 31 Aug 2026. Kept,
-// not deleted: reverting is this import plus the block below, and the card is
-// still what /circles and the profile pages render.
-import EventsList from "@/components/EventsList";
+// EventsList, EventCard, FeaturedCarousel and LocationMatch are no longer
+// rendered here as of 31 Aug 2026. Kept in the repo, not deleted: EventCard is
+// still what /circles and the profile pages render, and the other two are one
+// import away if this page ever wants them back.
 import EventReel from "@/components/events/EventReel";
 import { dedupeEvents } from "@/lib/content-guards";
 import {
@@ -20,10 +20,8 @@ import {
 import EventsMapToggle from "@/components/events/EventsMapToggle";
 import EventsTabs from "@/components/EventsTabs";
 import SearchPill from "@/components/events/SearchPill";
-import FeaturedCarousel from "@/components/events/FeaturedCarousel";
 import EventsStories from "@/components/EventsStories";
 import StatePicker from "@/components/events/StatePicker";
-import LocationMatch from "@/components/LocationMatch";
 import { computeBadges, type Badge } from "@/lib/hostBadges";
 import type { EventRow, RsvpStatus } from "@/lib/types";
 
@@ -536,96 +534,95 @@ export default async function EventsPage({
           its button below the fold, which is the same leak we measured on the
           event page in August: the thing people came for, under the furniture
           built to help them find it. */}
+      {/* The one case the header pill cannot say on its own: the pill names a
+          city, and these are not that city's link-ups. Scoping to a state and
+          then quietly widening when it is empty would have somebody in Lagos
+          scrolling Abuja parties believing they were local. */}
+      {scopeRelaxed && autoScope && (
+        <p className="mt-3 flex items-center gap-2 text-[13px] text-gray-500">
+          <LineIcon name="pin" size={13} className="shrink-0 text-gray-400" />
+          Nothing in{" "}
+          <span className="font-bold text-gray-700 dark:text-white/80">
+            {autoScope}
+          </span>{" "}
+          this week, so this is everywhere.
+        </p>
+      )}
+
       {!error && feedEvents.length > 0 && (
         <div className="mt-4">
           <EventReel events={feedEvents} past={past} />
         </div>
       )}
 
-      <div className="mt-6">
-        <Suspense fallback={null}>
-          <SearchPill />
-        </Suspense>
-      </div>
+      {/* Everything below the reel, as one block with one job.
 
-      {!forYou && !searchParams.state && (
-        <div className="mt-5">
-          {/* Doubles as the "what is this site" line for anyone who landed
-              here from a TikTok link without seeing the home page. */}
-          <LocationMatch intro={!user} />
-        </div>
-      )}
+          It used to be six, and three of them were the same events again. The
+          featured carousel rendered feedEvents.slice(0, 5), which is the first
+          five slides of the reel directly above it, and the stories rail is
+          twelve of the same events as circles. An event could appear three
+          times on one screen while the catalogue is 24 deep, which does not
+          read as abundance, it reads as a page with nothing else to show.
 
-      {/* Say which set of events this is.
+          The location banner and the "showing link-ups in Lagos" strip both
+          went too: the header pill now names the place and opens a picker, so
+          those were the second and third location controls on one page.
 
-          Scoping to a state and then quietly widening when it's empty would
-          mean a Lagos visitor scrolling through Abuja parties believing they
-          were local. Either way the strip is one line and it names the place. */}
-      {autoScope && (
-        <div className="container-page mt-4">
-          <p className="flex items-center gap-2 text-[13px] text-gray-500">
-            <LineIcon name="pin" size={13} className="shrink-0 text-gray-400" />
-            {scopeRelaxed ? (
-              <>
-                Nothing in <span className="font-bold text-gray-700">{autoScope}</span>{" "}
-                this week — showing link-ups across Nigeria.
-              </>
-            ) : (
-              <>
-                Showing link-ups in{" "}
-                <span className="font-bold text-gray-700">{autoScope}</span>.{" "}
-                <Link href="/events?scope=all" className="font-bold text-brand hover:underline">
-                  See everywhere
-                </Link>
-              </>
-            )}
-          </p>
-        </div>
-      )}
-
-      {!error && !past && !searchParams.q?.trim() && feedEvents.length > 0 && (
-        <FeaturedCarousel
-          events={feedEvents.slice(0, 5).map((e) => ({
-            id: e.id,
-            title: e.title,
-            category: e.category,
-            date: e.date,
-            location: e.location,
-            state: e.state,
-            cover_image_url: e.cover_image_url,
-          }))}
-        />
-      )}
-
-
-      {!forYou && (
-        <div className="mt-8 space-y-4">
-          <div>
-            <p className="text-[13px] font-semibold text-gray-500">
-              Explore by vibe
-            </p>
-            <h2 className="text-[26px] font-extrabold leading-tight tracking-[-0.03em] text-gray-900">
-              Link-ups you might like
-            </h2>
-          </div>
-          <Suspense fallback={null}>
-            <EventsFilters />
-          </Suspense>
-        </div>
-      )}
-
+          What is left is the question somebody has after scrolling the feed,
+          which is the moment they either act or leave: they did not find it,
+          so give them the three ways to look again, together, in one rhythm. */}
       {!error && feedEvents.length > 0 && (
-        <div className="mt-4">
-          <EventsMapToggle
-            events={feedEvents.map((e) => ({
-              id: e.id,
-              title: e.title,
-              state: e.state,
-              category: e.category,
-              date: e.date,
-            }))}
-          />
-        </div>
+        <section className="mt-8 rounded-3xl border border-gray-100 bg-gray-50/60 p-5 dark:border-white/10 dark:bg-white/[0.03]">
+          <h2 className="text-[22px] font-extrabold leading-tight tracking-[-0.02em] text-gray-900 dark:text-white">
+            {past ? "Looking for something else?" : "Not seeing your thing?"}
+          </h2>
+          <p className="mt-1 text-[14px] text-gray-500">
+            {feedEvents.length} link-up{feedEvents.length === 1 ? "" : "s"}
+            {autoScope ? ` in ${autoScope}` : " on right now"}. Search it, pick a
+            vibe, or see what is near you on the map.
+          </p>
+
+          <div className="mt-4">
+            <Suspense fallback={null}>
+              <SearchPill />
+            </Suspense>
+          </div>
+
+          {!forYou && (
+            <div className="mt-4">
+              <Suspense fallback={null}>
+                <EventsFilters />
+              </Suspense>
+            </div>
+          )}
+
+          <div className="mt-4">
+            <EventsMapToggle
+              events={feedEvents.map((e) => ({
+                id: e.id,
+                title: e.title,
+                state: e.state,
+                category: e.category,
+                date: e.date,
+              }))}
+            />
+          </div>
+
+          {/* The last thing on the page is the one action that always works.
+              A visitor who read every slide and joined none of them is the
+              exact person who should be asked to start one. */}
+          <div className="mt-5 flex flex-col gap-2 border-t border-gray-200 pt-5 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
+            <p className="text-[14px] font-semibold text-gray-700 dark:text-white/80">
+              Still nothing? The night you want might not exist yet.
+            </p>
+            <Link
+              href="/host"
+              className="btn-primary shrink-0 rounded-full px-5 py-2.5 text-sm"
+            >
+              Host it yourself
+            </Link>
+          </div>
+        </section>
       )}
 
       {error ? (
