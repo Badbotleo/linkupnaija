@@ -72,9 +72,20 @@ export default function EventsTabs() {
     <div className="relative -mx-4 sm:mx-0">
       <div
         ref={stripRef}
-        // overscroll-x-contain: without it, dragging the strip past its end
-        // chains to the page and, in Safari, reads as the back gesture.
-        className="no-scrollbar flex overflow-x-auto overscroll-x-contain border-b border-gray-200 px-4 sm:px-0"
+        // Three separate things stop this row wandering on a phone, and it
+        // needed all three.
+        //
+        // The four labels come to 486px against a 375px screen, so the strip
+        // genuinely scrolls: 111px of travel. On iOS that means momentum, and
+        // a flick meant to nudge it sends it to the end and bounces back.
+        //
+        //   snap-x/snap-mandatory  a fling settles on a tab instead of
+        //                          wherever friction ran out
+        //   overscroll-x-none      kills the rubber band, and with it the
+        //                          drag that Safari reads as a back gesture
+        //   scroll-pl-4            snapped tabs clear the container padding
+        //                          rather than sitting under the edge
+        className="no-scrollbar flex snap-x snap-mandatory scroll-pl-4 overflow-x-auto overscroll-x-none border-b border-gray-200 px-4 sm:px-0"
       >
         {TABS.map((t) => {
           const on = t.key === tab;
@@ -88,7 +99,10 @@ export default function EventsTabs() {
               // py-3.5 puts the target at 46px. The old py-3 gave 42, under
               // the 44px a thumb can be relied on to hit, on a row that was
               // also sliding while being aimed at.
-              className={`relative shrink-0 whitespace-nowrap px-4 py-3.5 text-[15px] font-bold transition-colors ${
+              // px-3, down from px-4: 32px less travel across the row, which
+              // is 32px less for a fling to run away with. The target is still
+              // 46px tall, which is what a thumb actually needs.
+              className={`relative shrink-0 snap-start whitespace-nowrap px-3 py-3.5 text-[15px] font-bold transition-colors ${
                 on ? "text-gray-900" : "text-gray-500 hover:text-gray-800"
               }`}
             >

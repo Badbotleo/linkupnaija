@@ -79,10 +79,13 @@ const NAV_GAP = 12;
 export default function EventReel({
   events,
   onClose,
+  past = false,
 }: {
   events: ReelEvent[];
   /** Omitted when the reel IS the feed rather than a layer over it. */
   onClose?: () => void;
+  /** "Been and gone". Changes the closing card; the slides decide per event. */
+  past?: boolean;
 }) {
   const [mounted, setMounted] = useState(false);
   const [slidePx, setSlidePx] = useState<number | null>(null);
@@ -202,11 +205,12 @@ export default function EventReel({
             🎉
           </p>
           <h3 className="text-xl font-bold text-white">
-            That&apos;s everything coming up
+            {past ? "That's the story so far" : "That's everything coming up"}
           </h3>
           <p className="max-w-xs text-sm text-white/60">
-            Nothing here for you? The quickest fix is to start one. It takes a
-            couple of minutes.
+            {past
+              ? "Every one of these was somebody's idea first. The next one could be yours."
+              : "Nothing here for you? The quickest fix is to start one. It takes a couple of minutes."}
           </p>
           <Link href="/host" className="btn-primary mt-1">
             Host a link-up
@@ -314,10 +318,14 @@ function Slide({
   }, [scrollerRef]);
 
   const group = groupForCategory(event.category);
+  // Per event, not per tab: the feed can hold both, and a slide should not
+  // depend on which door you came through.
+  const isPast =
+    !!event.date && event.date < new Date().toISOString().slice(0, 10);
   const proof = attendanceProof(event.attendeeCount, {
     capacity: event.max_attendees,
     createdAt: event.created_at,
-    past: !!event.date && event.date < new Date().toISOString().slice(0, 10),
+    past: isPast,
   });
 
   return (
@@ -435,15 +443,28 @@ function Slide({
             where it competed with the button for the same glance and made the
             row look like two half-decisions instead of one. */}
         <div className="mt-1 flex items-center gap-2">
-          <LineIcon name="ticket" size={15} className="shrink-0 text-white/50" />
-          <span className="text-[15px] font-bold text-white">
-            {event.price > 0 ? formatNaira(event.price) : "Free entry"}
-          </span>
+          {/* A finished night has no price worth quoting. What it has is a
+              turnout, so on the past tab the ticket line gives way to the one
+              number that still means something. */}
+          {!isPast && (
+            <>
+              <LineIcon
+                name="ticket"
+                size={15}
+                className="shrink-0 text-white/50"
+              />
+              <span className="text-[15px] font-bold text-white">
+                {event.price > 0 ? formatNaira(event.price) : "Free entry"}
+              </span>
+            </>
+          )}
           {proof && (
             <>
-              <span className="text-white/25" aria-hidden>
-                ·
-              </span>
+              {!isPast && (
+                <span className="text-white/25" aria-hidden>
+                  ·
+                </span>
+              )}
               <span
                 className={`inline-flex items-center gap-1.5 text-[15px] font-bold ${
                   proof.tone === "urgent" ? "text-red-400" : "text-white/70"
@@ -467,9 +488,13 @@ function Slide({
             hairline along the top edge is what keeps it from looking flat when
             the image behind it is bright.
 
-            The label is the one waiting on the event page, not a description
-            of the navigation. "See this link-up" asked for a look, which is
-            the thing 1,800 visitors already did before 29 of them joined; this
+            On a past night the label asks for the only thing left to ask for:
+            the pictures. Selling a ticket to something that already happened
+            is the one way this button can be a lie.
+
+            The label is otherwise the one waiting on the event page, not a
+            description of the navigation. "See this link-up" asked for a look,
+            which is the thing 1,800 visitors already did before 29 joined; this
             asks for the decision, and lands on a button that says the same
             words back, so there is no seam between wanting to go and going. */}
         <Link
@@ -485,7 +510,11 @@ function Slide({
             className="absolute inset-x-0 top-0 h-px bg-white/40"
             aria-hidden
           />
-          {event.price > 0 ? "Get a ticket" : "Ask to join"}
+          {isPast
+            ? "See how it went"
+            : event.price > 0
+              ? "Get a ticket"
+              : "Ask to join"}
           <span
             className="translate-x-0 transition-transform duration-200 group-hover:translate-x-1"
             aria-hidden

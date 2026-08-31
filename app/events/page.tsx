@@ -536,9 +536,9 @@ export default async function EventsPage({
           its button below the fold, which is the same leak we measured on the
           event page in August: the thing people came for, under the furniture
           built to help them find it. */}
-      {!past && !error && feedEvents.length > 0 && (
+      {!error && feedEvents.length > 0 && (
         <div className="mt-4">
-          <EventReel events={feedEvents} />
+          <EventReel events={feedEvents} past={past} />
         </div>
       )}
 
@@ -670,22 +670,18 @@ export default async function EventsPage({
         </div>
       ) : (
         <>
-          {/* "Been and gone" keeps the grid. A reel invites you somewhere,
-              and there is nowhere to go on a night that already happened;
-              the past tab is a scrapbook, which wants many at once. It is
-              also why the grid is kept rather than deleted. */}
-          {past && (
-            <div className="mt-6">
-              <EventsList
-                events={feedEvents}
-                stateFilter={searchParams.state}
-                trendingIds={trendingIds}
-                recommendedAll={forYou}
-                hostBadgesByHost={hostBadgesByHost}
-                friendsGoing={friendsGoing}
-              />
-            </div>
-          )}
+          {/* "Been and gone" used to keep the grid, on the reasoning that a
+              reel invites you somewhere and a finished night has nowhere to
+              go. In practice that made one tab look like a different product,
+              and the reel turns out to suit a recap better than a grid does:
+              these are the flyers of nights that actually happened, and one
+              per screen is how you look at photographs. The slides carry it
+              rather than the tab, so a past event reads correctly wherever it
+              appears: no ticket price, the turnout instead, and a button that
+              asks for the pictures rather than selling a seat.
+
+              EventsList is still what /circles and the profile pages render,
+              which is why it stays. */}
 
           {!forYou && totalPages > 1 && (
             <nav
