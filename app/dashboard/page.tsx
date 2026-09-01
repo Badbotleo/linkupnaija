@@ -17,6 +17,7 @@ import HostRings from "@/components/host/HostRings";
 import { computeBadges, hostScore } from "@/lib/hostBadges";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { isProActive } from "@/lib/pro";
+import { formatNaira } from "@/lib/paystack";
 import type {
   EventRow,
   RsvpStatus,
@@ -296,6 +297,100 @@ export default async function DashboardPage() {
       ]
     : [];
 
+  // --- What needs you ------------------------------------------------------
+  //
+  // The section this page never had. A dashboard should open with what is
+  // waiting on a decision, and every one of these is already computable from
+  // data fetched above: nothing new is queried.
+  const pendingRequests = hosting.reduce(
+    (n, e) => n + e.rsvps.filter((r) => r.status === "pending").length,
+    0
+  );
+  const requestEvent = hosting.find((e) =>
+    e.rsvps.some((r) => r.status === "pending")
+  );
+  const claimable = payoutCards.filter((c) => c.status === null && c.due > 0);
+  const claimableTotal = claimable.reduce((n, c) => n + c.due, 0);
+
+  const needsYou: {
+    icon: string;
+    tone: "brand" | "green" | "amber";
+    title: string;
+    sub: string;
+    href: string;
+  }[] = [];
+  if (pendingRequests > 0) {
+    needsYou.push({
+      icon: "users",
+      tone: "brand",
+      title: `Review ${pendingRequests} join request${
+        pendingRequests === 1 ? "" : "s"
+      }`,
+      sub: requestEvent ? `For ${requestEvent.title}` : "On your link-ups",
+      href: requestEvent ? `/events/${requestEvent.id}` : "/dashboard",
+    });
+  }
+  if (claimableTotal > 0) {
+    needsYou.push({
+      icon: "ticket",
+      tone: "green",
+      title: `Withdraw ${formatNaira(claimableTotal)}`,
+      sub: `From ${claimable.length} finished link-up${
+        claimable.length === 1 ? "" : "s"
+      }`,
+      href: "#payouts",
+    });
+  }
+  // Only when there is money it would actually block. Nagging somebody with
+  // nothing to withdraw about their bank details is how a list like this
+  // stops being read.
+  if (claimableTotal > 0 && !p?.payout_account_number) {
+    needsYou.push({
+      icon: "shield",
+      tone: "amber",
+      title: "Add your payout details",
+      sub: "Needed to send you ticket money",
+      href: "/profile/edit",
+    });
+  }
+
+  // --- Next up -------------------------------------------------------------
+  //
+  // The page could say you were hosting three link-ups and never which one
+  // was first. Hosting and attending are merged, because the diary does not
+  // care which side of it you are on.
+  const upcoming = [
+    ...hosting.map((e) => ({
+      id: e.id,
+      title: e.title,
+      date: e.date,
+      time: e.time,
+      state: e.state,
+      role: "Hosting",
+      going: e.rsvps.filter((r) => r.status === "accepted").length as number | null,
+    })),
+    ...attending.map((r) => ({
+      id: r.events!.id,
+      title: r.events!.title,
+      date: r.events!.date,
+      time: r.events!.time,
+      state: r.events!.state,
+      role: "Going",
+      going: null as number | null,
+    })),
+  ].sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`));
+  const nextUp = upcoming[0] ?? null;
+
+  const daysAway = nextUp
+    ? Math.round(
+        (new Date(`${nextUp.date}T00:00:00`).getTime() -
+          new Date(`${today}T00:00:00`).getTime()) /
+          86400000
+      )
+    : 0;
+  const whenLabel =
+    daysAway <= 0 ? "today" : daysAway === 1 ? "tomorrow" : `in ${daysAway} days`;
+
   return (
     <div>
       <AppHeader
@@ -308,210 +403,97 @@ export default async function DashboardPage() {
         }
       />
 
-      <div className="container-page py-5">
-      {/* The six things people open this screen to do, one tap from the top. */}
-      <QuickActions />
+      <div className="container-page max-w-[760px] py-4">
 
-      {p && (
-        <div className="mt-6">
-          <ProfileCompletion items={completionItems} />
-        </div>
+      {/* 1 - NEEDS YOU.
+          Eleven stacked sections used to open this page, and none of them said
+          what was waiting on the reader. On a phone the left column stacked
+          first, so a host scrolled past four cards about themselves before
+          reaching anything they could act on.
+
+          Renders nothing at all when there is nothing to do, which is the only
+          way a list like this stays worth reading. */}
+      {needsYou.length > 0 && (
+        <section>
+          <SectionLabel>Needs you</SectionLabel>
+          <div className="divide-y divide-gray-200/70 overflow-hidden rounded-2xl bg-white shadow-[var(--e1)] dark:divide-white/10 dark:bg-white/[0.04]">
+            {needsYou.map((n) => (
+              <Link
+                key={n.title}
+                href={n.href}
+                className="flex items-center gap-3 px-4 py-3.5 transition-transform duration-150 active:scale-[0.995]"
+              >
+                <span
+                  className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${
+                    n.tone === "brand"
+                      ? "bg-brand/[0.10] text-brand"
+                      : n.tone === "green"
+                        ? "bg-naija/[0.12] text-naija"
+                        : "bg-amber-400/[0.16] text-amber-600"
+                  }`}
+                >
+                  <LineIcon name={n.icon} size={17} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[15px] font-bold text-gray-900 dark:text-white">
+                    {n.title}
+                  </span>
+                  <span className="mt-0.5 block truncate text-[13px] text-gray-500">
+                    {n.sub}
+                  </span>
+                </span>
+                <LineIcon name="chevronRight" size={16} className="shrink-0 text-gray-400" />
+              </Link>
+            ))}
+          </div>
+        </section>
       )}
 
-      <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Profile summary + wallet + referrals */}
-        <div className="space-y-6 lg:col-span-1">
-          {p && (
-            <ProfileCard
-              showEdit
-              isPro={isProActive(p.is_pro, p.pro_expires_at)}
-              rating={{ avg: p.rating_avg, count: p.rating_count }}
-              profile={{
-                id: p.id,
-                name: p.name,
-                state: p.state,
-                avatar_url: p.avatar_url,
-                bio: p.bio,
-                instagram_url: p.instagram_url,
-                twitter_url: p.twitter_url,
-                facebook_url: p.facebook_url,
-              }}
-            />
-          )}
-
-          {hostStats && hostStats.total_events > 0 && (
-            <div>
-              <HostRings
-                stats={hostStats}
-                badges={hostBadges}
-                percentile={hostPercentile}
-              />
-              <Link
-                href="/hosts/leaderboard"
-                className="mt-2 block text-center text-sm font-semibold text-brand hover:underline"
-              >
-                View the host leaderboard →
-              </Link>
+      {/* 2 - NEXT UP. One card, the next thing in the diary. */}
+      {nextUp && (
+        <section>
+          <SectionLabel>Next up</SectionLabel>
+          <Link
+            href={`/events/${nextUp.id}`}
+            className="block overflow-hidden rounded-2xl bg-gradient-to-br from-brand to-brand-700 p-5 text-white shadow-[var(--e2)] transition-transform duration-150 active:scale-[0.99]"
+          >
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.12em]">
+                {nextUp.role}
+              </span>
+              <span className="text-[13px] font-semibold text-white/75">
+                {whenLabel}
+              </span>
             </div>
-          )}
-
-          <WalletCard balance={p?.wallet_balance ?? 0} transactions={walletTx} />
-
-          <ReferralCard
-            referralCode={p?.referral_code ?? null}
-            referralCount={referralCount}
-            totalEarned={totalEarned}
-            referredNames={referredNames}
-          />
-        </div>
-
-        {/* Lists */}
-        <div className="space-y-8 lg:col-span-2">
-          <section>
-            <h2 className="mb-3 text-lg font-bold text-gray-900">Messages</h2>
-            <UserMessages meId={user.id} />
-          </section>
-
-          {myCircleRows.length > 0 && (
-            <section>
-              <h2 className="mb-3 text-lg font-bold text-gray-900">
-                My Circles
-              </h2>
-              <div className="space-y-2">
-                {myCircleRows.map(({ circle }) => {
-                  const unread = circleUnread.get(circle!.id) ?? 0;
-                  return (
-                    <Link
-                      key={circle!.id}
-                      href={`/circles/${circle!.id}`}
-                      className="flex items-center justify-between surface p-4 transition hover:border-brand/30"
-                    >
-                      <div className="min-w-0">
-                        <p className="truncate font-bold text-gray-900">
-                          {circle!.name}
-                        </p>
-                        {circle!.category && (
-                          <p className="text-xs text-gray-500">{circle!.category}</p>
-                        )}
-                      </div>
-                      {unread > 0 && (
-                        <span className="shrink-0 rounded-full bg-brand px-2.5 py-1 text-xs font-bold text-white">
-                          {unread > 9 ? "9+" : unread} new
-                        </span>
-                      )}
-                    </Link>
-                  );
-                })}
+            <p className="mt-2.5 text-[22px] font-extrabold leading-tight tracking-[-0.02em]">
+              {nextUp.title}
+            </p>
+            <dl className="mt-2.5 space-y-1 text-[14px] text-white/85">
+              <div className="flex items-center gap-2">
+                <LineIcon name="calendar" size={14} className="shrink-0 text-white/55" />
+                {formatEventDate(nextUp.date)}
+                {nextUp.time ? ` \u00b7 ${formatEventTime(nextUp.time)}` : ""}
               </div>
-            </section>
-          )}
-
-          {mySeries.length > 0 && (
-            <section>
-              <h2 className="mb-3 text-lg font-bold text-gray-900">
-                My Series
-              </h2>
-              <div className="space-y-2">
-                {mySeries.map((s) => (
-                  <Link
-                    key={s.id}
-                    href={`/series/${s.id}`}
-                    className="flex items-center justify-between surface p-4 transition hover:border-brand/30"
-                  >
-                    <span className="font-bold text-gray-900">{s.title}</span>
-                    {subscriberProof(s.subscriber_count, "follower") && (
-                      <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand">
-                        {subscriberProof(s.subscriber_count, "follower")}
-                      </span>
-                    )}
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {followedSeries.length > 0 && (
-            <section>
-              <h2 className="mb-3 text-lg font-bold text-gray-900">
-                Series I Follow
-              </h2>
-              {followedEvents.length === 0 ? (
-                <p className="text-sm text-gray-500">
-                  No upcoming events from your series right now.
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {followedEvents.map((e) => (
-                    <Link
-                      key={e.id}
-                      href={`/events/${e.id}`}
-                      className="flex items-center justify-between surface p-4 transition hover:border-brand/30"
-                    >
-                      <div className="min-w-0">
-                        <p className="truncate font-bold text-gray-900">
-                          {e.title}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {formatEventDate(e.date)} · {formatEventTime(e.time)}
-                        </p>
-                      </div>
-                      <span className="shrink-0 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand">
-                        Series
-                      </span>
-                    </Link>
-                  ))}
+              {nextUp.state && (
+                <div className="flex items-center gap-2">
+                  <LineIcon name="pin" size={14} className="shrink-0 text-white/55" />
+                  {nextUp.state}
                 </div>
               )}
-            </section>
-          )}
+              {nextUp.going !== null && (
+                <div className="flex items-center gap-2">
+                  <LineIcon name="users" size={14} className="shrink-0 text-white/55" />
+                  {nextUp.going} going
+                </div>
+              )}
+            </dl>
+          </Link>
+        </section>
+      )}
 
-          {recentPhotos.length > 0 && (
-            <section>
-              <h2 className="mb-3 text-lg font-bold text-gray-900">
-                Recent memories
-              </h2>
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-                {recentPhotos.map((p) => (
-                  <Link
-                    key={p.id}
-                    href={`/events/${p.event_id}`}
-                    className="aspect-square overflow-hidden rounded-xl"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={p.photo_url}
-                      alt="Event memory"
-                      loading="lazy"
-                      className="h-full w-full object-cover transition hover:opacity-90"
-                    />
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {payoutCards.length > 0 && (
-            <section>
-              <h2 className="mb-3 text-lg font-bold text-gray-900">Payouts</h2>
-              <div className="space-y-3">
-                {payoutCards.map((c) => (
-                  <PayoutRequest
-                    key={c.eventId}
-                    hostId={user.id}
-                    eventId={c.eventId}
-                    eventTitle={c.eventTitle}
-                    collected={c.collected}
-                    unrecorded={c.unrecorded}
-                    platformFee={c.platformFee}
-                    due={c.due}
-                    phoneVerified={!!profile?.phone_verified}
-                    status={c.status}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
+      {/* 3 - YOUR LINK-UPS. Ninth on this page before today. */}
+      <SectionLabel>Your link-ups</SectionLabel>
+      <div>
           {/* Five stacked headings became one switchable list. */}
           <DashboardTabs
             tabs={[
@@ -616,10 +598,222 @@ export default async function DashboardPage() {
           </Section>
             </div>
           </DashboardTabs>
+      </div>
+
+      {/* 4 - MESSAGES. Kept, but after the link-ups rather than before them. */}
+      <SectionLabel>Messages</SectionLabel>
+      <UserMessages meId={user.id} />
+
+      {/* 5 - YOUR GROUPS.
+          "My Circles", "My Series" and "Series I Follow" were three headings
+          answering one question: what am I part of. The kind becomes a label
+          on the row instead of a heading above it. */}
+      {(myCircleRows.length > 0 ||
+        mySeries.length > 0 ||
+        followedSeries.length > 0) && (
+        <>
+          <SectionLabel>Your groups</SectionLabel>
+          <div className="divide-y divide-gray-200/70 overflow-hidden rounded-2xl bg-white shadow-[var(--e1)] dark:divide-white/10 dark:bg-white/[0.04]">
+            {myCircleRows.map(({ circle }) => {
+              const unread = circleUnread.get(circle!.id) ?? 0;
+              return (
+                <GroupRow
+                  key={circle!.id}
+                  href={`/circles/${circle!.id}`}
+                  name={circle!.name}
+                  kind={circle!.category ? `Circle \u00b7 ${circle!.category}` : "Circle"}
+                  badge={unread > 0 ? `${unread > 9 ? "9+" : unread} new` : null}
+                />
+              );
+            })}
+            {mySeries.map((se) => (
+              <GroupRow
+                key={se.id}
+                href={`/series/${se.id}`}
+                name={se.title}
+                kind="Series you run"
+                badge={subscriberProof(se.subscriber_count, "follower")}
+              />
+            ))}
+            {followedSeries.map((se) => (
+              <GroupRow
+                key={se.id}
+                href={`/series/${se.id}`}
+                name={se.title}
+                kind="Series you follow"
+                badge={null}
+              />
+            ))}
+          </div>
+
+          {/* Upcoming dates from series you follow, which is the reason to
+              follow one. Rolled in here rather than given its own heading. */}
+          {followedEvents.length > 0 && (
+            <div className="mt-2 divide-y divide-gray-200/70 overflow-hidden rounded-2xl bg-white shadow-[var(--e1)] dark:divide-white/10 dark:bg-white/[0.04]">
+              {followedEvents.map((e) => (
+                <GroupRow
+                  key={e.id}
+                  href={`/events/${e.id}`}
+                  name={e.title}
+                  kind={`${formatEventDate(e.date)} \u00b7 ${formatEventTime(e.time)}`}
+                  badge="From a series"
+                />
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* 6 - PAYOUTS. Anchored, because "Withdraw" up in Needs you links here. */}
+      {payoutCards.length > 0 && (
+        <div id="payouts">
+          <SectionLabel>Payouts</SectionLabel>
+          <div className="space-y-3">
+            {payoutCards.map((c) => (
+              <PayoutRequest
+                key={c.eventId}
+                hostId={user.id}
+                eventId={c.eventId}
+                eventTitle={c.eventTitle}
+                collected={c.collected}
+                unrecorded={c.unrecorded}
+                platformFee={c.platformFee}
+                due={c.due}
+                phoneVerified={!!profile?.phone_verified}
+                status={c.status}
+              />
+            ))}
+          </div>
         </div>
+      )}
+
+      {/* 7 - MONEY. Wallet and referrals were two full cards about the same
+          subject, stacked apart. */}
+      <SectionLabel>Money</SectionLabel>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <WalletCard balance={p?.wallet_balance ?? 0} transactions={walletTx} />
+        <ReferralCard
+          referralCode={p?.referral_code ?? null}
+          referralCount={referralCount}
+          totalEarned={totalEarned}
+          referredNames={referredNames}
+        />
+      </div>
+
+      {/* 8 - YOU. Last, deliberately. Nobody opens a dashboard to read their
+          own bio, and this sat above everything actionable. */}
+      <SectionLabel>You</SectionLabel>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {p && (
+          <ProfileCard
+            showEdit
+            isPro={isProActive(p.is_pro, p.pro_expires_at)}
+            rating={{ avg: p.rating_avg, count: p.rating_count }}
+            profile={{
+              id: p.id,
+              name: p.name,
+              state: p.state,
+              avatar_url: p.avatar_url,
+              bio: p.bio,
+              instagram_url: p.instagram_url,
+              twitter_url: p.twitter_url,
+              facebook_url: p.facebook_url,
+            }}
+          />
+        )}
+        {hostStats && hostStats.total_events > 0 && (
+          <div>
+            <HostRings
+              stats={hostStats}
+              badges={hostBadges}
+              percentile={hostPercentile}
+            />
+            <Link
+              href="/hosts/leaderboard"
+              className="mt-2 block text-center text-sm font-semibold text-brand hover:underline"
+            >
+              View the host leaderboard →
+            </Link>
+          </div>
+        )}
+      </div>
+
+      {p && (
+        <div className="mt-4">
+          <ProfileCompletion items={completionItems} />
+        </div>
+      )}
+
+      {/* 9 - MEMORIES. */}
+      {recentPhotos.length > 0 && (
+        <>
+          <SectionLabel>Recent memories</SectionLabel>
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+            {recentPhotos.map((ph) => (
+              <Link
+                key={ph.id}
+                href={`/events/${ph.event_id}`}
+                className="aspect-square overflow-hidden rounded-xl"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={ph.photo_url}
+                  alt="Event memory"
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Shortcuts stay, at the bottom. They are a way to start something,
+          which is not the question this screen opens on. */}
+      <div className="mt-8">
+        <QuickActions />
       </div>
       </div>
     </div>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="mb-2 mt-7 text-[13px] font-bold uppercase tracking-[0.12em] text-gray-400">
+      {children}
+    </h2>
+  );
+}
+
+function GroupRow({
+  href,
+  name,
+  kind,
+  badge,
+}: {
+  href: string;
+  name: string;
+  kind: string;
+  badge: string | null;
+}) {
+  return (
+    <Link href={href} className="flex items-center gap-3 px-4 py-3.5">
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[15px] font-bold text-gray-900 dark:text-white">
+          {name}
+        </span>
+        <span className="mt-0.5 block truncate text-[13px] text-gray-500">
+          {kind}
+        </span>
+      </span>
+      {badge && (
+        <span className="shrink-0 rounded-full bg-brand/[0.10] px-2.5 py-1 text-[12px] font-bold text-brand">
+          {badge}
+        </span>
+      )}
+      <LineIcon name="chevronRight" size={16} className="shrink-0 text-gray-400" />
+    </Link>
   );
 }
 
