@@ -117,6 +117,15 @@ export default async function PublicProfilePage({
     revoked: profile.revoked_badges,
   });
 
+  // "Member since March 2026" says more about whether somebody is real than
+  // any count does, and it was on the record already without being shown.
+  const memberSince = profile.created_at
+    ? new Date(profile.created_at).toLocaleDateString("en-NG", {
+        month: "long",
+        year: "numeric",
+      })
+    : "a while back";
+
   // Record a profile view (deduped to once/24h) — triggers the "who viewed"
   // notification (named for Pro users).
   if (user && user.id !== params.id) {
@@ -135,17 +144,22 @@ export default async function PublicProfilePage({
   return (
     <div className="pb-4">
       <AppHeader title={profile.name ?? "Member"} back />
-      <div className="h-36 w-full sm:h-52">
+      {/* A third of the height it was.
+          144px of banner and an overlapping avatar is the Twitter profile
+          pattern, and it spent the first third of a phone screen before
+          saying anything about the person. Their own image still shows when
+          they have set one; without one it is a tint rather than a slab. */}
+      <div className="h-20 w-full sm:h-28">
         {profile.banner_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={profile.banner_url} alt="" className="h-full w-full object-cover" />
         ) : (
-          <div className="h-full w-full" style={{ background: "linear-gradient(120deg,#121212,#534AB7)" }} />
+          <div className="h-full w-full bg-gradient-to-r from-brand/25 via-brand/10 to-transparent" />
         )}
       </div>
 
       <div className="container-page max-w-2xl">
-        <div className="-mt-12 flex items-end gap-4">
+        <div className="-mt-10 flex items-end gap-4">
           <div className="rounded-full border-4 border-white bg-white">
             {/* Tappable: a 96px circle is a thumbnail of a photo someone chose
                 carefully, and there was no way to see it properly. */}
@@ -192,11 +206,74 @@ export default async function PublicProfilePage({
           </p>
         )}
 
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          <Stat value={friendCount} label="Friends" />
-          <Stat value={attending.count ?? 0} label="Attending" />
-          <Stat value={hosting.count ?? 0} label="Hosting" />
-        </div>
+        {/* Evidence, not vanity.
+            This was "Friends / Attending / Hosting", which is what a social
+            network shows. The question actually being asked on this page is
+            whether to let a stranger into a room, and none of those three
+            spoke to it: friend count is irrelevant to it, and "Attending 5"
+            does not say whether they were ever approved for any of them.
+
+            Phone verification, how long they have been here, how many
+            link-ups they have been approved for and what their guests say
+            about them were all on this page already, scattered across a chip
+            in the heading, a badge row, and a scorecard further down. Same
+            facts, one place, in the order somebody weighs them. */}
+        <dl className="mt-4 divide-y divide-gray-200/70 rounded-2xl bg-white px-4 shadow-[var(--e1)] dark:divide-white/10 dark:bg-white/[0.04]">
+          <Fact
+            icon="check"
+            tone={profile.phone_verified ? "green" : "muted"}
+            // "Phone number", not "Phone": the badge row directly above can
+            // read "Verified Host", which is a hosting badge and nothing to do
+            // with a phone. Side by side, a bare "Phone not verified" looked
+            // like the page contradicting itself.
+            label={
+              profile.phone_verified
+                ? "Phone number confirmed"
+                : "Phone number not confirmed"
+            }
+            sub={
+              profile.phone_verified
+                ? "We texted a code and they entered it"
+                : "Nobody has confirmed this number"
+            }
+          />
+          <Fact
+            icon="calendar"
+            tone="muted"
+            label={
+              (attending.count ?? 0) > 0
+                ? `Approved for ${attending.count} link-up${
+                    attending.count === 1 ? "" : "s"
+                  }`
+                : "No link-ups yet"
+            }
+            sub={`Member since ${memberSince}`}
+          />
+          {hostStats && hostStats.total_events > 0 && (
+            <Fact
+              icon="star"
+              tone="amber"
+              label={
+                hostStats.review_count > 0
+                  ? `${hostStats.average_rating.toFixed(1)} from ${
+                      hostStats.review_count
+                    } guest${hostStats.review_count === 1 ? "" : "s"}`
+                  : "No guest ratings yet"
+              }
+              sub={`Has hosted ${hosting.count ?? 0} link-up${
+                (hosting.count ?? 0) === 1 ? "" : "s"
+              }`}
+            />
+          )}
+          {friendCount > 0 && (
+            <Fact
+              icon="users"
+              tone="brand"
+              label={`${friendCount} friend${friendCount === 1 ? "" : "s"} here`}
+              sub="People who have connected with them"
+            />
+          )}
+        </dl>
 
         {user?.id !== params.id && (
           <div className="mt-4 flex items-center gap-2">
@@ -284,25 +361,41 @@ export default async function PublicProfilePage({
   );
 }
 
-function Stat({ value, label }: { value: number; label: string }) {
+function Fact({
+  icon,
+  tone,
+  label,
+  sub,
+}: {
+  icon: string;
+  tone: "brand" | "green" | "amber" | "muted";
+  label: string;
+  sub: string;
+}) {
   return (
-    // Same card as the owner's own profile. It used to be plain text on a
-    // flex row, so your profile and someone else's looked like two different
-    // products — and the one strangers see was the plainer of the two.
-    //
-    // Not a link: a visitor can't open another member's friends list, and a
-    // card that lifts on hover and goes nowhere is a worse lie than a card
-    // that doesn't move.
-    <div
-      className="rounded-2xl bg-white px-3 py-3 text-center shadow-sm"
-      aria-label={`${value} ${label}`}
-    >
-      <p className="text-[22px] font-extrabold leading-none tabular-nums text-gray-900">
-        {value}
-      </p>
-      <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-        {label}
-      </p>
+    <div className="flex items-start gap-3 py-3.5">
+      <span
+        className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg ${
+          tone === "brand"
+            ? "bg-brand/[0.10] text-brand"
+            : tone === "green"
+              ? "bg-naija/[0.12] text-naija"
+              : tone === "amber"
+                ? "bg-amber-400/[0.16] text-amber-600"
+                : "bg-gray-900/[0.05] text-gray-500 dark:bg-white/10 dark:text-white/60"
+        }`}
+        aria-hidden
+      >
+        <LineIcon name={icon} size={16} />
+      </span>
+      <div className="min-w-0">
+        <dt className="text-[15px] font-bold leading-snug text-gray-900 dark:text-white">
+          {label}
+        </dt>
+        <dd className="mt-0.5 text-[13.5px] leading-snug text-gray-500">
+          {sub}
+        </dd>
+      </div>
     </div>
   );
 }

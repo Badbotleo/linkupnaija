@@ -11,6 +11,7 @@ import ProfileCompletion from "@/components/ProfileCompletion";
 import UserMessages from "@/components/UserMessages";
 import PayoutRequest from "@/components/PayoutRequest";
 import CategoryBadge from "@/components/CategoryBadge";
+import EventCover from "@/components/EventCover";
 import WalletCard from "@/components/wallet/WalletCard";
 import ReferralCard from "@/components/referral/ReferralCard";
 import HostRings from "@/components/host/HostRings";
@@ -53,12 +54,16 @@ export default async function DashboardPage() {
     supabase.from("users").select("*").eq("id", user.id).single(),
     supabase
       .from("events")
-      .select("id, title, category, state, date, time, price, rsvps(status)")
+      .select(
+        "id, title, category, state, date, time, price, cover_image_url, rsvps(status)"
+      )
       .eq("host_id", user.id)
       .order("date", { ascending: true }),
     supabase
       .from("rsvps")
-      .select("status, events(id, title, category, state, date, time)")
+      .select(
+        "status, events(id, title, category, state, date, time, cover_image_url)"
+      )
       .eq("user_id", user.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -366,6 +371,8 @@ export default async function DashboardPage() {
       date: e.date,
       time: e.time,
       state: e.state,
+      category: e.category,
+      cover: e.cover_image_url,
       role: "Hosting",
       going: e.rsvps.filter((r) => r.status === "accepted").length as number | null,
     })),
@@ -375,6 +382,8 @@ export default async function DashboardPage() {
       date: r.events!.date,
       time: r.events!.time,
       state: r.events!.state,
+      category: r.events!.category,
+      cover: r.events!.cover_image_url,
       role: "Going",
       going: null as number | null,
     })),
@@ -453,11 +462,27 @@ export default async function DashboardPage() {
       {nextUp && (
         <section>
           <SectionLabel>Next up</SectionLabel>
+          {/* The host's own flyer, not a brand-coloured slab.
+              A flat gradient says "an event exists"; the artwork says which
+              one, and it is the thing the host actually made. The scrim is
+              what keeps the copy readable over whatever they uploaded, since
+              a cover can be any colour at all. */}
           <Link
             href={`/events/${nextUp.id}`}
-            className="block overflow-hidden rounded-2xl bg-gradient-to-br from-brand to-brand-700 p-5 text-white shadow-[var(--e2)] transition-transform duration-150 active:scale-[0.99]"
+            className="relative block overflow-hidden rounded-2xl bg-gradient-to-br from-brand to-brand-700 p-5 text-white shadow-[var(--e2)] transition-transform duration-150 active:scale-[0.99]"
           >
-            <div className="flex items-center gap-2">
+            <EventCover
+              url={nextUp.cover}
+              category={nextUp.category}
+              title={nextUp.title}
+              className="absolute inset-0 h-full w-full"
+            />
+            {/* Dark enough to read on, light enough to still see the flyer. */}
+            <span
+              className="absolute inset-0 bg-gradient-to-t from-[#1A1040]/95 via-[#1A1040]/80 to-[#1A1040]/45"
+              aria-hidden
+            />
+            <div className="relative flex items-center gap-2">
               <span className="rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.12em]">
                 {nextUp.role}
               </span>
@@ -465,10 +490,10 @@ export default async function DashboardPage() {
                 {whenLabel}
               </span>
             </div>
-            <p className="mt-2.5 text-[22px] font-extrabold leading-tight tracking-[-0.02em]">
+            <p className="relative mt-2.5 text-[22px] font-extrabold leading-tight tracking-[-0.02em] drop-shadow">
               {nextUp.title}
             </p>
-            <dl className="mt-2.5 space-y-1 text-[14px] text-white/85">
+            <dl className="relative mt-2.5 space-y-1 text-[14px] text-white/85">
               <div className="flex items-center gap-2">
                 <LineIcon name="calendar" size={14} className="shrink-0 text-white/55" />
                 {formatEventDate(nextUp.date)}
