@@ -505,7 +505,7 @@ export default function RsvpButton({
               type="button"
               onClick={request}
               disabled={loading || isFull}
-              className={`group relative w-full overflow-hidden rounded-2xl px-5 py-4 text-left transition-all duration-200 ${
+              className={`group relative w-full overflow-hidden rounded-2xl px-5 py-4 text-left transition-[transform,border-color,background-color] duration-200 ${
                 isFull
                   ? "cursor-not-allowed bg-gray-100 text-gray-400"
                   : "bg-gradient-to-r from-brand-600 to-brand text-white shadow-lg shadow-brand/25 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-brand/30 active:translate-y-0 active:shadow-md disabled:opacity-70"

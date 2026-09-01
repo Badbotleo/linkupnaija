@@ -166,7 +166,7 @@ export default function PartnerHero({
             {slides.map((s, i) => (
               <span
                 key={s.src}
-                className={`h-1.5 rounded-full transition-all ${
+                className={`h-1.5 rounded-full transition-[width] ${
                   i === active ? "w-5 bg-white" : "w-1.5 bg-white/50"
                 }`}
               />

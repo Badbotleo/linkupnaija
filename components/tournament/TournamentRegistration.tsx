@@ -100,7 +100,7 @@ export default function TournamentRegistration() {
         </div>
         <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-white/10">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-[#534AB7] to-[#FAC775] transition-all"
+            className="h-full rounded-full bg-gradient-to-r from-[#534AB7] to-[#FAC775] transition-[width]"
             style={{ width: `${pct}%` }}
           />
         </div>

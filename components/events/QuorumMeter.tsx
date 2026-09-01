@@ -88,7 +88,7 @@ export default function QuorumMeter({
         aria-label={`${state.going} of ${state.need} guests needed`}
       >
         <div
-          className="h-full rounded-full bg-brand transition-all duration-500"
+          className="h-full rounded-full bg-brand transition-[width] duration-500"
           style={{ width: `${pct}%` }}
         />
       </div>

@@ -105,7 +105,7 @@ export default function FeaturedCarousel({
             onClick={() => go(i)}
             aria-label={`Go to ${e.title}`}
             aria-current={i === index}
-            className={`h-2 rounded-full transition-all ${
+            className={`h-2 rounded-full transition-colors ${
               i === index ? "w-2 bg-gray-800" : "w-2 bg-gray-300 hover:bg-gray-400"
             }`}
           />

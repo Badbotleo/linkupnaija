@@ -135,7 +135,7 @@ export default function ScreenTour({ events = [] }: { events?: TourEvent[] }) {
                     {STEPS.map((_, n) => (
                       <div
                         key={n}
-                        className={`absolute inset-0 p-3 pt-9 transition-all duration-500 ${
+                        className={`absolute inset-0 p-3 pt-9 transition-[transform,opacity] duration-500 ${
                           n === i
                             ? "translate-y-0 opacity-100"
                             : "pointer-events-none translate-y-3 opacity-0"
@@ -181,7 +181,7 @@ export default function ScreenTour({ events = [] }: { events?: TourEvent[] }) {
                   onClick={() => setI(n)}
                   aria-label={`Step ${n + 1}: ${s2.label}`}
                   aria-current={n === i}
-                  className={`h-1.5 rounded-full transition-all ${
+                  className={`h-1.5 rounded-full transition-[width] ${
                     n === i ? "w-6 bg-brand" : "w-1.5 bg-gray-300"
                   }`}
                 />

@@ -2,6 +2,21 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   darkMode: "class",
+  future: {
+    /**
+     * Compile every `hover:` utility inside `@media (hover: hover)`.
+     *
+     * Without this, a tap on a phone leaves the hover state latched: the card
+     * stays lifted, the link stays underlined, the button keeps its hover
+     * colour until you touch something else. It reads as the interface not
+     * letting go of you, and it is on every hover utility in the app, of which
+     * there are hundreds. Almost all of this traffic is phones.
+     *
+     * One line here rather than a media query at each call site, which is the
+     * only reason it was never worth doing before.
+     */
+    hoverOnlyWhenSupported: true,
+  },
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",

@@ -232,7 +232,7 @@ export default function SwipeDeck({
             {dotWindow.map((i) => (
               <span
                 key={i}
-                className={`h-1.5 rounded-full transition-all ${
+                className={`h-1.5 rounded-full transition-[width] ${
                   i === top ? "w-5 bg-brand" : "w-1.5 bg-gray-300"
                 }`}
               />

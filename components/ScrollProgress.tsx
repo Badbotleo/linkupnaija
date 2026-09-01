@@ -28,7 +28,7 @@ export default function ScrollProgress() {
       aria-hidden
     >
       <div
-        className="h-full bg-gradient-to-r from-[#534AB7] to-[#7F77DD] transition-[width] duration-100 ease-out"
+        className="h-full bg-gradient-to-r from-[#534AB7] to-[#7F77DD] transition-[width,opacity] duration-100 ease-out"
         style={{ width: `${pct}%`, opacity: pct < 0.5 ? 0 : 1 }}
       />
     </div>

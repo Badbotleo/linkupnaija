@@ -194,7 +194,7 @@ export default function ChatWidget() {
 
       {/* Panel */}
       <div
-        className={`fixed bottom-24 right-5 z-50 flex w-[400px] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl transition-all duration-200 ${
+        className={`fixed bottom-24 right-5 z-50 flex w-[400px] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl transition-[transform,opacity] duration-200 ${
           open
             ? "pointer-events-auto translate-y-0 opacity-100"
             : "pointer-events-none translate-y-4 opacity-0"

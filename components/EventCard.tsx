@@ -43,7 +43,7 @@ export default function EventCard({
 
   return (
     <div
-      className={`group flex flex-col overflow-hidden rounded-2xl border bg-white shadow-card transition-all duration-200 hover:-translate-y-1 hover:shadow-xl ${
+      className={`group flex flex-col overflow-hidden rounded-2xl border bg-white shadow-card transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-1 hover:shadow-xl ${
         featured
           ? "border-amber-300 ring-1 ring-amber-200"
           : "border-gray-100 hover:border-brand/40"
@@ -209,7 +209,7 @@ export default function EventCard({
           ) : (
             <span />
           )}
-          <span className="inline-flex items-center gap-1 text-sm font-semibold text-brand opacity-0 transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100">
+          <span className="inline-flex items-center gap-1 text-sm font-semibold text-brand opacity-0 transition-[transform,opacity] duration-200 group-hover:translate-x-1 group-hover:opacity-100">
             View →
           </span>
         </div>

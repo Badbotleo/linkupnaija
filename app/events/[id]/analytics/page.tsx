@@ -132,7 +132,7 @@ export default async function EventAnalyticsPage({
                 </div>
                 <div className="mt-1.5 h-3.5 w-full overflow-hidden rounded-full bg-gray-100">
                   <div
-                    className={`h-full rounded-full ${s.tint} transition-all duration-700`}
+                    className={`h-full rounded-full ${s.tint} transition-[width] duration-700`}
                     style={{ width: `${pct(n)}%` }}
                   />
                 </div>
