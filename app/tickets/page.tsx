@@ -210,7 +210,7 @@ export default async function TicketsPage() {
                 <Link
                   key={e.id}
                   href={`/events/${e.id}`}
-                  className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-md"
+                  className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-md"
                 >
                   <EventCover
                     url={e.cover_image_url}

@@ -90,7 +90,7 @@ function ReservationRow({
   }
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-card">
+    <div className="rounded-2xl bg-white p-5 shadow-card">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-bold text-gray-900">{r.venue_name}</p>

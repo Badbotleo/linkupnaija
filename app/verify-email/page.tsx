@@ -14,7 +14,7 @@ export default function VerifyEmailPage({
     <div>
       <AppHeader title="Check your email" back />
       <div className="container-page flex max-w-md flex-col py-6 text-center">
-      <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-card">
+      <div className="rounded-2xl bg-white p-8 shadow-card">
         <p className="text-5xl">📬</p>
         <h1 className="mt-4 text-2xl font-extrabold text-gray-900">
           Check your email

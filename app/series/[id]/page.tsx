@@ -177,7 +177,7 @@ export default async function SeriesPage({
                     <Link
                       key={e.id}
                       href={`/events/${e.id}`}
-                      className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition hover:border-brand/30"
+                      className="overflow-hidden rounded-xl bg-white shadow-sm transition hover:border-brand/30"
                     >
                       {thumb ? (
                         // eslint-disable-next-line @next/next/no-img-element

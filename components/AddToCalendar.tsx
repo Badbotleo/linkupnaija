@@ -38,7 +38,7 @@ export default function AddToCalendar({ event }: { event: CalendarEvent }) {
       {open && (
         <div
           role="menu"
-          className="absolute left-0 right-0 z-20 mt-2 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg"
+          className="absolute left-0 right-0 z-20 mt-2 overflow-hidden rounded-xl bg-white shadow-lg"
         >
           <a
             href={googleCalendarUrl(event)}

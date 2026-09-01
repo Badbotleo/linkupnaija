@@ -134,7 +134,7 @@ export default async function ProPage() {
         {BENEFITS.map((b) => (
           <div
             key={b.title}
-            className="flex items-start gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-card"
+            className="flex items-start gap-4 rounded-2xl bg-white p-5 shadow-card"
           >
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-500">
               <LineIcon name={b.icon} size={20} />

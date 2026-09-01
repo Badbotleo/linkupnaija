@@ -434,7 +434,7 @@ export default async function HomePage() {
         {PROMISES.map((p) => (
           <div
             key={p.title}
-            className="flex h-full flex-col justify-center rounded-3xl border border-gray-100 bg-white p-6 shadow-card"
+            className="flex h-full flex-col justify-center rounded-3xl bg-white p-6 shadow-card"
           >
             <span className="grid h-12 w-12 place-items-center rounded-2xl bg-brand-50 text-brand">
               <LineIcon name={p.icon} size={22} />

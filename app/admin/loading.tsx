@@ -14,7 +14,7 @@ export default function AdminLoading() {
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-2xl border border-gray-100 bg-white p-5 shadow-card"
+            className="rounded-2xl bg-white p-5 shadow-card"
           >
             <SkeletonBox className="h-7 w-7 rounded-lg" />
             <SkeletonBox className="mt-3 h-7 w-24" />

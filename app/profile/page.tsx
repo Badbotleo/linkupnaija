@@ -249,7 +249,7 @@ function Quick({
   return (
     <Link
       href={href}
-      className="flex items-center gap-2 rounded-2xl border border-gray-100 bg-white px-3 py-3 text-sm font-bold text-gray-800 shadow-sm transition hover:-translate-y-0.5 hover:border-brand/30 hover:text-brand hover:shadow-md"
+      className="flex items-center gap-2 rounded-2xl bg-white px-3 py-3 text-sm font-bold text-gray-800 shadow-sm transition hover:-translate-y-0.5 hover:border-brand/30 hover:text-brand hover:shadow-md"
     >
       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand">
         <LineIcon name={icon} size={16} />
@@ -271,7 +271,7 @@ function Stat({
   return (
     <Link
       href={href}
-      className="group rounded-2xl border border-gray-100 bg-white px-3 py-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-md"
+      className="group rounded-2xl bg-white px-3 py-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-md"
       aria-label={`${value} ${label}`}
     >
       <p className="text-[22px] font-extrabold leading-none tabular-nums text-gray-900">
@@ -309,7 +309,7 @@ async function EventsTab({ userId }: { userId: string }) {
         <Link
           key={e.id}
           href={`/events/${e.id}`}
-          className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:border-brand/30"
+          className="overflow-hidden rounded-2xl bg-white shadow-sm transition hover:border-brand/30"
         >
           <EventCover url={e.cover_image_url} category={e.category} title={e.title} className="h-28 w-full" />
           <div className="p-3">
@@ -335,7 +335,7 @@ function About({ profile }: { profile: UserProfile | null }) {
   const hasSocials =
     !!profile?.instagram_url || !!profile?.twitter_url || !!profile?.facebook_url;
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl bg-white p-5 shadow-sm">
       <ul className="space-y-3">
         {rows.map((r, i) => (
           <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
@@ -394,7 +394,7 @@ async function Posts({ userId }: { userId: string }) {
   return (
     <div className="space-y-3">
       {posts.map((post) => (
-        <div key={post.id} className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+        <div key={post.id} className="rounded-2xl bg-white p-4 shadow-sm">
           {post.circle && (
             <Link href={`/circles/${post.circle.id}`} className="text-xs font-bold text-brand">
               {post.circle.name}

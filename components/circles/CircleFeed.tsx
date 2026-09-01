@@ -573,7 +573,7 @@ function PostCard({
                   >
                     <LineIcon name="more" size={17} />
                   </summary>
-                  <div className="absolute right-0 z-20 mt-1 w-36 overflow-hidden rounded-xl border border-gray-100 bg-white py-1 shadow-lg">
+                  <div className="absolute right-0 z-20 mt-1 w-36 overflow-hidden rounded-xl bg-white py-1 shadow-lg">
                     {isAdmin && (
                       <button
                         type="button"

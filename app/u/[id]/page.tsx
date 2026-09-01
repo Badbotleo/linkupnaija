@@ -294,7 +294,7 @@ function Stat({ value, label }: { value: number; label: string }) {
     // card that lifts on hover and goes nowhere is a worse lie than a card
     // that doesn't move.
     <div
-      className="rounded-2xl border border-gray-100 bg-white px-3 py-3 text-center shadow-sm"
+      className="rounded-2xl bg-white px-3 py-3 text-center shadow-sm"
       aria-label={`${value} ${label}`}
     >
       <p className="text-[22px] font-extrabold leading-none tabular-nums text-gray-900">
@@ -310,7 +310,7 @@ function Stat({ value, label }: { value: number; label: string }) {
 function AboutCard({ profile }: { profile: UserProfile }) {
   const hasSocials = !!profile.instagram_url || !!profile.twitter_url || !!profile.facebook_url;
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl bg-white p-5 shadow-sm">
       <ul className="space-y-3 text-sm text-gray-700">
         {/* Bio moved up under the name; repeating it here read as a bug. */}
         {profile.state && (
@@ -359,7 +359,7 @@ async function HostedEvents({ userId }: { userId: string }) {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {events.map((e) => (
-        <Link key={e.id} href={`/events/${e.id}`} className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:border-brand/30">
+        <Link key={e.id} href={`/events/${e.id}`} className="overflow-hidden rounded-2xl bg-white shadow-sm transition hover:border-brand/30">
           <EventCover url={e.cover_image_url} category={e.category} title={e.title} className="h-28 w-full" />
           <div className="p-3">
             <p className="truncate font-bold text-gray-900">{e.title}</p>

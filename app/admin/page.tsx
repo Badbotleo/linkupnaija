@@ -360,7 +360,7 @@ export default async function AdminPage() {
         {stats.map((s) => (
           <div
             key={s.label}
-            className="rounded-2xl border border-gray-100 bg-white p-5 shadow-card"
+            className="rounded-2xl bg-white p-5 shadow-card"
           >
             <span className="text-2xl">{s.emoji}</span>
             <p className="mt-2 text-2xl font-extrabold text-gray-900">

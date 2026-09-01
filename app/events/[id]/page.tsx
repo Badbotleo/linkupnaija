@@ -646,7 +646,7 @@ export default async function EventDetailPage({
                   looking. */}
               <Link
                 href={`/events/${event.id}/analytics`}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:border-brand/30"
+                className="flex items-center justify-between gap-3 rounded-2xl bg-white p-4 shadow-sm transition hover:border-brand/30"
               >
                 <span className="flex items-center gap-3">
                   <span className="grid h-9 w-9 place-items-center rounded-full bg-brand/10 text-brand">

@@ -128,7 +128,7 @@ export default function EventGallery({
     <div>
       {/* Upload */}
       {canUpload && (
-        <div className="mb-6 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+        <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm">
           {staged.length === 0 ? (
             <>
               <input

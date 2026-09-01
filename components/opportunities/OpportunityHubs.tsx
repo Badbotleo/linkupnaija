@@ -22,7 +22,7 @@ export default function OpportunityHubs() {
         {OPPORTUNITIES.map((def) => (
           <div
             key={def.type}
-            className="flex flex-col rounded-2xl border border-gray-100 bg-white p-5 shadow-card transition hover:border-brand/30 hover:shadow-lg"
+            className="flex flex-col rounded-2xl bg-white p-5 shadow-card transition hover:border-brand/30 hover:shadow-lg"
           >
             <div className="flex items-start gap-3">
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand">

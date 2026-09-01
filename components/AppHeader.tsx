@@ -61,7 +61,9 @@ export default function AppHeader({
               type="button"
               onClick={() => router.back()}
               aria-label="Go back"
-              className="-ml-1.5 mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full text-gray-600 transition hover:bg-gray-100 active:scale-95"
+              // 44px, not 36. Back is the most-tapped control on any inner
+              // screen and it sits in the corner a thumb reaches worst.
+              className="-ml-1.5 grid h-11 w-11 shrink-0 place-items-center rounded-full text-gray-600 transition-[transform,background-color] duration-150 hover:bg-gray-100 active:scale-[0.94] dark:text-white/80 dark:hover:bg-white/10"
             >
               <LineIcon name="chevronLeft" size={20} />
             </button>

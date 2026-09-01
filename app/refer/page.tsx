@@ -73,7 +73,7 @@ export default async function ReferPage() {
           {STEPS.map((s, i) => (
             <div
               key={s.title}
-              className="rounded-2xl border border-gray-100 bg-white p-5 shadow-card"
+              className="rounded-2xl bg-white p-5 shadow-card"
             >
               <span className="grid h-8 w-8 place-items-center rounded-full bg-brand-50 text-sm font-extrabold text-brand">
                 {i + 1}

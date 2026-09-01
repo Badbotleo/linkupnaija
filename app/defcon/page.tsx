@@ -220,7 +220,7 @@ export default async function DefconPage() {
                 <Link
                   key={e.id}
                   href={`/events/${e.id}`}
-                  className="group w-[76vw] max-w-[300px] shrink-0 snap-start overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card transition hover:-translate-y-0.5 hover:shadow-lg"
+                  className="group w-[76vw] max-w-[300px] shrink-0 snap-start overflow-hidden rounded-2xl bg-white shadow-card transition hover:-translate-y-0.5 hover:shadow-lg"
                 >
                   <EventCover
                     url={e.cover_image_url}

@@ -122,7 +122,7 @@ export default function AttendeeProfileModal({
               ⋯
             </button>
             {menuOpen && (
-              <div className="absolute left-0 z-10 mt-1 w-40 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg">
+              <div className="absolute left-0 z-10 mt-1 w-40 overflow-hidden rounded-xl bg-white shadow-lg">
                 <button
                   type="button"
                   onClick={blockUser}

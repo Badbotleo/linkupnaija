@@ -125,7 +125,7 @@ export default function ManageRequests({
   }
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-card sm:p-6">
+    <div className="rounded-2xl bg-white p-5 shadow-card sm:p-6">
       <h2 className="text-lg font-bold text-gray-900">
         🛂 Manage requests
         {pending.length > 0 && (

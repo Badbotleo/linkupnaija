@@ -38,7 +38,7 @@ export default function ProfileCompletion({
   const offset = C * (1 - animPct / 100);
 
   return (
-    <div className="mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-card">
+    <div className="mb-6 rounded-2xl bg-white p-5 shadow-card">
       <div className="flex items-center gap-5">
         {/* Ring */}
         <div className="relative shrink-0">

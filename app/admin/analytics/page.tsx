@@ -719,7 +719,7 @@ function Section({
         {title}
       </h2>
       <p className="mt-0.5 text-[13px] text-gray-500">{hint}</p>
-      <div className="mt-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+      <div className="mt-3 rounded-2xl bg-white p-4 shadow-sm">
         {children}
       </div>
     </section>
@@ -749,7 +749,7 @@ function Stat({
       : null;
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+    <div className="rounded-2xl bg-white p-4 shadow-sm">
       <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400">
         {label}
       </p>

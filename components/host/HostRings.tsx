@@ -94,7 +94,7 @@ export default function HostRings({
     tips.push("Prioritise safety so more guests feel comfortable.");
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-card">
+    <div className="rounded-2xl bg-white p-5 shadow-card">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-lg font-bold text-gray-900">🏅 Your host scorecard</h2>
       </div>

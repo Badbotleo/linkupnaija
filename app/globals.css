@@ -115,20 +115,30 @@ main > * {
     @apply mb-1.5 block text-sm font-medium text-gray-700;
   }
   /* The card. Every elevated surface should come from here. */
+  /* A raised surface is raised OR outlined, never both.
+
+     Every card carried a hairline border AND a shadow, which is the single
+     biggest reason screens read as a web page rather than an app: a border
+     draws the box, a shadow lifts it, and doing both draws attention to the
+     container instead of what is in it. On the soft #F7F7F9 canvas the shadow
+     alone is enough to separate white from ground.
+
+     Dark mode is the exception and gets the border back below, because a
+     shadow cannot be seen against black. */
   .surface {
-    @apply rounded-2xl border border-gray-100 bg-white;
+    @apply rounded-2xl bg-white;
     box-shadow: var(--e1);
   }
   .surface-raised {
-    @apply rounded-2xl border border-gray-100 bg-white;
+    @apply rounded-2xl bg-white;
     box-shadow: var(--e2);
   }
   .surface-tap {
-    @apply surface transition;
+    @apply surface transition-[transform,box-shadow];
   }
   .surface-tap:hover {
     box-shadow: var(--e2);
-    @apply -translate-y-0.5 border-brand/25;
+    @apply -translate-y-0.5;
   }
   .container-page {
     @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
@@ -275,6 +285,15 @@ footer,
 }
 .dark .text-naija-800 {
   color: #6ee7b7 !important;
+}
+
+/* The border a surface gives up in light mode, handed back in dark.
+   A shadow is invisible against black, so the hairline is what separates a
+   card from the page here. Same ladder, different instrument. */
+.dark .surface,
+.dark .surface-raised,
+.dark .surface-tap {
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Misc */

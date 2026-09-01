@@ -41,7 +41,7 @@ export default function AdminWalletCredit({
   return (
     <form
       onSubmit={submit}
-      className="rounded-2xl border border-gray-100 bg-white p-5 shadow-card"
+      className="rounded-2xl bg-white p-5 shadow-card"
     >
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label className="block">

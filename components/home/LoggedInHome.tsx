@@ -429,7 +429,7 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
           Nothing catching your eye?
         </h2>
 
-        <div className="mt-3 divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card">
+        <div className="mt-3 divide-y divide-gray-100 overflow-hidden rounded-2xl bg-white shadow-card">
           <Link
             href="/refer"
             className="flex items-center gap-3.5 p-4 transition hover:bg-gray-50 active:bg-gray-100"

@@ -76,7 +76,7 @@ export default async function LeaderboardPage({
       <Link
         key={r.host!.id}
         href={`/u/${r.host!.id}`}
-        className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:border-brand/30"
+        className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm transition hover:border-brand/30"
       >
         {rank != null && (
           <span className="w-6 shrink-0 text-center text-lg font-extrabold text-gray-400">

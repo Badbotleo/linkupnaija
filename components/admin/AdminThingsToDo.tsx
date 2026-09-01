@@ -356,7 +356,7 @@ export default function AdminThingsToDo() {
         {rows.map((r) => (
           <div
             key={r.id}
-            className="flex flex-wrap items-center gap-3 rounded-2xl border border-gray-100 bg-white p-3 shadow-card"
+            className="flex flex-wrap items-center gap-3 rounded-2xl bg-white p-3 shadow-card"
           >
             <div className="h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-gray-100">
               {r.media_url ? (

@@ -50,7 +50,7 @@ export default function CheckInClient({ rsvpId }: { rsvpId: string }) {
 
   return (
     <div className="container-page grid min-h-[70vh] max-w-md place-items-center py-10">
-      <div className="w-full rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-card">
+      <div className="w-full rounded-2xl bg-white p-8 text-center shadow-card">
         {state === "loading" ? (
           <>
             <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-brand/30 border-t-brand" />

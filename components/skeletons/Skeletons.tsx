@@ -33,7 +33,7 @@ export function EventGridSkeleton({ count = 6 }: { count?: number }) {
 
 export function VenueCardSkeleton() {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-card">
+    <div className="rounded-2xl bg-white p-5 shadow-card">
       <div className="flex items-center gap-2">
         <SkeletonBox className="h-6 w-6 rounded-full" />
         <SkeletonBox className="h-5 w-24 rounded-full" />

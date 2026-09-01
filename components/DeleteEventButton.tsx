@@ -43,7 +43,7 @@ export default function DeleteEventButton({
   }
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-card">
+    <div className="rounded-2xl bg-white p-5 shadow-card">
       <p className="font-bold text-gray-900">Danger zone</p>
       <p className="mt-1 text-sm text-gray-500">
         Deleting an event removes it for everyone and notifies attendees.

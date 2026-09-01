@@ -451,7 +451,7 @@ export default function VenuesExplorer({
             onClick={() => setMapOpen((v) => !v)}
             aria-expanded={mapOpen}
             aria-controls="venues-map"
-            className="flex w-full items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-white px-4 py-3 text-left shadow-card transition hover:border-brand/30 lg:hidden"
+            className="flex w-full items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 text-left shadow-card transition hover:border-brand/30 lg:hidden"
           >
             <span className="flex items-center gap-2.5">
               <span className="grid h-8 w-8 place-items-center rounded-full bg-brand-50 text-brand">

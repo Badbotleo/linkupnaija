@@ -147,7 +147,7 @@ export default async function PartnerPage({
                 <Link
                   key={e.id}
                   href={`/events/${e.id}`}
-                  className="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-card transition hover:-translate-y-0.5 hover:shadow-lg"
+                  className="group overflow-hidden rounded-2xl bg-white shadow-card transition hover:-translate-y-0.5 hover:shadow-lg"
                 >
                   <EventCover
                     url={e.cover_image_url}

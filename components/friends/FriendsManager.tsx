@@ -361,7 +361,7 @@ function Row({
   action: React.ReactNode;
 }) {
   return (
-    <li className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm transition hover:border-brand/30 hover:shadow-md">
+    <li className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm transition hover:border-brand/30 hover:shadow-md">
       <Link
         href={`/u/${user.id}`}
         className="flex min-w-0 flex-1 items-center gap-3"

@@ -116,7 +116,7 @@ export default async function LivePage() {
             <li key={i.key}>
               <Link
                 href={i.href}
-                className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-3.5 shadow-sm transition hover:border-brand/30"
+                className="flex items-center gap-3 rounded-2xl bg-white p-3.5 shadow-sm transition hover:border-brand/30"
               >
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-50 text-lg">
                   <LineIcon name={i.icon} size={16} />
