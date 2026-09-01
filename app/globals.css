@@ -492,3 +492,16 @@ footer,
     color: rgba(255, 255, 255, 0.92) !important;
   }
 }
+
+/* Design preview only (/design-preview/*). Groups arrive in decision order.
+   motion-safe in the markup keeps it off for prefers-reduced-motion. */
+@keyframes preview-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

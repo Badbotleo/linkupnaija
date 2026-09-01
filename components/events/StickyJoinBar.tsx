@@ -28,10 +28,13 @@ import { createPortal } from "react-dom";
 export default function StickyJoinBar({
   targetId,
   label,
+  price,
 }: {
   /** Wraps the real CTA. Its first button is what gets clicked. */
   targetId: string;
   label: string;
+  /** Shown beside the button, not inside it. Null on a free link-up. */
+  price?: string | null;
 }) {
   const [show, setShow] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -56,29 +59,56 @@ export default function StickyJoinBar({
 
   return createPortal(
     <div
-      // z-30 sits under the bottom nav's z-40, and the padding clears it, so
-      // the bar stacks above navigation rather than covering it.
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-gray-100 bg-white/95 px-4 pb-[calc(64px+env(safe-area-inset-bottom))] pt-3 backdrop-blur lg:hidden dark:border-white/10 dark:bg-[#121212]/95"
+      // Offset above the bottom nav rather than padded away from it.
+      //
+      // This was pb-[calc(64px+env(safe-area-inset-bottom))], and the missing
+      // spaces made it invalid: calc() requires whitespace around the minus or
+      // plus, so the browser dropped the declaration and the clearance never
+      // existed. The bar sat at bottom-0 under a z-40 nav, which is why the
+      // button it forwards to was partly covered on every phone.
+      //
+      // Underscores are how a space is written in Tailwind's arbitrary values.
+      className="fixed inset-x-0 bottom-[calc(53px_+_env(safe-area-inset-bottom))] z-30 border-t border-gray-100 bg-white/90 px-4 py-3 backdrop-blur-xl lg:hidden dark:border-white/10 dark:bg-black/85"
     >
-      <button
-        type="button"
-        onClick={() => {
-          const target = document.getElementById(targetId);
-          const real = target?.querySelector("button, a") as
-            | HTMLElement
-            | null;
-          if (real) {
-            real.click();
-            return;
-          }
-          // If the control is not there to click, scrolling to where it lives
-          // is still better than a tap that does nothing.
-          target?.scrollIntoView({ behavior: "smooth", block: "center" });
-        }}
-        className="w-full rounded-2xl bg-brand px-5 py-3.5 text-[15px] font-bold text-white shadow-float transition active:scale-[0.99]"
-      >
-        {label}
-      </button>
+      <div className="flex items-center gap-3">
+        {/* Price beside the button, not inside it. The button says what
+            happens next and the number says what it costs, so neither has to
+            shrink to fit the other. */}
+        {price && (
+          <div className="shrink-0">
+            <p className="text-[19px] font-extrabold leading-none tracking-[-0.02em] text-gray-900 dark:text-white">
+              {price}
+            </p>
+            <p className="mt-1 text-[12px] font-semibold text-gray-500">
+              per person
+            </p>
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={() => {
+            const target = document.getElementById(targetId);
+            const real = target?.querySelector("button, a") as
+              | HTMLElement
+              | null;
+            if (real) {
+              real.click();
+              return;
+            }
+            // If the control is not there to click, scrolling to where it
+            // lives is still better than a tap that does nothing.
+            target?.scrollIntoView({ behavior: "smooth", block: "center" });
+          }}
+          className="relative flex h-14 flex-1 items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-brand via-brand to-brand-700 text-[17px] font-extrabold tracking-[-0.01em] text-white shadow-[0_10px_30px_-12px_rgba(83,74,183,0.9)] ring-1 ring-white/25 transition-transform duration-150 active:scale-[0.97]"
+        >
+          <span
+            className="absolute inset-x-0 top-0 h-px bg-white/40"
+            aria-hidden
+          />
+          {label}
+          <span aria-hidden>→</span>
+        </button>
+      </div>
     </div>,
     document.body
   );

@@ -351,69 +351,37 @@ export default async function EventDetailPage({
 
   const featured = isFeatured(event.featured, event.featured_until);
 
+  // "Merit House, Abuja, FCT" plus "FCT - Abuja" reads as "…FCT, FCT - Abuja".
+  // Hosts usually type the city into the address already, so the state is only
+  // shown when it adds something. Compared on the part after the dash, because
+  // the state is stored as "FCT - Abuja" and nobody writes that.
+  const stateSuffix = (() => {
+    const short = (event.state ?? "").split("-").pop()?.trim() ?? "";
+    const already =
+      !!short && (event.location ?? "").toLowerCase().includes(short.toLowerCase());
+    return event.state && !already ? event.state : "";
+  })();
+
   return (
     <div className="container-page py-10">
+      {/* Back, as a target rather than a 14px text link.
+          "← Back to events" was about 20px tall, half a thumb, and it was the
+          first thing on the page. */}
       <Link
         href="/events"
-        className="text-sm font-medium text-gray-500 hover:text-brand"
+        aria-label="Back to events"
+        className="mb-3 grid h-11 w-11 place-items-center rounded-full bg-white text-gray-700 shadow-[var(--e1)] transition-transform duration-150 active:scale-[0.94] dark:bg-white/10 dark:text-white"
       >
-        ← Back to events
+        <LineIcon name="chevronLeft" size={20} />
       </Link>
-
-      {/* What, when and where — before the flyer.
-          
-          The title used to render at about 930px on an 812px phone: below the
-          fold on every device an ad click arrives from. A stranger saw a back
-          link, a poster and the host's face, then a button asking them to join
-          something the page had not yet named. Date and location were further
-          down again, inside a tab nobody had opened.
-          
-          Deciding whether to go IS what, when and where. It goes first, and
-          the flyer becomes what it actually is: supporting art. */}
-      <h1 className="mt-4 text-[26px] font-extrabold leading-tight tracking-[-0.03em] text-gray-900 sm:text-4xl">
-        {event.title}
-      </h1>
-      <p className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[15px] font-semibold text-gray-600">
-        <span className="inline-flex items-center gap-1.5">
-          <LineIcon name="calendar" size={15} className="shrink-0 text-brand" />
-          {formatEventDate(event.date)}
-          {event.time
-            ? ` · ${formatEventTimeRange(
-                event.time,
-                (event as { end_time?: string | null }).end_time
-              )}`
-            : ""}
-        </span>
-        {event.location && (
-          <span className="inline-flex items-center gap-1.5">
-            <LineIcon name="pin" size={15} className="shrink-0 text-brand" />
-            {event.location}
-            {/* "Merit House, Abuja, FCT" + "FCT - Abuja" read as
-                "…FCT, FCT - Abuja". Hosts usually type the city into the
-                address already, so the state is only appended when it adds
-                something. Compared on the part after the dash, because the
-                state is stored as "FCT - Abuja" and nobody writes that. */}
-            {(() => {
-              const short = (event.state ?? "").split("-").pop()?.trim() ?? "";
-              const already =
-                !!short &&
-                (event.location ?? "").toLowerCase().includes(short.toLowerCase());
-              return event.state && !already ? `, ${event.state}` : "";
-            })()}
-          </span>
-        )}
-      </p>
 
       {/* Only for people who are not already in. A host, or somebody whose
           request is already accepted, has nothing to tap. */}
       {!isHost && myStatus !== "accepted" && (
         <StickyJoinBar
           targetId="join-cta"
-          label={
-            event.price > 0
-              ? `Get a ticket · ${formatNaira(event.price)}`
-              : "Ask to join — free"
-          }
+          price={event.price > 0 ? formatNaira(event.price) : null}
+          label={event.price > 0 ? "Get a ticket" : "Ask to join"}
         />
       )}
 
@@ -442,16 +410,105 @@ export default async function EventDetailPage({
         }}
       />
 
-      <div className="mt-4 overflow-hidden rounded-2xl shadow-card">
+      {/* The flyer, then what it is, then the facts. One decision, in the
+          order it gets made.
+
+          The page used to open on a back link, a poster and a host's face,
+          then ask you to join something it had not yet named: the title
+          rendered around 930px down an 812px phone. Title and facts came up
+          in August, and this finishes the job by giving them a shape. */}
+      <div className="overflow-hidden rounded-[26px] bg-gray-900 shadow-[var(--e3)]">
         <EventCover
           url={event.cover_image_url}
           category={event.category}
           title={event.title}
-          className="h-80 w-full sm:h-[26rem]"
+          className="h-[19rem] w-full sm:h-[26rem]"
           priority
           fit="contain"
         />
       </div>
+
+      {/* Labels live under the artwork, never on it. On a flyer the corners
+          are where the host printed the date. */}
+      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+        {featured && <FeaturedBadge />}
+        <CategoryBadge category={event.category} />
+        <span className="rounded-full bg-gray-900/[0.06] px-2.5 py-1 text-xs font-semibold text-gray-700 dark:bg-white/10 dark:text-white/80">
+          {event.state}
+        </span>
+        {event.is_corporate && (
+          <span className="rounded-full bg-[#121212] px-2.5 py-1 text-xs font-bold text-white">
+            Corporate
+          </span>
+        )}
+        {event.event_type === "private" && (
+          <span className="rounded-full bg-gray-900 px-2.5 py-1 text-xs font-bold text-white">
+            Private
+          </span>
+        )}
+        {partner && (
+          <Link
+            href={`/partners/${partner.slug}`}
+            className="inline-flex items-center gap-1.5 rounded-full bg-[#121212] px-2.5 py-1 text-xs font-bold text-white transition hover:opacity-90"
+          >
+            {partner.logo_url ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={partner.logo_url}
+                alt=""
+                className="h-3.5 w-auto max-w-[54px] object-contain"
+              />
+            ) : null}
+            {partner.name}
+            <LineIcon name="chevronRight" size={11} />
+          </Link>
+        )}
+      </div>
+
+      <h1 className="mt-3 text-[28px] font-extrabold leading-[1.08] tracking-[-0.035em] text-gray-900 sm:text-[34px] dark:text-white">
+        {event.title}
+      </h1>
+
+      {/* One aligned icon column and hairline rules, in place of a four-box
+          grid that lived behind a tab. These are the facts the decision is
+          made on, so they are not a tab. */}
+      <dl className="mt-4 divide-y divide-gray-200/70 rounded-2xl bg-white px-4 shadow-[var(--e1)] dark:divide-white/10 dark:bg-white/[0.04]">
+        <Fact
+          icon="calendar"
+          label={formatEventDate(event.date)}
+          sub={
+            event.time
+              ? formatEventTimeRange(
+                  event.time,
+                  (event as { end_time?: string | null }).end_time
+                )
+              : null
+          }
+        />
+        {event.location && (
+          <Fact icon="pin" label={event.location} sub={stateSuffix || null} />
+        )}
+        {event.price > 0 && (
+          <Fact
+            icon="ticket"
+            label={formatNaira(event.price)}
+            sub="Per person"
+          />
+        )}
+      </dl>
+
+      {friendsGoing.length > 0 && (
+        <div className="mt-3 flex items-center gap-2 rounded-2xl bg-brand-50 px-4 py-3 text-sm font-semibold text-brand dark:bg-brand/20">
+          <span aria-hidden>🤝</span>
+          <span>
+            {friendsGoing.length === 1
+              ? `Your friend ${friendsGoing[0].users?.name ?? "is"} is going to this`
+              : `Your friends ${friendsGoing[0].users?.name ?? ""} and ${
+                  friendsGoing.length - 1
+                } other${friendsGoing.length - 1 > 1 ? "s" : ""} are going to this`}
+          </span>
+        </div>
+      )}
 
       {/* The host's other pictures. `gallery_urls` only exists once
           migration-event-gallery.sql has run, so read it defensively —
@@ -467,100 +524,24 @@ export default async function EventDetailPage({
       <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Main */}
         <div className="lg:col-span-2">
-          <div className="flex flex-wrap items-center gap-2">
-            {featured && <FeaturedBadge />}
-            {event.is_corporate && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#121212] px-2.5 py-1 text-xs font-bold text-white">
-                Corporate Event
-              </span>
-            )}
-            {event.event_type === "private" && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-gray-900 px-2.5 py-1 text-xs font-bold text-white">
-                Private Event
-              </span>
-            )}
-            {/* The partner was invisible here: their page existed and nothing
-                on the event pointed at it. */}
-            {partner && (
-              <Link
-                href={`/partners/${partner.slug}`}
-                className="inline-flex items-center gap-1.5 rounded-full bg-[#121212] px-2.5 py-1 text-xs font-bold text-white transition hover:opacity-90"
-              >
-                {partner.logo_url ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={partner.logo_url}
-                    alt=""
-                    className="h-3.5 w-auto max-w-[54px] object-contain"
-                  />
-                ) : null}
-                {partner.name}
-                <LineIcon name="chevronRight" size={11} />
-              </Link>
-            )}
-            <CategoryBadge category={event.category} />
-            <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand">
-              {event.state}
-            </span>
-            {/* The price used to sit here as a chip, the same weight as the
-                state. It's now the Buy Ticket panel further down. */}
-          </div>
-
-          {friendsGoing.length > 0 && (
-            <div className="mt-4 flex items-center gap-2 rounded-xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm font-semibold text-brand">
-              <span aria-hidden>🤝</span>
-              <span>
-                {friendsGoing.length === 1
-                  ? `Your friend ${friendsGoing[0].users?.name ?? "is"} is going to this`
-                  : `Your friends ${friendsGoing[0].users?.name ?? ""} and ${
-                      friendsGoing.length - 1
-                    } other${friendsGoing.length - 1 > 1 ? "s" : ""} are going to this`}
-              </span>
-            </div>
-          )}
+          {/* The chips and the friends banner moved under the flyer, where
+              they belong to the thing they describe. Rendered here as well,
+              they appeared twice on one screen. */}
 
           <div className="mt-6">
             <EventTabs
               details={
                 <div className="space-y-8">
-                  <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-card">
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <Detail
-                        icon="calendar"
-                        label="Date"
-                        value={formatEventDate(event.date)}
-                      />
-                      <Detail
-                        icon="clock"
-                        label="Time"
-                        value={formatEventTimeRange(
-                          event.time,
-                          (event as { end_time?: string | null }).end_time
-                        )}
-                      />
-                      <Detail
-                        icon="pin"
-                        label="Location"
-                        value={event.location}
-                      />
-                      {/* Drops out entirely when there's nothing worth saying,
-                          rather than announcing "0 / 15". */}
-                      {attendance && (
-                        <Detail
-                          icon="users"
-                          label="Attendees"
-                          value={attendance.label}
-                        />
-                      )}
-                    </div>
-
-                    <div className="mt-5 border-t border-gray-100 pt-4">
-                      <ShareButtons
-                        title={event.title}
-                        dateLabel={formatEventDate(event.date)}
-                        location={event.location}
-                      />
-                    </div>
+                  {/* The date/time/location/attendees grid that used to open
+                      this tab is gone: it repeated, in four boxes behind a
+                      tab, the facts strip that now sits under the title. Share
+                      is what is actually left to do here. */}
+                  <div className="rounded-2xl bg-white p-5 shadow-[var(--e1)] dark:bg-white/[0.04]">
+                    <ShareButtons
+                      title={event.title}
+                      dateLabel={formatEventDate(event.date)}
+                      location={event.location}
+                    />
                   </div>
 
                   {eventRecaps.length > 0 && (
@@ -714,56 +695,56 @@ export default async function EventDetailPage({
               <FeatureButton eventId={event.id} alreadyFeatured={featured} />
             ) : (
               <>
-                <p className="text-sm text-gray-500">Hosted by</p>
-                <div className="mt-2 flex items-center gap-3">
-                  {/* The one page where somebody decides whether to trust a
-                      stranger with money and an address. "Who is this?" has
-                      to lead somewhere. */}
-                  <Link href={`/u/${event.host_id}`} className="shrink-0">
-                    <Avatar
-                      name={event.host?.name ?? null}
-                      url={event.host?.avatar_url ?? null}
-                      size="md"
-                    />
-                  </Link>
-                  <div>
+                {/* One row, one tap target, leading to the host.
+                    This was a label, an avatar, a name, a state line, a
+                    rating, a badge row and a socials row stacked in a bordered
+                    card, above the button it was competing with. Trust is
+                    worth one line and a chevron here; the rest of it lives on
+                    the profile the row opens. */}
+                <Link
+                  href={`/u/${event.host_id}`}
+                  className="flex items-center gap-3 rounded-2xl bg-gray-50 px-3 py-3 transition-transform duration-150 active:scale-[0.99] dark:bg-white/[0.04]"
+                >
+                  <Avatar
+                    name={event.host?.name ?? null}
+                    url={event.host?.avatar_url ?? null}
+                    size="md"
+                  />
+                  <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-1.5">
-                      <Link
-                        href={`/u/${event.host_id}`}
-                        className="font-bold text-gray-900 hover:text-brand hover:underline"
-                      >
+                      <span className="truncate text-[15px] font-bold text-gray-900 dark:text-white">
                         {event.host?.name ?? "A LinkUpNaija host"}
-                      </Link>
-                      {/* is_pro was fetched for the VIEWER and never for the
-                          host, so a Pro host's badge could never render here.
-                          Checked through isProActive rather than the raw flag,
-                          because an expired subscription is not Pro. */}
+                      </span>
+                      {/* isProActive rather than the raw flag: an expired
+                          subscription is not Pro. */}
                       {isProActive(
                         event.host?.is_pro,
                         event.host?.pro_expires_at
                       ) && <ProBadge size={15} />}
                     </span>
-                    {event.host?.state && (
-                      <p className="text-sm text-gray-500">
-                        {event.host.state}
-                      </p>
-                    )}
-                    <RatingSummary
-                      avg={event.host?.rating_avg ?? 0}
-                      count={event.host?.rating_count ?? 0}
-                      className="mt-0.5"
-                    />
-                    {hostBadges.length > 0 && (
-                      <div className="mt-1.5">
-                        <HostBadges badges={hostBadges} max={3} />
-                      </div>
-                    )}
-                    <HostSocials
-                      instagram={event.host?.instagram_url ?? null}
-                      twitter={event.host?.twitter_url ?? null}
-                      facebook={event.host?.facebook_url ?? null}
-                    />
-                  </div>
+                    <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <RatingSummary
+                        avg={event.host?.rating_avg ?? 0}
+                        count={event.host?.rating_count ?? 0}
+                      />
+                      {hostBadges.length > 0 && (
+                        <HostBadges badges={hostBadges} compact max={2} />
+                      )}
+                    </span>
+                  </span>
+                  <LineIcon
+                    name="chevronRight"
+                    size={16}
+                    className="shrink-0 text-gray-400"
+                  />
+                </Link>
+
+                {/* How full it is, at the moment of deciding. This lived under
+                    "Who's going" inside a tab, which is the one place it
+                    cannot do its job: scarcity is a reason to act, and it was
+                    behind the button. */}
+                <div className="mt-4">
+                  <QuorumMeter state={quorum} paid={(event.price ?? 0) > 0} />
                 </div>
 
                 {(event.price > 0 || tiers.length > 0) && (
@@ -923,25 +904,32 @@ function LockedChat({
   );
 }
 
-function Detail({
+function Fact({
   icon,
   label,
-  value,
+  sub,
 }: {
   icon: string;
   label: string;
-  value: string;
+  sub?: string | null;
 }) {
   return (
-    <div className="flex items-start gap-3">
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-50 text-brand" aria-hidden>
+    <div className="flex items-start gap-3 py-3.5">
+      <span
+        className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand/[0.08] text-brand"
+        aria-hidden
+      >
         <LineIcon name={icon} size={16} />
       </span>
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+      <div className="min-w-0">
+        <dt className="text-[15px] font-bold leading-snug text-gray-900 dark:text-white">
           {label}
-        </p>
-        <p className="font-medium text-gray-900">{value}</p>
+        </dt>
+        {sub && (
+          <dd className="mt-0.5 text-[13.5px] leading-snug text-gray-500">
+            {sub}
+          </dd>
+        )}
       </div>
     </div>
   );
