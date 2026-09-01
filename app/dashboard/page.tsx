@@ -471,15 +471,26 @@ export default async function DashboardPage() {
             href={`/events/${nextUp.id}`}
             className="relative block overflow-hidden rounded-2xl bg-gradient-to-br from-brand to-brand-700 p-5 text-white shadow-[var(--e2)] transition-transform duration-150 active:scale-[0.99]"
           >
-            <EventCover
-              url={nextUp.cover}
-              category={nextUp.category}
-              title={nextUp.title}
-              className="absolute inset-0 h-full w-full"
-            />
+            {/* The absolute lives on a wrapper, not on EventCover.
+                EventCover hardcodes `relative` into its own wrapper and
+                appends whatever className it is given, so the string ends up
+                "relative … absolute", and Tailwind emits .relative AFTER
+                .absolute. Later rule wins: the element computes to relative,
+                the h-full has no sized parent to resolve against on a card
+                whose height comes from its content, and next/image fill
+                paints nothing. The base gradient showed through and the card
+                looked exactly as it did before the change. */}
+            <span className="absolute inset-0 block" aria-hidden>
+              <EventCover
+                url={nextUp.cover}
+                category={nextUp.category}
+                title={nextUp.title}
+                className="h-full w-full"
+              />
+            </span>
             {/* Dark enough to read on, light enough to still see the flyer. */}
             <span
-              className="absolute inset-0 bg-gradient-to-t from-[#1A1040]/95 via-[#1A1040]/80 to-[#1A1040]/45"
+              className="absolute inset-0 bg-gradient-to-t from-[#1A1040]/95 via-[#1A1040]/72 to-[#1A1040]/30"
               aria-hidden
             />
             <div className="relative flex items-center gap-2">
