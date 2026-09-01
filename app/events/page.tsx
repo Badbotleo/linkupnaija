@@ -498,7 +498,7 @@ export default async function EventsPage({
         />
       )}
 
-      <div className="container-page py-5">
+      <div className="container-page py-3 sm:py-5">
 
       <Suspense fallback={null}>
         <EventsTabs />
@@ -514,7 +514,7 @@ export default async function EventsPage({
           The reel's own height allows for this rail, so the join button
           still clears the bottom nav. */}
       {!error && feedEvents.length > 0 && (
-        <div className="mt-4">
+        <div className="mt-2 sm:mt-4">
           <EventsStories
             events={feedEvents.slice(0, 12).map((e) => ({
               id: e.id,
@@ -550,7 +550,7 @@ export default async function EventsPage({
       )}
 
       {!error && feedEvents.length > 0 && (
-        <div className="mt-4">
+        <div className="mt-2 sm:mt-4">
           <EventReel events={feedEvents} past={past} />
         </div>
       )}

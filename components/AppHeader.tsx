@@ -49,7 +49,12 @@ export default function AppHeader({
     // light page. Matching the page in both themes leaves the border doing
     // the separating, which is the app pattern.
     <header className="sticky top-16 z-30 lg:top-0 border-b border-gray-100 bg-[#F7F7F9]/85 backdrop-blur-md dark:bg-black/85">
-      <div className="container-page py-3.5 sm:py-4">
+      {/* Tighter on a phone than on a desktop, deliberately.
+          On /events this bar, the navbar above it, the tab row and the story
+          rail come to 362px before the first event on an iPhone 13, and an
+          in-app browser's own chrome takes ~90px more. That is most of a
+          screen spent on furniture, and the feed pays for all of it. */}
+      <div className="container-page py-2.5 sm:py-4">
         <div className="flex items-start gap-3">
           {back && (
             <button
@@ -63,7 +68,7 @@ export default function AppHeader({
           )}
 
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-[26px] font-extrabold leading-tight tracking-[-0.03em] text-gray-900 sm:text-[30px]">
+            <h1 className="truncate text-[22px] font-extrabold leading-tight tracking-[-0.03em] text-gray-900 sm:text-[30px]">
               {title}
             </h1>
             {subtitle && (
@@ -75,7 +80,7 @@ export default function AppHeader({
         </div>
 
         {meta && meta.length > 0 && (
-          <div className="mt-2.5 flex flex-wrap items-center gap-2">
+          <div className="mt-1.5 flex flex-wrap items-center gap-2 sm:mt-2.5">
             {meta.map((m, i) => {
               const base =
                 "inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700";
