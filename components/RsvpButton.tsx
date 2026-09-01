@@ -12,7 +12,11 @@ import LineIcon from "./ui/LineIcon";
 import { haptic } from "@/lib/haptics";
 import type { RsvpStatus } from "@/lib/types";
 import { trackJoinLead, trackPurchase } from "@/lib/analytics";
-import { platformFee } from "@/lib/pro";
+import {
+  buyerFee,
+  buyerTotal,
+  MAX_TICKETS_PER_ORDER,
+} from "@/lib/pricing";
 
 type JoinState = "none" | RsvpStatus;
 
@@ -28,8 +32,6 @@ export default function RsvpButton({
   requestsThisMonth,
   eventTitle,
   hostSubaccount,
-  hostIsPro = false,
-  hostProExpiresAt = null,
   walletBalance = 0,
   reserveFirst = false,
   eventDate,
@@ -55,9 +57,6 @@ export default function RsvpButton({
   requestsThisMonth: number;
   eventTitle: string;
   hostSubaccount: string | null;
-  /** The HOST's Pro status, not the buyer's — it sets the platform's cut. */
-  hostIsPro?: boolean;
-  hostProExpiresAt?: string | null;
   walletBalance?: number;
   /**
    * Paid event with a minimum that hasn't been reached. Reserving costs
@@ -151,7 +150,26 @@ export default function RsvpButton({
   const chosen = tiers.find((x) => x.id === tierId) ?? null;
   // A tier's price replaces the event price. On a multi-tier event the event
   // price is a floor, not a thing anyone actually buys.
-  const dueNow = chosen ? chosen.price : price;
+  const unitPrice = chosen ? chosen.price : price;
+
+  /**
+   * How many tickets.
+   *
+   * There was no such thing until now: dueNow was one ticket's price and that
+   * was the whole order. Anyone wanting two had to buy twice, and hosts were
+   * working around it by hand, publishing "Group of 5" and "VIP Cabana for 8"
+   * tiers whose only job was to sell a quantity the checkout could not.
+   *
+   * Resets to 1 when the tier changes, because 4 of a ₦6,000 ticket and 4 of
+   * a ₦100,000 table are very different orders to carry silently across a tap.
+   */
+  const [qty, setQty] = useState(1);
+  useEffect(() => setQty(1), [tierId]);
+
+  const subtotal = unitPrice * qty;
+  const fee = buyerFee(subtotal);
+  // What the buyer is charged. The host is owed the subtotal, all of it.
+  const dueNow = buyerTotal(subtotal);
 
   if (!isLoggedIn) {
     // Was a full page load to /login, then possibly another to /signup, then
@@ -213,14 +231,11 @@ export default function RsvpButton({
         : 0;
     const remainder = reserveFirst ? 0 : dueNow - walletUsed;
 
-    // Our cut of the whole sale. Half for a Pro host.
-    const fee = platformFee(dueNow, hostIsPro, hostProExpiresAt);
     // What to take at the gateway, which only ever sees `remainder`.
     //
-    // The host is owed dueNow - fee regardless of how the guest paid, so the
-    // wallet portion comes out of OUR side: it was platform-issued referral
-    // credit, not the host's discount to fund. Without this the host quietly
-    // received 90% of a smaller number every time somebody spent credit.
+    // The host is owed the full subtotal however the guest paid, so wallet
+    // credit comes out of OUR side: it was platform-issued referral credit,
+    // not the host's discount to fund.
     const gatewayFee = Math.max(0, Math.min(fee - walletUsed, remainder));
 
     if (remainder > 0) {
@@ -291,10 +306,10 @@ export default function RsvpButton({
       const txRow = {
         event_id: eventId,
         user_id: user.id,
-        amount: dueNow,
-        // The database recomputes this on insert from the host's Pro status,
-        // so a buyer cannot name their own fee. Sent anyway to keep the row
-        // valid on its own and the two in agreement.
+        // amount is what the HOST is owed, not what the buyer was charged.
+        // The buyer paid amount + platform_fee. The trigger recomputes the fee
+        // and stamps fee_on_top, so a buyer cannot name their own.
+        amount: subtotal,
         platform_fee: fee,
         paystack_reference: paymentReference ?? "wallet",
       };
@@ -423,6 +438,69 @@ export default function RsvpButton({
             </label>
           ))}
         </fieldset>
+      )}
+
+      {/* How many, and what it actually costs.
+          Only on a paid ticket somebody has not already bought, and only when
+          there is a price to add a fee to. */}
+      {unitPrice > 0 && status === "none" && !reserveFirst && (
+        <div className="rounded-xl border border-gray-200 p-3 dark:border-white/10">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm font-bold text-gray-900 dark:text-white">
+              How many?
+            </span>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setQty((n) => Math.max(1, n - 1))}
+                disabled={qty <= 1}
+                aria-label="One fewer ticket"
+                className="grid h-10 w-10 place-items-center rounded-full border border-gray-200 text-lg font-bold text-gray-700 transition-transform duration-150 active:scale-[0.94] disabled:opacity-35 dark:border-white/15 dark:text-white"
+              >
+                −
+              </button>
+              <span
+                aria-live="polite"
+                className="w-9 text-center text-[17px] font-extrabold tabular-nums text-gray-900 dark:text-white"
+              >
+                {qty}
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  setQty((n) => Math.min(MAX_TICKETS_PER_ORDER, n + 1))
+                }
+                disabled={qty >= MAX_TICKETS_PER_ORDER}
+                aria-label="One more ticket"
+                className="grid h-10 w-10 place-items-center rounded-full border border-gray-200 text-lg font-bold text-gray-700 transition-transform duration-150 active:scale-[0.94] disabled:opacity-35 dark:border-white/15 dark:text-white"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          {/* The fee is broken out, never folded in.
+              The buyer is about to be charged more than the flyer says, and
+              being told that here is a great deal better than discovering it
+              on the Paystack screen. */}
+          <dl className="mt-3 space-y-1 border-t border-gray-100 pt-3 text-sm dark:border-white/10">
+            <div className="flex justify-between text-gray-600 dark:text-white/70">
+              <dt>
+                {formatNaira(unitPrice)}
+                {qty > 1 ? ` × ${qty}` : ""}
+              </dt>
+              <dd className="tabular-nums">{formatNaira(subtotal)}</dd>
+            </div>
+            <div className="flex justify-between text-gray-600 dark:text-white/70">
+              <dt>Booking fee</dt>
+              <dd className="tabular-nums">{formatNaira(fee)}</dd>
+            </div>
+            <div className="flex justify-between pt-1 text-[15px] font-extrabold text-gray-900 dark:text-white">
+              <dt>Total</dt>
+              <dd className="tabular-nums">{formatNaira(dueNow)}</dd>
+            </div>
+          </dl>
+        </div>
       )}
 
       {status === "accepted" && (

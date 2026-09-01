@@ -2,13 +2,7 @@ import AppHeader from "@/components/AppHeader";
 import LineIcon from "@/components/ui/LineIcon";
 import { createClient } from "@/lib/supabase/server";
 import GoProButton from "@/components/GoProButton";
-import {
-  PRO_PRICE,
-  FREE_HOST_LIMIT,
-  PLATFORM_FEE_PERCENT,
-  PRO_PLATFORM_FEE_PERCENT,
-  isProActive,
-} from "@/lib/pro";
+import { PRO_PRICE, FREE_HOST_LIMIT, isProActive } from "@/lib/pro";
 import { formatNaira } from "@/lib/paystack";
 
 export const dynamic = "force-dynamic";
@@ -16,32 +10,26 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "LinkUpNaija Pro",
   description:
-    "₦4,999/month. Keep 95% of every ticket you sell instead of 90%, host without a limit, and get in 24 hours before everyone else.",
+    "₦4,999/month. Get in 24 hours before everyone else, sit at the top of the queue when a host is approving guests, and host without a limit.",
 };
 
 /**
  * Only what the code actually does. Everything here is enforced somewhere:
- * the fee in a trigger on `transactions`, the queue order in ManageRequests,
- * the early window in a trigger on `rsvps`.
+ * the queue order in ManageRequests, the early window in a trigger on
+ * `rsvps`.
  *
- * The fee leads, because it is the only line that pays for itself rather than
- * feeling nice. Every other benefit asks the reader to value convenience at
- * 4,999 a month; this one hands them a sum they can check against their last
- * event. A host who sells any real volume is now losing money by NOT paying,
- * which is a much easier thing to sell than a badge.
+ * "Half the fee on every ticket" was removed on 1 Sep 2026 rather than
+ * reworded. The booking fee moved onto the buyer, so hosts keep 100% of their
+ * price whether they pay for Pro or not, and there is no longer a fee for Pro
+ * to halve. It was the strongest card on this page and its going leaves Pro
+ * selling access and speed rather than money, which is worth being honest
+ * about internally.
  *
  * The limits are quoted as what they cost you, not as what the tier grants.
  * "2 a month" means nothing until somebody works out it stops a weekly night
  * in its second week, so the copy does that sum for them.
  */
 const BENEFITS = [
-  {
-    icon: "ticket",
-    title: "Half the fee on every ticket",
-    text: `Free hosts give up ${PLATFORM_FEE_PERCENT}% of a sale. Pro gives up ${PRO_PLATFORM_FEE_PERCENT}%. Sell twenty ₦10,000 tickets and the half you keep is ₦10,000 back in one night, against ₦${PRO_PRICE.toLocaleString(
-      "en-NG"
-    )} for the month.`,
-  },
   {
     icon: "infinity",
     title: "Host without a ceiling",

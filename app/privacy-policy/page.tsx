@@ -98,9 +98,8 @@ export default function PrivacyPolicyPage() {
           checkout and are governed by Paystack&apos;s own privacy policy.
         </p>
         <p>
-          We record the transaction reference, amount, and a platform fee (10% of
-          paid ticket sales, or 5% where the host has LinkUpNaija Pro) for
-          accounting purposes. For venue reservations, any
+          We record the transaction reference, amount, and a booking fee (9% of the
+          ticket price, paid by the attendee) for accounting purposes. For venue reservations, any
           commission is agreed and recorded by LinkUpNaija before a booking is
           confirmed.
         </p>

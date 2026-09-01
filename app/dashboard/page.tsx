@@ -211,7 +211,7 @@ export default async function DashboardPage() {
       await Promise.all([
       supabase
         .from("transactions")
-        .select("event_id, amount, platform_fee")
+        .select("event_id, amount, platform_fee, fee_on_top")
         .in("event_id", paidIds),
       supabase
         .from("payouts")
@@ -227,6 +227,7 @@ export default async function DashboardPage() {
       event_id: string | null;
       amount: number;
       platform_fee: number;
+      fee_on_top?: boolean | null;
     }[];
     const payouts = (payoutRows ?? []) as {
       event_id: string | null;
@@ -249,7 +250,18 @@ export default async function DashboardPage() {
           eventTitle: e.title,
           collected,
           platformFee,
-          due: collected - platformFee,
+          // Branching on the model each sale was written under, not on a
+          // single global formula.
+          //
+          // Legacy rows: the buyer paid `amount` and our cut came out of it,
+          // so the host is owed amount - fee. New rows: the buyer paid
+          // amount + fee and the host is owed all of `amount`. Applying the
+          // new formula to old rows would quietly overpay every host for
+          // every sale already taken, including ones already paid out.
+          due: evTx.reduce(
+            (sum, t) => sum + (t.fee_on_top ? t.amount : t.amount - t.platform_fee),
+            0
+          ),
           unrecorded: unrecorded > 0 ? unrecorded : 0,
           status: payouts.find((p) => p.event_id === e.id)?.status ?? null,
         };

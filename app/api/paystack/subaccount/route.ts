@@ -3,10 +3,14 @@ import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-// Platform keeps 10%; the host's subaccount receives the remaining 90%.
-// Paystack's `percentage_charge` is the share that goes to the subaccount.
-const PLATFORM_FEE_PERCENT = 10;
-const HOST_SHARE_PERCENT = 100 - PLATFORM_FEE_PERCENT;
+// The host's subaccount receives 100% of what reaches it.
+//
+// Since 1 Sep 2026 the booking fee is charged to the BUYER on top of the
+// ticket price, so the host is owed every naira of the price they set. Our
+// cut is carved out per transaction with Paystack's `transaction_charge`
+// (see lib/paystack.ts), which overrides this percentage anyway; setting it
+// to 100 means the two can never disagree if that override is ever missed.
+const HOST_SHARE_PERCENT = 100;
 
 // Creates (or updates) a Paystack subaccount for the host and stores the
 // resulting subaccount_code on their profile, alongside their payout details.
