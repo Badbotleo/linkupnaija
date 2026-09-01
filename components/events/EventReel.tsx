@@ -6,7 +6,11 @@ import Link from "next/link";
 import EventCover from "../EventCover";
 import LineIcon from "../ui/LineIcon";
 import { groupForCategory } from "@/lib/category-groups";
-import { formatEventDate, formatEventTimeRange } from "@/lib/format";
+import {
+  formatEventDate,
+  formatEventTime,
+  formatEventTimeRange,
+} from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
 import { attendanceProof } from "@/lib/social-proof";
 import { track } from "@/lib/analytics";
@@ -322,6 +326,17 @@ function Slide({
   // depend on which door you came through.
   const isPast =
     !!event.date && event.date < new Date().toISOString().slice(0, 10);
+  // The neighbourhood, not the full postal address. Hosts type
+  // "Cairo by LYA, 165 Ogunlana Drive, Masha, Surulere", and the part that
+  // decides whether you can be bothered is the last one.
+  const shortPlace =
+    (event.location ?? "")
+      .split(",")
+      .map((x) => x.trim())
+      .filter(Boolean)
+      .pop() ||
+    (event.state ?? "").split("-").pop()?.trim() ||
+    "";
   const proof = attendanceProof(event.attendeeCount, {
     capacity: event.max_attendees,
     createdAt: event.created_at,
@@ -418,23 +433,55 @@ function Slide({
             compact ? "mt-1" : "mt-2.5"
           } space-y-1 text-[15px] text-white/85`}
         >
-          <div className="flex items-center gap-2">
-            <LineIcon name="calendar" size={15} className="shrink-0 text-white/50" />
-            <span className="line-clamp-1">
-              {formatEventDate(event.date)} ·{" "}
-              {formatEventTimeRange(
-                event.time,
-                (event as { end_time?: string | null }).end_time
-              )}
-            </span>
-          </div>
-          {/* The address is the first thing to go when space is short: it is
-              how you get there, not how you decide to. */}
-          {!compact && (
+          {/* Compact folds when and where into one line rather than dropping
+              where altogether.
+
+              Two real devices, an iPhone 13 and an Android, both land in the
+              compact layout inside the TikTok and Instagram browsers, which is
+              where most of this traffic arrives. So compact is not the edge
+              case being degraded gracefully, it is what most people see, and
+              it was throwing away half of "should I go" to save 20px.
+
+              One row, both facts, same height: "Fri, 4 Sept · 9:00 PM ·
+              Surulere". The full address is a tap away on the event page. */}
+          {compact ? (
             <div className="flex items-center gap-2">
-              <LineIcon name="pin" size={15} className="shrink-0 text-white/50" />
-              <span className="line-clamp-1">{event.location}</span>
+              <LineIcon
+                name="calendar"
+                size={15}
+                className="shrink-0 text-white/50"
+              />
+              <span className="line-clamp-1">
+                {formatEventDate(event.date)}
+                {event.time ? ` · ${formatEventTime(event.time)}` : ""}
+                {shortPlace ? ` · ${shortPlace}` : ""}
+              </span>
             </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-2">
+                <LineIcon
+                  name="calendar"
+                  size={15}
+                  className="shrink-0 text-white/50"
+                />
+                <span className="line-clamp-1">
+                  {formatEventDate(event.date)} ·{" "}
+                  {formatEventTimeRange(
+                    event.time,
+                    (event as { end_time?: string | null }).end_time
+                  )}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <LineIcon
+                  name="pin"
+                  size={15}
+                  className="shrink-0 text-white/50"
+                />
+                <span className="line-clamp-1">{event.location}</span>
+              </div>
+            </>
           )}
         </dl>
 
