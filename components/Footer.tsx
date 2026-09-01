@@ -55,6 +55,12 @@ export default function Footer() {
           <a href="mailto:support@linkupnaija.com" className="hover:text-brand">
             support@linkupnaija.com
           </a>
+          {/* First, and linked sitewide: a payments provider, an SMS provider
+              or anyone deciding whether to trust this platform looks for it
+              in the footer before anywhere else. */}
+          <Link href="/about" className="hover:text-brand">
+            About us
+          </Link>
           <Link href="/privacy-policy" className="hover:text-brand">
             Privacy
           </Link>

@@ -25,6 +25,9 @@ const STATIC: { path: string; priority: number; freq: Entry["changeFrequency"] }
     { path: "/things-to-do", priority: 0.8, freq: "weekly" },
     { path: "/circles", priority: 0.6, freq: "weekly" },
     { path: "/host", priority: 0.6, freq: "monthly" },
+    // Indexed deliberately: "who is behind linkupnaija" is a question both
+    // search engines and verification desks ask, and it had no answer.
+    { path: "/about", priority: 0.6, freq: "monthly" },
     { path: "/rides", priority: 0.5, freq: "monthly" },
     { path: "/defcon", priority: 0.5, freq: "monthly" },
   ];

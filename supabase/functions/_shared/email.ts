@@ -123,6 +123,18 @@ export function emailLayout(opts: {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- Gmail on Android repaints emails for dark mode unless the message says it
+     has already handled both. Without these it lightened the brand purple into
+     a pale lilac and darkened the gold wordmark into brown, so the header read
+     as muddy rather than branded. Declaring support stops the repaint. -->
+<meta name="color-scheme" content="light dark" />
+<meta name="supported-color-schemes" content="light dark" />
+<style>
+  :root { color-scheme: light dark; supported-color-schemes: light dark; }
+  /* Clients that invert anyway get told twice. */
+  [data-ogsc] .lun-header { background: #534AB7 !important; }
+  [data-ogsc] .lun-wordmark-accent { color: #FAC775 !important; }
+</style>
 <title>${escapeHtml(title)}</title>
 </head>
 <body style="margin:0;padding:0;background:#F4F3FA;-webkit-font-smoothing:antialiased">
@@ -133,9 +145,9 @@ export function emailLayout(opts: {
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:16px;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
           <!-- Header -->
           <tr>
-            <td style="background:${BRAND};padding:22px 28px">
+            <td class="lun-header" style="background:${BRAND};padding:22px 28px">
               <a href="${SITE_URL}" style="color:#ffffff;font-size:20px;font-weight:800;letter-spacing:-0.3px;text-decoration:none">
-                LinkUp<span style="color:#FAC775">Naija</span>
+                LinkUp<span class="lun-wordmark-accent" style="color:#FAC775">Naija</span>
               </a>
             </td>
           </tr>
