@@ -703,14 +703,14 @@ export default function HostForm({
           that is not going to fill, holding requests back only loses you
           people. It earns its keep on the ones everyone wants, where a
           scramble at a known time is fairer than a silent first-come race —
-          and it is what gives Pro members their 24-hour head start. */}
+          and it is what gives Premium members their 24-hour head start. */}
       <label className="block">
         <span className="block text-[15px] font-bold text-gray-900">
           Hold requests until a set time
         </span>
         <span className="mt-0.5 block text-[13px] leading-snug text-gray-600">
           Optional. Leave empty and anyone can ask straight away. Set a time and
-          nobody can request before it, except Pro members, who get in 24 hours
+          nobody can request before it, except Premium members, who get in 24 hours
           earlier.
         </span>
         <input
@@ -1038,10 +1038,10 @@ export default function HostForm({
           <div className="rounded-xl border border-brand/25 bg-brand-50 px-4 py-3">
             <p className="text-sm font-semibold text-gray-900">{error}</p>
             <Link
-              href="/pro"
+              href="/premium"
               className="mt-2 inline-flex rounded-full bg-brand px-4 py-2 text-sm font-bold text-white transition hover:bg-brand-600"
             >
-              Go Pro for unlimited hosting
+              Get Premium for unlimited hosting
             </Link>
           </div>
         ) : (

@@ -86,8 +86,9 @@ export default function PayoutRequest({
           </dd>
         </div>
         <div>
-          {/* Derived, not hardcoded: Pro hosts are charged half, so a fixed
-              "10%" label would contradict the figure printed beneath it. */}
+          {/* Derived, not hardcoded. The rate has changed twice and legacy
+              rows keep the one they were sold under, so a fixed label would
+              contradict the figure printed beneath it. */}
           <dt className="text-xs text-gray-400">
             {collected > 0
               ? `Fee (${Math.round((platformFee / collected) * 100)}%)`

@@ -396,7 +396,7 @@ export default async function AdminPage() {
           { id: "tournament", label: "FC26 Tournament", emoji: "🎮", group: "Content" },
           { id: "payouts", label: "Payout requests", emoji: "💸", group: "Money", badge: payouts.length },
           { id: "wallet", label: "Credit a wallet", emoji: "💰", group: "Money" },
-          { id: "pro", label: "Pro members", emoji: "⭐", group: "People" },
+          { id: "pro", label: "Premium members", emoji: "⭐", group: "People" },
           { id: "hosts", label: "Hosts", emoji: "🏅", group: "People" },
         ]}
       >

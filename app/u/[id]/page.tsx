@@ -10,7 +10,7 @@ import MessageButton from "@/components/MessageButton";
 import ReportButton from "@/components/ReportButton";
 import ProBadge from "@/components/ProBadge";
 import LineIcon from "@/components/ui/LineIcon";
-import { isProActive } from "@/lib/pro";
+import { showsVerifiedBadge } from "@/lib/pro";
 import ProfilePhotos from "@/components/profile/ProfilePhotos";
 import HostScorecard from "@/components/host/HostScorecard";
 import HostBadges from "@/components/host/HostBadges";
@@ -173,17 +173,18 @@ export default async function PublicProfilePage({
 
         <h1 className="mt-3 flex items-center gap-2 text-2xl font-extrabold text-gray-900">
           {profile.name ?? "LinkUpNaija member"}
-          {isProActive(profile.is_pro, profile.pro_expires_at) && (
-            <ProBadge size={20} />
-          )}
-          {profile.phone_verified && (
-            <span
-              title="Verified phone number"
-              className="inline-flex items-center gap-1 rounded-full bg-naija-100 px-2 py-0.5 text-xs font-bold text-naija-700"
-            >
-              ✓ Verified
-            </span>
-          )}
+          {showsVerifiedBadge(
+            profile.is_pro,
+            profile.pro_expires_at,
+            (profile as { id_verified_at?: string | null }).id_verified_at
+          ) && <ProBadge size={20} />}
+          {/* The green "✓ Verified" chip is gone.
+              Two things next to one name both saying verified is worse than
+              either alone: a reader has to work out which is which, and the
+              gold badge, which is the one backed by a checked government ID,
+              gets diluted by a chip that only meant a phone number went
+              through. Phone status still appears in the strip below, worded
+              as what it is. */}
         </h1>
         {profile.state && (
           <p className="flex items-center gap-1 text-sm text-gray-500">

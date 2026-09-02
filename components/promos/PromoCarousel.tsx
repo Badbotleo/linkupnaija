@@ -46,8 +46,8 @@ const PROMOS: Promo[] = [
     arrow: "bg-[#FAC775] text-[#1A1040]",
   },
   {
-    href: "/pro",
-    eyebrow: "LinkUpNaija Pro",
+    href: "/premium",
+    eyebrow: "LinkUpNaija Premium",
     // Was "KEEP 95% OF EVERY TICKET", written hours before the booking fee
     // moved onto the buyer. Hosts now keep 100% whether they pay for Pro or
     // not, so that card was advertising a discount that no longer exists.

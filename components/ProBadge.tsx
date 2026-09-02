@@ -1,4 +1,4 @@
-// Twitter/Meta-style verified seal for LinkUpNaija Pro members — a gold
+// Twitter/Meta-style verified seal for LinkUpNaija Premium members — a gold
 // scalloped circle with a white check, shown right after the member's name.
 export default function ProBadge({
   size = 18,
@@ -13,10 +13,10 @@ export default function ProBadge({
       width={size}
       height={size}
       role="img"
-      aria-label="LinkUpNaija Pro: verified member"
+      aria-label="LinkUpNaija Premium: verified member"
       className={`inline-block shrink-0 ${className}`}
     >
-      <title>LinkUpNaija Pro: verified member</title>
+      <title>LinkUpNaija Premium: verified member</title>
       <defs>
         <linearGradient id="proGold" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#FBD46B" />

@@ -36,7 +36,7 @@ export default function GoProButton({
   if (isProActive) {
     return (
       <div className="rounded-xl bg-gradient-to-r from-amber-50 to-yellow-50 px-5 py-4 text-center">
-        <p className="font-bold text-amber-700">★ You&apos;re a Pro member</p>
+        <p className="font-bold text-amber-700">★ You&apos;re a Premium member</p>
         {expiresAt && (
           <p className="mt-0.5 text-sm text-amber-600">
             Renews / expires on{" "}
@@ -109,7 +109,7 @@ export default function GoProButton({
         disabled={loading}
         className="btn w-full border border-amber-300 bg-gradient-to-r from-amber-400 to-yellow-500 px-6 py-3 text-base text-white hover:opacity-90 sm:w-auto"
       >
-        {loading ? "Processing…" : `★ Go Pro · ${formatNaira(PRO_PRICE)}/month`}
+        {loading ? "Processing…" : `★ Get Premium · ${formatNaira(PRO_PRICE)}/month`}
       </button>
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
     </div>

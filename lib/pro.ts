@@ -39,3 +39,28 @@ export function isProActive(
   if (!expiresAt) return true;
   return new Date(expiresAt) > new Date();
 }
+
+/**
+ * Whether the gold badge should show.
+ *
+ * Premium alone is NOT enough. The badge is sold as "somebody at LinkUpNaija
+ * checked this person", and the moment it renders for anyone who has merely
+ * paid, that sentence becomes false and the badge is worth less than nothing
+ * on a platform whose safety model is hosts approving strangers.
+ *
+ * So it needs both: a live subscription AND an approved government ID. A
+ * lapsed subscription hides the badge without un-verifying the person; a
+ * revoked verification removes it while they are still paying.
+ *
+ * `idVerifiedAt` is undefined until migration-id-verification.sql has run,
+ * and undefined is treated as unverified on purpose. That means the badge
+ * disappears for existing Premium members until they are checked, which is
+ * the correct answer rather than an unfortunate side effect.
+ */
+export function showsVerifiedBadge(
+  isPro?: boolean | null,
+  proExpiresAt?: string | null,
+  idVerifiedAt?: string | null
+): boolean {
+  return isProActive(isPro, proExpiresAt) && !!idVerifiedAt;
+}

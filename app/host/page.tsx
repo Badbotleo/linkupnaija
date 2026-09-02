@@ -137,15 +137,15 @@ export default async function HostPage({
               That&apos;s {FREE_HOST_LIMIT} events this month
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-white/75">
-              Free members host {FREE_HOST_LIMIT} link-ups a month. Go Pro for
+              Free members host {FREE_HOST_LIMIT} link-ups a month. Get Premium for
               unlimited hosting — run a weekly night without ever hitting this
               wall again.
             </p>
             <Link
-              href="/pro"
+              href="/premium"
               className="mt-5 inline-flex rounded-full bg-[#FAC775] px-6 py-3 text-sm font-black text-[#121212] transition hover:brightness-105"
             >
-              Go Pro for unlimited hosting
+              Get Premium for unlimited hosting
             </Link>
           </div>
           <p className="mt-4 text-sm text-gray-500">
@@ -178,7 +178,7 @@ export default async function HostPage({
             free events left this month
           </p>
           <Link
-            href="/pro"
+            href="/premium"
             className="shrink-0 whitespace-nowrap text-sm font-bold text-brand hover:underline"
           >
             Go unlimited

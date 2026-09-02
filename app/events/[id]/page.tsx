@@ -41,7 +41,7 @@ import StickyJoinBar from "@/components/events/StickyJoinBar";
 import { eventJsonLd, jsonLdScript } from "@/lib/structured-data";
 import RecapReel from "@/components/home/RecapReel";
 import { getRecapsForEvent } from "@/lib/recaps";
-import { isProActive } from "@/lib/pro";
+import { isProActive, showsVerifiedBadge } from "@/lib/pro";
 import type {
   ChatMessageUI,
   RsvpStatus,
@@ -107,7 +107,7 @@ export default async function EventDetailPage({
   const { data: event } = await supabase
     .from("events")
     .select(
-      "*, host:users!events_host_id_fkey(id, name, avatar_url, state, rating_avg, rating_count, paystack_subaccount_code, instagram_url, twitter_url, facebook_url, is_pro, pro_expires_at)"
+      "*, host:users!events_host_id_fkey(id, name, avatar_url, state, rating_avg, rating_count, paystack_subaccount_code, instagram_url, twitter_url, facebook_url, is_pro, pro_expires_at, id_verified_at)"
     )
     .eq("id", params.id)
     .single();
@@ -715,11 +715,16 @@ export default async function EventDetailPage({
                       <span className="truncate text-[15px] font-bold text-gray-900 dark:text-white">
                         {event.host?.name ?? "A LinkUpNaija host"}
                       </span>
-                      {/* isProActive rather than the raw flag: an expired
-                          subscription is not Pro. */}
-                      {isProActive(
+                      {/* Subscription AND an approved ID. Premium alone must
+                          not show the badge: it is sold as "somebody checked
+                          this person", and this is the screen where a guest
+                          decides whether to trust the host with money and an
+                          address. */}
+                      {showsVerifiedBadge(
                         event.host?.is_pro,
-                        event.host?.pro_expires_at
+                        event.host?.pro_expires_at,
+                        (event.host as { id_verified_at?: string | null } | null)
+                          ?.id_verified_at
                       ) && <ProBadge size={15} />}
                     </span>
                     <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">

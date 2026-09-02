@@ -106,14 +106,6 @@ export default async function ProfilePage({
           {isProActive(profile?.is_pro, profile?.pro_expires_at) && (
             <ProBadge size={20} />
           )}
-          {profile?.phone_verified && (
-            <span
-              title="Verified phone number"
-              className="inline-flex items-center gap-1 rounded-full bg-naija-100 px-2 py-0.5 text-xs font-bold text-naija-700"
-            >
-              ✓ Verified
-            </span>
-          )}
         </h1>
         {profile?.state && (
           <p className="flex items-center gap-1 text-sm text-gray-500">
@@ -186,12 +178,12 @@ export default async function ProfilePage({
           <Quick href="/host" icon="mic" label="Host" />
           <Quick href="/refer" icon="gift" label="Invite & earn" />
           <Quick
-            href="/pro"
+            href="/premium"
             icon="star"
             label={
               isProActive(profile?.is_pro, profile?.pro_expires_at)
-                ? "Pro member"
-                : "Go Pro"
+                ? "Premium member"
+                : "Get Premium"
             }
           />
         </div>
