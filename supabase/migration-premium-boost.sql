@@ -1,28 +1,40 @@
--- Premium includes one free 48-hour boost a month.
+-- Boosting becomes a Premium capability, the way X gates ads and boosts.
 --
--- The boost costs ₦5,000 and Premium costs ₦4,999, so a host who boosts once
--- a month is subscribing for less than nothing. That arithmetic is the reason
--- to pay, and it is the same shape the half-fee card used to have before the
--- booking fee moved onto the buyer.
+-- Not a free boost included with the subscription, which is what an earlier
+-- draft of this file did. The ABILITY is what Premium unlocks: a Premium host
+-- can put an event at the top of the feed for 48 hours and pay for it, and a
+-- free host cannot buy one at all.
 --
--- It is additive on purpose. Gating a boost behind Premium, so free hosts
--- cannot buy one at all, would take a paid capability away from the twelve
--- people this platform can least afford to annoy. Nobody loses anything here:
--- the boost stays purchasable by anyone, and Premium members get one on the
--- house.
+-- This takes something away. Any host could previously pay ₦5,000 to boost,
+-- and now they must subscribe first. That is a deliberate product decision
+-- and worth naming here rather than discovering later from a confused host.
 --
--- A record per boost, because "have they used this month's" cannot be read
--- from events.featured_until: a second boost overwrites the first and the
--- history disappears with it.
+-- THE GATE IS A TRIGGER, NOT A BUTTON. FeatureButton writes events.featured
+-- straight from the browser under a policy that lets a host update their own
+-- event, so a check that lives only in the UI is a suggestion: anyone can
+-- post the same update with a token. The trigger below is what actually makes
+-- boosting Premium-only.
 --
 -- Safe to run twice.
 
+
+-- ---------------------------------------- undo the earlier free-boost draft --
+-- These shipped in an earlier version of this file. Dropped rather than left
+-- lying around: free_boost_available returning true to a client that no
+-- longer understands it would offer a boost nobody is entitled to.
+
+drop function if exists public.claim_free_boost(uuid);
+drop function if exists public.free_boost_available();
+
+
+-- ------------------------------------------------------------- boost history --
+-- Kept, because "when did this host last boost" is not answerable from
+-- events.featured_until: a second boost overwrites the first.
 
 create table if not exists public.event_boosts (
   id         uuid primary key default gen_random_uuid(),
   host_id    uuid not null references public.users(id) on delete cascade,
   event_id   uuid not null references public.events(id) on delete cascade,
-  -- false means it came out of the Premium allowance rather than a card.
   paid       boolean not null default true,
   amount     integer not null default 0,
   created_at timestamptz not null default now()
@@ -38,105 +50,84 @@ create policy "Hosts read their own boosts"
   on public.event_boosts for select
   using (host_id = auth.uid() or public.is_admin());
 
+drop policy if exists "Hosts record their own boosts" on public.event_boosts;
+create policy "Hosts record their own boosts"
+  on public.event_boosts for insert
+  with check (host_id = auth.uid());
 
--- Claiming the monthly free boost.
---
--- Everything happens in one place on the server: the eligibility check, the
--- record, and the flag on the event. Done in the client it would be three
--- calls a determined host could interleave to boost twice, and the check
--- would be a suggestion rather than a rule.
-create or replace function public.claim_free_boost(p_event uuid)
-returns boolean
+
+-- ------------------------------------------------------------- the real gate --
+-- Fires only when featured is being switched ON. Editing the title of an
+-- already-boosted event, or a boost lapsing, must not be blocked by this.
+create or replace function public.enforce_premium_boost()
+returns trigger
 language plpgsql
 security definer
 set search_path = public
 as $$
 declare
-  uid       uuid := auth.uid();
-  is_premium boolean;
-  used      int;
+  host_is_premium boolean;
 begin
-  if uid is null then
-    return false;
+  -- Not a new boost: nothing to check.
+  if coalesce(new.featured, false) = false
+     or coalesce(old.featured, false) = true then
+    return new;
   end if;
 
-  -- Must own the event. Boosting somebody else's listing on your allowance is
-  -- not a feature.
-  if not exists (
-    select 1 from public.events e where e.id = p_event and e.host_id = uid
+  -- Admins feature events from the admin panel on the platform's behalf, and
+  -- that is not a host buying a boost.
+  if exists (
+    select 1 from public.users u where u.id = auth.uid() and u.is_admin
   ) then
-    return false;
+    return new;
   end if;
 
   select coalesce(u.is_pro, false)
          and (u.pro_expires_at is null or u.pro_expires_at > now())
-    into is_premium
+    into host_is_premium
     from public.users u
-   where u.id = uid;
+   where u.id = new.host_id;
 
-  if not coalesce(is_premium, false) then
-    return false;
+  if not coalesce(host_is_premium, false) then
+    raise exception 'Boosting is a LinkUpNaija Premium feature.';
   end if;
 
-  -- Calendar month, in Lagos time, because a host in Nigeria counts their
-  -- month the way their calendar does and not the way UTC does.
-  select count(*) into used
-    from public.event_boosts b
-   where b.host_id = uid
-     and not b.paid
-     and date_trunc('month', b.created_at at time zone 'Africa/Lagos')
-         = date_trunc('month', now() at time zone 'Africa/Lagos');
-
-  if used >= 1 then
-    return false;
-  end if;
-
-  insert into public.event_boosts (host_id, event_id, paid, amount)
-  values (uid, p_event, false, 0);
-
-  update public.events
-     set featured = true,
-         featured_until = now() + interval '48 hours'
-   where id = p_event;
-
-  return true;
+  return new;
 end;
 $$;
 
-grant execute on function public.claim_free_boost(uuid) to authenticated;
+drop trigger if exists events_premium_boost on public.events;
+create trigger events_premium_boost
+  before update on public.events
+  for each row execute function public.enforce_premium_boost();
 
 
--- Whether the button should offer the free one. Read-only, own rows only.
-create or replace function public.free_boost_available()
+-- Whether the button should offer to boost at all.
+create or replace function public.can_boost()
 returns boolean
 language sql
 security definer
 set search_path = public
 stable
 as $$
-  select
-    exists (
-      select 1 from public.users u
-       where u.id = auth.uid()
-         and coalesce(u.is_pro, false)
-         and (u.pro_expires_at is null or u.pro_expires_at > now())
-    )
-    and not exists (
-      select 1 from public.event_boosts b
-       where b.host_id = auth.uid()
-         and not b.paid
-         and date_trunc('month', b.created_at at time zone 'Africa/Lagos')
-             = date_trunc('month', now() at time zone 'Africa/Lagos')
-    );
+  select exists (
+    select 1 from public.users u
+     where u.id = auth.uid()
+       and coalesce(u.is_pro, false)
+       and (u.pro_expires_at is null or u.pro_expires_at > now())
+  );
 $$;
 
-grant execute on function public.free_boost_available() to authenticated;
+grant execute on function public.can_boost() to authenticated;
 
 
 -- ------------------------------------------------------------ where we are --
--- Run after. Expect zeros: no boost has been recorded through this table yet,
--- including any bought before today.
+-- Run after. Confirms the trigger is attached; currently-featured events are
+-- untouched, since the trigger only fires when featured switches on.
 
-select count(*)                            as boosts_recorded,
-       count(*) filter (where not paid)    as free_boosts_used
-  from public.event_boosts;
+select
+  (select count(*) from pg_trigger
+    where tgname = 'events_premium_boost' and not tgisinternal)      as gate_installed,
+  (select count(*) from public.events
+    where featured and featured_until > now())                       as currently_boosted,
+  (select count(*) from public.event_boosts)                         as boosts_recorded;

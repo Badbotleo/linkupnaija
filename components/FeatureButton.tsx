@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -25,23 +26,25 @@ export default function FeatureButton({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   /**
-   * Whether this host still has this month's free Premium boost.
+   * Whether this host may boost at all.
    *
-   * Asked of the database rather than worked out here: the client knows
-   * whether somebody is Premium but not whether they already spent it, and a
-   * count kept in the browser is a count a host can edit.
+   * Boosting is Premium-only, the way X gates ads. This only decides what the
+   * button SAYS: the rule itself is a trigger on events, because this
+   * component writes events.featured from the browser and a check that lives
+   * in the UI is a check anyone can post around.
    *
-   * Null while unknown, so the button says nothing about price until it does.
-   * Flashing "Free" and then charging ₦5,000 is worse than a beat of silence.
+   * Null while unknown, so the button does not flash a price at somebody who
+   * is about to be told they cannot buy it.
    */
-  const [freeAvailable, setFreeAvailable] = useState<boolean | null>(null);
+  const [canBoost, setCanBoost] = useState<boolean | null>(null);
 
   useEffect(() => {
     let alive = true;
-    supabase.rpc("free_boost_available").then(({ data, error }) => {
-      // A missing function means migration-premium-boost.sql has not run.
-      // Fall back to the paid path rather than breaking the button.
-      if (alive) setFreeAvailable(error ? false : data === true);
+    supabase.rpc("can_boost").then(({ data, error }) => {
+      // A missing function means migration-premium-boost.sql has not run yet.
+      // Assume allowed, so an un-migrated deploy behaves as it did before
+      // rather than locking every host out of a feature they already had.
+      if (alive) setCanBoost(error ? true : data === true);
     });
     return () => {
       alive = false;
@@ -56,46 +59,8 @@ export default function FeatureButton({
     );
   }
 
-  /** The Premium allowance. One database call does the whole thing. */
-  async function claimFree() {
-    setError(null);
-    setLoading(true);
-    const { data, error } = await supabase.rpc("claim_free_boost", {
-      p_event: eventId,
-    });
-    setLoading(false);
-
-    // The function returns false when it refuses, rather than throwing, so
-    // treating "no error" as success would boost nothing and say it worked.
-    if (error || data !== true) {
-      setFreeAvailable(false);
-      setError(
-        error?.message ??
-          "That free boost is no longer available. You can still boost for ₦5,000."
-      );
-      return;
-    }
-    confettiCoins();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
-      await supabase.from("notifications").insert({
-        user_id: user.id,
-        event_id: eventId,
-        message:
-          "Your event has been boosted 🚀 It's featured for 48 hours, on your Premium allowance",
-      });
-    }
-    router.refresh();
-  }
-
   async function feature() {
     setError(null);
-    if (freeAvailable) {
-      await claimFree();
-      return;
-    }
     if (!isPaystackConfigured()) {
       setError("Payments aren't configured yet.");
       return;
@@ -152,6 +117,25 @@ export default function FeatureButton({
     setLoading(false);
   }
 
+  // Boosting is Premium-only. Saying so, with the way out, beats a button
+  // that takes a tap and then fails.
+  if (canBoost === false) {
+    return (
+      <div className="rounded-xl border border-amber-300/60 bg-gradient-to-r from-amber-50 to-yellow-50 p-4 dark:border-amber-400/25 dark:from-amber-400/10 dark:to-yellow-400/10">
+        <p className="text-[15px] font-bold text-gray-900 dark:text-white">
+          Boosting is a Premium feature
+        </p>
+        <p className="mt-1 text-[13.5px] leading-snug text-gray-600 dark:text-white/70">
+          Put this event at the top of the feed for 48 hours. Premium members
+          can buy a boost for {formatNaira(FEATURE_PRICE)}.
+        </p>
+        <Link href="/premium" className="btn-primary mt-3 inline-flex py-2 text-sm">
+          See Premium
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div>
       <button
@@ -162,11 +146,7 @@ export default function FeatureButton({
       >
         {loading
           ? "Processing…"
-          : freeAvailable
-            ? "★ Boost this event for 48 hours · Free with Premium"
-            : freeAvailable === null
-              ? "★ Boost this event for 48 hours"
-              : `★ Boost this event for 48 hours · ${formatNaira(FEATURE_PRICE)}`}
+          : `★ Boost this event for 48 hours · ${formatNaira(FEATURE_PRICE)}`}
       </button>
       <p className="mt-1.5 text-center text-xs text-gray-400">
         Boosted events show at the top of the feed.

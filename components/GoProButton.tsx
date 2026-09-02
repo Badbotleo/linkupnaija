@@ -28,7 +28,7 @@ export default function GoProButton({
   if (!isLoggedIn) {
     return (
       <a href="/login?redirect=/pro" className="btn-primary w-full sm:w-auto">
-        Log in to go Pro
+        Log in to get Premium
       </a>
     );
   }
@@ -91,7 +91,7 @@ export default function GoProButton({
         confettiCoins();
         await supabase.from("notifications").insert({
           user_id: user.id,
-          message: "Welcome to Pro ⭐ Your benefits are now active",
+          message: "Welcome to Premium ⭐ Submit your ID to get the gold badge",
         });
         router.refresh();
       }

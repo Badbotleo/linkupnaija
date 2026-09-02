@@ -14,7 +14,7 @@ import Link from "next/link";
  * happen. These three are the real offers, with the real numbers:
  *
  *   /refer  ₦600 a referral, ₦3,000 to withdraw
- *   /pro    24h early access, top of the host's queue
+ *   /premium gold badge behind a real ID check
  *   /host   free to list
  *
  * Server component: it is three links and no state. The snap scrolling is CSS.
@@ -48,12 +48,16 @@ const PROMOS: Promo[] = [
   {
     href: "/premium",
     eyebrow: "LinkUpNaija Premium",
-    // Was "KEEP 95% OF EVERY TICKET", written hours before the booking fee
-    // moved onto the buyer. Hosts now keep 100% whether they pay for Pro or
-    // not, so that card was advertising a discount that no longer exists.
-    title: "GET IN BEFORE EVERYONE ELSE",
-    body: "Ask to join a full day early, and sit at the top of the queue when a host is approving guests.",
-    emoji: "⚡",
+    // Leads with the badge because the Premium page does. One tier, one
+    // headline.
+    //
+    // Written as what it gets you, not how it is made. "A person checks your
+    // ID" describes our workflow, which is our problem, not a reason to pay.
+    // The reason to pay is that a host scrolling a queue of strangers stops
+    // at a name they can trust, and yours is it.
+    title: "STOP BEING A STRANGER",
+    body: "Hosts approve from a queue of names they do not know. The gold badge means yours is not one of them.",
+    emoji: "🏅",
     bg: "bg-[#1A1040]",
     ink: "text-[#FAC775]",
     sub: "text-white/80",

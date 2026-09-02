@@ -58,13 +58,13 @@ const FEATURES = [
   {
     icon: "star",
     name: "Gold verified badge",
-    line: "Checked by a person against a government ID, not granted by a payment.",
+    line: "Backed by a real government ID, so a host approving you is not guessing.",
     lead: true,
   },
   {
     icon: "trending",
-    name: "A free boost every month",
-    line: "One 48-hour boost included, worth ₦5,000. Premium costs ₦4,999.",
+    name: "Boost your link-ups",
+    line: "Put an event at the top of the feed for 48 hours. Only Premium members can buy a boost.",
   },
   {
     icon: "clock",
@@ -145,12 +145,11 @@ export default async function PremiumPage() {
             <ProBadge size={76} />
           </div>
           <h2 className="mx-auto mt-5 max-w-[16ch] text-[30px] font-extrabold leading-[1.08] tracking-[-0.03em] text-white">
-            The gold badge, and the check behind it
+Get picked, not scrolled past
           </h2>
           <p className="mx-auto mt-3 max-w-sm text-[15px] leading-snug text-white/75">
-            Every link-up here starts with a host deciding whether to let a
-            stranger in. The badge tells them somebody at LinkUpNaija has
-            checked you first.
+            Every link-up starts with a host reading a list of strangers and
+            choosing. The gold badge is what makes you the one they choose.
           </p>
 
           <p className="mt-6 text-[40px] font-extrabold leading-none text-white">
@@ -192,8 +191,8 @@ export default async function PremiumPage() {
         <div className="divide-y divide-gray-200/70 overflow-hidden rounded-2xl bg-white shadow-[var(--e1)] dark:divide-white/10 dark:bg-white/[0.04]">
           <Row
             icon="check"
-            title="A person checked you, not a script"
-            body="Somebody on the LinkUpNaija team reviews your account before the badge appears. It is not granted the moment a payment clears."
+            title="It cannot be bought outright"
+            body="We check a real government ID before it appears. That is the only reason a host trusts it, and the only reason it is worth having."
           />
           <Row
             icon="shield"

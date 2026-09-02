@@ -1033,8 +1033,13 @@ export default function HostForm({
       {error && (
         /* The monthly-limit trigger raises a plain Postgres error. Dropping a
            raw exception on someone mid-form is a dead end, so that one case
-           gets an actual way out. */
-        /Upgrade to Pro/i.test(error) ? (
+           gets an actual way out.
+
+           Matches Pro OR Premium: the message lives in a database trigger and
+           the tier was renamed on 2 Sep 2026. Matching only the new word would
+           have quietly dropped the upgrade link on every database that had not
+           been migrated yet, turning a helpful error back into a dead end. */
+        /Upgrade to (Pro|Premium)/i.test(error) ? (
           <div className="rounded-xl border border-brand/25 bg-brand-50 px-4 py-3">
             <p className="text-sm font-semibold text-gray-900">{error}</p>
             <Link

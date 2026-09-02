@@ -209,7 +209,7 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
               href={a.href}
               className="group flex shrink-0 flex-col items-center gap-2"
             >
-              <span className="grid h-[58px] w-[58px] place-items-center rounded-2xl bg-white text-brand shadow-card ring-1 ring-gray-100 transition group-hover:-translate-y-0.5 group-hover:text-brand-600 group-hover:shadow-md group-active:scale-95">
+              <span className="grid h-[58px] w-[58px] place-items-center rounded-2xl bg-white text-brand shadow-[var(--e1)] transition-[transform,box-shadow] duration-150 group-hover:-translate-y-0.5 group-hover:shadow-[var(--e2)] group-active:scale-95 dark:bg-white/[0.06]">
                 <LineIcon name={a.icon} size={23} />
               </span>
               <span className="text-xs font-bold text-gray-700">{a.label}</span>
@@ -221,10 +221,10 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
       {/* Your upcoming events */}
       {upcoming.length === 0 ? (
         <section className="container-page mt-8">
-          <h2 className="text-[19px] font-extrabold tracking-[-0.02em] text-gray-900">
+          <h2 className="text-[13px] font-bold uppercase tracking-[0.12em] text-gray-400">
             Your line-up
           </h2>
-          <div className="mt-3 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center">
+          <div className="mt-2 rounded-2xl bg-white px-6 py-10 text-center shadow-[var(--e1)] dark:bg-white/[0.04]">
             <p className="text-sm text-gray-500">
               Nothing on your calendar yet. Find a vibe near you.
             </p>
@@ -262,7 +262,7 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
         <>
           <div className="container-page mt-7 flex items-end justify-between gap-3">
             <div className="min-w-0">
-              <h2 className="text-[19px] font-extrabold tracking-[-0.02em] text-gray-900">
+              <h2 className="text-[13px] font-bold uppercase tracking-[0.12em] text-gray-400">
                 Picked for you
               </h2>
               <p className="mt-0.5 text-[13px] text-gray-500">
@@ -314,7 +314,7 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
       {/* No interests yet → nudge to personalise */}
       {(!profile?.interests || profile.interests.length === 0) && (
         <section className="container-page mt-8">
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-brand/20 bg-brand-50 px-6 py-8 text-center sm:flex-row sm:text-left">
+          <div className="flex flex-col items-center gap-3 rounded-2xl bg-brand-50 px-6 py-8 text-center shadow-[var(--e1)] dark:bg-brand/15 sm:flex-row sm:text-left">
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white text-brand">
               <LineIcon name="sparkles" size={22} />
             </span>
@@ -425,11 +425,11 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
           marketing block at the end of a personal feed reads as an ad in your
           own app — a settings-style list reads as part of it. */}
       <section className="container-page mt-9">
-        <h2 className="text-[19px] font-extrabold tracking-[-0.02em] text-gray-900">
+        <h2 className="text-[13px] font-bold uppercase tracking-[0.12em] text-gray-400">
           Nothing catching your eye?
         </h2>
 
-        <div className="mt-3 divide-y divide-gray-100 overflow-hidden rounded-2xl bg-white shadow-card">
+        <div className="mt-2 divide-y divide-gray-100 overflow-hidden rounded-2xl bg-white shadow-[var(--e1)] dark:divide-white/10 dark:bg-white/[0.04]">
           <Link
             href="/refer"
             className="flex items-center gap-3.5 p-4 transition hover:bg-gray-50 active:bg-gray-100"
