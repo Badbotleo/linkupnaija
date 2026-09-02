@@ -479,27 +479,31 @@ export default function RsvpButton({
             </div>
           </div>
 
-          {/* The fee is broken out, never folded in.
-              The buyer is about to be charged more than the flyer says, and
-              being told that here is a great deal better than discovering it
+          {/* One number, with the fee named inside it.
+              "includes ₦900 fee" rather than a Total row above a Booking fee
+              row: three lines of arithmetic invites the reader to audit the
+              sum, where one line states the charge and discloses the fee in
+              the same breath. It is also what Tix does, which is the checkout
+              these buyers already know.
+
+              The fee is still never hidden. The buyer is about to be charged
+              more than the flyer says, and reading it here beats finding out
               on the Paystack screen. */}
-          <dl className="mt-3 space-y-1 border-t border-gray-100 pt-3 text-sm dark:border-white/10">
-            <div className="flex justify-between text-gray-600 dark:text-white/70">
-              <dt>
-                {formatNaira(unitPrice)}
-                {qty > 1 ? ` × ${qty}` : ""}
-              </dt>
-              <dd className="tabular-nums">{formatNaira(subtotal)}</dd>
-            </div>
-            <div className="flex justify-between text-gray-600 dark:text-white/70">
-              <dt>Booking fee</dt>
-              <dd className="tabular-nums">{formatNaira(fee)}</dd>
-            </div>
-            <div className="flex justify-between pt-1 text-[15px] font-extrabold text-gray-900 dark:text-white">
-              <dt>Total</dt>
-              <dd className="tabular-nums">{formatNaira(dueNow)}</dd>
-            </div>
-          </dl>
+          <div className="mt-3 border-t border-gray-100 pt-3 dark:border-white/10">
+            {qty > 1 && (
+              <p className="text-sm text-gray-500">
+                {formatNaira(unitPrice)} × {qty}
+              </p>
+            )}
+            <p className="mt-0.5 flex flex-wrap items-baseline gap-x-2">
+              <span className="text-[22px] font-extrabold leading-none tabular-nums text-gray-900 dark:text-white">
+                {formatNaira(dueNow)}
+              </span>
+              <span className="text-[13px] text-gray-500">
+                includes {formatNaira(fee)} fee
+              </span>
+            </p>
+          </div>
         </div>
       )}
 

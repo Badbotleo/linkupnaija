@@ -18,6 +18,7 @@ import {
   professionalCategoriesFilter,
 } from "@/lib/event-kind";
 import EventsMapToggle from "@/components/events/EventsMapToggle";
+import PromoCarousel from "@/components/promos/PromoCarousel";
 import EventsTabs from "@/components/EventsTabs";
 import SearchPill from "@/components/events/SearchPill";
 import EventsStories from "@/components/EventsStories";
@@ -552,6 +553,21 @@ export default async function EventsPage({
       {!error && feedEvents.length > 0 && (
         <div className="mt-2 sm:mt-4">
           <EventReel events={feedEvents} past={past} />
+        </div>
+      )}
+
+      {/* Offers, between the feed and the "look again" panel.
+
+          Placed after the reel rather than above it, because somebody who has
+          just arrived wants link-ups, not an advert. This is the point they
+          have finished scrolling and are deciding whether to act or leave,
+          which is the same moment the panel below is aimed at.
+
+          Not shown on "Been and gone", where a recap of finished nights is
+          the wrong place to sell a subscription. */}
+      {!error && !past && feedEvents.length > 0 && (
+        <div className="mt-8">
+          <PromoCarousel />
         </div>
       )}
 

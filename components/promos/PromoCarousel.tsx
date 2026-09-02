@@ -14,7 +14,7 @@ import Link from "next/link";
  * happen. These three are the real offers, with the real numbers:
  *
  *   /refer  ₦600 a referral, ₦3,000 to withdraw
- *   /pro    5% platform fee instead of 10%
+ *   /pro    24h early access, top of the host's queue
  *   /host   free to list
  *
  * Server component: it is three links and no state. The snap scrolling is CSS.
@@ -48,9 +48,12 @@ const PROMOS: Promo[] = [
   {
     href: "/pro",
     eyebrow: "LinkUpNaija Pro",
-    title: "KEEP 95% OF EVERY TICKET",
-    body: "Free hosts give up 10% of a sale. Pro gives up 5%. It pays for itself in one night.",
-    emoji: "🎟️",
+    // Was "KEEP 95% OF EVERY TICKET", written hours before the booking fee
+    // moved onto the buyer. Hosts now keep 100% whether they pay for Pro or
+    // not, so that card was advertising a discount that no longer exists.
+    title: "GET IN BEFORE EVERYONE ELSE",
+    body: "Ask to join a full day early, and sit at the top of the queue when a host is approving guests.",
+    emoji: "⚡",
     bg: "bg-[#1A1040]",
     ink: "text-[#FAC775]",
     sub: "text-white/80",

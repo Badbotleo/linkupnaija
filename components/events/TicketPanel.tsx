@@ -1,4 +1,5 @@
 import { formatNaira } from "@/lib/paystack";
+import { buyerFee, buyerTotal } from "@/lib/pricing";
 
 /**
  * The "Buy Ticket" panel on an event page.
@@ -73,8 +74,15 @@ export default function TicketPanel({
                     <p className="text-[13px] font-black uppercase tracking-[0.1em] text-gray-500 dark:text-white/50">
                       {t.name}
                     </p>
+                    {/* The number a buyer will actually be charged, with the
+                        fee named inside it. Showing the host's price here and
+                        a larger one at checkout is the surprise this wording
+                        exists to prevent. */}
                     <p className="mt-0.5 text-[28px] font-extrabold leading-none tracking-tight tabular-nums text-gray-900 dark:text-white">
-                      {formatNaira(t.price)}
+                      {formatNaira(buyerTotal(t.price))}
+                    </p>
+                    <p className="mt-1 text-[12px] text-gray-500 dark:text-white/50">
+                      includes {formatNaira(buyerFee(t.price))} fee
                     </p>
                   </div>
                   {/* Capacity is the thing people compare tables on, so it
@@ -108,7 +116,10 @@ export default function TicketPanel({
                 {/* tabular-nums keeps the ₦ and digits from shifting between
                     events with different amounts. */}
                 <p className="text-[40px] font-extrabold leading-none tracking-tight tabular-nums text-gray-900 dark:text-white">
-                  {formatNaira(price)}
+                  {formatNaira(buyerTotal(price))}
+                </p>
+                <p className="mt-1.5 text-[13px] text-gray-500 dark:text-white/50">
+                  includes {formatNaira(buyerFee(price))} fee
                 </p>
                 {note && (
                   <p className="mt-2 text-[15px] leading-snug text-gray-500 dark:text-white/60">
