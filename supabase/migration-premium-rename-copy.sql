@@ -42,7 +42,7 @@ begin
   end if;
 
   -- Count on created_at, not the event date: otherwise someone could host
-  -- four, delete one, and host again — or schedule everything into next month
+  -- four, delete one, and host again, or schedule everything into next month
   -- to dodge the window entirely.
   select count(*)
     into used
