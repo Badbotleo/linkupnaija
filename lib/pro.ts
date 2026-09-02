@@ -48,19 +48,25 @@ export function isProActive(
  * paid, that sentence becomes false and the badge is worth less than nothing
  * on a platform whose safety model is hosts approving strangers.
  *
- * So it needs both: a live subscription AND an approved government ID. A
- * lapsed subscription hides the badge without un-verifying the person; a
- * revoked verification removes it while they are still paying.
+ * So it needs a live subscription AND an approved government ID. A lapsed
+ * subscription hides the badge without un-verifying the person; a revoked
+ * verification removes it while they are still paying.
  *
- * `idVerifiedAt` is undefined until migration-id-verification.sql has run,
- * and undefined is treated as unverified on purpose. That means the badge
- * disappears for existing Premium members until they are checked, which is
- * the correct answer rather than an unfortunate side effect.
+ * WITH ONE EXEMPTION, and it expires on its own. Members who were already
+ * paying when the rule changed keep the badge until their term ends: they
+ * bought it under different terms and did nothing wrong, and taking it back
+ * mid-subscription would be a punishment for our change of mind.
+ * `badge_grandfathered_until` is stamped once by
+ * migration-badge-grandfather.sql and never written again, so the exemption
+ * drains away by itself. After the last one lapses the badge means one thing.
  */
 export function showsVerifiedBadge(
   isPro?: boolean | null,
   proExpiresAt?: string | null,
-  idVerifiedAt?: string | null
+  idVerifiedAt?: string | null,
+  grandfatheredUntil?: string | null
 ): boolean {
-  return isProActive(isPro, proExpiresAt) && !!idVerifiedAt;
+  if (!isProActive(isPro, proExpiresAt)) return false;
+  if (idVerifiedAt) return true;
+  return !!grandfatheredUntil && new Date(grandfatheredUntil) > new Date();
 }

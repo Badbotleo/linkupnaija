@@ -107,7 +107,7 @@ export default async function EventDetailPage({
   const { data: event } = await supabase
     .from("events")
     .select(
-      "*, host:users!events_host_id_fkey(id, name, avatar_url, state, rating_avg, rating_count, paystack_subaccount_code, instagram_url, twitter_url, facebook_url, is_pro, pro_expires_at, id_verified_at)"
+      "*, host:users!events_host_id_fkey(id, name, avatar_url, state, rating_avg, rating_count, paystack_subaccount_code, instagram_url, twitter_url, facebook_url, is_pro, pro_expires_at, id_verified_at, badge_grandfathered_until)"
     )
     .eq("id", params.id)
     .single();
@@ -724,7 +724,12 @@ export default async function EventDetailPage({
                         event.host?.is_pro,
                         event.host?.pro_expires_at,
                         (event.host as { id_verified_at?: string | null } | null)
-                          ?.id_verified_at
+                          ?.id_verified_at,
+                        (
+                          event.host as {
+                            badge_grandfathered_until?: string | null;
+                          } | null
+                        )?.badge_grandfathered_until
                       ) && <ProBadge size={15} />}
                     </span>
                     <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">

@@ -42,26 +42,54 @@ export const metadata = {
  * check that has not happened.
  */
 
-const BENEFITS = [
+/**
+ * Named capabilities, X-style, not sentences about how nice they are.
+ *
+ * The previous list read "Ask a full day early", "Top of the host's queue":
+ * descriptions of an experience. X Premium sells "Verified checkmark", "Reply
+ * prioritization", "Longer posts" — a list of things you GET, each with a
+ * short line underneath. It scans in three seconds and every item sounds like
+ * a switch being flipped, because it is.
+ *
+ * Same discipline as everywhere else on this page: nothing here is listed
+ * that the code does not do.
+ */
+const FEATURES = [
+  {
+    icon: "star",
+    name: "Gold verified badge",
+    line: "Checked by a person against a government ID, not granted by a payment.",
+    lead: true,
+  },
+  {
+    icon: "trending",
+    name: "A free boost every month",
+    line: "One 48-hour boost included, worth ₦5,000. Premium costs ₦4,999.",
+  },
   {
     icon: "clock",
-    title: "Ask a full day early",
-    text: "When a host sets a time for requests to open, Premium can ask 24 hours before everyone else. On a link-up that fills, that is the difference between going and reading about it.",
+    name: "Early access",
+    line: "Ask to join 24 hours before requests open to everyone.",
   },
   {
     icon: "zap",
-    title: "Top of the host's queue",
-    text: "A host works down their requests and often stops before the bottom. Premium sits at the top of that list.",
+    name: "Priority in the queue",
+    line: "Your request sits at the top of the host's list, not the bottom.",
   },
   {
     icon: "infinity",
-    title: "Host without a ceiling",
-    text: `Free members host ${FREE_HOST_LIMIT} link-ups a month, which stops a weekly night in its second week. Premium has no limit.`,
+    name: "Unlimited hosting",
+    line: `No ${FREE_HOST_LIMIT}-a-month ceiling.`,
+  },
+  {
+    icon: "trending",
+    name: "Event analytics",
+    line: "Who saw your link-up, who saved it, who turned up. Where the drop-off is.",
   },
   {
     icon: "eye",
-    title: "See who looked you up",
-    text: "Hosts read your profile before they approve you, and so do people from the group chat. Premium shows you who has been looking.",
+    name: "Profile visitors",
+    line: "See who looked you up before deciding about you.",
   },
 ];
 
@@ -180,11 +208,29 @@ export default async function PremiumPage() {
         </div>
 
         <h2 className="mb-2 mt-7 text-[13px] font-bold uppercase tracking-[0.12em] text-gray-400">
-          Also included
+          What you get
         </h2>
-        <div className="divide-y divide-gray-200/70 overflow-hidden rounded-2xl bg-white shadow-[var(--e1)] dark:divide-white/10 dark:bg-white/[0.04]">
-          {BENEFITS.map((b) => (
-            <Row key={b.title} icon={b.icon} title={b.title} body={b.text} />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {FEATURES.map((f) => (
+            <div
+              key={f.name}
+              className={`rounded-2xl bg-white p-4 shadow-[var(--e1)] dark:bg-white/[0.04] ${
+                f.lead ? "ring-1 ring-amber-400/40 sm:col-span-2" : ""
+              }`}
+            >
+              <span
+                className="grid h-9 w-9 place-items-center rounded-xl bg-amber-400/[0.16] text-amber-600"
+                aria-hidden
+              >
+                <LineIcon name={f.icon} size={17} />
+              </span>
+              <p className="mt-2.5 text-[16px] font-extrabold tracking-[-0.01em] text-gray-900 dark:text-white">
+                {f.name}
+              </p>
+              <p className="mt-1 text-[13.5px] leading-snug text-gray-600 dark:text-white/70">
+                {f.line}
+              </p>
+            </div>
           ))}
         </div>
 

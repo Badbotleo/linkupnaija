@@ -176,7 +176,9 @@ export default async function PublicProfilePage({
           {showsVerifiedBadge(
             profile.is_pro,
             profile.pro_expires_at,
-            (profile as { id_verified_at?: string | null }).id_verified_at
+            (profile as { id_verified_at?: string | null }).id_verified_at,
+            (profile as { badge_grandfathered_until?: string | null })
+              .badge_grandfathered_until
           ) && <ProBadge size={20} />}
           {/* The green "✓ Verified" chip is gone.
               Two things next to one name both saying verified is worse than

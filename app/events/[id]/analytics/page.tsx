@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppHeader from "@/components/AppHeader";
 import LineIcon from "@/components/ui/LineIcon";
+import { isProActive } from "@/lib/pro";
 
 export const dynamic = "force-dynamic";
 
@@ -64,6 +65,57 @@ export default async function EventAnalyticsPage({
         <Link href={`/events/${params.id}`} className="btn-outline mt-4 inline-flex">
           Back to the event
         </Link>
+      </div>
+    );
+  }
+
+  /**
+   * Analytics is a Premium capability as of 2 Sep 2026.
+   *
+   * This is the one gate on this tier that takes something away rather than
+   * adding to it: hosts had these numbers for free. The upsell therefore says
+   * so plainly instead of pretending the feature is new, and it keeps the
+   * event one tap away so a host who declines is not stranded on a wall.
+   */
+  const { data: me } = await supabase
+    .from("users")
+    .select("is_pro, pro_expires_at")
+    .eq("id", user.id)
+    .single();
+
+  if (!isProActive(me?.is_pro, me?.pro_expires_at)) {
+    return (
+      <div>
+        <AppHeader title="Event analytics" subtitle={event.title} back />
+        <div className="container-page max-w-[560px] py-6">
+          <section className="rounded-3xl bg-gradient-to-br from-[#1A1040] via-brand-800 to-brand-700 p-6 text-center">
+            <span
+              className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-white/15 text-white"
+              aria-hidden
+            >
+              <LineIcon name="trending" size={24} />
+            </span>
+            <h2 className="mt-4 text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-white">
+              Your numbers are a Premium feature
+            </h2>
+            <p className="mx-auto mt-2 max-w-sm text-[15px] leading-snug text-white/75">
+              How many people saw this link-up, how many saved it, how many you
+              approved, and how many actually turned up. It is the difference
+              between guessing the flyer was wrong and knowing it.
+            </p>
+            <Link href="/premium" className="btn-primary mt-5 inline-flex bg-white text-[#1A1040]">
+              See Premium
+            </Link>
+          </section>
+          <div className="mt-4 text-center">
+            <Link
+              href={`/events/${params.id}`}
+              className="text-sm font-semibold text-gray-500 hover:text-brand"
+            >
+              Back to the event
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
