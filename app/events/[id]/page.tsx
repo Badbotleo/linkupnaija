@@ -104,13 +104,42 @@ export default async function EventDetailPage({
 }) {
   const supabase = createClient();
 
-  const { data: event } = await supabase
+  /**
+   * Two literal selects, not one built from a template.
+   *
+   * PostgREST rejects the WHOLE query with a 400 when a select names a column
+   * that is not there, so `event` came back null and this page called
+   * notFound(). That is how a badge feature took every event page on the site
+   * down with "Page not found" on 2 Sep 2026: the code shipped, the migration
+   * had not, and nothing in between degraded.
+   *
+   * A badge is decoration. It must never be able to 404 the page somebody
+   * came to read, so the optional columns are tried and then dropped.
+   *
+   * Written out twice rather than interpolated because supabase-js infers row
+   * types from the literal select string; a template literal turns the whole
+   * result into a ParserError and every field access below stops type
+   * checking.
+   */
+  let { data: event, error: eventError } = await supabase
     .from("events")
     .select(
       "*, host:users!events_host_id_fkey(id, name, avatar_url, state, rating_avg, rating_count, paystack_subaccount_code, instagram_url, twitter_url, facebook_url, is_pro, pro_expires_at, id_verified_at, badge_grandfathered_until)"
     )
     .eq("id", params.id)
     .single();
+
+  // 42703 is "column does not exist". Anything else is a real failure and
+  // must not be papered over by a second query.
+  if (eventError?.code === "42703") {
+    ({ data: event } = await supabase
+      .from("events")
+      .select(
+        "*, host:users!events_host_id_fkey(id, name, avatar_url, state, rating_avg, rating_count, paystack_subaccount_code, instagram_url, twitter_url, facebook_url, is_pro, pro_expires_at)"
+      )
+      .eq("id", params.id)
+      .single());
+  }
 
   if (!event) notFound();
 
