@@ -189,14 +189,12 @@ export default async function PartnerPage({
             size, and tapping to enlarge is the whole point of showing it. */}
         {partner.posterUrls.length > 0 && (
           <section className="mt-8">
-            {/* "Their flyers" named the file type, not the reason to look.
-                On a trade fair these carry the dates, the discounts, what is
-                actually on sale and who to call, so the heading says the
-                artwork is the partner talking rather than describing it as an
-                attachment. Matches "Follow them" below it. */}
-            <h2 className="text-lg font-bold text-gray-900">
-              Straight from them
-            </h2>
+            {/* The partner's own name, not a label for the file type.
+                "Their flyers" described the attachment and "Straight from
+                them" described the relationship; neither told you whose
+                artwork you were about to look at. The name does, and it reads
+                as a credit line over the gallery. */}
+            <h2 className="text-lg font-bold text-gray-900">{partner.name}</h2>
             <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
               {partner.posterUrls.map((url, i) => (
                 <ImageLightbox
