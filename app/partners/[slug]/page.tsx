@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 import EventCover from "@/components/EventCover";
 import LineIcon from "@/components/ui/LineIcon";
+import ImageLightbox from "@/components/ui/ImageLightbox";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
 import {
@@ -175,6 +176,33 @@ export default async function PartnerPage({
             </div>
           )}
         </section>
+
+        {/* Their flyers.
+            poster_urls has been collected by the admin form and stored on the
+            row since partners existed, and nothing ever rendered it: four
+            uploaded posters sat in the database while the page showed none.
+            An upload that goes nowhere is worse than no upload field, because
+            the person doing it believes the job is done.
+
+            ImageLightbox because a trade-fair flyer is dense with dates,
+            stand numbers and phone numbers that are unreadable at thumbnail
+            size, and tapping to enlarge is the whole point of showing it. */}
+        {partner.posterUrls.length > 0 && (
+          <section className="mt-8">
+            <h2 className="text-lg font-bold text-gray-900">Their flyers</h2>
+            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {partner.posterUrls.map((url, i) => (
+                <ImageLightbox
+                  key={url}
+                  src={url}
+                  alt={`${partner.name} flyer ${i + 1}`}
+                  className="w-full"
+                  triggerClassName="block overflow-hidden rounded-2xl shadow-[var(--e1)] transition-transform duration-150 active:scale-[0.98]"
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
         {(partner.instagram || partner.tiktok || partner.website) && (
           <section className="mt-8">

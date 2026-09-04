@@ -9,6 +9,7 @@ import Rail from "@/components/home/Rail";
 import SwipeDeck from "@/components/home/SwipeDeck";
 import FeaturedRail from "@/components/home/FeaturedRail";
 import ThingsToDo from "@/components/home/ThingsToDo";
+import CollabCard from "@/components/home/CollabCard";
 import ProvenRail from "@/components/home/ProvenRail";
 import ScreenTour from "@/components/home/ScreenTour";
 import LineIcon from "@/components/ui/LineIcon";
@@ -431,6 +432,17 @@ export default async function HomePage() {
           without scrolling. That finding still holds: real link-ups lead, and
           this sits directly under them rather than in front. */}
       <ThingsToDo state={visitorState} />
+
+      {/* The running collaboration, now shown to visitors as well.
+          It rendered only inside LoggedInHome, which meant a partner we had
+          agreed to promote was visible to members and invisible to the 1,800
+          people a month who arrive without an account. A partnership nobody
+          outside the app can see is not worth much to the partner.
+
+          Same position as on the logged-in home, under Things to do and above
+          Featured, so both pages read in one order. Renders nothing at all
+          when no collab is running, which is most weeks. */}
+      <CollabCard />
 
       {/* Featured link-ups. Cut with the rest of the shelves, put back on
           purpose: these are the events we're actively promoting, and a
