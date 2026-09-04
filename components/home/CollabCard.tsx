@@ -117,14 +117,20 @@ export default async function CollabCard() {
             Collaboration
           </p>
           <p className="mt-1 max-w-lg text-[24px] font-extrabold uppercase leading-[1.05] tracking-[-0.01em] sm:text-[30px]">
-            {p.collab_blurb ?? p.tagline ?? `Nights with ${p.name}.`}
+            {p.collab_blurb ?? p.tagline ?? p.name}
           </p>
 
           <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-black text-gray-900">
             {/* Names the partner rather than sloganising. This card sits
                 between other home-page shelves, so "what is this and where
-                does it go" has to survive being read at a glance. */}
-            See {p.name} nights
+                does it go" has to survive being read at a glance.
+
+                "nights" is gone. It was written when the only collaboration
+                was a party series, and it read as "See Abuja International
+                Trade Fair nights" on a twelve-day trade fair. A partner card
+                has to work for whoever the partner turns out to be, and the
+                word was describing DEFCON rather than the slot. */}
+            See {p.name}
             <LineIcon name="chevronRight" size={13} />
           </span>
         </div>
