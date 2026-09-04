@@ -276,6 +276,33 @@ export default function AdminPartners() {
               <input type="checkbox" checked={editing.is_collab} onChange={(e) => setEditing({ ...editing, is_collab: e.target.checked })} />
               Running collab
             </label>
+            {/* When the collab retires.
+                Ticking the box defaults this to 90 days out, which is a
+                sensible guess and wrong for anything with a fixed end date: a
+                trade fair finishing on 6 October kept the home page's collab
+                slot until December. Editable, so the end date can be the real
+                one instead of an arithmetic default. */}
+            {editing.is_collab && (
+              <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700">
+                Until
+                <input
+                  type="date"
+                  value={(editing.collab_until ?? "").slice(0, 10)}
+                  onChange={(e) =>
+                    setEditing({
+                      ...editing,
+                      // End of the chosen day in UTC, so a collab set to end on
+                      // the 7th survives the whole of the 7th rather than
+                      // vanishing at midnight as the date flips.
+                      collab_until: e.target.value
+                        ? new Date(`${e.target.value}T23:59:59Z`).toISOString()
+                        : null,
+                    })
+                  }
+                  className="rounded-lg border border-gray-200 px-2 py-1.5 text-sm"
+                />
+              </label>
+            )}
             <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700">
               <input type="checkbox" checked={editing.is_active} onChange={(e) => setEditing({ ...editing, is_active: e.target.checked })} />
               Live
