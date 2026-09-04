@@ -248,13 +248,19 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
         </Rail>
       )}
 
+      {/* Moved above the collab and featured rails.
+          It sat sixth, under the greeting, the shortcuts, your line-up, an
+          events rail, the partner card and the featured shelf. A member with
+          nothing in their calendar had to scroll past five things telling
+          them about events they had already declined to reach the one screen
+          that answers "where could I go". */}
+      <ThingsToDo state={profile?.state ?? null} />
+
       <CollabCard />
 
       <FeaturedRail />
 
       <PastEventsReel state={profile?.state ?? null} />
-
-      <ThingsToDo state={profile?.state ?? null} />
 
       {/* Picked for you — a deck, because a recommendation deserves a look
           rather than a skim past */}

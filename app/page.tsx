@@ -8,6 +8,7 @@ import LoggedInHome from "@/components/home/LoggedInHome";
 import Rail from "@/components/home/Rail";
 import SwipeDeck from "@/components/home/SwipeDeck";
 import FeaturedRail from "@/components/home/FeaturedRail";
+import ThingsToDo from "@/components/home/ThingsToDo";
 import ProvenRail from "@/components/home/ProvenRail";
 import ScreenTour from "@/components/home/ScreenTour";
 import LineIcon from "@/components/ui/LineIcon";
@@ -410,6 +411,26 @@ export default async function HomePage() {
             </Link>
         ))}
       </Rail>
+
+      {/* Places to go, for the visitor who is not ready to ask a stranger
+          for permission to attend their party.
+
+          Everything else on this site costs something before it gives
+          anything: an account, a request, a host's approval, sometimes money.
+          This costs a read. On a page converting at 2.4% that gap is the
+          whole argument, and until now a logged-out visitor never saw this
+          shelf at all, because it rendered only inside LoggedInHome.
+
+          It is also the answer to the query the structured data was aimed at.
+          "Things to do in Lagos this weekend" is a search for PLACES, and
+          organic sends under a hundred sessions a month against TikTok's
+          eleven hundred.
+
+          BELOW the events rail, not above it. Ideas led this page once and
+          were moved down because eight events existed and none were visible
+          without scrolling. That finding still holds: real link-ups lead, and
+          this sits directly under them rather than in front. */}
+      <ThingsToDo state={visitorState} />
 
       {/* Featured link-ups. Cut with the rest of the shelves, put back on
           purpose: these are the events we're actively promoting, and a
