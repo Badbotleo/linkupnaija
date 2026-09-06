@@ -10,6 +10,10 @@ export const metadata = {
   title: "Venues",
   description:
     "Discover clubs, restaurants, cinemas, parks and more across Nigeria, then request a reservation through LinkUpNaija.",
+  // Every filtered variant declares the bare listing as canonical, so
+  // /events?category=Party consolidates here rather than competing with it.
+  // This replaces a robots.txt block that stopped Google reading this tag.
+  alternates: { canonical: "/venues" },
 };
 
 export default async function VenuesPage() {

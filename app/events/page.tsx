@@ -32,6 +32,10 @@ export const metadata = {
   title: "Explore events",
   description:
     "Browse upcoming hangouts, parties, picnics, book clubs and more across Nigeria. Filter by state and category, and find your next link-up.",
+  // Every filtered variant declares the bare listing as canonical, so
+  // /events?category=Party consolidates here rather than competing with it.
+  // This replaces a robots.txt block that stopped Google reading this tag.
+  alternates: { canonical: "/events" },
 };
 
 type FeedEvent = EventRow & {

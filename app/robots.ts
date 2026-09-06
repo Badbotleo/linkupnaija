@@ -25,14 +25,23 @@ export default function robots(): MetadataRoute.Robots {
           "/tickets",
           "/login",
           "/signup",
-          // Query-string variants of the same listings. Without this Google
-          // indexes /events?category=Party as its own page and then reports
-          // it as a duplicate of /events.
-          "/events?",
-          "/venues?",
-          // Poster scan codes. They forward to /events, so indexing one would
-          // put a tracking URL in the results in place of the real page.
-          "/p/",
+          // NOT listed here, deliberately, and it took a Search Console
+          // warning to notice: "/events?", "/venues?" and "/p/".
+          //
+          // robots.txt controls CRAWLING, not indexing. Google still finds a
+          // blocked URL through links to it, and having been forbidden to
+          // fetch the page, indexes the bare URL with nothing behind it. That
+          // is the "Indexed, though blocked by robots.txt" report, and it is
+          // strictly worse than not blocking at all.
+          //
+          // /p/ was the sharpest version: those pages already declare
+          // robots: { index: false }, and blocking them meant Google could
+          // never read the very instruction that would have kept them out.
+          // The poster QR codes get scanned and shared, so it found them
+          // anyway.
+          //
+          // Query variants are handled by a canonical on /events and /venues
+          // instead, which needs the crawl to work.
         ],
       },
     ],
