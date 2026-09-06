@@ -14,6 +14,7 @@ import { getSessionUser } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 import VisitRecorder from "@/components/VisitRecorder";
 import { getVisitorState } from "@/lib/visitor-geo";
+import { SITE_ORIGIN } from "@/lib/qr";
 import {
   jsonLdScript,
   organizationJsonLd,
@@ -25,7 +26,24 @@ const jakarta = Plus_Jakarta_Sans({
   variable: "--font-sans",
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+/**
+ * One origin for the whole site, and it must be the one that serves.
+ *
+ * This read NEXT_PUBLIC_SITE_URL, which is set to the bare domain in Vercel,
+ * so every canonical on the site pointed at https://linkupnaija.com while the
+ * pages themselves are served from https://www.linkupnaija.com. Non-www
+ * 308-redirects to www, so each canonical named a redirect rather than the
+ * live URL. robots.txt, the sitemap and the structured data were already
+ * using SITE_ORIGIN, so metadataBase was the only thing disagreeing.
+ *
+ * Sorted out here rather than by editing an environment variable, because
+ * four other files already treat SITE_ORIGIN as the answer and a fifth source
+ * of truth is how this happened.
+ */
+const SITE_URL =
+  process.env.NODE_ENV === "development"
+    ? (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000")
+    : SITE_ORIGIN;
 const TITLE = "LinkUpNaija · Find your people. Build real connections.";
 const DESCRIPTION =
   "Nigeria's platform for real connection. Find family hangouts, friend reunions, picnics, book clubs, game nights and more near you, or host your own.";
