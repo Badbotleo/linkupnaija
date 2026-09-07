@@ -530,3 +530,13 @@ export function categoryGradient(category: string) {
     CATEGORY_GRADIENTS[category as EventCategory] ?? "from-brand-400 to-brand-700"
   );
 }
+
+/**
+ * Wallet credit each side gets when a referral joins.
+ *
+ * Written out by hand in /refer, the mobile menu and the home page footer,
+ * and it had already drifted: the footer promised ₦500 on a home page while
+ * every other surface said ₦600. A number that decides what somebody is owed
+ * should exist once.
+ */
+export const REFERRAL_REWARD = 600;

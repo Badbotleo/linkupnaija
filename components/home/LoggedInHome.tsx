@@ -15,6 +15,8 @@ import SwipeDeck from "@/components/home/SwipeDeck";
 import PastEventsReel from "@/components/home/PastEventsReel";
 import FeaturedRail from "@/components/home/FeaturedRail";
 import CollabCard from "@/components/home/CollabCard";
+import { REFERRAL_REWARD } from "@/lib/constants";
+import { formatNaira } from "@/lib/paystack";
 
 interface CircleLite {
   id: string;
@@ -427,57 +429,53 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
         </Rail>
       )}
 
-      {/* Two things you can do, as rows rather than a banner. A big gradient
-          marketing block at the end of a personal feed reads as an ad in your
-          own app — a settings-style list reads as part of it. */}
+      {/* The two ways out when the feed has nothing for you.
+          Deliberately not a gradient marketing banner: an ad for the app,
+          inside the app, at the end of somebody's own feed, is the wrong
+          register. But the settings-style rows it replaced were too quiet to
+          read as actions at all, sitting under a page of artwork. Tinted
+          tiles, side by side, are loud enough to be offers and quiet enough
+          to still belong to the page. */}
       <section className="container-page mt-9">
         <h2 className="text-[13px] font-bold uppercase tracking-[0.12em] text-gray-400">
           Nothing catching your eye?
         </h2>
 
-        <div className="mt-2 divide-y divide-gray-100 overflow-hidden rounded-2xl bg-white shadow-[var(--e1)] dark:divide-white/10 dark:bg-white/[0.04]">
+        <div className="mt-2 grid grid-cols-2 gap-3">
           <Link
             href="/refer"
-            className="flex items-center gap-3.5 p-4 transition hover:bg-gray-50 active:bg-gray-100"
+            className="flex flex-col justify-between rounded-2xl bg-naija-50 p-4 shadow-[var(--e1)] transition-transform duration-150 active:scale-[0.98] dark:bg-naija/15"
           >
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-naija-50 text-naija-700">
-              <LineIcon name="gift" size={20} />
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/70 text-naija-700 dark:bg-white/10 dark:text-naija-200">
+              <LineIcon name="gift" size={19} />
             </span>
-            <span className="min-w-0 flex-1">
-              <span className="block font-bold text-gray-900">
+            <span className="mt-3 block">
+              <span className="block text-[16px] font-extrabold leading-tight tracking-[-0.01em] text-gray-900 dark:text-white">
                 Bring your paddy
               </span>
-              <span className="mt-0.5 block text-[13px] text-gray-500">
-                You both get &#8358;500 when they join
+              {/* The figure comes from one constant now. This line said ₦500
+                  while /refer and the menu both said ₦600. */}
+              <span className="mt-1 block text-[13px] leading-snug text-gray-600 dark:text-white/70">
+                {formatNaira(REFERRAL_REWARD)} each, the moment they join.
               </span>
             </span>
-            <LineIcon
-              name="chevronRight"
-              size={16}
-              className="shrink-0 text-gray-300"
-            />
           </Link>
 
           <Link
             href="/host"
-            className="flex items-center gap-3.5 p-4 transition hover:bg-gray-50 active:bg-gray-100"
+            className="flex flex-col justify-between rounded-2xl bg-brand-50 p-4 shadow-[var(--e1)] transition-transform duration-150 active:scale-[0.98] dark:bg-brand/20"
           >
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-50 text-brand">
-              <LineIcon name="mic" size={20} />
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/70 text-brand dark:bg-white/10">
+              <LineIcon name="mic" size={19} />
             </span>
-            <span className="min-w-0 flex-1">
-              <span className="block font-bold text-gray-900">
-                Host something yourself
+            <span className="mt-3 block">
+              <span className="block text-[16px] font-extrabold leading-tight tracking-[-0.01em] text-gray-900 dark:text-white">
+                Host it yourself
               </span>
-              <span className="mt-0.5 block text-[13px] text-gray-500">
-                Pick a vibe and let your people come to you
+              <span className="mt-1 block text-[13px] leading-snug text-gray-600 dark:text-white/70">
+                Free to list, and takes a couple of minutes.
               </span>
             </span>
-            <LineIcon
-              name="chevronRight"
-              size={16}
-              className="shrink-0 text-gray-300"
-            />
           </Link>
         </div>
       </section>
