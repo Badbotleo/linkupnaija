@@ -20,6 +20,7 @@ export default function ProfilePhotos({
 }) {
   const supabase = createClient();
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -28,7 +29,10 @@ export default function ProfilePhotos({
       .select("id, photo_url")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
-      .then(({ data }) => setPhotos((data ?? []) as Photo[]));
+      .then(({ data }) => {
+        setPhotos((data ?? []) as Photo[]);
+        setLoading(false);
+      });
   }, [supabase, userId]);
 
   async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
@@ -70,7 +74,15 @@ export default function ProfilePhotos({
         </label>
       )}
 
-      {photos.length === 0 ? (
+      {loading ? (
+        /* The grid's own shape. "No photos yet" before the fetch returns is
+           a profile telling you it is empty when it is not. */
+        <div className="grid grid-cols-3 gap-1.5">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="aspect-square animate-pulse rounded-xl bg-gray-100" />
+          ))}
+        </div>
+      ) : photos.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-14 text-center text-sm text-gray-500">
           {editable ? "No photos yet. Upload your first!" : "No photos shared yet."}
         </p>

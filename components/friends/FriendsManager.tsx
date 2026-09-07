@@ -42,6 +42,7 @@ export default function FriendsManager({
 
   const [relations, setRelations] = useState<Map<string, Relation>>(new Map());
   const [friends, setFriends] = useState<FriendUser[]>([]);
+  const [loading, setLoading] = useState(true);
   const [incoming, setIncoming] = useState<{ connId: string; user: FriendUser }[]>([]);
   const [suggestions, setSuggestions] = useState<FriendUser[]>([]);
   const [query, setQuery] = useState("");
@@ -76,6 +77,7 @@ export default function FriendsManager({
     setRelations(rel);
     setFriends(fr);
     setIncoming(inc);
+    setLoading(false);
     return rel;
   }, [meId, supabase]);
 
@@ -287,7 +289,24 @@ export default function FriendsManager({
             {friends.length}
           </span>
         </h2>
-        {friends.length === 0 ? (
+        {loading ? (
+          /* Row-shaped. "No friends yet" is a hard thing to be told by
+             mistake while the list is still loading. */
+          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {[0, 1, 2, 3].map((i) => (
+              <li
+                key={i}
+                className="flex animate-pulse items-center gap-3 rounded-2xl bg-white p-3 shadow-sm dark:bg-white/[0.04]"
+              >
+                <div className="h-9 w-9 shrink-0 rounded-full bg-gray-100" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3 w-24 rounded bg-gray-100" />
+                  <div className="h-3 w-16 rounded bg-gray-100" />
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : friends.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center">
             <span className="mx-auto grid h-11 w-11 place-items-center rounded-full bg-white text-brand shadow-sm">
               <LineIcon name="users" size={20} />
