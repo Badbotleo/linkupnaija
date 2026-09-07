@@ -68,5 +68,20 @@ export function showsVerifiedBadge(
 ): boolean {
   if (!isProActive(isPro, proExpiresAt)) return false;
   if (idVerifiedAt) return true;
+
+  // undefined means the COLUMN is absent, so ID verification does not exist
+  // on this database yet; null means it exists and this member has not passed
+  // it. The distinction matters, and it is the difference between a feature
+  // that has not shipped and a member who failed a check.
+  //
+  // While it has not shipped, an active subscription is enough. Otherwise
+  // somebody pays ₦4,999 for a tier whose headline is the badge, and gets no
+  // badge and no way to earn one, because the table they would submit to is
+  // not there. That is worse than showing it early.
+  //
+  // Self-correcting: the moment migration-id-verification.sql runs, this
+  // reads null instead of undefined and the gate bites for everyone unchecked.
+  if (idVerifiedAt === undefined) return true;
+
   return !!grandfatheredUntil && new Date(grandfatheredUntil) > new Date();
 }

@@ -95,6 +95,43 @@ export default async function AdminPaymentsPage() {
 
   const payments = (rows ?? []) as unknown as Payment[];
 
+  /**
+   * Guests who paid and whose transaction never landed.
+   *
+   * This page read only `transactions`, so a sale whose insert failed after
+   * Paystack took the money was invisible here: the guest is charged, the
+   * RSVP is marked paid with a real reference, and the admin sees no sale at
+   * all. That is the one gap on a payments screen that actually costs
+   * somebody money, and it is silent by construction.
+   *
+   * Matched on payment_reference, which is what Paystack returns and what
+   * both rows carry. "wallet" is excluded because a wallet-funded join has a
+   * reference by that literal name rather than a gateway one.
+   */
+  const { data: paidRsvpRows } = await supabase
+    .from("rsvps")
+    .select(
+      "id, payment_reference, created_at, user:users!rsvps_user_id_fkey(name, email), event:events!rsvps_event_id_fkey(id, title, date)"
+    )
+    .eq("paid", true)
+    .order("created_at", { ascending: false });
+
+  const recorded = new Set(
+    payments.map((p) => p.paystack_reference).filter(Boolean)
+  );
+  const unrecorded = ((paidRsvpRows ?? []) as unknown as {
+    id: string;
+    payment_reference: string | null;
+    created_at: string;
+    user: { name: string | null; email: string | null } | null;
+    event: { id: string; title: string; date: string } | null;
+  }[]).filter(
+    (r) =>
+      r.payment_reference &&
+      r.payment_reference !== "wallet" &&
+      !recorded.has(r.payment_reference)
+  );
+
   const gross = payments.reduce((n, p) => n + (p.amount || 0), 0);
   const fees = payments.reduce((n, p) => n + (p.platform_fee || 0), 0);
   // What the hosts are owed. The number that matters at payout time, and the
@@ -141,6 +178,51 @@ export default async function AdminPaymentsPage() {
         <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
           Couldn&apos;t load payments: {error.message}
         </p>
+      )}
+
+      {/* Money taken that this page could not otherwise show.
+          First, because it is the only thing here that needs somebody to act
+          today: a guest has been charged, the host is owed, and no sale
+          exists to pay them from. */}
+      {unrecorded.length > 0 && (
+        <section className="mt-4 rounded-2xl border border-amber-300/70 bg-amber-50 p-4 dark:border-amber-400/30 dark:bg-amber-400/10">
+          <p className="text-[15px] font-bold text-amber-900 dark:text-amber-200">
+            {unrecorded.length} payment{unrecorded.length === 1 ? "" : "s"} took
+            money but never recorded
+          </p>
+          <p className="mt-1 text-[13.5px] leading-snug text-amber-800 dark:text-amber-200/80">
+            The guest was charged and their spot is confirmed, but the sale row
+            never landed, so it is missing from the totals above and from the
+            host&apos;s payout. Check each reference in Paystack and reconcile
+            by hand.
+          </p>
+          <div className="mt-3 space-y-2">
+            {unrecorded.map((r) => (
+              <div
+                key={r.id}
+                className="rounded-xl bg-white px-3 py-2.5 dark:bg-white/[0.06]"
+              >
+                <p className="text-[14px] font-bold text-gray-900 dark:text-white">
+                  {r.user?.name ?? "Deleted account"}
+                  <span className="ml-2 font-medium text-gray-500">
+                    {r.user?.email ?? "no email"}
+                  </span>
+                </p>
+                <p className="mt-0.5 text-[13px] text-gray-600 dark:text-white/70">
+                  {r.event?.title ?? "Deleted event"}
+                </p>
+                <p className="mt-1 font-mono text-[12px] text-gray-500">
+                  {r.payment_reference} ·{" "}
+                  {new Date(r.created_at).toLocaleDateString("en-NG", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
 
       <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
