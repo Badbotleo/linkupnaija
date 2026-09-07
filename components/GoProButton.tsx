@@ -89,9 +89,34 @@ export default function GoProButton({
         setError(error.message);
       } else {
         confettiCoins();
+
+        // The payment leaves a record.
+        //
+        // This flow used to take ₦4,999, flip is_pro and throw the Paystack
+        // reference away, so the only evidence a subscription had been paid
+        // for was a receipt in somebody's inbox. Written after the flag, not
+        // before: a member who paid must end up Premium even if this insert
+        // fails, and a ledger row without access is the better failure.
+        //
+        // Not awaited into the happy path either. If the table is missing
+        // because migration-premium-payments.sql has not run, a subscriber
+        // should still get what they paid for.
+        const { error: ledgerError } = await supabase
+          .from("premium_payments")
+          .insert({
+            user_id: user.id,
+            amount: PRO_PRICE,
+            paystack_reference: result.reference,
+            expires_at: expires,
+          });
+        if (ledgerError) {
+          console.error("Premium payment not recorded:", ledgerError.message);
+        }
+
         await supabase.from("notifications").insert({
           user_id: user.id,
-          message: "Welcome to Premium ⭐ Submit your ID to get the gold badge",
+          message:
+            "Welcome to Premium ⭐ Boost an event, see your analytics, and host as often as you like",
         });
         router.refresh();
       }
