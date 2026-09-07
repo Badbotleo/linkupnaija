@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import Avatar from "./Avatar";
 import LineIcon from "./ui/LineIcon";
@@ -100,23 +101,43 @@ export default function MessageThread({
 
   return (
     <div className="flex h-[30rem] flex-col overflow-hidden surface">
-      {/* Header */}
-      <div className="flex items-center gap-3 border-b border-gray-100 px-4 py-3">
-        <Avatar name={otherName} url={otherAvatar ?? null} size="sm" />
-        <div className="min-w-0">
-          <p className="flex items-center gap-1.5 truncate font-bold leading-tight text-gray-900">
-            <span className="truncate">{otherName}</span>
-            {otherIsPro && <ProBadge size={15} />}
-          </p>
-          <p className="text-xs text-gray-400">
-            {messages.length > 0
-              ? `${messages.length} message${messages.length === 1 ? "" : "s"}`
-              : "New conversation"}
-          </p>
-        </div>
+      {/* Header, and it opens their profile.
+
+          Every messaging product works this way: the name at the top of a
+          thread is how you find out who you are talking to before you agree
+          to meet them somewhere. Here it was plain text, on a platform where
+          the other person is a stranger you are deciding whether to spend a
+          Saturday with, and their profile carries the photos, the rating and
+          the link-ups they have actually turned up to.
+
+          The row is the link, not just the name: a 12px word is not a tap
+          target, and people aim at the avatar. */}
+      <div className="border-b border-gray-100 dark:border-white/10">
+        <Link
+          href={`/u/${otherId}`}
+          className="flex items-center gap-3 px-4 py-3 transition hover:bg-gray-50 dark:hover:bg-white/[0.04]"
+        >
+          <Avatar name={otherName} url={otherAvatar ?? null} size="sm" />
+          <div className="min-w-0 flex-1">
+            <p className="flex items-center gap-1.5 truncate font-bold leading-tight text-gray-900 dark:text-white">
+              <span className="truncate">{otherName}</span>
+              {otherIsPro && <ProBadge size={15} />}
+            </p>
+            <p className="text-xs text-gray-400">
+              {messages.length > 0
+                ? `${messages.length} message${messages.length === 1 ? "" : "s"}`
+                : "New conversation"}
+            </p>
+          </div>
+          <LineIcon
+            name="chevronRight"
+            size={16}
+            className="shrink-0 text-gray-300"
+          />
+        </Link>
       </div>
 
-      {/* Transcript — chat wallpaper keeps bubbles from floating on flat white */}
+      {/* Transcript, chat wallpaper keeps bubbles from floating on flat white */}
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto px-4 py-4"
@@ -127,7 +148,20 @@ export default function MessageThread({
         }}
       >
         {loading ? (
-          <p className="text-center text-sm text-gray-400">Loading…</p>
+          <div className="space-y-3">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className={`flex ${i % 2 ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`h-9 animate-pulse rounded-2xl bg-gray-100 ${
+                    i % 2 ? "w-32" : "w-44"
+                  }`}
+                />
+              </div>
+            ))}
+          </div>
         ) : messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center text-center">
             <span className="grid h-12 w-12 place-items-center rounded-full bg-brand-50 text-brand">

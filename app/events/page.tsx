@@ -62,7 +62,25 @@ const PINNED_PAST = [
   "b21c7b91-d465-436d-9430-1b9c3031b4b1", // 🍖 Kilishi Festival
 ] as const;
 
-const PAGE_SIZE = 24;
+/**
+ * One page, because the feed is a reel.
+ *
+ * This was 24, which split the catalogue across numbered pages and put a
+ * "Page 1 of 3" control under a vertical reel whose end card says "That's
+ * everything coming up". Both cannot be true, and the reel is the one people
+ * believe: they scroll to the end card, read that they have seen everything,
+ * and never look for the pager below it.
+ *
+ * Numbered pages are also the wrong shape for the gesture. A reel is a thing
+ * you flick through; stopping to tap Next is the grid's control wearing the
+ * reel's clothes.
+ *
+ * The window is a real limit rather than "all of them" on purpose: it caps
+ * one query and one payload. If the catalogue ever outgrows it the pager
+ * comes back on its own, below, rather than events silently vanishing off the
+ * end.
+ */
+const PAGE_SIZE = 120;
 
 const SELECT =
   "*, rsvps(status), host:users!events_host_id_fkey(rating_avg, rating_count)";
@@ -551,7 +569,7 @@ export default async function EventsPage({
       {/* The feed itself, as high as it can go.
           Everything else that used to stand between the tabs and the events —
           the search pill, the location banner, the featured carousel, the vibe
-          filters, the map — still follows it. Six modules stacked above the
+          filters, the map, still follows it. Six modules stacked above the
           listings meant the first event began 350px down an 812px screen with
           its button below the fold, which is the same leak we measured on the
           event page in August: the thing people came for, under the furniture
@@ -724,6 +742,8 @@ export default async function EventsPage({
               EventsList is still what /circles and the profile pages render,
               which is why it stays. */}
 
+          {/* Only if the catalogue outgrew one window. At 24 link-ups live
+              this never renders, and the reel is the whole feed. */}
           {!forYou && totalPages > 1 && (
             <nav
               className="mt-10 flex items-center justify-center gap-3"
