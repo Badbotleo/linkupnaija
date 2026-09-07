@@ -127,12 +127,13 @@ export default async function PremiumPage() {
             <ProBadge size={76} />
           </div>
           <h2 className="mx-auto mt-5 max-w-[16ch] text-[30px] font-extrabold leading-[1.08] tracking-[-0.03em] text-white">
-Host more, and stand out
+Fill the room, then fill it again
           </h2>
           <p className="mx-auto mt-3 max-w-sm text-[15px] leading-snug text-white/75">
-            Boost an event to the top of the feed, see who actually turned up,
-            host as often as you like, and carry the gold badge while you do
-            it.
+            For hosts: put an event at the top of the feed, see exactly where
+            people drop off, and host as often as you like. For everyone else:
+            get in a day early, sit at the top of the queue, and carry the gold
+            badge while you do it.
           </p>
 
           <p className="mt-6 text-[40px] font-extrabold leading-none text-white">

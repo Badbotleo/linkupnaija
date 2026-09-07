@@ -48,16 +48,15 @@ const PROMOS: Promo[] = [
   {
     href: "/premium",
     eyebrow: "LinkUpNaija Premium",
-    // Leads with the badge because the Premium page does. One tier, one
-    // headline.
+    // Written for a host, because a host is who pays.
     //
-    // Written as what it gets you, not how it is made. "A person checks your
-    // ID" describes our workflow, which is our problem, not a reason to pay.
-    // The reason to pay is that a host scrolling a queue of strangers stops
-    // at a name they can trust, and yours is it.
-    title: "STOP BEING A STRANGER",
-    body: "Hosts approve from a queue of names they do not know. The gold badge means yours is not one of them.",
-    emoji: "🏅",
+    // "Stop being a stranger" spoke only to guests, and the tier's three
+    // strongest features are all host tools: the boost, the analytics and the
+    // uncapped hosting. A guest reading a card about queue position does not
+    // reach for their card; a host who has watched an empty room does.
+    title: "FILL THE ROOM",
+    body: "Boost an event to the top of the feed, see who actually turned up, and host as often as you like.",
+    emoji: "🚀",
     bg: "bg-[#1A1040]",
     ink: "text-[#FAC775]",
     sub: "text-white/80",

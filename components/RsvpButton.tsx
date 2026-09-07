@@ -585,6 +585,12 @@ export default function RsvpButton({
                   · sold out is grey and honest, not a disabled blue */}
             <button
               type="button"
+              // Marks the real join control for StickyJoinBar, which forwards
+              // a tap into this block. It used to grab the first button it
+              // found, and the quantity stepper added above now renders
+              // first, so the sticky "Get a ticket" was pressing "−" and
+              // reading as a dead button.
+              data-join-primary
               onClick={request}
               disabled={loading || isFull}
               className={`group relative w-full overflow-hidden rounded-2xl px-5 py-4 text-left transition-[transform,border-color,background-color] duration-200 ${

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/image";
 import { toast } from "@/lib/toast";
+import ImageLightbox from "@/components/ui/ImageLightbox";
 
 interface Photo {
   id: string;
@@ -77,14 +78,24 @@ export default function ProfilePhotos({
         <div className="grid grid-cols-3 gap-1.5">
           {photos.map((p) => (
             <div key={p.id} className="group relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.photo_url} alt="" className="aspect-square w-full rounded-lg object-cover" />
+              {/* Tappable. These were a bare <img> in a grid: somebody uploads
+                  a picture of a night out, it is shown at a third of a phone
+                  width, and there is no way to see it properly. The same gap
+                  as the partner posters, and the same fix. */}
+              <ImageLightbox
+                src={p.photo_url}
+                alt="Profile photo"
+                className="aspect-square w-full rounded-lg object-cover"
+                triggerClassName="block w-full cursor-zoom-in transition-transform duration-150 active:scale-[0.97]"
+              />
               {editable && (
                 <button
                   type="button"
                   onClick={() => remove(p.id)}
                   aria-label="Delete photo"
-                  className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-black/50 text-white opacity-0 transition group-hover:opacity-100"
+                  /* z-10 so it stays above the lightbox trigger it now sits
+                     on top of, or deleting a photo would open it instead. */
+                  className="absolute right-1.5 top-1.5 z-10 grid h-7 w-7 place-items-center rounded-full bg-black/50 text-white opacity-0 transition group-hover:opacity-100"
                 >
                   ✕
                 </button>

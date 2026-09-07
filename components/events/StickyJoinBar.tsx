@@ -30,7 +30,7 @@ export default function StickyJoinBar({
   label,
   price,
 }: {
-  /** Wraps the real CTA. Its first button is what gets clicked. */
+  /** Wraps the real CTA. The [data-join-primary] control inside is clicked. */
   targetId: string;
   label: string;
   /** Shown beside the button, not inside it. Null on a free link-up. */
@@ -88,9 +88,12 @@ export default function StickyJoinBar({
           type="button"
           onClick={() => {
             const target = document.getElementById(targetId);
-            const real = target?.querySelector("button, a") as
-              | HTMLElement
-              | null;
+            // The marked control first. "the first button in there" was the
+            // join button until a quantity stepper was added above it, at
+            // which point this bar started pressing "−" and looked broken.
+            // The fallback keeps it working if the marker is ever dropped.
+            const real = (target?.querySelector("[data-join-primary]") ??
+              target?.querySelector("button, a")) as HTMLElement | null;
             if (real) {
               real.click();
               return;
