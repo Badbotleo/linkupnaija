@@ -43,45 +43,30 @@ export function isProActive(
 /**
  * Whether the gold badge should show.
  *
- * Premium alone is NOT enough. The badge is sold as "somebody at LinkUpNaija
- * checked this person", and the moment it renders for anyone who has merely
- * paid, that sentence becomes false and the badge is worth less than nothing
- * on a platform whose safety model is hosts approving strangers.
+ * An active subscription, and nothing else. The badge means "Premium member",
+ * which is a true statement about somebody who pays, and it is the only claim
+ * this platform can currently stand behind.
  *
- * So it needs a live subscription AND an approved government ID. A lapsed
- * subscription hides the badge without un-verifying the person; a revoked
- * verification removes it while they are still paying.
+ * ID VERIFICATION IS SHELVED, NOT ABANDONED. The code is written and the
+ * migration is in supabase/migration-id-verification.sql, deliberately unrun.
+ * Asking somebody for a NIN and a selfie on a platform of 108 members is a
+ * bigger ask than it sounds in Nigeria, and the review queue is a standing
+ * obligation nobody has time for yet. It cost a real customer on 6 Sep 2026:
+ * she paid ₦4,999, the badge required a check she could not take because the
+ * table did not exist, and she got nothing.
  *
- * WITH ONE EXEMPTION, and it expires on its own. Members who were already
- * paying when the rule changed keep the badge until their term ends: they
- * bought it under different terms and did nothing wrong, and taking it back
- * mid-subscription would be a punishment for our change of mind.
- * `badge_grandfathered_until` is stamped once by
- * migration-badge-grandfather.sql and never written again, so the exemption
- * drains away by itself. After the last one lapses the badge means one thing.
+ * Revisit around a thousand members. Below that a small community does this by
+ * recognition; above it a trust signal starts doing real work, and the review
+ * load justifies a provider rather than a person.
+ *
+ * The important part is what the badge CLAIMS in the meantime. A gold seal
+ * saying "Premium member" is honest. The same seal labelled "Verified" while
+ * it only means "paid" is the thing that would damage this product, because
+ * hosts would work it out and the signal would be worth less than none.
  */
 export function showsVerifiedBadge(
   isPro?: boolean | null,
-  proExpiresAt?: string | null,
-  idVerifiedAt?: string | null,
-  grandfatheredUntil?: string | null
+  proExpiresAt?: string | null
 ): boolean {
-  if (!isProActive(isPro, proExpiresAt)) return false;
-  if (idVerifiedAt) return true;
-
-  // undefined means the COLUMN is absent, so ID verification does not exist
-  // on this database yet; null means it exists and this member has not passed
-  // it. The distinction matters, and it is the difference between a feature
-  // that has not shipped and a member who failed a check.
-  //
-  // While it has not shipped, an active subscription is enough. Otherwise
-  // somebody pays ₦4,999 for a tier whose headline is the badge, and gets no
-  // badge and no way to earn one, because the table they would submit to is
-  // not there. That is worse than showing it early.
-  //
-  // Self-correcting: the moment migration-id-verification.sql runs, this
-  // reads null instead of undefined and the gate bites for everyone unchecked.
-  if (idVerifiedAt === undefined) return true;
-
-  return !!grandfatheredUntil && new Date(grandfatheredUntil) > new Date();
+  return isProActive(isPro, proExpiresAt);
 }

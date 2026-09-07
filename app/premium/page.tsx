@@ -3,7 +3,6 @@ import LineIcon from "@/components/ui/LineIcon";
 import ProBadge from "@/components/ProBadge";
 import { createClient } from "@/lib/supabase/server";
 import GoProButton from "@/components/GoProButton";
-import VerifyIdCard from "@/components/premium/VerifyIdCard";
 import { PRO_PRICE, FREE_HOST_LIMIT, isProActive } from "@/lib/pro";
 import { formatNaira } from "@/lib/paystack";
 
@@ -12,7 +11,7 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "LinkUpNaija Premium",
   description:
-    "₦4,999/month. Get the gold verified badge, ask to join a full day early, sit at the top of the host's queue, and host without a limit.",
+    "₦4,999/month. Boost your link-ups to the top of the feed, see your event analytics, host without a limit, and carry the gold badge.",
   alternates: { canonical: "/premium" },
 };
 
@@ -56,15 +55,25 @@ export const metadata = {
  */
 const FEATURES = [
   {
-    icon: "star",
-    name: "Gold verified badge",
-    line: "Backed by a real government ID, so a host approving you is not guessing.",
+    icon: "trending",
+    name: "Boost your link-ups",
+    line: "Put an event at the top of the feed for 48 hours. Only Premium members can buy a boost.",
     lead: true,
   },
   {
     icon: "trending",
-    name: "Boost your link-ups",
-    line: "Put an event at the top of the feed for 48 hours. Only Premium members can buy a boost.",
+    name: "Event analytics",
+    line: "Who saw your link-up, who saved it, who turned up. Where the drop-off is.",
+  },
+  {
+    icon: "infinity",
+    name: "Unlimited hosting",
+    line: `No ${FREE_HOST_LIMIT}-a-month ceiling.`,
+  },
+  {
+    icon: "star",
+    name: "The gold badge",
+    line: "Sits beside your name everywhere. A host reading a queue of strangers can see you are a regular here.",
   },
   {
     icon: "clock",
@@ -75,16 +84,6 @@ const FEATURES = [
     icon: "zap",
     name: "Priority in the queue",
     line: "Your request sits at the top of the host's list, not the bottom.",
-  },
-  {
-    icon: "infinity",
-    name: "Unlimited hosting",
-    line: `No ${FREE_HOST_LIMIT}-a-month ceiling.`,
-  },
-  {
-    icon: "trending",
-    name: "Event analytics",
-    line: "Who saw your link-up, who saved it, who turned up. Where the drop-off is.",
   },
   {
     icon: "eye",
@@ -101,12 +100,6 @@ export default async function PremiumPage() {
 
   let proActive = false;
   let expiresAt: string | null = null;
-  // Read defensively: id_verifications only exists once
-  // migration-id-verification.sql has run, and a missing table must not take
-  // the pricing page down with it.
-  let idStatus: "none" | "pending" | "approved" | "rejected" = "none";
-  let idNote: string | null = null;
-
   if (user) {
     const { data: me } = await supabase
       .from("users")
@@ -116,17 +109,6 @@ export default async function PremiumPage() {
     proActive = isProActive(me?.is_pro, me?.pro_expires_at);
     expiresAt = me?.pro_expires_at ?? null;
 
-    const { data: v } = await supabase
-      .from("id_verifications")
-      .select("status, note")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (v?.status === "pending" || v?.status === "approved" || v?.status === "rejected") {
-      idStatus = v.status;
-      idNote = v.note ?? null;
-    }
   }
 
   return (
@@ -145,11 +127,12 @@ export default async function PremiumPage() {
             <ProBadge size={76} />
           </div>
           <h2 className="mx-auto mt-5 max-w-[16ch] text-[30px] font-extrabold leading-[1.08] tracking-[-0.03em] text-white">
-Get picked, not scrolled past
+Host more, and stand out
           </h2>
           <p className="mx-auto mt-3 max-w-sm text-[15px] leading-snug text-white/75">
-            Every link-up starts with a host reading a list of strangers and
-            choosing. The gold badge is what makes you the one they choose.
+            Boost an event to the top of the feed, see who actually turned up,
+            host as often as you like, and carry the gold badge while you do
+            it.
           </p>
 
           <p className="mt-6 text-[40px] font-extrabold leading-none text-white">
@@ -168,43 +151,6 @@ Get picked, not scrolled past
             Cancel anytime. Renews monthly.
           </p>
         </section>
-
-        {/* The submission sits directly under the price, for subscribers.
-            The badge is the thing being sold, so the step that earns it
-            cannot be somewhere else on the site. */}
-        {user && proActive && (
-          <div className="mt-4">
-            <VerifyIdCard
-              userId={user.id}
-              initialStatus={idStatus}
-              note={idNote}
-            />
-          </div>
-        )}
-
-        {/* What the seal actually certifies.
-            Written plainly and kept short, because the moment this reads like
-            legal cover the badge stops being reassuring. */}
-        <h2 className="mb-2 mt-7 text-[13px] font-bold uppercase tracking-[0.12em] text-gray-400">
-          What the badge means
-        </h2>
-        <div className="divide-y divide-gray-200/70 overflow-hidden rounded-2xl bg-white shadow-[var(--e1)] dark:divide-white/10 dark:bg-white/[0.04]">
-          <Row
-            icon="check"
-            title="It cannot be bought outright"
-            body="We check a real government ID before it appears. That is the only reason a host trusts it, and the only reason it is worth having."
-          />
-          <Row
-            icon="shield"
-            title="It can be taken away"
-            body="A badge that survives anything certifies nothing. Upheld reports remove it, and the subscription does not buy it back."
-          />
-          <Row
-            icon="users"
-            title="Hosts see it while deciding"
-            body="It sits beside your name in a host's request queue, on your profile, and everywhere you appear. That is the moment it is worth having."
-          />
-        </div>
 
         <h2 className="mb-2 mt-7 text-[13px] font-bold uppercase tracking-[0.12em] text-gray-400">
           What you get

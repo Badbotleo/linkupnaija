@@ -751,14 +751,7 @@ export default async function EventDetailPage({
                           address. */}
                       {showsVerifiedBadge(
                         event.host?.is_pro,
-                        event.host?.pro_expires_at,
-                        (event.host as { id_verified_at?: string | null } | null)
-                          ?.id_verified_at,
-                        (
-                          event.host as {
-                            badge_grandfathered_until?: string | null;
-                          } | null
-                        )?.badge_grandfathered_until
+                        event.host?.pro_expires_at
                       ) && <ProBadge size={15} />}
                     </span>
                     <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">

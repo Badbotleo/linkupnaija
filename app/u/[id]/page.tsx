@@ -173,19 +173,14 @@ export default async function PublicProfilePage({
 
         <h1 className="mt-3 flex items-center gap-2 text-2xl font-extrabold text-gray-900">
           {profile.name ?? "LinkUpNaija member"}
-          {showsVerifiedBadge(
-            profile.is_pro,
-            profile.pro_expires_at,
-            (profile as { id_verified_at?: string | null }).id_verified_at,
-            (profile as { badge_grandfathered_until?: string | null })
-              .badge_grandfathered_until
-          ) && <ProBadge size={20} />}
+          {showsVerifiedBadge(profile.is_pro, profile.pro_expires_at) && (
+            <ProBadge size={20} />
+          )}
           {/* The green "✓ Verified" chip is gone.
               Two things next to one name both saying verified is worse than
               either alone: a reader has to work out which is which, and the
-              gold badge, which is the one backed by a checked government ID,
-              gets diluted by a chip that only meant a phone number went
-              through. Phone status still appears in the strip below, worded
+              gold badge gets diluted by a chip that only meant a phone
+              number went through. Phone status still appears in the strip below, worded
               as what it is. */}
         </h1>
         {profile.state && (

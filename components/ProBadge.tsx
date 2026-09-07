@@ -1,5 +1,12 @@
-// Twitter/Meta-style verified seal for LinkUpNaija Premium members — a gold
-// scalloped circle with a white check, shown right after the member's name.
+// The gold seal for LinkUpNaija Premium members: a scalloped circle with a
+// white check, shown right after the member's name.
+//
+// It says "Premium member", not "verified". The shape borrows from Twitter
+// and Meta, but the claim does not: nothing here has been checked against a
+// document, and calling it verified while it only means somebody pays is the
+// one thing that could make this badge worth less than no badge at all.
+// ID verification is written and shelved until roughly a thousand members;
+// see lib/pro.ts.
 export default function ProBadge({
   size = 18,
   className = "",
@@ -13,10 +20,10 @@ export default function ProBadge({
       width={size}
       height={size}
       role="img"
-      aria-label="LinkUpNaija Premium: verified member"
+      aria-label="LinkUpNaija Premium member"
       className={`inline-block shrink-0 ${className}`}
     >
-      <title>LinkUpNaija Premium: verified member</title>
+      <title>LinkUpNaija Premium member</title>
       <defs>
         <linearGradient id="proGold" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#FBD46B" />
