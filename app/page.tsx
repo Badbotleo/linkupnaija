@@ -348,6 +348,11 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* Boosted events, directly under the one near you.
+          Hosts pay ₦5,000 for this placement, so it belongs with the other
+          event content at the top rather than seven sections down. */}
+      <FeaturedRail />
+
       {/* Real events lead. Working backwards found sentence 1 failing: 8
           events on this page and none visible without scrolling, because a
           shelf of ideas and a product explainer came first. "Open the app and
@@ -444,43 +449,22 @@ export default async function HomePage() {
           when no collab is running, which is most weeks. */}
       <CollabCard />
 
-      {/* Featured link-ups. Cut with the rest of the shelves, put back on
-          purpose: these are the events we're actively promoting, and a
-          landing page that hides its best inventory is stripped past the
-          point of useful. */}
-      <FeaturedRail />
 
-      {/* Proof, from reviews the site already collects. Renders nothing until
-          there are enough well-rated hosts to fill a row. */}
-      <ProvenRail />
+      {/* ProvenRail removed on 7 Sep 2026. It was a THIRD shelf of upcoming
+          events, after the featured rail and "Happening soon", differing only
+          by how its hosts were rated. Three rails of the same listings is
+          most of why this page felt scattered. The component stays in the
+          repo; the reviews it surfaced are still on each host's profile. */}
 
       {/* Real listings, not invented ones — the demo shows the same events the
           rails above are showing. */}
       <ScreenTour events={upcoming.slice(0, 6)} />
 
-      {/* The pitch, as a shelf rather than a full-screen section */}
-      <DeckHeading
-        title="Why LinkUpNaija"
-        subtitle="Swipe through what you get every time you pull up"
-      />
-      <SwipeDeck className="h-[212px]">
-        {PROMISES.map((p) => (
-          <div
-            key={p.title}
-            className="flex h-full flex-col justify-center rounded-3xl bg-white p-6 shadow-card"
-          >
-            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-brand-50 text-brand">
-              <LineIcon name={p.icon} size={22} />
-            </span>
-            <p className="mt-4 text-lg font-extrabold leading-snug text-gray-900">
-              {p.title}
-            </p>
-            <p className="mt-1.5 text-[15px] leading-relaxed text-gray-600">
-              {p.text}
-            </p>
-          </div>
-        ))}
-      </SwipeDeck>
+      {/* The "Why LinkUpNaija" swipe deck went on 7 Sep 2026. It sat
+          directly under the phone demo and made the same argument in words
+          that the demo makes by showing you the app, so the page explained
+          itself twice in a row before asking for anything. The demo is the
+          better half and it stays. */}
 
       {/* ---------------------------------------------------------------- */}
       {/* Closing action                                                    */}
