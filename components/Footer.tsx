@@ -67,7 +67,10 @@ export default function Footer() {
           <Link href="/terms-of-service" className="hover:text-brand">
             Terms
           </Link>
-          <Link href="/business" className="hover:text-brand">
+          {/* /corporate, not /business. There has never been a /business
+              route, so this 404'd on every page of the site while the page it
+              means sat with no inbound link at all. */}
+          <Link href="/corporate" className="hover:text-brand">
             For business
           </Link>
           <span className="flex items-center gap-1.5">
