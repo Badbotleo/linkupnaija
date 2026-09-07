@@ -27,6 +27,13 @@ create table if not exists public.premium_payments (
 
 -- Paystack references are unique, so a double-submit cannot bill twice into
 -- the record. Partial, because a hand-granted subscription has no reference.
+--
+-- PARTIAL, WHICH ON CONFLICT NOTICES. An insert that says
+-- `on conflict (paystack_reference) do nothing` is rejected with 42P10: a
+-- partial index only matches an arbiter that repeats its predicate, so it has
+-- to read `on conflict (paystack_reference) where paystack_reference is not
+-- null do nothing`. A `where not exists (...)` guard sidesteps the question
+-- entirely and does not care what shape the index is.
 create unique index if not exists premium_payments_reference_idx
   on public.premium_payments (paystack_reference)
   where paystack_reference is not null;
