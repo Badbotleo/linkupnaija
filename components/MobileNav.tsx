@@ -30,6 +30,7 @@ const QUICK = [
  * bar can't reach.
  */
 const YOU = [
+  { href: "/messages", label: "Messages", icon: "chat" },
   { href: "/dashboard", label: "My link-ups", icon: "calendar" },
   { href: "/tickets", label: "Tickets", icon: "ticket" },
   { href: "/refer", label: "Invite & earn ₦600", icon: "gift" },
@@ -285,6 +286,11 @@ function Icon({ name }: { name: string }) {
     mic: "M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3",
     users: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.87M16 3.13A4 4 0 0 1 16 11",
     bookmark: "M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z",
+    // This map is local to the drawer and does not share LineIcon's set, so a
+    // name that exists there still renders the help mark here. Messages shipped
+    // as a question mark for exactly that reason, which is the third time an
+    // undefined name has quietly become "?" in this component.
+    chat: "M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z",
     // "more" and "chevronDown" were used inline but never defined, so the
     // More row rendered the help mark twice — a question mark for its icon
     // and another where the disclosure arrow should be.

@@ -8,7 +8,6 @@ import QuickActions from "@/components/dashboard/QuickActions";
 import DashboardTabs from "@/components/dashboard/DashboardTabs";
 import ProfileCard from "@/components/ProfileCard";
 import ProfileCompletion from "@/components/ProfileCompletion";
-import UserMessages from "@/components/UserMessages";
 import PayoutRequest from "@/components/PayoutRequest";
 import CategoryBadge from "@/components/CategoryBadge";
 import EventCover from "@/components/EventCover";
@@ -50,6 +49,7 @@ export default async function DashboardPage() {
     { data: mySeriesRaw },
     { data: followedRaw },
     { data: myCirclesRaw },
+    { count: unreadMessageCount },
   ] = await Promise.all([
     supabase.from("users").select("*").eq("id", user.id).single(),
     supabase
@@ -92,8 +92,16 @@ export default async function DashboardPage() {
       .select("last_read_at, circle:circles(id, name, category)")
       .eq("user_id", user.id)
       .eq("status", "active"),
+    // Just the number: the inbox itself lives at /messages now, and this
+    // page only needs to say whether anything is waiting.
+    supabase
+      .from("messages")
+      .select("*", { count: "exact", head: true })
+      .eq("receiver_id", user.id)
+      .eq("read", false),
   ]);
 
+  const unreadMessages = unreadMessageCount ?? 0;
   const mySeries = (mySeriesRaw ?? []) as {
     id: string;
     title: string;
@@ -648,9 +656,31 @@ export default async function DashboardPage() {
           </DashboardTabs>
       </div>
 
-      {/* 4 - MESSAGES. Kept, but after the link-ups rather than before them. */}
+      {/* 4 - MESSAGES. A doorway now, not the room.
+          The inbox itself moved to /messages, because burying conversations
+          at the bottom of the dashboard meant every DM started with a scroll
+          past somebody's link-up tabs. This stays so the habit still lands
+          somewhere. */}
       <SectionLabel>Messages</SectionLabel>
-      <UserMessages meId={user.id} />
+      <Link
+        href="/messages"
+        className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-[var(--e1)] transition hover:-translate-y-0.5 hover:shadow-lg dark:bg-white/[0.04]"
+      >
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand">
+          <LineIcon name="chat" size={20} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-bold text-gray-900 dark:text-white">
+            {unreadMessages > 0
+              ? `${unreadMessages} unread message${unreadMessages > 1 ? "s" : ""}`
+              : "Your messages"}
+          </span>
+          <span className="block text-sm text-gray-500">
+            Hosts, guests and your paddies
+          </span>
+        </span>
+        <LineIcon name="chevronRight" size={18} className="shrink-0 text-gray-400" />
+      </Link>
 
       {/* 5 - YOUR GROUPS.
           "My Circles", "My Series" and "Series I Follow" were three headings
