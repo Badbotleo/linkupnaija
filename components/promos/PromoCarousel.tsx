@@ -48,15 +48,15 @@ const PROMOS: Promo[] = [
   {
     href: "/premium",
     eyebrow: "LinkUpNaija Premium",
-    // Written for a host, because a host is who pays.
+    // One line that works for both people reading this feed.
     //
-    // "Stop being a stranger" spoke only to guests, and the tier's three
-    // strongest features are all host tools: the boost, the analytics and the
-    // uncapped hosting. A guest reading a card about queue position does not
-    // reach for their card; a host who has watched an empty room does.
-    title: "FILL THE ROOM",
-    body: "Boost an event to the top of the feed, see who actually turned up, and host as often as you like.",
-    emoji: "🚀",
+    // "Stop being a stranger" spoke only to guests; "Fill the room" only to
+    // hosts. This card sits in a feed full of both, and the tier genuinely
+    // does two things: it moves you up a host's queue, and it moves your own
+    // event up the feed. Saying both in four words beats picking a side.
+    title: "SKIP THE QUEUE. TOP THE FEED.",
+    body: "Ask to join a day early, boost your own link-ups to the front, and carry the gold badge.",
+    emoji: "🏅",
     bg: "bg-[#1A1040]",
     ink: "text-[#FAC775]",
     sub: "text-white/80",
