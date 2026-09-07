@@ -84,8 +84,18 @@ export default function AppHeader({
         {meta && meta.length > 0 && (
           <div className="mt-1.5 flex flex-wrap items-center gap-2 sm:mt-2.5">
             {meta.map((m, i) => {
+              // min-h-9 and px-3, not py-1.
+              //
+              // These are the location and date filters, the two controls at
+              // the top of the events page that change what the whole feed
+              // shows, and they measured 24px tall on a phone. A thumb is
+              // about 45px across. Everything below them was easier to hit
+              // than the thing steering it.
+              //
+              // A link that is not tappable is a link that is not there, and
+              // this is the header component every page in the app uses.
               const base =
-                "inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700";
+                "inline-flex min-h-10 items-center gap-1.5 rounded-full bg-gray-100 px-3.5 text-xs font-semibold text-gray-700";
               const inner = (
                 <>
                   {m.icon && <LineIcon name={m.icon} size={13} className="text-gray-500" />}

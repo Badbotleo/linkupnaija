@@ -111,7 +111,7 @@ export default function EventsFilters() {
       >
         <span aria-hidden>🎛️</span>
         Browse by vibe
-        <span className="ml-auto text-[13px] font-semibold text-gray-400">
+        <span className="ml-auto text-[13px] font-semibold text-gray-500 dark:text-white/60">
           {CATEGORY_GROUPS.length} kinds
         </span>
         <LineIcon
@@ -261,7 +261,7 @@ function VibeSearch({
       }
     } catch {
       // A dead network shouldn't look like a broken feature.
-      setMsg("You're offline — pick a vibe below instead.");
+      setMsg("You're offline. Pick a vibe below instead.");
     } finally {
       setBusy(false);
     }

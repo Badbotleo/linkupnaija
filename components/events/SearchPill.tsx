@@ -105,7 +105,11 @@ export default function SearchPill() {
 
   return (
     <form onSubmit={submit} role="search">
-      <div className="flex items-center gap-2.5 rounded-full border border-gray-200 bg-white px-5 py-3.5 shadow-card transition focus-within:border-brand focus-within:shadow-lg">
+      {/* A label, so the whole pill is the target.
+          The input inside measured 24px tall inside a 52px pill, which meant
+          the padding around it, most of the control, swallowed taps and did
+          nothing. On the app's front door. */}
+      <label className="flex cursor-text items-center gap-2.5 rounded-full border border-gray-200 bg-white px-5 py-3.5 shadow-card transition focus-within:border-brand focus-within:shadow-lg">
         <LineIcon name="search" size={20} className="shrink-0 text-gray-400" />
         <input
           ref={input}
@@ -137,7 +141,7 @@ export default function SearchPill() {
             <span aria-hidden className="text-[15px] leading-none">×</span>
           </button>
         )}
-      </div>
+      </label>
 
       {/* What it understood, in its own words. Without this the filters change
           on their own and the page looks like it did something random. */}
