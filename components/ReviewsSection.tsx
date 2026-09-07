@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Avatar from "./Avatar";
+import ProBadge from "./ProBadge";
+import { isProActive } from "@/lib/pro";
 import type { ReviewWithReviewer } from "@/lib/types";
 
 function Stars({ value }: { value: number }) {
@@ -194,8 +196,12 @@ export default function ReviewsSection({
                   size="sm"
                 />
                 <div>
-                  <p className="text-sm font-bold text-gray-900">
+                  <p className="flex items-center gap-1.5 text-sm font-bold text-gray-900">
                     {r.reviewer?.name ?? "Attendee"}
+                    {isProActive(
+                      r.reviewer?.is_pro,
+                      r.reviewer?.pro_expires_at
+                    ) && <ProBadge size={14} />}
                   </p>
                   <Stars value={r.rating} />
                 </div>

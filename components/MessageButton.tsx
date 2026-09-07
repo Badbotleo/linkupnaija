@@ -9,12 +9,15 @@ export default function MessageButton({
   meId,
   targetId,
   targetName,
+  targetIsPro = false,
   label = "Message",
   className,
 }: {
   meId: string | null;
   targetId: string;
   targetName: string | null;
+  /** Gold seal in the thread header, when the caller already knows. */
+  targetIsPro?: boolean;
   /** Accepted for call-site convenience; the thread renders its own header. */
   targetAvatar?: string | null;
   label?: string;
@@ -80,6 +83,7 @@ export default function MessageButton({
                 meId={meId}
                 otherId={targetId}
                 otherName={targetName ?? "Member"}
+                otherIsPro={targetIsPro}
               />
             </div>
           </div>,

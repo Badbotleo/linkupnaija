@@ -280,6 +280,10 @@ export default async function PublicProfilePage({
               meId={user?.id ?? null}
               targetId={params.id}
               targetName={profile.name}
+              targetIsPro={showsVerifiedBadge(
+                profile.is_pro,
+                profile.pro_expires_at
+              )}
               targetAvatar={profile.avatar_url}
             />
             {/* Where Report used to sit. Reporting someone is a rare, deliberate

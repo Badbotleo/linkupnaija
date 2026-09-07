@@ -6,8 +6,10 @@ import { createClient } from "@/lib/supabase/client";
 import Avatar from "./Avatar";
 import SocialLinks from "./SocialLinks";
 import VerifiedBadge from "./VerifiedBadge";
+import ProBadge from "./ProBadge";
 import RatingSummary from "./RatingSummary";
 import { hasSocialLinks } from "@/lib/social";
+import { isProActive } from "@/lib/pro";
 import { toast } from "@/lib/toast";
 import { ProfileSkeleton } from "./skeletons/Skeletons";
 import type { PublicProfile } from "@/lib/types";
@@ -17,6 +19,8 @@ interface FullProfile extends PublicProfile {
   rating_count: number;
   created_at: string;
   gender: string | null;
+  is_pro: boolean | null;
+  pro_expires_at: string | null;
 }
 
 export default function AttendeeProfileModal({
@@ -53,7 +57,7 @@ export default function AttendeeProfileModal({
       supabase
         .from("users")
         .select(
-          "id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, rating_avg, rating_count, created_at, gender"
+          "id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, rating_avg, rating_count, created_at, gender, is_pro, pro_expires_at"
         )
         .eq("id", userId)
         .single(),
@@ -158,6 +162,9 @@ export default function AttendeeProfileModal({
               <h2 className="text-xl font-extrabold text-gray-900">
                 {profile.name ?? "LinkUpNaija member"}
               </h2>
+              {isProActive(profile.is_pro, profile.pro_expires_at) && (
+                <ProBadge size={18} />
+              )}
               {hasSocialLinks(profile) && <VerifiedBadge />}
             </div>
             {profile.state && (

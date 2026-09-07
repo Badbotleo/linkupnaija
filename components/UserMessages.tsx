@@ -7,6 +7,8 @@ import { timeAgo } from "@/lib/format";
 import Avatar from "./Avatar";
 import LineIcon from "./ui/LineIcon";
 import MessageThread from "./MessageThread";
+import ProBadge from "./ProBadge";
+import { isProActive } from "@/lib/pro";
 import type { Message } from "@/lib/types";
 
 interface Conversation {
@@ -17,6 +19,7 @@ interface Conversation {
   lastAt: string;
   lastFromMe: boolean;
   unread: number;
+  otherIsPro: boolean;
 }
 
 export default function UserMessages({ meId }: { meId: string }) {
@@ -47,6 +50,7 @@ export default function UserMessages({ meId }: { meId: string }) {
             lastAt: m.created_at,
             lastFromMe: m.sender_id === meId,
             unread: 0,
+            otherIsPro: false,
           });
         }
         if (m.receiver_id === meId && !m.read) {
@@ -58,18 +62,21 @@ export default function UserMessages({ meId }: { meId: string }) {
       if (ids.length) {
         const { data: people } = await supabase
           .from("users")
-          .select("id, name, is_admin, avatar_url")
+          .select("id, name, is_admin, avatar_url, is_pro, pro_expires_at")
           .in("id", ids);
         for (const p of (people as {
           id: string;
           name: string | null;
           is_admin: boolean;
           avatar_url: string | null;
+          is_pro: boolean | null;
+          pro_expires_at: string | null;
         }[]) ?? []) {
           const c = byOther.get(p.id);
           if (c) {
             c.otherName = p.is_admin ? "LinkUpNaija Admin" : p.name ?? "Member";
             c.otherAvatar = p.avatar_url;
+            c.otherIsPro = isProActive(p.is_pro, p.pro_expires_at);
           }
         }
       }
@@ -100,6 +107,7 @@ export default function UserMessages({ meId }: { meId: string }) {
           otherId={open.otherId}
           otherName={open.otherName}
           otherAvatar={open.otherAvatar}
+          otherIsPro={open.otherIsPro}
         />
       </div>
     );
@@ -162,6 +170,7 @@ export default function UserMessages({ meId }: { meId: string }) {
                   <p className={`truncate ${c.unread > 0 ? "font-extrabold text-gray-900" : "font-semibold text-gray-900"}`}>
                     {c.otherName}
                   </p>
+                  {c.otherIsPro && <ProBadge size={15} />}
                   <span className="ml-auto shrink-0 text-xs text-gray-400">
                     {timeAgo(c.lastAt)}
                   </span>

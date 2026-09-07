@@ -377,7 +377,12 @@ export interface Review {
 
 // A review joined with the reviewer's display info (for the UI).
 export interface ReviewWithReviewer extends Review {
-  reviewer: { name: string | null; avatar_url: string | null } | null;
+  reviewer: {
+    name: string | null;
+    avatar_url: string | null;
+    is_pro?: boolean | null;
+    pro_expires_at?: string | null;
+  } | null;
 }
 
 // An RSVP row joined with the requester's public profile (host management).

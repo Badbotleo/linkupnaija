@@ -344,7 +344,9 @@ export default async function EventDetailPage({
   const eventIsOver = event.date < todayStr;
   const { data: reviewRows } = await supabase
     .from("reviews")
-    .select("*, reviewer:users!reviews_reviewer_id_fkey(name, avatar_url)")
+    .select(
+      "*, reviewer:users!reviews_reviewer_id_fkey(name, avatar_url, is_pro, pro_expires_at)"
+    )
     .eq("event_id", params.id)
     .order("created_at", { ascending: false });
   const reviews = (reviewRows ?? []) as unknown as ReviewWithReviewer[];

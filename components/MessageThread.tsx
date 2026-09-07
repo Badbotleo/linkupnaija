@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Avatar from "./Avatar";
 import LineIcon from "./ui/LineIcon";
+import ProBadge from "./ProBadge";
 import type { Message } from "@/lib/types";
 
 export default function MessageThread({
@@ -11,11 +12,14 @@ export default function MessageThread({
   otherId,
   otherName,
   otherAvatar,
+  otherIsPro = false,
 }: {
   meId: string;
   otherId: string;
   otherName: string;
   otherAvatar?: string | null;
+  /** Gold seal beside the name in the thread header. */
+  otherIsPro?: boolean;
 }) {
   const supabase = createClient();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -100,7 +104,10 @@ export default function MessageThread({
       <div className="flex items-center gap-3 border-b border-gray-100 px-4 py-3">
         <Avatar name={otherName} url={otherAvatar ?? null} size="sm" />
         <div className="min-w-0">
-          <p className="truncate font-bold leading-tight text-gray-900">{otherName}</p>
+          <p className="flex items-center gap-1.5 truncate font-bold leading-tight text-gray-900">
+            <span className="truncate">{otherName}</span>
+            {otherIsPro && <ProBadge size={15} />}
+          </p>
           <p className="text-xs text-gray-400">
             {messages.length > 0
               ? `${messages.length} message${messages.length === 1 ? "" : "s"}`

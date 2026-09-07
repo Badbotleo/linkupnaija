@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import Avatar from "./Avatar";
 import SocialLinks from "./SocialLinks";
 import VerifiedBadge from "./VerifiedBadge";
+import ProBadge from "./ProBadge";
 import AttendeeProfileModal from "./AttendeeProfileModal";
 import { hasSocialLinks } from "@/lib/social";
 import { confettiGold } from "@/lib/confetti";
@@ -177,6 +178,13 @@ export default function ManageRequests({
                       >
                         {r.users?.name ?? "Member"}
                       </button>
+                      {/* This queue already sorts Premium members to the top
+                          and then said nothing about why. A host looking at
+                          two requests could not see the difference the
+                          subscription is sold on. */}
+                      {isProActive(r.users?.is_pro, r.users?.pro_expires_at) && (
+                        <ProBadge size={16} />
+                      )}
                       {r.users && hasSocialLinks(r.users) && <VerifiedBadge />}
                       {r.companion_id && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand">
@@ -373,6 +381,9 @@ function CompactList({
                 <span className="text-sm font-medium text-gray-700">
                   {r.users?.name ?? "Member"}
                 </span>
+                {isProActive(r.users?.is_pro, r.users?.pro_expires_at) && (
+                  <ProBadge size={15} />
+                )}
                 {r.users && hasSocialLinks(r.users) && <VerifiedBadge />}
               </button>
             </li>
