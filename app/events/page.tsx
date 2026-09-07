@@ -21,6 +21,7 @@ import EventsMapToggle from "@/components/events/EventsMapToggle";
 import PromoCarousel from "@/components/promos/PromoCarousel";
 import EventsTabs from "@/components/EventsTabs";
 import SearchPill from "@/components/events/SearchPill";
+import WishCapture from "@/components/events/WishCapture";
 import EventsStories from "@/components/EventsStories";
 import StatePicker from "@/components/events/StatePicker";
 import { computeBadges, type Badge } from "@/lib/hostBadges";
@@ -93,6 +94,22 @@ export default async function EventsPage({
   // where an event went the day after; it went nowhere, it just fell off a
   // feed that only ever looked forwards.
   const past = searchParams.tab === "past";
+
+  /**
+   * What this visitor actually asked for, in words, whichever control they
+   * used to ask it.
+   *
+   * The empty state used to key off `q` alone, which stopped covering the
+   * common case the moment the search pill started reading plain English: a
+   * vibe search replaces the typed words with a category and a state, so
+   * "somewhere chill in Abuja" with nothing on rendered a blank page under
+   * the header. A filter that finds nothing is the same disappointment as a
+   * search that finds nothing, and it deserves the same answer.
+   */
+  const askedFor =
+    searchParams.q?.trim() ||
+    [searchParams.category, searchParams.state].filter(Boolean).join(" in ");
+
   const visitorState = getVisitorState();
   // Set when a state scope found nothing and we widened to the whole country.
   let scopeRelaxed = false;
@@ -560,21 +577,6 @@ export default async function EventsPage({
         </div>
       )}
 
-      {/* Offers, between the feed and the "look again" panel.
-
-          Placed after the reel rather than above it, because somebody who has
-          just arrived wants link-ups, not an advert. This is the point they
-          have finished scrolling and are deciding whether to act or leave,
-          which is the same moment the panel below is aimed at.
-
-          Not shown on "Been and gone", where a recap of finished nights is
-          the wrong place to sell a subscription. */}
-      {!error && !past && feedEvents.length > 0 && (
-        <div className="mt-8">
-          <PromoCarousel />
-        </div>
-      )}
-
       {/* Everything below the reel, as one block with one job.
 
           It used to be six, and three of them were the same events again. The
@@ -616,6 +618,23 @@ export default async function EventsPage({
             </div>
           )}
 
+          {/* Offers, under the browse controls rather than in the gap between
+              the reel and this panel.
+
+              It used to sit on its own between the two, which put an advert
+              between somebody finishing the feed and the panel built to help
+              them look again: the one moment they are deciding whether to act
+              or leave. Inside the panel it reads as one of the ways out,
+              which is what it is.
+
+              Not on "Been and gone", where a recap of finished nights is the
+              wrong place to sell a subscription. */}
+          {!past && (
+            <div className="mt-4">
+              <PromoCarousel />
+            </div>
+          )}
+
           <div className="mt-4">
             <EventsMapToggle
               events={feedEvents.map((e) => ({
@@ -654,23 +673,28 @@ export default async function EventsPage({
           We don&apos;t have enough signal to recommend events yet. Join a few
           and check back!
         </p>
-      ) : searchParams.q?.trim() && feedEvents.length === 0 ? (
-        <div className="mt-8 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-12 text-center">
+      ) : askedFor && feedEvents.length === 0 ? (
+        /* A miss is a request. See components/events/WishCapture. */
+        <div className="mt-8 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-12 text-center dark:border-white/15 dark:bg-white/[0.03]">
           <p className="text-4xl">🔍</p>
-          <h2 className="mt-3 text-lg font-bold text-gray-900">
-            Nothing for &ldquo;{searchParams.q.trim()}&rdquo;
+          <h2 className="mt-3 text-lg font-bold text-gray-900 dark:text-white">
+            Nobody is doing that yet
           </h2>
           <p className="mx-auto mt-1 max-w-sm text-sm text-gray-500">
-            Try a vibe instead — or start it yourself.
+            Nothing matches &ldquo;{askedFor}&rdquo; right now. That is worth
+            knowing, so tell us and we will watch for it.
           </p>
-          <div className="mt-5 flex flex-wrap justify-center gap-2">
-            <Link href="/events" className="btn-outline">
-              Clear search
-            </Link>
-            <Link href="/host" className="btn-primary">
-              Host it
-            </Link>
-          </div>
+          <WishCapture
+            query={askedFor}
+            category={searchParams.category}
+            state={searchParams.state}
+          />
+          <Link
+            href="/events"
+            className="mt-4 inline-block text-sm font-semibold text-brand hover:underline"
+          >
+            Clear search
+          </Link>
         </div>
       ) : past && feedEvents.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-12 text-center">

@@ -20,6 +20,18 @@ export default function EventsFilters() {
   const [open, setOpen] = useState<string | null>(
     activeCategory ? groupForCategory(activeCategory)?.key ?? null : null
   );
+  /**
+   * The nine vibe tiles, folded away until asked for.
+   *
+   * The search pill above them reads plain English now, so the tiles are no
+   * longer the way in, they are the way to graze. Nine boxes opening the panel
+   * pushed the search and the results down the page to answer a question most
+   * people had already answered by typing.
+   *
+   * Open by default when a category is already applied, because then the tiles
+   * are showing you where you are, not offering somewhere to go.
+   */
+  const [browsing, setBrowsing] = useState(!!activeCategory);
   const openGroup = open
     ? CATEGORY_GROUPS.find((g) => g.key === open) ?? null
     : null;
@@ -90,7 +102,26 @@ export default function EventsFilters() {
         )}
       </div>
 
-      {/* ---- vibe families ---- */}
+      {/* ---- vibe families, behind one row ---- */}
+      <button
+        type="button"
+        onClick={() => setBrowsing((v) => !v)}
+        aria-expanded={browsing}
+        className="flex w-full items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-left text-sm font-bold text-gray-700 transition hover:border-brand/40 hover:text-brand dark:border-white/15 dark:bg-transparent dark:text-white/80"
+      >
+        <span aria-hidden>🎛️</span>
+        Browse by vibe
+        <span className="ml-auto text-[13px] font-semibold text-gray-400">
+          {CATEGORY_GROUPS.length} kinds
+        </span>
+        <LineIcon
+          name="chevronRight"
+          size={14}
+          className={`shrink-0 text-gray-400 transition ${browsing ? "rotate-90" : ""}`}
+        />
+      </button>
+
+      {browsing && (
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {CATEGORY_GROUPS.map((g, i) => {
           const holdsActive = groupForCategory(activeCategory)?.key === g.key;
@@ -145,9 +176,10 @@ export default function EventsFilters() {
           );
         })}
       </div>
+      )}
 
       {/* ---- the chosen family's categories ---- */}
-      {openGroup && (
+      {browsing && openGroup && (
         <div className="rounded-2xl border border-gray-100 bg-gray-50/70 p-3 dark:border-white/10 dark:bg-white/[0.04]">
           {/* Says which family you opened, and how to leave.
               Before this the panel had no header and no close: the only exit
