@@ -1,7 +1,7 @@
 import Link from "next/link";
 import AppHeader from "@/components/AppHeader";
 import LineIcon from "@/components/ui/LineIcon";
-import LazyMedia from "@/components/home/LazyMedia";
+import ThingsReel from "@/components/things/ThingsReel";
 import { createClient } from "@/lib/supabase/server";
 import { getVisitorState } from "@/lib/visitor-geo";
 import { buildIdeas, hostHref } from "@/lib/things-to-do";
@@ -55,10 +55,15 @@ export default async function ThingsToDoPage() {
         }
       />
 
-      <div className="container-page py-5">
-        <p className="text-sm leading-relaxed text-gray-600">
-          Every one of these opens the host form already filled in — the vibe,
-          the spot and a title. All you add is a date.
+      <div className="container-page py-3">
+        {/* One line above a full-screen reel, not a paragraph. The reel is the
+            page now, and every pixel spent explaining it is a pixel of
+            photograph nobody sees. */}
+        {/* Gone on a short phone. At 640px tall the header and this line
+            together take 250px, and every one of them comes out of the
+            photograph. The reel explains itself; the hint is a nicety. */}
+        <p className="text-sm leading-relaxed text-gray-600 [@media(max-height:700px)]:hidden">
+          Tap one and the host form opens filled in.
         </p>
 
         {ideas.length === 0 ? (
@@ -76,95 +81,27 @@ export default async function ThingsToDoPage() {
             </Link>
           </div>
         ) : (
-          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {ideas.map((idea) => (
-              /* The card is a container, not an anchor: an <a> can't nest
-                 inside another <a>, and the credit needs its own link. The
-                 whole-card link is an overlay, and the credit sits above it. */
-              <div
-                key={idea.key}
-                className="group relative h-[248px] overflow-hidden rounded-2xl shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-xl"
-              >
-                {/* Same fix as the shelf: 60 cards mounting 24 videos at once is
-                    how 117MB of storage became 18GB of egress. */}
-                <LazyMedia
-                  src={idea.image}
-                  kind={idea.mediaType}
-                  className="absolute inset-0"
-                />
-                {/* Lighter scrim when there's no caption to make readable —
-                    these videos carry their own text and shouldn't be dimmed
-                    behind one that isn't there. */}
-                <div
-                  className={`absolute inset-0 bg-gradient-to-t ${
-                    idea.hideLabel
-                      ? "from-black/60 via-black/10 to-transparent"
-                      : "from-black/90 via-black/35 to-transparent"
-                  }`}
-                />
-
-                <Link
-                  href={hostHref(idea)}
-                  aria-label={`Host ${idea.title}${idea.place ? ` at ${idea.place}` : ""}`}
-                  className="absolute inset-0 z-10"
-                />
-
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-4 text-white">
-                  {/* Uploads with burned-in text render no caption — a title
-                      over them collides with the video's own wording. */}
-                  {!idea.hideLabel && (
-                    <>
-                      <p className="line-clamp-2 text-[19px] font-extrabold leading-tight">
-                        {idea.title}
-                      </p>
-                      <p className="mt-0.5 truncate text-[13px] text-white/70">
-                        {idea.place}
-                      </p>
-                    </>
-                  )}
-                  {idea.credit &&
-                    (idea.creditUrl ? (
-                      <a
-                        href={idea.creditUrl}
-                        target="_blank"
-                        rel="noopener noreferrer nofollow"
-                        className="pointer-events-auto mt-1 block w-fit max-w-full truncate text-[11px] text-white/50 underline underline-offset-2 hover:text-white/80"
-                      >
-                        {idea.mediaType === "video" ? "🎬" : "📷"} {idea.credit}
-                      </a>
-                    ) : (
-                      <p className="mt-1 truncate text-[11px] text-white/45">
-                        {idea.mediaType === "video" ? "🎬" : "📷"} {idea.credit}
-                      </p>
-                    ))}
-                  {/* Two doors, same as the homepage shelf — this page only
-                      ever offered "Host it", which is a big ask for someone
-                      browsing ideas. */}
-                  <span className="mt-3 flex flex-wrap items-center gap-2">
-                    {idea.liveCount ? (
-                      <Link
-                        href={idea.liveHref!}
-                        className="pointer-events-auto flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-[13px] font-black text-gray-900 transition hover:bg-white/90"
-                      >
-                        <LineIcon name="calendar" size={13} />
-                        {idea.liveCount} on now
-                      </Link>
-                    ) : null}
-                    <Link
-                      href={hostHref(idea)}
-                      className={`pointer-events-auto flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-black transition ${
-                        idea.liveCount
-                          ? "bg-white/15 text-white hover:bg-white/25"
-                          : "bg-white text-gray-900 hover:bg-white/90"
-                      }`}
-                    >
-                      <LineIcon name="mic" size={13} />
-                      Host it
-                    </Link>
-                  </span>
-                </div>
-              </div>
-            ))}
+          /* One place per screen, the same gesture as the events reel.
+             A grid asks you to compare and a reel asks you to react, and
+             picking somewhere to go on a Saturday is the second kind of
+             decision. The artwork does most of the work, and it cannot do it
+             at 248px in a three-column grid. */
+          <div className="mt-3">
+            <ThingsReel
+              ideas={ideas.map((idea) => ({
+                key: idea.key,
+                title: idea.title,
+                place: idea.place,
+                category: idea.category,
+                image: idea.image,
+                mediaType: idea.mediaType,
+                state: idea.state,
+                href: hostHref(idea),
+                liveCount: idea.liveCount,
+                liveHref: idea.liveHref,
+                hideLabel: idea.hideLabel,
+              }))}
+            />
           </div>
         )}
       </div>
