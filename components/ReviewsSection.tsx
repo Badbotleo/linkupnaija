@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
 import Avatar from "./Avatar";
 import ProBadge from "./ProBadge";
 import { isProActive } from "@/lib/pro";
@@ -190,19 +191,25 @@ export default function ReviewsSection({
               className="rounded-2xl bg-white p-4 shadow-sm"
             >
               <div className="flex items-center gap-3">
-                <Avatar
-                  name={r.reviewer?.name ?? null}
-                  url={r.reviewer?.avatar_url ?? null}
-                  size="sm"
-                />
+                <Link href={`/u/${r.reviewer_id}`} className="shrink-0">
+                  <Avatar
+                    name={r.reviewer?.name ?? null}
+                    url={r.reviewer?.avatar_url ?? null}
+                    size="sm"
+                  />
+                </Link>
                 <div>
-                  <p className="flex items-center gap-1.5 text-sm font-bold text-gray-900">
+                  {/* A rating is worth what you know about who left it. */}
+                  <Link
+                    href={`/u/${r.reviewer_id}`}
+                    className="flex items-center gap-1.5 text-sm font-bold text-gray-900 hover:underline"
+                  >
                     {r.reviewer?.name ?? "Attendee"}
                     {isProActive(
                       r.reviewer?.is_pro,
                       r.reviewer?.pro_expires_at
                     ) && <ProBadge size={14} />}
-                  </p>
+                  </Link>
                   <Stars value={r.rating} />
                 </div>
               </div>

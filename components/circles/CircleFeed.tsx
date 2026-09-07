@@ -53,6 +53,15 @@ export default function CircleFeed({
 }) {
   const supabase = createClient();
   const [posts, setPosts] = useState<CirclePost[]>([]);
+  /**
+   * Whether the first fetch has come back.
+   *
+   * Without this the feed opens on "No posts yet. Be the first to share
+   * something!", because posts starts as an empty array and the empty state
+   * cannot tell "nothing here" from "not asked yet". Every visit to a busy
+   * circle began by being told it was dead.
+   */
+  const [loading, setLoading] = useState(true);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [repostedIds, setRepostedIds] = useState<Set<string>>(new Set());
   const [content, setContent] = useState("");
@@ -85,6 +94,7 @@ export default function CircleFeed({
     if (error) {
       console.error("circle feed load failed:", error);
       toast.error("Couldn't load the feed.");
+      setLoading(false);
       return;
     }
 
@@ -109,6 +119,7 @@ export default function CircleFeed({
       );
     }
     setPosts(rows);
+    setLoading(false);
 
     if (meId) {
       const [{ data: likes }, { data: profile }, { data: mine }] = await Promise.all([
@@ -362,7 +373,21 @@ export default function CircleFeed({
         </form>
       )}
 
-      {posts.length === 0 ? (
+      {loading ? (
+        /* The shape of what is coming, not a spinner and not a lie. */
+        <div className="divide-y divide-gray-100">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex animate-pulse gap-3 px-4 py-4">
+              <div className="h-9 w-9 shrink-0 rounded-full bg-gray-100" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3 w-32 rounded bg-gray-100" />
+                <div className="h-3 w-full rounded bg-gray-100" />
+                <div className="h-3 w-3/5 rounded bg-gray-100" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : posts.length === 0 ? (
         <p className="px-6 py-14 text-center text-sm text-gray-500">
           {focusPostId
             ? "That post isn't here any more."
@@ -548,13 +573,26 @@ function PostCard({
         </p>
       )}
       <div className="flex gap-3">
-        <Avatar name={shown.name} url={shown.avatar} size="sm" />
+        {/* The avatar and the name open the profile.
+
+            This header is modelled on X down to the "Name · @handle · when"
+            line, and on X both of those are links. Here they were plain text,
+            so a post was the one place in the app where you could read what
+            somebody said and have no way to find out who they are. */}
+        <Link href={`/u/${src.user_id}`} className="shrink-0">
+          <Avatar name={shown.name} url={shown.avatar} size="sm" />
+        </Link>
 
         <div className="min-w-0 flex-1">
-          {/* Name · @handle · when — one line, like X */}
+          {/* Name · @handle · when, one line, like X */}
           <div className="flex items-center gap-1 text-[15px] leading-tight">
-            <span className="truncate font-bold text-gray-900">{shown.name}</span>
-            <span className="truncate text-gray-500">@{handle}</span>
+            <Link
+              href={`/u/${src.user_id}`}
+              className="flex min-w-0 items-center gap-1 hover:underline"
+            >
+              <span className="truncate font-bold text-gray-900">{shown.name}</span>
+              <span className="truncate text-gray-500">@{handle}</span>
+            </Link>
             <span className="text-gray-400">·</span>
             <time
               dateTime={shown.created_at}
@@ -782,7 +820,9 @@ function PostCard({
 function Comment({ comment, onReply }: { comment: CirclePostComment; onReply?: () => void }) {
   return (
     <div className="flex items-start gap-2">
-      <Avatar name={comment.author?.name ?? null} url={comment.author?.avatar_url ?? null} size="sm" />
+      <Link href={`/u/${comment.user_id}`} className="shrink-0">
+        <Avatar name={comment.author?.name ?? null} url={comment.author?.avatar_url ?? null} size="sm" />
+      </Link>
       <div className="min-w-0 flex-1">
         <div className="rounded-2xl bg-gray-50 px-3 py-2">
           <p className="text-xs font-bold text-gray-900">{comment.author?.name ?? "Member"}</p>

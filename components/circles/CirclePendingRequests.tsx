@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
 import Avatar from "../Avatar";
 
 interface Pending {
@@ -43,10 +44,17 @@ export default function CirclePendingRequests({ initial }: { initial: Pending[] 
       <ul className="mt-3 space-y-2">
         {items.map((i) => (
           <li key={i.id} className="flex items-center gap-2 rounded-xl bg-white p-2">
-            <Avatar name={i.users?.name ?? null} url={i.users?.avatar_url ?? null} size="sm" />
-            <span className="min-w-0 flex-1 truncate text-sm font-semibold text-gray-800">
-              {i.users?.name ?? "Member"}
-            </span>
+            {/* Approving a stranger into your circle without being able to
+                look at them first is the decision this row exists for. */}
+            <Link
+              href={`/u/${i.user_id}`}
+              className="flex min-w-0 flex-1 items-center gap-2 hover:underline"
+            >
+              <Avatar name={i.users?.name ?? null} url={i.users?.avatar_url ?? null} size="sm" />
+              <span className="min-w-0 flex-1 truncate text-sm font-semibold text-gray-800">
+                {i.users?.name ?? "Member"}
+              </span>
+            </Link>
             <button type="button" disabled={busy === i.id} onClick={() => approve(i.id)} className="btn-primary px-3 py-1 text-xs">
               Approve
             </button>
