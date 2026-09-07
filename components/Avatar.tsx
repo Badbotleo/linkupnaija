@@ -5,6 +5,9 @@ import GeneratedAvatar from "./ui/GeneratedAvatar";
 // Uses the optimized Next <Image> for user-uploaded Supabase storage URLs.
 
 const SIZES = {
+  // For overlapping stacks: four of these read as "a few people" at the size
+  // a member count occupies. Anything larger and the row becomes the card.
+  xs: { cls: "h-6 w-6 text-[10px]", px: 24 },
   sm: { cls: "h-9 w-9 text-sm", px: 36 },
   md: { cls: "h-12 w-12 text-base", px: 48 },
   lg2: { cls: "h-16 w-16 text-xl", px: 64 },
