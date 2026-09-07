@@ -84,7 +84,7 @@ export default function RateVenuePrompt({ userId }: { userId: string }) {
       toast.error(error.message);
       return;
     }
-    toast.success(`Thanks — ${p.venueName} rated ${stars}★`);
+    toast.success(`Thanks. ${p.venueName} rated ${stars}★`);
     setPending((list) => list.filter((x) => x.reservationId !== p.reservationId));
   }
 

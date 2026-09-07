@@ -86,8 +86,8 @@ export function quorumLabel(s: QuorumState): string | null {
       // that money is now due, and burying that produces expired
       // reservations and people who thought they had a ticket.
       return s.paid
-        ? "It's on — your spot is held, pay to confirm"
-        : "Happening — the room filled";
+        ? "It's on. Your spot is held, pay to confirm"
+        : "Happening. The room filled";
     case "failed":
       return "This one didn't fill";
     case "pending":

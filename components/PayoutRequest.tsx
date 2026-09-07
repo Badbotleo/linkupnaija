@@ -54,7 +54,7 @@ export default function PayoutRequest({
   async function request() {
     if (!phoneVerified) {
       setError(
-        "Verify your phone number before requesting a payout — we need a real number to reach you about the transfer."
+        "Verify your phone number before requesting a payout. We need a real number to reach you about the transfer."
       );
       return;
     }

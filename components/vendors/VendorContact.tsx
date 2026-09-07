@@ -40,7 +40,7 @@ export default function VendorContact({
     if (sending) return;
     const message = form.message.trim();
     if (message.length < 10) {
-      toast.error("Tell them what you need — a line or two at least.");
+      toast.error("Tell them what you need, a line or two at least.");
       return;
     }
 
@@ -52,7 +52,7 @@ export default function VendorContact({
       toast.error(
         `Leave the ${leaks
           .map((l) => LEAK_LABELS[l.kind].toLowerCase())
-          .join(" and ")} out — they'll reply here.`
+          .join(" and ")} out. They'll reply here.`
       );
       return;
     }

@@ -64,7 +64,7 @@ export default function EventPictures({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={url}
-              alt={`${title} — picture ${i + 2}`}
+              alt={`${title}, picture ${i + 2}`}
               loading="lazy"
               className="h-full w-full object-cover transition group-hover:scale-105"
             />
@@ -89,7 +89,7 @@ export default function EventPictures({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={urls[open]}
-              alt={`${title} — picture ${open + 2}`}
+              alt={`${title}, picture ${open + 2}`}
               // contain, not cover: a flyer cropped to fill is a flyer you
               // still can't read, which is the whole reason for opening it.
               className="max-h-[85vh] max-w-full object-contain"

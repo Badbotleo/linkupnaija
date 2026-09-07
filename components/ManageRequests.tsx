@@ -84,7 +84,7 @@ export default function ManageRequests({
       setError(error.message);
     } else if (!data || data.length === 0) {
       setError(
-        "Couldn't add them to the chat — refresh and try again. If it keeps failing you may no longer be the host."
+        "Couldn't add them to the chat. Refresh and try again. If it keeps failing you may no longer be the host."
       );
     } else {
       setRequests((prev) =>
@@ -113,7 +113,7 @@ export default function ManageRequests({
       setError(error.message);
     } else if (!data || data.length === 0) {
       setError(
-        "That request couldn't be updated — it may have been cancelled, or you may no longer be the host. Refresh and try again."
+        "That request couldn't be updated. It may have been cancelled, or you may no longer be the host. Refresh and try again."
       );
     } else {
       if (status === "accepted") confettiGold();

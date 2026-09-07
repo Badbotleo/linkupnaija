@@ -261,8 +261,8 @@ export default function RideHailer({
 
     toast.success(
       paddies.size > 0
-        ? `Ride requested — ${paddies.size} paddy${paddies.size === 1 ? "" : "s"} invited.`
-        : "Ride requested — finding you a driver."
+        ? `Ride requested. ${paddies.size} paddy${paddies.size === 1 ? "" : "s"} invited.`
+        : "Ride requested. Finding you a driver."
     );
     setTo(null);
     setToText("");

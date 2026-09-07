@@ -52,7 +52,7 @@ export default function QuorumMeter({
           </p>
           <p className="mt-0.5 text-[13px] leading-snug text-gray-700">
             {state.going} people reserved, so it&apos;s happening. Nobody was
-            charged until now{deadline ? ` — pay by ${deadline}` : ""}.
+            charged until now{deadline ? `. Pay by ${deadline}` : ""}.
           </p>
         </div>
       );
@@ -95,7 +95,7 @@ export default function QuorumMeter({
 
       <p className="mt-2 text-[13px] leading-snug text-gray-600">
         {paid
-          ? "Reserve free — you're only asked to pay if it fills, so you can never be charged for an event that doesn't happen."
+          ? "Reserve free. You're only asked to pay if it fills, so you can never be charged for an event that doesn't happen."
           : "Ask to join now and you're only in if it fills. Nobody turns up to an empty room."}
       </p>
     </div>

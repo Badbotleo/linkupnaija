@@ -110,7 +110,7 @@ export default function HostForm({
     const room = MAX_EXTRA - extraFiles.length;
     const taken = picked.slice(0, Math.max(0, room));
     if (picked.length > taken.length) {
-      setError(`Only ${MAX_EXTRA + 1} pictures per event — kept the first ${taken.length}.`);
+      setError(`Only ${MAX_EXTRA + 1} pictures per event. Kept the first ${taken.length}.`);
     }
     setExtraFiles((prev) => [...prev, ...taken]);
     setExtraPreviews((prev) => [...prev, ...taken.map((f) => URL.createObjectURL(f))]);
@@ -161,7 +161,7 @@ export default function HostForm({
     const leaks = detectLeaks(form.description);
     if (leaks.length > 0) {
       setError(
-        `Take the contact details out of your description — ${leaks
+        `Take the contact details out of your description. ${leaks
           .map((l) => LEAK_LABELS[l.kind].toLowerCase())
           .join(", ")}. People join through LinkUpNaija, and your number stays private. Put what's included and what to expect here instead.`
       );

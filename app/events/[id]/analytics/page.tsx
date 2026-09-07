@@ -148,7 +148,7 @@ export default async function EventAnalyticsPage({
   const insight = (() => {
     if (row.viewed === 0) return "No views yet. Share the link and check back.";
     if (row.rsvpd === 0)
-      return `${row.viewed} people looked and nobody asked to join yet — worth a second look at the price or the date.`;
+      return `${row.viewed} people looked and nobody asked to join yet. Worth a second look at the price or the date.`;
     const lookToJoin = Math.round((row.rsvpd / row.viewed) * 100);
     if (row.attended > 0) {
       const showUp = Math.round((row.attended / row.rsvpd) * 100);

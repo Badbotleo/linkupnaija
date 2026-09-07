@@ -183,7 +183,7 @@ export default function RsvpButton({
           onClick={() => setSheetOpen(true)}
           className="btn-primary w-full"
         >
-          {price > 0 ? "Get a ticket" : "Ask to join — free"}
+          {price > 0 ? "Get a ticket" : "Ask to join · free"}
         </button>
         <JoinSheet
           open={sheetOpen}

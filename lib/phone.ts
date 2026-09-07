@@ -73,8 +73,8 @@ export function checkNigerianPhone(input: string | null | undefined): PhoneCheck
       ok: false,
       error:
         local.length < 11
-          ? "That number is too short — Nigerian numbers have 11 digits."
-          : "That number is too long — Nigerian numbers have 11 digits.",
+          ? "That number is too short. Nigerian numbers have 11 digits."
+          : "That number is too long. Nigerian numbers have 11 digits.",
     };
   }
 

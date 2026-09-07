@@ -55,7 +55,7 @@ export const OPPORTUNITIES: OpportunityDef[] = [
     title: "Venue Owner Hub",
     headline: "List your venue and get bookings",
     description:
-      "Restaurants, lounges, halls, parks — list your venue and let event hosts book you directly.",
+      "Restaurants, lounges, halls, parks: list your venue and let event hosts book you directly.",
     benefits: [
       "Appear on venue discovery map",
       "Receive reservation requests",

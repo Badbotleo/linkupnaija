@@ -39,7 +39,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(
     searchParams.get("error") === "auth"
-      ? "Google sign-in didn't complete — some mobile networks block it. Try \u201cEmail me a sign-in code\u201d below."
+      ? "Google sign-in didn't complete. Some mobile networks block it. Try \u201cEmail me a sign-in code\u201d below."
       : null
   );
 

@@ -155,7 +155,7 @@ export default function DriverOnboarding({
       return;
     }
     toast.success(
-      existing ? "Details updated" : "Application sent — we'll review it shortly"
+      existing ? "Details updated" : "Application sent. We'll review it shortly"
     );
     router.refresh();
   }
@@ -289,7 +289,7 @@ export default function DriverOnboarding({
             </Field>
             <Photo
               label="Photo of your ID"
-              hint="Only you and our review team can see this — never riders."
+              hint="Only you and our review team can see this, never riders."
               url={idDoc}
               onPick={(e) => pick(e, "driver-docs", "id", setIdDoc)}
               privateDoc
@@ -415,7 +415,7 @@ function Photo({
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-sm font-bold text-gray-900">
-            {url ? "Uploaded — tap to replace" : "Tap to upload"}
+            {url ? "Uploaded. Tap to replace" : "Tap to upload"}
           </span>
           <span className="mt-0.5 block text-xs leading-relaxed text-gray-500">
             {hint}

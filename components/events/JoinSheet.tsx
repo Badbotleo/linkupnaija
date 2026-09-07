@@ -222,7 +222,7 @@ export default function JoinSheet({
                 />
                 <p className="mt-3 text-center text-[12px] text-gray-400">
                   Google sign-in doesn&apos;t work inside{" "}
-                  {"TikTok and Instagram's"} in-app browser — open in Chrome or
+                  {"TikTok and Instagram's"} in-app browser. Open in Chrome or
                   Safari if you&apos;d rather use it.
                 </p>
               </>
@@ -317,7 +317,7 @@ export default function JoinSheet({
                   ? "Count me in"
                   : event.price > 0
                     ? "Request to join"
-                    : "Ask to join — free"}
+                    : "Ask to join · free"}
             </button>
           </div>
         )}
@@ -339,7 +339,7 @@ export default function JoinSheet({
                   {autoConfirm
                     ? // Precise on purpose. Saying "the chat is open" when it
                       // isn't yet turns a deliberate design into a bug report.
-                      "Your spot is confirmed — you're going. The host will add you to the group chat shortly."
+                      "Your spot is confirmed. The host will add you to the group chat shortly."
                     : "The host will get back to you. We'll notify you the moment they do."}
                 </p>
               </div>

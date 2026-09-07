@@ -50,7 +50,7 @@ export interface Idea {
 // Fallbacks when we have no partner venue for a slot. Each one is a real thing
 // people do in a group, not a venue type dressed up as an activity.
 export const GENERIC: Omit<Idea, "state" | "mediaType">[] = [
-  { key: "g-picnic", title: "Sunday picnic", place: "A park near you", category: "Picnic", image: "/venues/parks.jpg", seedTitle: "Sunday picnic — bring a blanket" },
+  { key: "g-picnic", title: "Sunday picnic", place: "A park near you", category: "Picnic", image: "/venues/parks.jpg", seedTitle: "Sunday picnic, bring a blanket" },
   { key: "g-grill", title: "Long table dinner", place: "A restaurant", category: "Dinner", image: "/venues/restaurants.jpg", seedTitle: "Long table dinner" },
   { key: "g-club", title: "Friday night out", place: "A club or lounge", category: "Clubbing", image: "/venues/clubs.jpg", seedTitle: "Friday night out" },
   { key: "g-beach", title: "Beach day", place: "The waterfront", category: "Beach Day", image: "/venues/beaches.jpg", seedTitle: "Beach day with the gang" },

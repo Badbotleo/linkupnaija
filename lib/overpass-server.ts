@@ -99,7 +99,7 @@ async function overpass(
   }
   console.error("All Overpass mirrors failed:", lastError);
   throw new Error(
-    "The venue map is having a moment — every map server we use is busy. Try again in a few seconds."
+    "The venue map is having a moment. Every map server we use is busy. Try again in a few seconds."
   );
 }
 

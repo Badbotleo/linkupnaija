@@ -22,7 +22,7 @@ const STEPS = [
   },
   {
     title: "You both get ₦600",
-    text: "Wallet credit lands instantly — spend it on any paid event.",
+    text: "Wallet credit lands instantly. Spend it on any paid event.",
   },
 ];
 

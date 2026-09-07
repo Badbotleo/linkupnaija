@@ -85,7 +85,7 @@ export async function payWithPaystack(opts: {
   const key = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
   if (!key) {
     throw new Error(
-      "Payments are not configured — set NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY."
+      "Payments are not configured. Set NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY."
     );
   }
   await loadPaystack();

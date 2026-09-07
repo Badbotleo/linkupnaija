@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Things to do this week",
   description:
-    "Ideas for linking up in Nigeria this week — parks, restaurants, clubs, cinemas and more. Pick one, bring your people, and host it in two minutes.",
+    "Ideas for linking up in Nigeria this week: parks, restaurants, clubs, cinemas and more. Pick one, bring your people, and host it in two minutes.",
 };
 
 export default async function ThingsToDoPage() {

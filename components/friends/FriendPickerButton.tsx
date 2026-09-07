@@ -119,7 +119,7 @@ export default function FriendPickerButton({
         return;
       }
       await navigator.clipboard.writeText(`${text}\n${url}`);
-      toast.success("Invite copied — paste it to them");
+      toast.success("Invite copied. Paste it to them");
       setOpen(false);
     } catch {
       // A cancelled share sheet throws too. Saying nothing is right: the

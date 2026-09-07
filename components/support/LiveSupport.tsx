@@ -204,7 +204,7 @@ export default function LiveSupport({ onBack }: { onBack?: () => void }) {
         {messages.length === 0 ? (
           <p className="text-xs text-gray-500">
             {live
-              ? "Ask away — someone's here."
+              ? "Ask away, someone's here."
               : "We're offline right now. Leave your message and we'll reply when we're back."}
           </p>
         ) : (

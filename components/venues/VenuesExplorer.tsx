@@ -208,7 +208,7 @@ export default function VenuesExplorer({
       },
       () => {
         setLocating(false);
-        setError("Couldn't get your location — search a city instead.");
+        setError("Couldn't get your location. Search a city instead.");
       },
       { timeout: 10_000 }
     );

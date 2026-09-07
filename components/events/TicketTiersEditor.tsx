@@ -125,7 +125,7 @@ export default function TicketTiersEditor({ eventId }: { eventId: string }) {
           <p className="text-xs text-gray-500">
             {tiers.length > 0
               ? `${tiers.length} on sale`
-              : "Add combo packs, tables, early bird — anything with its own price."}
+              : "Add combo packs, tables, early bird, anything with its own price."}
           </p>
         </div>
         <button
