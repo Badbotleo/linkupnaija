@@ -319,8 +319,13 @@ export default function VenuesExplorer({
         <span className="font-semibold text-gray-700">{center.label}</span>
       </p>
 
-      {/* Partner venues get a deck of their own — these are the spots we can
-          actually book, and they deserve more than a row in a grid. */}
+      {/* Featured venues get a deck of their own: these are the spots we can
+          actually book, and they deserve more than a row in a grid.
+
+          Called "Featured" rather than "Partner" because that is what it
+          means to somebody browsing. "Partner" describes our commercial
+          relationship, which is our business and not the reason anybody picks
+          a restaurant. */}
       {categoryPartners.length > 0 && (
         <div className="-mx-4 mt-4 sm:-mx-6 lg:-mx-8">
           <div className="container-page flex items-end justify-between gap-3">
@@ -329,7 +334,7 @@ export default function VenuesExplorer({
                 <span className="grid h-6 w-6 place-items-center rounded-full bg-amber-100 text-amber-600">
                   <LineIcon name="star" size={13} filled />
                 </span>
-                Partner venues
+                Featured venues
               </h2>
               <p className="mt-0.5 text-[13px] text-gray-500">
                 Swipe through the spots we can book for you
@@ -577,7 +582,7 @@ function VenueCard({ card, onReserve }: { card: Card; onReserve: () => void }) {
       )}
       {card.isPartner && (
         <span className="absolute left-3 top-3 rounded-full bg-[#FAC775] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#121212]">
-          Partner
+          Featured
         </span>
       )}
       {card.distanceKm !== null && (
