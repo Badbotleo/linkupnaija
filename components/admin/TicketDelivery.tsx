@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "@/lib/toast";
@@ -24,16 +24,67 @@ export default function TicketDelivery({
   delivered,
   outsourced,
   note,
+  fileName,
+  hasFile = false,
 }: {
   txId: string;
   eventId: string | null;
   delivered: boolean;
   outsourced: boolean;
   note: string | null;
+  /** What the buyer downloads it as. */
+  fileName?: string | null;
+  hasFile?: boolean;
 }) {
   const router = useRouter();
   const supabase = createClient();
   const [busy, setBusy] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  /**
+   * Attach the real ticket to the payment.
+   *
+   * Delivery was a boolean an admin ticked, so a buyer who lost the WhatsApp
+   * message had nothing. The file goes into a private bucket under the
+   * transaction's own id, and the buyer reads exactly that object and nothing
+   * else in the bucket.
+   */
+  async function upload(file: File) {
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Keep it under 10MB.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "pdf";
+      const path = `${txId}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("ticket-files")
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) {
+        toast.error(
+          upErr.message.includes("Bucket not found")
+            ? "Run supabase/migration-ticket-file.sql first."
+            : upErr.message
+        );
+        return;
+      }
+      const { data, error } = await supabase.rpc("admin_set_ticket_file", {
+        p_tx: txId,
+        p_path: path,
+        p_name: file.name,
+      });
+      if (error || data === false) {
+        toast.error(error?.message ?? "Uploaded, but the row didn't update.");
+        return;
+      }
+      toast.success("Ticket attached. The buyer can see it now.");
+      router.refresh();
+    } finally {
+      setBusy(false);
+      if (fileInput.current) fileInput.current.value = "";
+    }
+  }
 
   async function call(fn: string, args: Record<string, unknown>, ok: string) {
     setBusy(true);
@@ -105,6 +156,33 @@ export default function TicketDelivery({
         <LineIcon name={delivered ? "check" : "clock"} size={12} />
         {delivered ? "Delivered" : "Not delivered"}
       </button>
+      {/* The ticket itself. Marking delivered says it happened somewhere
+          else; this puts it in the buyer's hands. */}
+      <input
+        ref={fileInput}
+        type="file"
+        accept="application/pdf,image/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) upload(f);
+        }}
+      />
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => fileInput.current?.click()}
+        className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-brand underline transition hover:text-brand-600 disabled:opacity-50"
+      >
+        <LineIcon name="ticket" size={11} />
+        {busy ? "Uploading…" : hasFile ? "Replace ticket" : "Upload ticket"}
+      </button>
+      {hasFile && (
+        <span className="max-w-[150px] truncate text-[11px] text-gray-400">
+          {fileName ?? "attached"}
+        </span>
+      )}
+
       {eventId && (
         <button
           type="button"

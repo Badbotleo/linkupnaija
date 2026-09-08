@@ -28,7 +28,8 @@ export const metadata = { title: "Ticket payments" };
  * migration would have told an admin with real sales that nobody had paid.
  */
 const SELECT =
-  "id, amount, platform_fee, delivered, delivered_at, delivery_note, " +
+  "id, amount, platform_fee, delivered, delivered_at, delivery_note, "
+  + "ticket_file_path, ticket_file_name, " +
   "paystack_reference, created_at, " +
   "buyer:users!transactions_user_id_fkey(name, email), " +
   "event:events!transactions_event_id_fkey(id, title, date, tickets_outsourced)";
@@ -48,6 +49,8 @@ interface Payment {
   delivered: boolean | null;
   delivered_at: string | null;
   delivery_note: string | null;
+  ticket_file_path: string | null;
+  ticket_file_name: string | null;
   buyer: { name: string | null; email: string | null } | null;
   event: {
     id: string;
@@ -310,6 +313,8 @@ export default async function AdminPaymentsPage() {
                         delivered={!!p.delivered}
                         outsourced={!!p.event?.tickets_outsourced}
                         note={p.delivery_note}
+                        hasFile={!!p.ticket_file_path}
+                        fileName={p.ticket_file_name}
                       />
                       {p.delivered && p.delivered_at && (
                         <p className="mt-1 text-[11px] text-gray-400">

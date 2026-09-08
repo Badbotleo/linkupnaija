@@ -62,6 +62,43 @@ export default async function TicketsPage() {
 
   const rows = ((mine ?? []) as unknown as Row[]).filter((r) => r.events);
 
+  /**
+   * Tickets somebody else issued, attached to the payment by an admin.
+   *
+   * For our own events the QR below IS the ticket. For an outsourced one the
+   * real ticket arrives from the host or a partner, and until now it arrived
+   * on WhatsApp, which meant a buyer who lost the message had nothing. The
+   * file lives in a private bucket; the URL is signed here, for an hour, and
+   * the storage policy only lets somebody sign the object attached to a
+   * payment they made.
+   *
+   * Supporting content: none of this can take the page down. A missing column
+   * or an unrun migration means no download button, not a broken Tickets page
+   * at a door.
+   */
+  const attachedTickets = new Map<string, { url: string; name: string }>();
+  const { data: txWithFiles } = await supabase
+    .from("transactions")
+    .select("event_id, ticket_file_path, ticket_file_name")
+    .eq("user_id", user.id)
+    .not("ticket_file_path", "is", null);
+  for (const t of (txWithFiles ?? []) as {
+    event_id: string | null;
+    ticket_file_path: string | null;
+    ticket_file_name: string | null;
+  }[]) {
+    if (!t.event_id || !t.ticket_file_path) continue;
+    const { data: signed } = await supabase.storage
+      .from("ticket-files")
+      .createSignedUrl(t.ticket_file_path, 60 * 60);
+    if (signed?.signedUrl) {
+      attachedTickets.set(t.event_id, {
+        url: signed.signedUrl,
+        name: t.ticket_file_name ?? "ticket",
+      });
+    }
+  }
+
   // Tier names, in their own query — a missing ticket_tiers table shouldn't
   // take the page down, it should just mean no tier label.
   const tierIds = rows.map((r) => r.tier_id).filter(Boolean) as string[];
@@ -191,6 +228,25 @@ export default async function TicketsPage() {
                           />
                         </div>
                       </div>
+
+                      {/* The ticket somebody else issued, if there is one.
+                          Below the stub rather than instead of it: the QR
+                          still gets you past our own check-in, and this is
+                          the thing the door actually wants. */}
+                      {attachedTickets.has(e.id) && (
+                        <a
+                          href={attachedTickets.get(e.id)!.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 border-t border-dashed border-gray-200 px-4 py-3 text-[14px] font-bold text-brand transition hover:bg-brand-50"
+                        >
+                          <LineIcon name="ticket" size={16} />
+                          Your ticket from the organiser
+                          <span className="ml-auto shrink-0 text-gray-400" aria-hidden>
+                            &rsaquo;
+                          </span>
+                        </a>
+                      )}
                     </div>
                   </div>
                 );
