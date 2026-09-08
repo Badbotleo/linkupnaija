@@ -6,6 +6,21 @@ import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { formatNaira } from "@/lib/paystack";
 
+/**
+ * What each status means, in the words a host would use.
+ *
+ * The card showed a coloured pill reading "pending" and stopped there, so
+ * every host who wanted to know what that meant asked a person. Deliberately
+ * no timeframe: quoting a date nobody has committed to is worse than quoting
+ * none, and this is money.
+ */
+const STATUS_MEANING: Record<string, string> = {
+  pending: "Requested. We are checking the sales against Paystack before the transfer goes out.",
+  approved: "Checked and cleared. The transfer is on its way to your bank.",
+  paid: "Sent. If it has not landed, reply to the email or contact support and we will trace it.",
+  declined: "We could not complete this one. Email support@linkupnaija.com and we will explain why.",
+};
+
 const STATUS_STYLES: Record<string, string> = {
   pending: "bg-amber-100 text-amber-700",
   approved: "bg-blue-100 text-blue-700",
@@ -135,22 +150,40 @@ export default function PayoutRequest({
 
       <div className="mt-3">
         {current ? (
-          <span
-            className={`inline-block rounded-full px-3 py-1 text-xs font-bold capitalize ${
-              STATUS_STYLES[current] ?? "bg-gray-100 text-gray-600"
-            }`}
-          >
-            Payout {current}
-          </span>
+          <>
+            <span
+              className={`inline-block rounded-full px-3 py-1 text-xs font-bold capitalize ${
+                STATUS_STYLES[current] ?? "bg-gray-100 text-gray-600"
+              }`}
+            >
+              Payout {current}
+            </span>
+            {/* What the word means, next to the word.
+                A host who reads "pending" and is told nothing else asks a
+                human, and that question arrives one message at a time. No
+                timeframe is quoted here on purpose: an invented date is worse
+                than none when it is somebody's money. */}
+            <p className="mt-2 text-[13px] leading-snug text-gray-500">
+              {STATUS_MEANING[current] ??
+                "We are looking at this one. Email support@linkupnaija.com if you need an update."}
+            </p>
+          </>
         ) : (
-          <button
-            type="button"
-            onClick={request}
-            disabled={loading || due <= 0}
-            className="btn-primary w-full py-2"
-          >
-            {loading ? "Requesting…" : "Request payout"}
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={request}
+              disabled={loading || due <= 0}
+              className="btn-primary w-full py-2"
+            >
+              {loading ? "Requesting…" : "Request payout"}
+            </button>
+            <p className="mt-2 text-[13px] leading-snug text-gray-500">
+              We check the sales against Paystack, then transfer{" "}
+              {formatNaira(due)} to you. You will see it move from pending to
+              approved to paid.
+            </p>
+          </>
         )}
       </div>
     </div>
