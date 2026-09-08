@@ -166,6 +166,55 @@ export default function AdminInstagram() {
         host so it lands in their notifications and they reshare it.
       </p>
 
+      {/* The weekly round-up, which is a different job from the per-event
+          flyer below.
+          One event is a post about one event; this is the list the app builds
+          anyway, and it is useful to somebody who never downloads anything,
+          which is what makes an account worth following. */}
+      <div className="rounded-2xl border border-brand/20 bg-brand-50/50 p-4">
+        <p className="text-sm font-bold text-gray-900">This week&apos;s round-up</p>
+        <p className="mt-0.5 text-xs text-gray-500">
+          Five places to link up, drawn from Things to do. Post it every week.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {[
+            { label: "Abuja", state: "FCT - Abuja" },
+            { label: "Lagos", state: "Lagos" },
+            { label: "Nationwide", state: "" },
+          ].map((o) => (
+            <a
+              key={o.label}
+              href={`/api/ig-card/things?${new URLSearchParams(
+                o.state ? { state: o.state } : {}
+              ).toString()}`}
+              target="_blank"
+              rel="noreferrer"
+              download={`linkupnaija-things-${o.label.toLowerCase()}.png`}
+              className="rounded-full bg-brand px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-brand-600"
+            >
+              {o.label}
+            </a>
+          ))}
+          <button
+            type="button"
+            onClick={() => {
+              const text =
+                "5 places to link up this week.\n\n" +
+                "Tap any one in the app and the host form opens already filled in. " +
+                "All you add is a date.\n\n" +
+                "linkupnaija.com/things-to-do";
+              navigator.clipboard
+                .writeText(text)
+                .then(() => setCopied("things"))
+                .catch(() => setError("Couldn't reach the clipboard."));
+            }}
+            className="rounded-full border border-brand/30 px-3.5 py-1.5 text-xs font-bold text-brand transition hover:bg-brand-50"
+          >
+            {copied === "things" ? "Caption copied" : "Copy caption"}
+          </button>
+        </div>
+      </div>
+
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}
