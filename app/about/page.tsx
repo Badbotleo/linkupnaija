@@ -115,13 +115,30 @@ export default function AboutPage() {
             <LineIcon name="send" size={16} />
             support@linkupnaija.com
           </a>
-          <p className="mt-4 text-[14px] text-gray-500">
-            LinkUpNaija operates in Nigeria at{" "}
-            <span className="font-semibold text-gray-700 dark:text-white/80">
-              www.linkupnaija.com
-            </span>
-            .
-          </p>
+          {/* The registered company and its number.
+
+              Termii asked for a physical address before approving the SMS
+              sender ID, and they are not the last to ask: a payments
+              provider, a bank or anyone deciding whether to trust a platform
+              that takes ticket money looks for exactly this. "Operates in
+              Nigeria" was not an answer to that question.
+
+              The street address is deliberately not here yet, and goes in
+              once the registered office is settled. An address published
+              before it is yours to publish is a different problem from the
+              one it solves.
+
+              The TIN is not here either, and should not be. Nobody verifying
+              a business needs it, and it is not the kind of number to leave
+              on a public page. */}
+          <div className="mt-4 text-[14px] leading-relaxed text-gray-500">
+            <p className="font-semibold text-gray-700 dark:text-white/80">
+              Link Up Naija Limited
+            </p>
+            <p>
+              Registered in Nigeria, RC 9700712
+            </p>
+          </div>
           <div className="mt-4 flex flex-wrap gap-2 border-t border-gray-200/70 pt-4 dark:border-white/10">
             <Link href="/terms-of-service" className="btn-outline py-2 text-sm">
               Terms of service
