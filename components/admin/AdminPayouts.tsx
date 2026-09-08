@@ -10,14 +10,24 @@ interface PayoutRow {
   amount: number;
   platform_fee: number;
   status: string;
+  event_id: string | null;
   users: { name: string | null; payout_bank: string | null; payout_account_number: string | null } | null;
-  events: { title: string | null } | null;
+  events: { title: string | null; date: string | null } | null;
 }
 
 export default function AdminPayouts({
   initialPayouts,
+  attendance = {},
 }: {
   initialPayouts: PayoutRow[];
+  /**
+   * Scanned in against approved, per event.
+   *
+   * A fake link-up and a real one look the same on this screen. Nobody at the
+   * door is the one signal worth checking before the money goes, and it was
+   * already being collected.
+   */
+  attendance?: Record<string, { attended: number; going: number }>;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -76,6 +86,23 @@ export default function AdminPayouts({
             <span className="font-bold text-brand">{formatNaira(r.amount)}</span>{" "}
             (fee {formatNaira(r.platform_fee)})
           </p>
+          {(() => {
+            const a = r.event_id ? attendance[r.event_id] : undefined;
+            if (!a || a.going === 0) return null;
+            const none = a.attended === 0;
+            return (
+              <p
+                className={`mt-1.5 rounded-lg px-2.5 py-1.5 text-sm ${
+                  none
+                    ? "bg-red-50 font-semibold text-red-700"
+                    : "text-gray-500"
+                }`}
+              >
+                {a.attended} of {a.going} scanned in at the door
+                {none && ". Check this one before paying."}
+              </p>
+            );
+          })()}
           <div className="mt-3 flex gap-2">
             {r.status === "pending" && (
               <button

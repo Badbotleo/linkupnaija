@@ -119,7 +119,7 @@ export default async function AdminPage() {
     supabase
       .from("payouts")
       .select(
-        "id, amount, platform_fee, status, users:users!payouts_host_id_fkey(name, payout_bank, payout_account_number), events:events!payouts_event_id_fkey(title)"
+        "id, amount, platform_fee, status, event_id, users:users!payouts_host_id_fkey(name, payout_bank, payout_account_number), events:events!payouts_event_id_fkey(title, date)"
       )
       .in("status", ["pending", "approved"])
       .order("created_at", { ascending: false }),
@@ -294,8 +294,35 @@ export default async function AdminPage() {
       payout_bank: string | null;
       payout_account_number: string | null;
     } | null;
-    events: { title: string | null } | null;
+    event_id: string | null;
+    events: { title: string | null; date: string | null } | null;
   }[];
+
+  /**
+   * Who actually turned up, per event awaiting a payout.
+   *
+   * A fake event and a real one look identical on this screen: a title, a
+   * host, an amount. The one number that separates them is already collected
+   * at the door. "0 of 14 scanned in" is not proof of fraud, but it is the
+   * only thing here worth a second look before money leaves.
+   */
+  const payoutAttendance = new Map<string, { attended: number; going: number }>();
+  const payoutEventIds = payouts
+    .map((p) => p.event_id)
+    .filter((id): id is string => !!id);
+  if (payoutEventIds.length) {
+    const { data: att } = await supabase
+      .from("rsvps")
+      .select("event_id, attended")
+      .in("event_id", payoutEventIds)
+      .eq("status", "accepted");
+    for (const r of (att ?? []) as { event_id: string; attended: boolean | null }[]) {
+      const cur = payoutAttendance.get(r.event_id) ?? { attended: 0, going: 0 };
+      cur.going += 1;
+      if (r.attended) cur.attended += 1;
+      payoutAttendance.set(r.event_id, cur);
+    }
+  }
 
   const reservations = (reservationRows ?? []) as unknown as ReservationWithUser[];
   const expiredEvents = (expiredRows ?? []) as {
@@ -513,7 +540,10 @@ export default async function AdminPage() {
         </div>
 
         <div key="payouts">
-<AdminPayouts initialPayouts={payouts} />
+<AdminPayouts
+              initialPayouts={payouts}
+              attendance={Object.fromEntries(payoutAttendance)}
+            />
         </div>
 
         <div key="wallet">

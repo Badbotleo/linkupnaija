@@ -37,6 +37,7 @@ export default function PayoutRequest({
   due,
   unrecorded = 0,
   status,
+  eventDate,
   phoneVerified = true,
 }: {
   hostId: string;
@@ -48,6 +49,16 @@ export default function PayoutRequest({
   /** Guests who paid but whose transaction never landed. */
   unrecorded?: number;
   status: string | null;
+  /**
+   * The link-up's date, YYYY-MM-DD.
+   *
+   * Money for an event that has not happened is not earned yet, and the
+   * product used to offer the button the moment a price was set: list for
+   * next month, sell today, withdraw today, never turn up. The rule is
+   * enforced by a database trigger; this only explains it, so a host reads a
+   * sentence instead of hitting an error.
+   */
+  eventDate: string;
   /**
    * Gate for money leaving the platform.
    *
@@ -64,10 +75,20 @@ export default function PayoutRequest({
   const router = useRouter();
   const supabase = createClient();
   const [current, setCurrent] = useState<string | null>(status);
+  // Nigeria is UTC+1 with no DST, so the host's own date is the one that
+  // counts. Requestable from the day after.
+  const lagosToday = new Date(Date.now() + 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+  const eventIsOver = eventDate < lagosToday;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function request() {
+    if (!eventIsOver) {
+      setError("You can request this the day after the link-up has happened.");
+      return;
+    }
     if (!phoneVerified) {
       setError(
         "Verify your phone number before requesting a payout. We need a real number to reach you about the transfer."
@@ -173,15 +194,24 @@ export default function PayoutRequest({
             <button
               type="button"
               onClick={request}
-              disabled={loading || due <= 0}
+              disabled={loading || due <= 0 || !eventIsOver}
               className="btn-primary w-full py-2"
             >
               {loading ? "Requesting…" : "Request payout"}
             </button>
             <p className="mt-2 text-[13px] leading-snug text-gray-500">
-              We check the sales against Paystack, then transfer{" "}
-              {formatNaira(due)} to you. You will see it move from pending to
-              approved to paid.
+              {!eventIsOver ? (
+                <>
+                  Available the day after your link-up. Guests have paid and
+                  the money is held until you have hosted it.
+                </>
+              ) : (
+                <>
+                  We check the sales against Paystack, then transfer{" "}
+                  {formatNaira(due)} to you. You will see it move from pending
+                  to approved to paid.
+                </>
+              )}
             </p>
           </>
         )}

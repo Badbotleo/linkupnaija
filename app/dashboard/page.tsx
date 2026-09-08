@@ -203,6 +203,10 @@ export default async function DashboardPage() {
   }
 
   // Payouts for the host's paid events.
+  // Every paid link-up gets a card; whether the button works is a separate
+  // question, answered by the date. Hiding the card until the day after would
+  // leave a host who just sold ten tickets with nowhere to see the money, and
+  // a figure they cannot find is a support message.
   const paidEvents = allHosting.filter((e) => e.price > 0);
   let payoutCards: {
     eventId: string;
@@ -212,6 +216,8 @@ export default async function DashboardPage() {
     due: number;
     unrecorded: number;
     status: string | null;
+    /** The day after the link-up. Until then the money is not earned. */
+    eventDate: string;
   }[] = [];
   if (paidEvents.length) {
     const paidIds = paidEvents.map((e) => e.id);
@@ -272,6 +278,7 @@ export default async function DashboardPage() {
           ),
           unrecorded: unrecorded > 0 ? unrecorded : 0,
           status: payouts.find((p) => p.event_id === e.id)?.status ?? null,
+          eventDate: e.date,
         };
       })
       // Keep an event visible if money was taken but not recorded, even
@@ -758,6 +765,7 @@ export default async function DashboardPage() {
                 platformFee={c.platformFee}
                 due={c.due}
                 phoneVerified={!!profile?.phone_verified}
+                eventDate={c.eventDate}
                 status={c.status}
               />
             ))}
