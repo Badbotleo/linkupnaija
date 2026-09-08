@@ -527,8 +527,23 @@ footer,
 @media (hover: hover) {
   .dark .hover\:bg-gray-50:hover,
   .dark .hover\:bg-gray-100:hover,
-  .dark .hover\:bg-white:hover {
+  .dark .hover\:bg-white:hover,
+  /* The slash variants compile to their own class names and were missed by
+     the list above, so a circle post lit up as a pale grey slab on black the
+     moment a cursor crossed it. Anything translucent-over-white has the same
+     problem: the opacity is applied to white, and white at 70% on black is
+     still light. */
+  .dark .hover\:bg-gray-50\/70:hover,
+  .dark .hover\:bg-white\/90:hover,
+  .dark .hover\:bg-white\/60:hover {
     background-color: #1f1f1f !important;
+  }
+  /* The faint ones stay faint; they are already designed for a dark ground. */
+  .dark .hover\:bg-white\/5:hover,
+  .dark .hover\:bg-white\/10:hover,
+  .dark .hover\:bg-white\/20:hover,
+  .dark .hover\:bg-white\/25:hover {
+    background-color: rgba(255, 255, 255, 0.08) !important;
   }
   .dark .hover\:bg-brand-50:hover {
     background-color: rgba(83, 74, 183, 0.22) !important;
