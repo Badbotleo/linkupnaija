@@ -695,6 +695,31 @@ export default async function EventDetailPage({
                 <LineIcon name="chevronRight" size={16} className="shrink-0 text-gray-400" />
               </Link>
 
+              {/* Only on a paid link-up, and only for the host. Admin has had
+                  a per-buyer view since the beginning while the person whose
+                  money it is could see a total and nothing else. */}
+              {!!event.price && event.price > 0 && (
+                <Link
+                  href={`/events/${event.id}/buyers`}
+                  className="flex items-center justify-between gap-3 rounded-2xl bg-white p-4 shadow-sm transition hover:border-brand/30"
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="grid h-9 w-9 place-items-center rounded-full bg-naija/10 text-naija-600">
+                      <LineIcon name="ticket" size={17} />
+                    </span>
+                    <span>
+                      <span className="block text-[15px] font-extrabold text-gray-900">
+                        See who paid
+                      </span>
+                      <span className="block text-[13px] text-gray-500">
+                        Every ticket, who bought it and what you are owed
+                      </span>
+                    </span>
+                  </span>
+                  <LineIcon name="chevronRight" size={16} className="shrink-0 text-gray-400" />
+                </Link>
+              )}
+
               {/* Only the host sees this; RLS is what actually enforces it. */}
               {!eventIsOver && <TicketTiersEditor eventId={event.id} />}
               <ManageRequests initialRequests={rsvps} isPast={eventIsOver} />

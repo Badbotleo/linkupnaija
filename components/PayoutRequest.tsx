@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
 import { formatNaira } from "@/lib/paystack";
 
 const STATUS_STYLES: Record<string, string> = {
@@ -117,6 +118,20 @@ export default function PayoutRequest({
           against Paystack.
         </p>
       )}
+
+      {/* Where the money came from, one tap from the total.
+          A host looking at "Collected N45,000" and wondering who that is has
+          nowhere to go, which is the most obvious question this card raises
+          and the one it never answered. */}
+      <Link
+        href={`/events/${eventId}/buyers`}
+        className="mt-3 flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:bg-white/[0.06] dark:text-white/80 dark:hover:bg-white/10"
+      >
+        See who paid
+        <span className="ml-auto text-gray-400" aria-hidden>
+          &rsaquo;
+        </span>
+      </Link>
 
       <div className="mt-3">
         {current ? (
