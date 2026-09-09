@@ -15,6 +15,7 @@ import {
   normalizeTwitter,
 } from "@/lib/social";
 import Avatar from "./Avatar";
+import AvatarCropper from "./profile/AvatarCropper";
 import InterestPicker from "./InterestPicker";
 import type { UserProfile } from "@/lib/types";
 
@@ -67,6 +68,8 @@ export default function ProfileForm({
   const [interests, setInterests] = useState<string[]>(initial.interests ?? []);
 
   const [file, setFile] = useState<File | null>(null);
+  /** The picked image, held until they have framed it. */
+  const [cropping, setCropping] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(initial.avatar_url);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,8 +77,23 @@ export default function ProfileForm({
   function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
-    setFile(f);
-    setPreview(URL.createObjectURL(f));
+    // Frame it first. Straight to preview meant object-cover chose the crop,
+    // which on a full-length photo is somebody's midriff.
+    setCropping(URL.createObjectURL(f));
+    // So picking the same file twice still fires a change.
+    e.target.value = "";
+  }
+
+  function onCropped(cropped: File) {
+    if (cropping) URL.revokeObjectURL(cropping);
+    setCropping(null);
+    setFile(cropped);
+    setPreview(URL.createObjectURL(cropped));
+  }
+
+  function cancelCrop() {
+    if (cropping) URL.revokeObjectURL(cropping);
+    setCropping(null);
   }
 
   async function uploadAvatar(): Promise<string | null> {
@@ -151,9 +169,19 @@ export default function ProfileForm({
               className="hidden"
             />
           </label>
-          <p className="mt-1 text-xs text-gray-400">JPG or PNG, up to ~5MB.</p>
+          <p className="mt-1 text-xs text-gray-400">
+            JPG or PNG. You choose the crop.
+          </p>
         </div>
       </div>
+
+      {cropping && (
+        <AvatarCropper
+          src={cropping}
+          onCancel={cancelCrop}
+          onApply={onCropped}
+        />
+      )}
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
