@@ -188,18 +188,56 @@ export default async function EventDetailPage({
   // tiers and the single price shows as before.
   const { data: tierRows } = await supabase
     .from("ticket_tiers")
-    .select("id, name, price, description, admits")
+    .select("id, name, price, description, admits, quantity, closes_at")
     .eq("event_id", params.id)
     .eq("is_active", true)
     .order("sort_order", { ascending: true })
     .order("price", { ascending: true });
-  const tiers = (tierRows ?? []) as {
+  const tierBase = (tierRows ?? []) as {
     id: string;
     name: string;
     price: number;
     description: string | null;
     admits: number | null;
+    quantity: number | null;
+    closes_at: string | null;
   }[];
+
+  /**
+   * How many of each capped tier are left.
+   *
+   * The cap is enforced by a database trigger, which is what actually stops
+   * an oversale. This is so a guest sees "3 left" before they pay rather than
+   * an error after, which is the difference between a nudge and a refund.
+   *
+   * Seats, not rows: one order can be several tickets, and counting rows is
+   * how two early bird tickets looked like two people instead of a number.
+   */
+  const capped = tierBase.filter((t) => t.quantity !== null);
+  const soldByTier = new Map<string, number>();
+  if (capped.length > 0) {
+    const { data: soldRows } = await supabase
+      .from("rsvps")
+      .select("tier_id, seats")
+      .in("tier_id", capped.map((t) => t.id))
+      .neq("status", "declined");
+    for (const r of (soldRows ?? []) as { tier_id: string; seats: number | null }[]) {
+      soldByTier.set(r.tier_id, (soldByTier.get(r.tier_id) ?? 0) + (r.seats ?? 1));
+    }
+  }
+
+  const nowMs = Date.now();
+  const tiers = tierBase
+    // A closed tier is gone, not greyed out. Nobody needs to see last week's
+    // early bird price on a page they are deciding from.
+    .filter((t) => !t.closes_at || new Date(t.closes_at).getTime() > nowMs)
+    .map((t) => ({
+      ...t,
+      remaining:
+        t.quantity === null
+          ? null
+          : Math.max(0, t.quantity - (soldByTier.get(t.id) ?? 0)),
+    }));
 
   // The partner behind this event, when there is one. Its own query for the
   // same reason as the tiers: embedded, a missing table would fail the whole

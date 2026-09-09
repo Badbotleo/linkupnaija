@@ -25,6 +25,8 @@ interface Tier {
   price: number;
   description: string | null;
   admits: number | null;
+  quantity: number | null;
+  closes_at: string | null;
   sort_order: number;
 }
 
@@ -42,12 +44,14 @@ export default function TicketTiersEditor({ eventId }: { eventId: string }) {
     price: "",
     description: "",
     admits: "",
+    quantity: "",
+    closesAt: "",
   });
 
   const load = useCallback(async () => {
     const { data, error } = await supabase
       .from("ticket_tiers")
-      .select("id, name, price, description, admits, sort_order")
+      .select("id, name, price, description, admits, quantity, closes_at, sort_order")
       .eq("event_id", eventId)
       .order("sort_order", { ascending: true })
       .order("price", { ascending: true });
@@ -84,6 +88,15 @@ export default function TicketTiersEditor({ eventId }: { eventId: string }) {
       description: isRealText(draft.description) ? draft.description.trim() : null,
       // Blank means "not a table" rather than zero people.
       admits: draft.admits ? Math.max(1, Math.round(Number(draft.admits))) : null,
+      // The two ways an early bird ends. Both enforced by a trigger, not
+      // here: on 8 Sep two early bird tickets sold after the organiser's own
+      // early bird had gone, and the difference came out of our pocket.
+      quantity: draft.quantity
+        ? Math.max(0, Math.round(Number(draft.quantity)))
+        : null,
+      closes_at: draft.closesAt
+        ? new Date(draft.closesAt).toISOString()
+        : null,
       // Cheapest first by default; the list sorts by price within this.
       sort_order: tiers.length,
     });
@@ -96,7 +109,7 @@ export default function TicketTiersEditor({ eventId }: { eventId: string }) {
       );
       return;
     }
-    setDraft({ name: "", price: "", description: "", admits: "" });
+    setDraft({ name: "", price: "", description: "", admits: "", quantity: "", closesAt: "" });
     toast.success("Ticket added");
     load();
   }
@@ -156,6 +169,21 @@ export default function TicketTiersEditor({ eventId }: { eventId: string }) {
                 {t.description && (
                   <p className="truncate text-xs text-gray-500">{t.description}</p>
                 )}
+                {/* The two limits, where the host will see them. A cap you
+                    set once and never see again is a cap you forget. */}
+                {(t.quantity !== null || t.closes_at) && (
+                  <p className="mt-0.5 truncate text-xs font-semibold text-gray-500">
+                    {t.quantity !== null && `${t.quantity} available`}
+                    {t.quantity !== null && t.closes_at && "  ·  "}
+                    {t.closes_at &&
+                      `until ${new Date(t.closes_at).toLocaleString("en-NG", {
+                        day: "numeric",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}`}
+                  </p>
+                )}
               </div>
               <span className="shrink-0 text-sm font-extrabold tabular-nums text-gray-900">
                 {formatNaira(t.price)}
@@ -197,6 +225,21 @@ export default function TicketTiersEditor({ eventId }: { eventId: string }) {
               onChange={(e) => setDraft({ ...draft, admits: e.target.value })}
               inputMode="numeric"
               placeholder="Admits how many? (blank if not a table)"
+              className={field}
+            />
+            <input
+              value={draft.quantity}
+              onChange={(e) => setDraft({ ...draft, quantity: e.target.value })}
+              inputMode="numeric"
+              placeholder="How many exist? (blank = unlimited)"
+              className={field}
+            />
+            <input
+              value={draft.closesAt}
+              onChange={(e) => setDraft({ ...draft, closesAt: e.target.value })}
+              type="datetime-local"
+              aria-label="Stops selling at"
+              title="Stops selling at"
               className={field}
             />
             <input

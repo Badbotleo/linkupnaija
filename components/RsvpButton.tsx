@@ -52,6 +52,8 @@ export default function RsvpButton({
     price: number;
     admits: number | null;
     description: string | null;
+    /** null when uncapped. 0 means sold out. */
+    remaining?: number | null;
   }[];
   isPro: boolean;
   requestsThisMonth: number;
@@ -145,7 +147,8 @@ export default function RsvpButton({
   // returns — a hook after a conditional return doesn't run in the same order
   // every render, which is a real bug and not just a lint rule.
   const [tierId, setTierId] = useState<string | null>(
-    tiers.length > 0 ? tiers[0].id : null
+    tiers.find((t) => t.remaining === null || (t.remaining ?? 0) > 0)?.id ??
+      (tiers.length > 0 ? tiers[0].id : null)
   );
   const chosen = tiers.find((x) => x.id === tierId) ?? null;
   // A tier's price replaces the event price. On a multi-tier event the event
@@ -167,6 +170,17 @@ export default function RsvpButton({
   useEffect(() => setQty(1), [tierId]);
 
   const subtotal = unitPrice * qty;
+  // Never let somebody build an order the tier cannot fill. The trigger would
+  // refuse it anyway, but after they have paid, which is a refund.
+  const maxQty = Math.max(
+    1,
+    Math.min(
+      MAX_TICKETS_PER_ORDER,
+      chosen?.remaining === null || chosen?.remaining === undefined
+        ? MAX_TICKETS_PER_ORDER
+        : chosen.remaining
+    )
+  );
   const fee = buyerFee(subtotal);
   // What the buyer is charged. The host is owed the subtotal, all of it.
   const dueNow = buyerTotal(subtotal);
@@ -286,6 +300,10 @@ export default function RsvpButton({
         status: reserveFirst ? "reserved" : "pending",
         paid: !reserveFirst && dueNow > 0,
         tier_id: tierId,
+        // One order, several tickets. Without this the row says one seat and
+        // a capped tier cannot be counted: two early bird tickets on one
+        // order looked exactly like one.
+        seats: qty,
         payment_reference: paymentReference ?? (walletUsed > 0 ? "wallet" : null),
       },
       { onConflict: "event_id,user_id" }
@@ -399,20 +417,28 @@ export default function RsvpButton({
           <legend className="mb-1 text-xs font-black uppercase tracking-[0.12em] text-gray-500">
             Choose your ticket
           </legend>
-          {tiers.map((x) => (
+          {tiers.map((x) => {
+            const gone = x.remaining !== null && (x.remaining ?? 0) <= 0;
+            return (
             <label
               key={x.id}
-              className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition ${
-                tierId === x.id
-                  ? "border-brand bg-brand-50/60"
-                  : "border-gray-200 hover:border-brand/40"
+              className={`flex items-start gap-3 rounded-xl border p-3 transition ${
+                gone
+                  ? "cursor-not-allowed border-gray-200 opacity-55"
+                  : tierId === x.id
+                    ? "cursor-pointer border-brand bg-brand-50/60"
+                    : "cursor-pointer border-gray-200 hover:border-brand/40"
               }`}
             >
               <input
                 type="radio"
                 name="tier"
                 checked={tierId === x.id}
-                onChange={() => setTierId(x.id)}
+                disabled={gone}
+                onChange={() => {
+                  setTierId(x.id);
+                  if (x.remaining != null) setQty((n) => Math.min(n, Math.max(1, x.remaining!)));
+                }}
                 className="mt-1 shrink-0"
               />
               <span className="min-w-0 flex-1">
@@ -434,9 +460,21 @@ export default function RsvpButton({
                     {x.description}
                   </span>
                 )}
+                {/* Scarcity, only when it is true. A tier with no cap says
+                    nothing rather than inventing urgency. */}
+                {gone ? (
+                  <span className="mt-1 block text-xs font-bold text-gray-500">
+                    Sold out
+                  </span>
+                ) : x.remaining !== null && (x.remaining ?? 0) <= 10 ? (
+                  <span className="mt-1 block text-xs font-bold text-naija-600">
+                    {x.remaining} left
+                  </span>
+                ) : null}
               </span>
             </label>
-          ))}
+            );
+          })}
         </fieldset>
       )}
 
@@ -467,10 +505,8 @@ export default function RsvpButton({
               </span>
               <button
                 type="button"
-                onClick={() =>
-                  setQty((n) => Math.min(MAX_TICKETS_PER_ORDER, n + 1))
-                }
-                disabled={qty >= MAX_TICKETS_PER_ORDER}
+                onClick={() => setQty((n) => Math.min(maxQty, n + 1))}
+                disabled={qty >= maxQty}
                 aria-label="One more ticket"
                 className="grid h-10 w-10 place-items-center rounded-full border border-gray-200 text-lg font-bold text-gray-700 transition-transform duration-150 active:scale-[0.94] disabled:opacity-35 dark:border-white/15 dark:text-white"
               >
