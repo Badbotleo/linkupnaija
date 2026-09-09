@@ -382,7 +382,7 @@ export default async function DashboardPage() {
       tone: "amber",
       title: "Add your payout details",
       sub: "Needed to send you ticket money",
-      href: "/profile/edit",
+      href: "/profile/edit/payouts",
     });
   }
 

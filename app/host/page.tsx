@@ -89,7 +89,7 @@ export default async function HostPage({
               but us.
             </p>
             <Link
-              href="/profile/edit"
+              href="/profile/edit/safety"
               className="mt-5 inline-flex rounded-full bg-brand px-6 py-3 text-sm font-bold text-white transition hover:bg-brand-600"
             >
               Verify my number

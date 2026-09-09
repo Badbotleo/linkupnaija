@@ -34,7 +34,7 @@ export default async function UnsubscribePage({
           : "We couldn't process that unsubscribe link. It may have expired. You can manage all your email preferences from your profile instead."}
       </p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
-        <Link href="/profile/edit" className="btn-primary">
+        <Link href="/profile/edit/emails" className="btn-primary">
           Email preferences
         </Link>
         <Link href="/events" className="btn-outline">

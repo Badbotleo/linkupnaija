@@ -147,7 +147,7 @@ export default async function ProfilePage({
             than a second "Edit", which was the same action twice. */}
         <div className="mt-4 flex items-stretch gap-2">
           <Link
-            href="/profile/edit"
+            href="/profile/edit/details"
             className="flex flex-1 items-center justify-center rounded-2xl border border-gray-200 py-2.5 text-sm font-bold text-gray-800 transition hover:border-brand/40 hover:text-brand dark:border-white/15 dark:text-white"
           >
             Edit profile
