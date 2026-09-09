@@ -258,7 +258,7 @@ export default function VenuesExplorer({
       {/* ---------------------------------------------------------------- */}
       {/* Search — sticky, the way an app keeps its search bar in reach     */}
       {/* ---------------------------------------------------------------- */}
-      <div className="sticky top-16 z-20 -mx-4 bg-[#F7F7F9]/90 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+      <div className="sticky top-16 z-20 -mx-4 bg-[#F7F7F9]/90 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 dark:bg-[#121212]/90">
         <form onSubmit={onSearch} className="flex gap-2">
           <div className="flex min-w-0 flex-1 items-center gap-2 rounded-2xl border border-gray-200 bg-white px-3.5 focus-within:border-brand">
             <LineIcon name="search" size={17} className="shrink-0 text-gray-400" />
@@ -392,7 +392,7 @@ export default function VenuesExplorer({
                   )}
 
                   <span className="absolute left-4 top-4 rounded-full bg-[#FAC775] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#121212]">
-                    Partner
+                    Featured
                   </span>
                   {p.rating !== null && (
                     <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1 text-xs font-bold text-[#FAC775] backdrop-blur">

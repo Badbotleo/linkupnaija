@@ -214,7 +214,7 @@ export default function VenuesMap({
                 </span>
                 {isPartner && (
                   <span className="rounded-full bg-[#FAC775] px-2 py-0.5 text-[11px] font-black uppercase tracking-wide text-[#121212]">
-                    Partner
+                    Featured
                   </span>
                 )}
               </div>

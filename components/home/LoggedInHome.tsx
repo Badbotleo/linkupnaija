@@ -401,7 +401,7 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
         <Rail
           title="Book the spot"
           auto
-          subtitle="Partner venues you can reserve through us"
+          subtitle="Featured venues you can reserve through us"
           href="/venues"
         >
           {venues.map((v) => (

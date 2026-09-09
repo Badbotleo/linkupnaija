@@ -14,7 +14,7 @@ import type { Point } from "./RideMap";
 
 const RideMap = dynamic(() => import("./RideMap"), {
   ssr: false,
-  loading: () => <div className="h-full w-full bg-[#E8E6F2]" />,
+  loading: () => <div className="h-full w-full bg-[#E8E6F2] dark:bg-[#141414]" />,
 });
 
 interface Friend {

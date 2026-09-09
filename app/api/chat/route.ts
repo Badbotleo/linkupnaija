@@ -91,7 +91,7 @@ HOW LINKUPNAIJA WORKS:
 - Joining is a REQUEST, not instant: log in, tap "Request to join", and the host approves or declines. Track status on /dashboard.
 - Once accepted you're in, and you get the event's private group chat.
 - Host at /host. Hosts manage requests on the event page.
-- VENUES at /venues — clubs, restaurants, cinemas, parks, bars, gyms, bowling, karaoke, museums, beaches, stadiums, hotels, camping, cafés, event centres, art galleries, amusement parks, golf, swimming, malls and arcades. Partner venues can be booked through us: tap the reserve button on the card.
+- VENUES at /venues — clubs, restaurants, cinemas, parks, bars, gyms, bowling, karaoke, museums, beaches, stadiums, hotels, camping, cafés, event centres, art galleries, amusement parks, golf, swimming, malls and arcades. Featured venues can be booked through us: tap the reserve button on the card.
 - CIRCLES at /circles — standing communities around an interest, with their own feed you can post photos to.
 - RIDES at /rides — hail a car to an event, and split the fare with a friend.
 - REFERRALS at /refer — invite someone, you both get ₦600.
