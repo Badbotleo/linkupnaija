@@ -492,6 +492,14 @@ footer,
   }
 }
 
+/* The map's own ground.
+   Leaflet paints #dddddd behind the tiles, so a dark page flashes a light
+   grey rectangle the size of the map every time one loads, and shows it
+   permanently wherever tiles fail. */
+.dark .leaflet-container {
+  background: #121212 !important;
+}
+
 /* Map credits.
    MapTiler's terms and OpenStreetMap's ODbL both require the credit, so it
    can't come out — but Leaflet's default is a white bar with black text
@@ -516,6 +524,81 @@ footer,
 }
 .dark .leaflet-control-attribution a {
   color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Status tints, on black.
+   .dark rewrites bg-white and bg-gray-*, and stops there. Every semantic tint
+   in the product, 60 uses of bg-red-50 for errors, 23 of bg-amber-50 for
+   warnings, 19 of bg-naija-50 for confirmations, kept its light value and
+   rendered as a pale slab on a black page.
+
+   Not flattened to #1f1f1f like the neutral surfaces: the colour IS the
+   message on these, and an error that stops looking like an error is worse
+   than one that is slightly too bright. They become their own hue at low
+   opacity, which reads as a tint on black the way the light values read as a
+   tint on white.
+
+   The paired text has to move with them or it inverts: a 600-weight red on a
+   dark red ground is unreadable, so the text goes up to the 300s. */
+.dark .bg-red-50,
+.dark .bg-red-100 {
+  background-color: rgba(220, 38, 38, 0.16) !important;
+}
+.dark .text-red-600,
+.dark .text-red-700,
+.dark .text-red-800 {
+  color: #FCA5A5 !important;
+}
+.dark .border-red-100,
+.dark .border-red-200 {
+  border-color: rgba(220, 38, 38, 0.32) !important;
+}
+
+.dark .bg-amber-50,
+.dark .bg-amber-100 {
+  background-color: rgba(245, 158, 11, 0.16) !important;
+}
+.dark .text-amber-600,
+.dark .text-amber-700,
+.dark .text-amber-800,
+.dark .text-amber-900 {
+  color: #FCD34D !important;
+}
+.dark .border-amber-200,
+.dark .border-amber-300 {
+  border-color: rgba(245, 158, 11, 0.32) !important;
+}
+
+.dark .bg-naija-50 {
+  background-color: rgba(0, 135, 83, 0.2) !important;
+}
+.dark .text-naija-600,
+.dark .text-naija-700,
+.dark .text-naija-800,
+.dark .text-emerald-800 {
+  color: #6EE7B7 !important;
+}
+.dark .border-naija-200 {
+  border-color: rgba(0, 135, 83, 0.38) !important;
+}
+
+.dark .bg-blue-50,
+.dark .bg-blue-100 {
+  background-color: rgba(59, 130, 246, 0.16) !important;
+}
+.dark .text-blue-700 {
+  color: #93C5FD !important;
+}
+
+.dark .bg-orange-50,
+.dark .bg-orange-100 {
+  background-color: rgba(249, 115, 22, 0.16) !important;
+}
+.dark .bg-pink-50 {
+  background-color: rgba(236, 72, 153, 0.16) !important;
+}
+.dark .text-pink-700 {
+  color: #F9A8D4 !important;
 }
 
 /* Hover backgrounds in dark mode.
