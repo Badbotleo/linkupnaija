@@ -48,6 +48,24 @@ export const trackSignUp = (method: "google" | "email" | "code") =>
   track("sign_up", { method });
 
 /**
+ * The join sheet opened, and then each step it survives.
+ *
+ * join_lead only ever fired on success, so the sheet a stranger from TikTok
+ * actually signs up in was invisible: 3,249 people visited in three months
+ * and there was no way to see how many opened this and gave up, or where.
+ * The steps are named so the drop is legible in GA without a funnel report:
+ * open, then the code requested, then the code accepted, then the lead.
+ */
+export const trackJoinStart = (eventId: string, loggedIn: boolean) =>
+  track("join_start", { event_id: eventId, logged_in: loggedIn });
+
+export const trackJoinAuthSent = (eventId: string) =>
+  track("join_auth_sent", { event_id: eventId });
+
+export const trackJoinAuthDone = (eventId: string) =>
+  track("join_auth_done", { event_id: eventId });
+
+/**
  * Somebody asked to attend. The conversion the ads are really buying.
  *
  * Called a lead rather than a conversion because on a free link-up no money

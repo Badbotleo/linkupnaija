@@ -234,14 +234,17 @@ export default function TicketTiersEditor({ eventId }: { eventId: string }) {
               placeholder="How many exist? (blank = unlimited)"
               className={field}
             />
-            <input
-              value={draft.closesAt}
-              onChange={(e) => setDraft({ ...draft, closesAt: e.target.value })}
-              type="datetime-local"
-              aria-label="Stops selling at"
-              title="Stops selling at"
-              className={field}
-            />
+            <label className="block">
+              <span className="mb-1 block text-xs font-semibold text-gray-500">
+                Stops selling (optional)
+              </span>
+              <input
+                value={draft.closesAt}
+                onChange={(e) => setDraft({ ...draft, closesAt: e.target.value })}
+                type="datetime-local"
+                className={field}
+              />
+            </label>
             <input
               value={draft.description}
               onChange={(e) =>

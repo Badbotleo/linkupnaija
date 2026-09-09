@@ -7,7 +7,12 @@ import { createClient } from "@/lib/supabase/client";
 import { isInAppBrowser } from "@/lib/webview";
 import LineIcon from "../ui/LineIcon";
 import AddToCalendar from "../AddToCalendar";
-import { trackJoinLead } from "@/lib/analytics";
+import {
+  trackJoinLead,
+  trackJoinStart,
+  trackJoinAuthSent,
+  trackJoinAuthDone,
+} from "@/lib/analytics";
 
 /**
  * Joining an event without leaving the event.
@@ -76,8 +81,11 @@ export default function JoinSheet({
   useEffect(() => setMounted(true), []);
   useEffect(() => setInApp(isInAppBrowser()), []);
   useEffect(() => {
-    if (open) setStep(isLoggedIn ? "confirm" : "auth");
-  }, [open, isLoggedIn]);
+    if (!open) return;
+    setStep(isLoggedIn ? "confirm" : "auth");
+    // The top of the funnel. Everything below is measured against this.
+    trackJoinStart(event.id, isLoggedIn);
+  }, [open, isLoggedIn, event.id]);
 
   // Lock the page behind the sheet, and let Escape close it.
   useEffect(() => {
@@ -126,7 +134,10 @@ export default function JoinSheet({
     });
     setBusy(false);
     if (e) setError(e.message);
-    else setStep("code");
+    else {
+      trackJoinAuthSent(event.id);
+      setStep("code");
+    }
   }
 
   async function verifyCode() {
@@ -142,7 +153,8 @@ export default function JoinSheet({
       setBusy(false);
       return;
     }
-    // Straight into the join — the whole point is not making them tap twice.
+    trackJoinAuthDone(event.id);
+    // Straight into the join, the whole point is not making them tap twice.
     await doJoin();
   }
 

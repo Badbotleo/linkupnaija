@@ -482,87 +482,6 @@ export default function HostForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div>
-        <span className="label">Cover image</span>
-        <label
-          htmlFor="cover"
-          className="group relative flex h-44 cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 transition hover:border-brand/40"
-        >
-          {coverPreview ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={coverPreview}
-              alt="Cover preview"
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="text-center text-gray-400">
-              <p className="text-3xl">🖼️</p>
-              <p className="mt-1 text-sm font-medium">
-                Tap to upload a cover image
-              </p>
-              <p className="text-xs">Optional (JPG or PNG)</p>
-            </div>
-          )}
-          {coverPreview && (
-            <span className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white opacity-0 transition group-hover:opacity-100">
-              Change
-            </span>
-          )}
-          <input
-            id="cover"
-            type="file"
-            accept="image/*"
-            onChange={onPickCover}
-            className="hidden"
-          />
-        </label>
-      </div>
-
-      {/* Up to four more, so five pictures in total. */}
-      <div>
-        <span className="label">
-          More pictures{" "}
-          <span className="font-normal text-gray-400">
-            ({extraPreviews.length}/{MAX_EXTRA} extra · optional)
-          </span>
-        </span>
-        <div className="mt-1.5 flex flex-wrap gap-2">
-          {extraPreviews.map((src, i) => (
-            <div key={src} className="relative h-20 w-20 overflow-hidden rounded-xl">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src} alt="" className="h-full w-full object-cover" />
-              <button
-                type="button"
-                onClick={() => removeExtra(i)}
-                aria-label={`Remove picture ${i + 1}`}
-                className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-black/60 text-[13px] leading-none text-white transition hover:bg-black/80"
-              >
-                ×
-              </button>
-            </div>
-          ))}
-          {extraPreviews.length < MAX_EXTRA && (
-            <label
-              htmlFor="extras"
-              className="grid h-20 w-20 cursor-pointer place-items-center rounded-xl border-2 border-dashed border-gray-200 text-gray-400 transition hover:border-brand/40 hover:text-brand"
-            >
-              <span className="text-2xl leading-none">+</span>
-              <input
-                id="extras"
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={onPickExtras}
-                className="hidden"
-              />
-            </label>
-          )}
-        </div>
-        <p className="mt-1.5 text-xs text-gray-500">
-          The first image is the cover. These show on the event page.
-        </p>
-      </div>
 
       <div>
         <span className="label">Visibility</span>
@@ -604,6 +523,15 @@ export default function HostForm({
         )}
       </div>
 
+
+      <div className="pt-1">
+        <h2 className="text-[13px] font-black uppercase tracking-[0.12em] text-gray-400">
+          The basics
+        </h2>
+        <p className="mt-0.5 text-[13px] text-gray-500">
+          What it is, and what to expect
+        </p>
+      </div>
       <div>
         <label htmlFor="title" className="label">
           Event title
@@ -619,6 +547,20 @@ export default function HostForm({
         />
       </div>
 
+      <div>
+        <label htmlFor="description" className="label">
+          Description
+        </label>
+        <textarea
+          id="description"
+          required
+          rows={5}
+          value={form.description}
+          onChange={(e) => update("description", e.target.value)}
+          placeholder="Tell people what to expect, dress code, what to bring…"
+          className="input resize-y"
+        />
+      </div>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="category" className="label">
@@ -664,6 +606,15 @@ export default function HostForm({
         </div>
       </div>
 
+
+      <div className="pt-1">
+        <h2 className="text-[13px] font-black uppercase tracking-[0.12em] text-gray-400">
+          When and where
+        </h2>
+        <p className="mt-0.5 text-[13px] text-gray-500">
+          
+        </p>
+      </div>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="date" className="label">
@@ -745,6 +696,15 @@ export default function HostForm({
           people. It earns its keep on the ones everyone wants, where a
           scramble at a known time is fairer than a silent first-come race —
           and it is what gives Premium members their 24-hour head start. */}
+      <div className="pt-1">
+        <h2 className="text-[13px] font-black uppercase tracking-[0.12em] text-gray-400">
+          Who can come
+        </h2>
+        <p className="mt-0.5 text-[13px] text-gray-500">
+          Leave these alone and anyone can ask
+        </p>
+      </div>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
       <label className="block">
         <span className="block text-[15px] font-bold text-gray-900">
           Hold requests until a set time
@@ -775,7 +735,7 @@ export default function HostForm({
               Let anyone join instantly
             </span>
             <span className="mt-0.5 block text-[13px] leading-snug text-gray-600">
-              They&apos;re confirmed the moment they tap — no waiting, which is
+              They&apos;re confirmed the moment they tap, no waiting, which is
               what people arriving from a link need. You still decide who gets
               into the group chat, and you keep your capacity limit.
             </span>
@@ -818,7 +778,7 @@ export default function HostForm({
       </div>
       )}
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+
         <div>
           <label htmlFor="max_attendees" className="label">
             Max attendees{" "}
@@ -833,6 +793,15 @@ export default function HostForm({
             placeholder="Unlimited"
             className="input"
           />
+
+      <div className="pt-1">
+        <h2 className="text-[13px] font-black uppercase tracking-[0.12em] text-gray-400">
+          Tickets
+        </h2>
+        <p className="mt-0.5 text-[13px] text-gray-500">
+          Free events cost nothing to list
+        </p>
+      </div>
         </div>
         <div>
           <label htmlFor="price" className="label">
@@ -934,20 +903,23 @@ export default function HostForm({
                     placeholder="How many exist? (blank = unlimited)"
                     className="input"
                   />
-                  <input
-                    value={row.closesAt}
-                    onChange={(e) =>
-                      setTiers((t) =>
-                        t.map((x, n) =>
-                          n === i ? { ...x, closesAt: e.target.value } : x
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-semibold text-gray-500">
+                      Stops selling (optional)
+                    </span>
+                    <input
+                      value={row.closesAt}
+                      onChange={(e) =>
+                        setTiers((t) =>
+                          t.map((x, n) =>
+                            n === i ? { ...x, closesAt: e.target.value } : x
+                          )
                         )
-                      )
-                    }
-                    type="datetime-local"
-                    aria-label="Stops selling at"
-                    title="Stops selling at"
-                    className="input"
-                  />
+                      }
+                      type="datetime-local"
+                      className="input"
+                    />
+                  </label>
                   <input
                     value={row.admits}
                     onChange={(e) =>
@@ -987,20 +959,96 @@ export default function HostForm({
         )}
       </div>
 
-      <div>
-        <label htmlFor="description" className="label">
-          Description
-        </label>
-        <textarea
-          id="description"
-          required
-          rows={5}
-          value={form.description}
-          onChange={(e) => update("description", e.target.value)}
-          placeholder="Tell people what to expect, dress code, what to bring…"
-          className="input resize-y"
-        />
+      <div className="pt-1">
+        <h2 className="text-[13px] font-black uppercase tracking-[0.12em] text-gray-400">
+          Pictures
+        </h2>
+        <p className="mt-0.5 text-[13px] text-gray-500">
+          Optional. You can add the flyer later
+        </p>
       </div>
+      <div>
+        <span className="label">Cover image</span>
+        <label
+          htmlFor="cover"
+          className="group relative flex h-44 cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 transition hover:border-brand/40"
+        >
+          {coverPreview ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={coverPreview}
+              alt="Cover preview"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="text-center text-gray-400">
+              <p className="text-3xl">🖼️</p>
+              <p className="mt-1 text-sm font-medium">
+                Tap to upload a cover image
+              </p>
+              <p className="text-xs">Optional (JPG or PNG)</p>
+            </div>
+          )}
+          {coverPreview && (
+            <span className="absolute bottom-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-xs font-medium text-white opacity-0 transition group-hover:opacity-100">
+              Change
+            </span>
+          )}
+          <input
+            id="cover"
+            type="file"
+            accept="image/*"
+            onChange={onPickCover}
+            className="hidden"
+          />
+        </label>
+      </div>
+
+      {/* Up to four more, so five pictures in total. */}
+      <div>
+        <span className="label">
+          More pictures{" "}
+          <span className="font-normal text-gray-400">
+            ({extraPreviews.length}/{MAX_EXTRA} extra · optional)
+          </span>
+        </span>
+        <div className="mt-1.5 flex flex-wrap gap-2">
+          {extraPreviews.map((src, i) => (
+            <div key={src} className="relative h-20 w-20 overflow-hidden rounded-xl">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={src} alt="" className="h-full w-full object-cover" />
+              <button
+                type="button"
+                onClick={() => removeExtra(i)}
+                aria-label={`Remove picture ${i + 1}`}
+                className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-black/60 text-[13px] leading-none text-white transition hover:bg-black/80"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+          {extraPreviews.length < MAX_EXTRA && (
+            <label
+              htmlFor="extras"
+              className="grid h-20 w-20 cursor-pointer place-items-center rounded-xl border-2 border-dashed border-gray-200 text-gray-400 transition hover:border-brand/40 hover:text-brand"
+            >
+              <span className="text-2xl leading-none">+</span>
+              <input
+                id="extras"
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={onPickExtras}
+                className="hidden"
+              />
+            </label>
+          )}
+        </div>
+        <p className="mt-1.5 text-xs text-gray-500">
+          The first image is the cover. These show on the event page.
+        </p>
+      </div>
+
 
       {myCircles.length > 0 && !isSeries && (
         <div>
