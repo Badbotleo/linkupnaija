@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/image";
@@ -62,8 +62,45 @@ export default function HostForm({
    * shouldn't have to create the event, find it, and come back.
    */
   const [tiers, setTiers] = useState<
-    { name: string; price: string; admits: string; description: string }[]
+    {
+      name: string;
+      price: string;
+      admits: string;
+      description: string;
+      quantity: string;
+      closesAt: string;
+    }[]
   >([]);
+
+  /**
+   * The base ticket, named.
+   *
+   * events.price is a number with nothing attached: no name, no description,
+   * no cap, no closing time. So the first ticket on a paid event was the only
+   * one a guest could not see the name of, and the only one that could not be
+   * an early bird. A host setting a price now gets a real ticket row for it,
+   * prefilled, which they can rename or describe like any other.
+   *
+   * Left as a plain number if they clear the name: the old nameless behaviour
+   * still works, it is just no longer the default.
+   */
+  const seededRef = useRef(false);
+  useEffect(() => {
+    if (seededRef.current) return;
+    if (Number(form.price || 0) > 0 && tiers.length === 0) {
+      seededRef.current = true;
+      setTiers([
+        {
+          name: "Standard",
+          price: String(form.price),
+          admits: "",
+          description: "",
+          quantity: "",
+          closesAt: "",
+        },
+      ]);
+    }
+  }, [form.price, tiers.length]);
 
   // Circles the host can share this event to.
   const [myCircles, setMyCircles] = useState<{ id: string; name: string }[]>([]);
@@ -409,6 +446,10 @@ export default function HostForm({
         price: Math.round(Number(x.price)),
         admits: x.admits ? Math.max(1, Math.round(Number(x.admits))) : null,
         description: x.description.trim() || null,
+        // The early bird pair, available from the moment the event is made
+        // rather than only from the editor afterwards.
+        quantity: x.quantity ? Math.max(0, Math.round(Number(x.quantity))) : null,
+        closes_at: x.closesAt ? new Date(x.closesAt).toISOString() : null,
         sort_order: i,
       }))
       .filter((r) => r.name && Number.isFinite(r.price) && r.price > 0);
@@ -819,15 +860,24 @@ export default function HostForm({
       <div>
         <div className="flex items-center justify-between gap-3">
           <label className="label mb-0">
-            More ticket types{" "}
-            <span className="font-normal text-gray-400">(optional)</span>
+            Ticket types{" "}
+            <span className="font-normal text-gray-400">
+              {Number(form.price || 0) > 0 ? "" : "(optional)"}
+            </span>
           </label>
           <button
             type="button"
             onClick={() =>
               setTiers((t) => [
                 ...t,
-                { name: "", price: "", admits: "", description: "" },
+                {
+                  name: "",
+                  price: "",
+                  admits: "",
+                  description: "",
+                  quantity: "",
+                  closesAt: "",
+                },
               ])
             }
             className="shrink-0 rounded-full border border-gray-200 px-3 py-1.5 text-xs font-bold text-gray-700"
@@ -836,8 +886,8 @@ export default function HostForm({
           </button>
         </div>
         <p className="mt-1 text-xs text-gray-400">
-          For combo packs, table sizes, early bird — anything with its own
-          price. Skip it and the price above is the only ticket.
+          Name what people are buying. Add more for combo packs, tables or an
+          early bird with its own cap and closing time.
         </p>
 
         {tiers.length > 0 && (
@@ -869,6 +919,33 @@ export default function HostForm({
                     }
                     inputMode="numeric"
                     placeholder="Price, e.g. 280000"
+                    className="input"
+                  />
+                  <input
+                    value={row.quantity}
+                    onChange={(e) =>
+                      setTiers((t) =>
+                        t.map((x, n) =>
+                          n === i ? { ...x, quantity: e.target.value } : x
+                        )
+                      )
+                    }
+                    inputMode="numeric"
+                    placeholder="How many exist? (blank = unlimited)"
+                    className="input"
+                  />
+                  <input
+                    value={row.closesAt}
+                    onChange={(e) =>
+                      setTiers((t) =>
+                        t.map((x, n) =>
+                          n === i ? { ...x, closesAt: e.target.value } : x
+                        )
+                      )
+                    }
+                    type="datetime-local"
+                    aria-label="Stops selling at"
+                    title="Stops selling at"
                     className="input"
                   />
                   <input

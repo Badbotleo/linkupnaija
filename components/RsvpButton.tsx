@@ -412,7 +412,10 @@ export default function RsvpButton({
     <div className="space-y-2">
       {/* Pick a package before paying. Without this the host takes money and
           has no idea whether they owe a Combo Lite or a Gold Table. */}
-      {tiers.length > 0 && status === "none" && (
+      {/* Two or more. One ticket type is not a decision, and a radio button
+          with nothing to choose between is furniture: the name still reaches
+          the guest, on the pay button. */}
+      {tiers.length > 1 && status === "none" && (
         <fieldset className="space-y-1.5">
           <legend className="mb-1 text-xs font-black uppercase tracking-[0.12em] text-gray-500">
             Choose your ticket
@@ -614,8 +617,10 @@ export default function RsvpButton({
             {/* The one decision this whole page exists for, so it stops
                 looking like every other button on it.
                   · gradient in the brand, not a flat fill
-                  · the price is the loud part, the verb is the quiet part —
-                    people are deciding on the number
+                  · the price is the loud part, but it carries the verb with
+                    it. A bare naira figure on a button could be the price or
+                    the charge, and at the commitment step that ambiguity is
+                    not worth the two characters it saves
                   · lifts on press rather than just dimming, so a tap on a
                     slow connection feels like it did something
                   · sold out is grey and honest, not a disabled blue */}
@@ -639,7 +644,7 @@ export default function RsvpButton({
                 <span className="min-w-0">
                   {isFull ? (
                     <span className="text-[15px] font-bold">
-                      Sold out — nothing left
+                      Sold out. Nothing left
                     </span>
                   ) : loading ? (
                     <span className="text-[15px] font-bold">Processing…</span>
@@ -650,7 +655,7 @@ export default function RsvpButton({
                        "free" is exactly what makes reserving easy. */
                     <>
                       <span className="block text-[18px] font-extrabold leading-none">
-                        Reserve your spot — free
+                        Reserve your spot, free
                       </span>
                       <span className="mt-1 block text-[12px] font-semibold text-white/75">
                         Pay {formatNaira(dueNow)} only if it fills
@@ -661,14 +666,14 @@ export default function RsvpButton({
                       <span className="block text-[20px] font-extrabold leading-none tabular-nums">
                         {remainderDue === 0
                           ? "Paid with wallet"
-                          : formatNaira(remainderDue)}
+                          : `Pay ${formatNaira(remainderDue)}`}
                       </span>
                       <span className="mt-1 block text-[12px] font-semibold text-white/75">
                         {chosen
-                          ? `${chosen.name} · request to join`
+                          ? `${chosen.name} · the host approves you`
                           : walletApplied > 0
-                            ? `${formatNaira(walletApplied)} from wallet · request to join`
-                            : "Request to join"}
+                            ? `${formatNaira(walletApplied)} from wallet · the host approves you`
+                            : "The host approves you"}
                       </span>
                     </>
                   ) : (
