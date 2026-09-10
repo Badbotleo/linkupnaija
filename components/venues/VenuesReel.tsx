@@ -30,6 +30,11 @@ import VenueArt from "./VenueArt";
  *    Every slide flown past reports isIntersecting, the callbacks batch, and
  *    the last in the batch wins whether or not it is still on screen.
  *
+ * EVERYTHING NEARBY IS IN HERE, not just the venues we onboarded. There used
+ * to be a grid underneath repeating the same job in a worse format, so the
+ * page asked you to browse the same places twice in two different shapes. One
+ * surface, one gesture.
+ *
  * ON THE ARTWORK. Imported venues have no photograph: the importer refuses to
  * copy Google's, and its own note says so. So most slides draw VenueArt
  * instead. That is honest but it is not what a reel is for, and it is the
@@ -48,6 +53,12 @@ export interface ReelVenue {
   rating: number | null;
   /** "Open · till 22:00", already resolved. */
   hours: string | null;
+  /** Where "See the venue" goes. An onboarded UUID or an OSM node-123. */
+  href: string;
+  /** From the map centre, when we know where both ends are. */
+  distanceKm: number | null;
+  /** Ours, as opposed to passing through from OpenStreetMap. */
+  isPartner: boolean;
 }
 
 /** Breathing room between the button and the bottom nav. */
@@ -192,6 +203,13 @@ export default function VenuesReel({
                   {v.hours}
                 </span>
               )}
+              {v.distanceKm !== null && (
+                <span className="rounded-full bg-black/55 px-2.5 py-1 text-xs font-semibold text-white/85 backdrop-blur-sm">
+                  {v.distanceKm < 1
+                    ? `${Math.round(v.distanceKm * 1000)} m`
+                    : `${v.distanceKm.toFixed(1)} km`}
+                </span>
+              )}
             </div>
 
             <div className="absolute inset-x-0 bottom-0 p-5 pb-6">
@@ -247,7 +265,7 @@ export default function VenuesReel({
                   reel has one: nothing here should be reachable only by
                   scrolling to it, and a venue should be shareable. */}
               <Link
-                href={`/venues/${v.id}`}
+                href={v.href}
                 // Hex, not text-white. globals.css rewrites themed colours
                 // under .dark, and this sits on a photograph, which is dark
                 // in either theme.

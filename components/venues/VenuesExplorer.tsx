@@ -37,26 +37,6 @@ interface PartnerVenue {
   lng: number | null;
 }
 
-/** One row in the unified list — a partner or a plain OpenStreetMap result. */
-type Card = {
-  key: string;
-  name: string;
-  category: string;
-  address: string | null;
-  description: string | null;
-  price: string | null;
-  /** A venue's own photo, or null — the card draws its own art instead. */
-  image: string | null;
-  /** Out of 5. Partner venues carry ours; OSM results carry their star count. */
-  rating: number | null;
-  /** "Open · till 22:00" — already resolved, so cards don't each re-parse. */
-  hours: string | null;
-  isPartner: boolean;
-  distanceKm: number | null;
-  href: string | null;
-  venue: Venue;
-};
-
 // "Request Reservation" said the same flat thing at a nightclub and a cinema.
 // Ask for what you'd actually ask for at that kind of place.
 const CTA_COPY: Record<string, string> = {
@@ -238,9 +218,26 @@ export default function VenuesExplorer({
     return [f, u];
   }, [categoryPartners]);
 
-  const reelVenues: ReelVenue[] = useMemo(
-    () =>
-      unfeatured.map((p) => ({
+  // A venue we've onboarded also comes back from OpenStreetMap, so it rendered
+  // twice. The partner claims its twin and inherits its coordinates (partner
+  // rows have no lat/lng), so it gets a pin instead of a duplicate.
+  const { osmOnly, located } = useMemo(
+    () => mergePartnersWithOsm(categoryPartners, venues),
+    [categoryPartners, venues]
+  );
+
+  /**
+   * One scroll, both sources.
+   *
+   * The onboarded venues were a reel and everything else nearby was a grid
+   * underneath it, so the page asked you to browse the same kind of thing
+   * twice in two different shapes and the second one repeated the first's
+   * job worse. Ours lead, because those are the ones we can actually book.
+   */
+  const reelVenues: ReelVenue[] = useMemo(() => {
+    const mine: ReelVenue[] = unfeatured.map((p) => {
+      const pin = located.find((l) => l.id === p.id);
+      return {
         id: p.id,
         name: p.name,
         category: p.category,
@@ -251,41 +248,34 @@ export default function VenuesExplorer({
         price: formatPriceRange(p.price_range),
         rating: p.rating,
         hours: openLabel(p.opening_hours),
-      })),
-    [unfeatured]
-  );
+        href: `/venues/${p.id}`,
+        distanceKm: pin
+          ? distanceKm(center.lat, center.lng, pin.lat, pin.lng)
+          : null,
+        isPartner: true,
+      };
+    });
 
-  // A venue we've onboarded also comes back from OpenStreetMap, so it rendered
-  // twice. The partner claims its twin and inherits its coordinates (partner
-  // rows have no lat/lng), so it gets a pin instead of a duplicate.
-  const { osmOnly, located } = useMemo(
-    () => mergePartnersWithOsm(categoryPartners, venues),
-    [categoryPartners, venues]
-  );
-
-  // The grid is everything else nearby. Partners live in the deck above, so
-  // listing them here too would re-create exactly the duplication this page
-  // just got rid of.
-  const cards: Card[] = useMemo(() => {
-    const cat = VENUE_CATEGORIES.find((c) => c.key === category);
-    return osmOnly.map((v) => ({
-      key: v.id,
+    const theirs: ReelVenue[] = osmOnly.map((v) => ({
+      id: v.id,
       name: v.name,
       category: v.category,
       address: v.address || null,
+      state: null,
+      // OSM never carries a photo of the actual place, so the pool was always
+      // a stand-in. The slide draws its own art instead.
+      image: null,
       description: null,
       price: null,
-      // OSM results never carry a photo of the actual place, so the pool
-      // was always a stand-in. Draw it instead — see VenueArt.
-      image: null,
       rating: v.stars ?? null,
       hours: openLabel(v.openingHours),
-      isPartner: false,
-      distanceKm: distanceKm(center.lat, center.lng, v.lat, v.lng),
       href: `/venues/${v.id}`,
-      venue: v,
+      distanceKm: distanceKm(center.lat, center.lng, v.lat, v.lng),
+      isPartner: false,
     }));
-  }, [osmOnly, category, center]);
+
+    return [...mine, ...theirs];
+  }, [unfeatured, osmOnly, located, center]);
 
   const pinCount = osmOnly.length + located.length;
 
@@ -350,7 +340,7 @@ export default function VenuesExplorer({
       <p className="mt-3 text-sm text-gray-500">
         {loading
           ? "Looking…"
-          : `${categoryPartners.length + cards.length} ${category.toLowerCase()}`}{" "}
+          : `${featured.length + reelVenues.length} ${category.toLowerCase()}`}{" "}
         near{" "}
         <span className="font-semibold text-gray-700">{center.label}</span>
       </p>
@@ -581,25 +571,15 @@ export default function VenuesExplorer({
           </div>
         </div>
 
-        {/* --- list --- */}
+        {/* --- nothing to list --- */}
+        {/* The grid that lived here is gone. It repeated the reel's job in a
+            worse format, so the page asked you to browse the same places
+            twice. Only the empty state is left, because "we found nothing
+            here" still has to be said somewhere. */}
         <div className="mt-5 lg:col-start-1 lg:row-start-1 lg:mt-0">
           {loading ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="overflow-hidden surface"
-                >
-                  <div className="aspect-[4/3] w-full animate-pulse bg-gray-100" />
-                  <div className="space-y-2 p-4">
-                    <div className="h-4 w-2/3 animate-pulse rounded bg-gray-100" />
-                    <div className="h-3 w-full animate-pulse rounded bg-gray-100" />
-                    <div className="h-9 w-full animate-pulse rounded-xl bg-gray-100" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : cards.length === 0 && categoryPartners.length === 0 ? (
+            <div className="h-[420px] animate-pulse rounded-3xl bg-gray-100" />
+          ) : reelVenues.length === 0 && featured.length === 0 ? (
             <EmptyState
               category={category}
               label={center.label}
@@ -609,17 +589,7 @@ export default function VenuesExplorer({
                 setCenter(DEFAULT_CENTER);
               }}
             />
-          ) : cards.length === 0 ? null : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {cards.map((c) => (
-                <VenueCard
-                  key={c.key}
-                  card={c}
-                  onReserve={() => setModalVenue(c.venue)}
-                />
-              ))}
-            </div>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -635,123 +605,6 @@ export default function VenuesExplorer({
 }
 
 /* ------------------------------------------------------------------ */
-
-function VenueCard({ card, onReserve }: { card: Card; onReserve: () => void }) {
-  const cover = (
-    <div className="relative aspect-[4/3] w-full overflow-hidden">
-      {card.image ? (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={card.image}
-            alt=""
-            loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
-        </>
-      ) : (
-        <VenueArt
-          name={card.name}
-          category={card.category}
-          className="absolute inset-0 h-full w-full transition duration-300 group-hover:scale-105"
-        />
-      )}
-      {card.isPartner && (
-        <span className="absolute left-3 top-3 rounded-full bg-[#FAC775] px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-[#121212]">
-          Featured
-        </span>
-      )}
-      {card.distanceKm !== null && (
-        <span className="absolute bottom-3 left-3 rounded-full bg-white/92 px-2.5 py-1 text-[11px] font-bold text-gray-800 backdrop-blur">
-          {card.distanceKm < 1
-            ? `${Math.round(card.distanceKm * 1000)} m`
-            : `${card.distanceKm.toFixed(1)} km`}
-        </span>
-      )}
-      {card.rating !== null && (
-        <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/55 px-2 py-1 text-[11px] font-bold text-[#FAC775] backdrop-blur">
-          <LineIcon name="star" size={11} filled />
-          {card.rating.toFixed(1)}
-        </span>
-      )}
-    </div>
-  );
-
-  return (
-    <div
-      className={`group flex flex-col overflow-hidden rounded-2xl border bg-white shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-xl ${
-        card.isPartner ? "border-amber-200" : "border-gray-100"
-      }`}
-    >
-      {card.href ? (
-        <Link href={card.href} className="block">
-          {cover}
-        </Link>
-      ) : (
-        cover
-      )}
-
-      <div className="flex flex-1 flex-col p-4">
-        {card.href ? (
-          <Link
-            href={card.href}
-            className="line-clamp-2 font-bold text-gray-900 hover:text-brand"
-          >
-            {card.name}
-          </Link>
-        ) : (
-          <p className="line-clamp-2 font-bold text-gray-900">{card.name}</p>
-        )}
-
-        {card.address && (
-          <p className="mt-1 line-clamp-2 text-sm text-gray-500">
-            {card.address}
-          </p>
-        )}
-        {card.description && (
-          <p className="mt-1 line-clamp-2 text-sm text-gray-600">
-            {card.description}
-          </p>
-        )}
-        {card.price && (
-          <p className="mt-1.5 text-sm font-bold text-naija-700">{card.price}</p>
-        )}
-        {card.hours && (
-          <p
-            className={`mt-1.5 inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-bold ${
-              card.hours.startsWith("Open")
-                ? "bg-naija-50 text-naija-700"
-                : "bg-gray-100 text-gray-600"
-            }`}
-          >
-            <span
-              aria-hidden
-              className={`h-1.5 w-1.5 rounded-full ${
-                card.hours.startsWith("Open") ? "bg-naija" : "bg-gray-400"
-              }`}
-            />
-            {card.hours}
-          </p>
-        )}
-
-        <button
-          type="button"
-          onClick={onReserve}
-          className="group/cta mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand to-brand-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition duration-200 hover:shadow-lg hover:brightness-[1.08] active:scale-[0.98]"
-        >
-          <LineIcon name="calendar" size={15} />
-          {ctaLabel(card.category)}
-          <LineIcon
-            name="chevronRight"
-            size={13}
-            className="transition-transform duration-200 group-hover/cta:translate-x-0.5"
-          />
-        </button>
-      </div>
-    </div>
-  );
-}
 
 function EmptyState({
   category,

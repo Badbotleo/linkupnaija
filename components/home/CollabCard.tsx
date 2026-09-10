@@ -18,7 +18,7 @@ export default async function CollabCard() {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("partners")
-    .select("slug, name, logo_url, cover_url, brand_color")
+    .select("slug, name, tagline, collab_blurb, cover_url, brand_color")
     .eq("is_active", true)
     .eq("is_collab", true)
     .gt("collab_until", new Date().toISOString())
@@ -33,12 +33,12 @@ export default async function CollabCard() {
   const p = data as {
     slug: string;
     name: string;
-    logo_url: string | null;
+    tagline: string | null;
+    collab_blurb: string | null;
     cover_url: string | null;
     brand_color: string | null;
   };
   const cover = safeUrl(p.cover_url);
-  const logo = safeUrl(p.logo_url);
   const brand = safeColor(p.brand_color, "#534AB7");
 
   return (
@@ -77,41 +77,19 @@ export default async function CollabCard() {
             cover ? "min-h-[260px] sm:min-h-[300px]" : ""
           } flex flex-col justify-end text-white`}
         >
-          {/* The lockup: both names, equal billing — that's what a
-              collaboration is. */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span className="text-[17px] font-extrabold tracking-tight">
-              LinkUpNaija
-            </span>
-            {/* LinkUpNaija's purple, not the partner's accent: the × is
-                ours in the lockup. The lighter brand purple rather than
-                #534AB7, which goes muddy on a red ground. */}
-            <span
-              className="text-[17px] font-black text-[#8B83E6]"
-              aria-label="x"
-            >
-              ×
-            </span>
-            {logo ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={logo}
-                alt={p.name}
-                className="h-6 w-auto max-w-[130px] object-contain"
-              />
-            ) : (
-              <span className="text-[17px] font-extrabold tracking-tight">
-                {p.name}
-              </span>
-            )}
-          </div>
+          {/* No lockup. It read "LinkUpNaija × [partner logo]" across the
+              top of the artwork, and on a cover that already carries the
+              partner's own logo it was the same mark twice, once ours and
+              once theirs, over a photograph doing neither any favours.
 
-          {/* No eyebrow, no blurb. Both were saying what the picture and
-              the lockup already say: "Collaboration" captioned the × that
-              means collaboration, and the headline restated a theme the
-              partner's own artwork is carrying behind it. What is left is
-              the two names, the art, and where to go. */}
-          <span className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-black text-gray-900">
+              The theme leads instead. It is the line the partner chose to
+              describe their own event, and the button underneath says whose
+              page this is, which is the part that actually needed saying. */}
+          <p className="max-w-lg text-[24px] font-extrabold uppercase leading-[1.05] tracking-[-0.01em] text-white sm:text-[30px]">
+            {p.collab_blurb ?? p.tagline ?? p.name}
+          </p>
+
+          <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-black text-gray-900">
             {/* Names the partner rather than sloganising. This card sits
                 between other home-page shelves, so "what is this and where
                 does it go" has to survive being read at a glance.
