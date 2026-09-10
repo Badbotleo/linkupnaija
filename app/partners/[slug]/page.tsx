@@ -84,11 +84,18 @@ export default async function PartnerPage({
               alt=""
               className="absolute inset-0 h-full w-full object-cover"
             />
-            {/* A short fade so the band and the panel read as one surface
-                rather than a photo glued above a box. */}
+            {/* Solid for the first stretch, then a long fade.
+                A plain transparent-to-brand ramp was still half see-through
+                where the logo card now sits, so the card landed on top of
+                whatever the poster happened to have there, half covering
+                AITF's own theme wordmark. Holding full colour under the card
+                first makes the bottom of the artwork dissolve on purpose
+                instead of losing an argument with a white box. */}
             <div
-              className="absolute inset-x-0 bottom-0 h-20"
-              style={{ backgroundImage: `linear-gradient(to top, ${brand}, transparent)` }}
+              className="absolute inset-x-0 bottom-0 h-32"
+              style={{
+                backgroundImage: `linear-gradient(to top, ${brand} 0%, ${brand} 50%, transparent 100%)`,
+              }}
             />
           </div>
         )}
@@ -97,7 +104,24 @@ export default async function PartnerPage({
             /* On white, because a partner logo is usually drawn for paper and
                a transparent PNG disappears into whatever brand colour they
                chose. */
-            <span className="mb-4 inline-flex rounded-2xl bg-white p-3 shadow-lg">
+            /* Overlapping the seam, the way a page header does.
+               Sitting fully inside the brand panel, the card read as a
+               sticker dropped between two stacked blocks: artwork above, flat
+               colour below, nothing joining them. Lifting it over the join
+               makes the two halves one surface, and it is the arrangement
+               every profile header has already taught people.
+
+               Hex, not bg-white: the dark layer rewrites .bg-white to
+               #121212, which turned this into a black frame around a logo
+               that already has a white background. The card exists for
+               partners whose logo is a transparent PNG, so it has to stay
+               white in both themes to do its job. The ring keeps its edge
+               when the artwork behind it is pale. */
+            <span
+              className={`${
+                partner.coverUrl ? "-mt-14" : ""
+              } relative mb-4 inline-flex rounded-2xl bg-[#ffffff] p-2.5 shadow-xl ring-1 ring-black/10`}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={partner.logoUrl}
@@ -106,11 +130,16 @@ export default async function PartnerPage({
               />
             </span>
           )}
+          {/* Whose page this is.
+              "LinkUpNaija partner" labels them as ours, on a page that is
+              about them, and it is the first thing a partner reads when we
+              send them the link. The relationship runs both ways and the
+              wording should too. */}
           <p
             className="text-[11px] font-black uppercase tracking-[0.2em]"
             style={{ color: accent }}
           >
-            LinkUpNaija partner
+            In partnership with LinkUpNaija
           </p>
           <h1 className="mt-1.5 text-[30px] font-extrabold leading-tight tracking-[-0.03em] sm:text-[38px]">
             {partner.name}
@@ -255,7 +284,12 @@ export default async function PartnerPage({
 
         {(partner.instagram || partner.tiktok || partner.website) && (
           <section className="mt-8">
-            <h2 className="text-lg font-bold text-gray-900">Follow them</h2>
+            {/* Named, not "them" and not "us". "Them" points at somebody the
+                reader has to work out, and "us" on our own site reads as
+                LinkUpNaija's own channels rather than the partner's. */}
+            <h2 className="text-lg font-bold text-gray-900">
+              More from {partner.name}
+            </h2>
             <div className="mt-2 flex flex-wrap gap-2">
               {partner.instagram && (
                 <SocialLink href={partner.instagram} label="Instagram" />
