@@ -18,6 +18,7 @@ import { mergePartnersWithOsm } from "@/lib/venue-match";
 import { formatPriceRange } from "@/lib/format";
 import { openLabel } from "@/lib/opening-hours";
 import SwipeDeck from "../home/SwipeDeck";
+import VenuesReel, { type ReelVenue } from "./VenuesReel";
 import VenueArt from "./VenueArt";
 
 interface PartnerVenue {
@@ -29,6 +30,7 @@ interface PartnerVenue {
   image_url: string | null;
   description: string | null;
   price_range: string | null;
+  is_featured: boolean | null;
   rating: number | null;
   opening_hours: string | null;
   lat: number | null;
@@ -112,7 +114,7 @@ export default function VenuesExplorer({
     // rating/opening_hours arrive with migration-venue-ratings-hours.sql.
     // Ask for them, and drop back to the older column set if they aren't
     // there yet — otherwise the whole partner list disappears.
-    const BASE = "id, name, category, address, state, image_url, description, price_range, lat, lng";
+    const BASE = "id, name, category, address, state, image_url, description, price_range, is_featured, lat, lng";
     const WITH_RATINGS = BASE.replace(", lat", ", rating, opening_hours, lat");
     // Built rather than chained, so "no scope" means no filter at all. A
     // .filter(..., "not.is", null) would have quietly dropped every venue
@@ -217,6 +219,40 @@ export default function VenuesExplorer({
   const categoryPartners = useMemo(
     () => partners.filter((p) => p.category === category),
     [partners, category]
+  );
+
+  /**
+   * The one we are pushing, and everyone else.
+   *
+   * A reel gives every slide the same weight, which is the point of a reel
+   * and the opposite of what a featured venue is for. So the featured ones
+   * keep the deck they had and the rest get the reel.
+   *
+   * The query orders by is_featured already, so this is a partition of an
+   * ordered list rather than a re-sort.
+   */
+  const [featured, unfeatured] = useMemo(() => {
+    const f: PartnerVenue[] = [];
+    const u: PartnerVenue[] = [];
+    for (const p of categoryPartners) (p.is_featured ? f : u).push(p);
+    return [f, u];
+  }, [categoryPartners]);
+
+  const reelVenues: ReelVenue[] = useMemo(
+    () =>
+      unfeatured.map((p) => ({
+        id: p.id,
+        name: p.name,
+        category: p.category,
+        address: p.address,
+        state: p.state,
+        image: p.image_url,
+        description: p.description,
+        price: formatPriceRange(p.price_range),
+        rating: p.rating,
+        hours: openLabel(p.opening_hours),
+      })),
+    [unfeatured]
   );
 
   // A venue we've onboarded also comes back from OpenStreetMap, so it rendered
@@ -326,7 +362,7 @@ export default function VenuesExplorer({
           means to somebody browsing. "Partner" describes our commercial
           relationship, which is our business and not the reason anybody picks
           a restaurant. */}
-      {categoryPartners.length > 0 && (
+      {featured.length > 0 && (
         <div className="-mx-4 mt-4 sm:-mx-6 lg:-mx-8">
           <div className="container-page flex items-end justify-between gap-3">
             <div className="min-w-0">
@@ -343,7 +379,7 @@ export default function VenuesExplorer({
           </div>
 
           <SwipeDeck className="h-[356px]">
-            {categoryPartners.map((p) => {
+            {featured.map((p) => {
               const pin = located.find((l) => l.id === p.id);
               const price = formatPriceRange(p.price_range);
               const hours = openLabel(p.opening_hours);
@@ -435,6 +471,47 @@ export default function VenuesExplorer({
               );
             })}
           </SwipeDeck>
+        </div>
+      )}
+
+      {/* Every other spot we can book, one per screen.
+          The deck above is for the handful being pushed; this is the long
+          tail the importer produces, and a horizontal rail made its fortieth
+          entry effectively unreachable. */}
+      {reelVenues.length > 0 && (
+        <div className="mt-6">
+          <div className="mb-3 flex items-end justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-[19px] font-extrabold tracking-[-0.02em] text-gray-900">
+                More spots
+              </h2>
+              <p className="mt-0.5 text-[13px] text-gray-500">
+                Scroll through {reelVenues.length} places we can book
+              </p>
+            </div>
+          </div>
+          <VenuesReel
+            venues={reelVenues}
+            ctaLabel={(v) => ctaLabel(v.category)}
+            onReserve={(id) => {
+              const p = unfeatured.find((x) => x.id === id);
+              if (!p) return;
+              const pin = located.find((l) => l.id === p.id);
+              setModalVenue({
+                id: `partner-${p.id}`,
+                osmType: "node",
+                osmId: 0,
+                name: p.name,
+                category: p.category,
+                // A partner row carries no coordinates of its own; it
+                // inherits them from the OSM twin it claimed, and falls back
+                // to the map centre when it has no twin.
+                lat: pin?.lat ?? center.lat,
+                lng: pin?.lng ?? center.lng,
+                address: p.address ?? "",
+              });
+            }}
+          />
         </div>
       )}
 
