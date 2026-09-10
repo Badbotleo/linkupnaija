@@ -21,6 +21,7 @@ import AdminThingsToDo from "@/components/admin/AdminThingsToDo";
 import AdminRides from "@/components/admin/AdminRides";
 import AdminPro from "@/components/admin/AdminPro";
 import AdminIdChecks from "@/components/admin/AdminIdChecks";
+import AdminVenueClaims from "@/components/admin/AdminVenueClaims";
 import AdminPayouts from "@/components/admin/AdminPayouts";
 import AdminWalletCredit from "@/components/admin/AdminWalletCredit";
 import AdminTournament from "@/components/admin/AdminTournament";
@@ -284,6 +285,23 @@ export default async function AdminPage() {
           safety_score: a.safety_score,
         } as never)
     );
+  /**
+   * Just the count, for the sidebar badge.
+   *
+   * head: true asks Postgres for the number without shipping the rows, and
+   * the panel itself fetches them when it opens. The shell renders one
+   * section at a time precisely so the other twenty do not query on load.
+   *
+   * A missing table is zero, not a broken admin page: this arrives with
+   * migration-venue-owners.sql and the rest of this screen must not wait
+   * for it.
+   */
+  const { count: venueClaimCount } = await supabase
+    .from("venue_owners")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "pending");
+  const venueClaims = venueClaimCount ?? 0;
+
   const payouts = (payoutRows ?? []) as unknown as {
     id: string;
     amount: number;
@@ -409,6 +427,7 @@ export default async function AdminPage() {
           { id: "drivers", label: "Driver applications", emoji: "🪪", group: "Requests" },
           { id: "corporate", label: "Corporate", emoji: "🏢", group: "Requests", badge: corporate.length },
           { id: "messages", label: "Messages", emoji: "💬", group: "Requests" },
+          { id: "venueclaims", label: "Venue claims", emoji: "🔑", group: "Requests", badge: venueClaims },
           { id: "moderation", label: "Moderation", emoji: "🛡️", group: "Safety" },
           { id: "safety", label: "Safety flags", emoji: "🛟", group: "Safety", badge: flaggedHosts.length },
           { id: "expired", label: "Expired events", emoji: "📅", group: "Content" },
@@ -556,6 +575,10 @@ export default async function AdminPage() {
 
         <div key="idchecks">
 <AdminIdChecks />
+        </div>
+
+        <div key="venueclaims">
+<AdminVenueClaims />
         </div>
 
         <div key="hosts">
