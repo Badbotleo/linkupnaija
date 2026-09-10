@@ -54,6 +54,8 @@ export default function RsvpButton({
     description: string | null;
     /** null when uncapped. 0 means sold out. */
     remaining?: number | null;
+    /** Held for the host to allocate, even on an instant event. */
+    requiresApproval?: boolean;
   }[];
   isPro: boolean;
   requestsThisMonth: number;
@@ -197,7 +199,11 @@ export default function RsvpButton({
           onClick={() => setSheetOpen(true)}
           className="btn-primary w-full"
         >
-          {price > 0 ? "Get a ticket" : "Ask to join · free"}
+          {price > 0
+            ? "Get a ticket"
+            : autoConfirm
+              ? "Join · free"
+              : "Ask to join · free"}
         </button>
         <JoinSheet
           open={sheetOpen}
@@ -463,7 +469,7 @@ export default function RsvpButton({
                   <span className="shrink-0 text-sm font-extrabold tabular-nums text-gray-900">
                     {x.price > 0
                       ? formatNaira(x.price)
-                      : autoConfirm
+                      : autoConfirm && !x.requiresApproval
                         ? "Free"
                         : "On request"}
                   </span>

@@ -188,12 +188,13 @@ export default async function EventDetailPage({
   // tiers and the single price shows as before.
   const { data: tierRows } = await supabase
     .from("ticket_tiers")
-    .select("id, name, price, description, admits, quantity, closes_at")
+    .select("id, name, price, description, admits, quantity, closes_at, requires_approval")
     .eq("event_id", params.id)
     .eq("is_active", true)
     .order("sort_order", { ascending: true })
     .order("price", { ascending: true });
   const tierBase = (tierRows ?? []) as {
+    requires_approval?: boolean | null;
     id: string;
     name: string;
     price: number;
@@ -237,6 +238,7 @@ export default async function EventDetailPage({
         t.quantity === null
           ? null
           : Math.max(0, t.quantity - (soldByTier.get(t.id) ?? 0)),
+      requiresApproval: t.requires_approval === true,
     }));
 
   // The partner behind this event, when there is one. Its own query for the
@@ -450,7 +452,17 @@ export default async function EventDetailPage({
         <StickyJoinBar
           targetId="join-cta"
           price={event.price > 0 ? formatNaira(event.price) : null}
-          label={event.price > 0 ? "Get a ticket" : "Ask to join"}
+          label={
+            // An event that confirms on the spot must not say "Ask". The word
+            // is a promise about what happens next, and getting it wrong
+            // either sets up a wait that never comes or hides one that does.
+            event.price > 0
+              ? "Get a ticket"
+              : (event as { auto_confirm?: boolean | null }).auto_confirm ===
+                  true
+                ? "Join"
+                : "Ask to join"
+          }
         />
       )}
 
@@ -848,9 +860,16 @@ export default async function EventDetailPage({
                     involved, and an all-free tier list is now possible. The
                     condition has to match what the panel actually shows, or
                     a free event gets a 24px gap where a price used to be. */}
-                {(event.price > 0 || tiers.some((t) => t.price > 0)) && (
+                {(event.price > 0 || tiers.length > 0) && (
                   <div className="mt-6">
-                    <TicketPanel price={event.price} tiers={tiers} />
+                    <TicketPanel
+                      price={event.price}
+                      tiers={tiers}
+                      autoConfirm={
+                        (event as { auto_confirm?: boolean | null })
+                          .auto_confirm === true
+                      }
+                    />
                   </div>
                 )}
 

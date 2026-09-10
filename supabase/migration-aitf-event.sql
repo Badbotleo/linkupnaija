@@ -15,10 +15,12 @@
 --   Coming along   no cap, walk the fair with the group
 --   Vendor space   4, closes a week out, a table on our stand
 --
--- auto_confirm is FALSE, so both are requests you approve. That is what makes
--- a vendor space a reservation: somebody asks, you say yes once the stand is
--- real. Nobody is charged and nobody is promised anything you cannot take
--- back, which is the whole reason this is not a paid tier.
+-- Coming along is INSTANT, and the group chat opens with it. Walking a trade
+-- fair with people is the thing being offered, and a queue in front of it is
+-- friction for no gain. Vendor space is a REQUEST, because four tables have
+-- to be allocated by a person. That split needs migration-tier-approval.sql,
+-- which moves approval onto the tier and adds events.auto_chat. RUN THAT
+-- FIRST, or the columns this file sets will not exist.
 --
 -- WHY TWO TIERS AND NOT ONE. RsvpButton only renders the picker at
 -- tiers.length > 1, so a lone vendor tier would be invisible and every guest
@@ -30,6 +32,10 @@
 --   the meeting    10:00 at the main gate
 --   the spaces     4
 --   requests close 19 Sept 2026, a week out, so you can plan the stand
+--
+-- The event carries the fair's own name. "Trade Fair Link Up" was our
+-- framing, and nobody searches for it. Somebody looking for this types
+-- "trade fair", so the title is what they would type.
 --
 -- SAFE TO RUN TWICE, AND IT CONVERGES.
 --
@@ -68,11 +74,11 @@ begin
   -- an address that differs only in case would look like no account at all.
   select id into v_host
     from auth.users
-   where lower(email) = lower('gaabrieldivine45@gmail.com');
+   where lower(email) = lower('gabrieldivine45@gmail.com');
 
   if v_host is null then
     raise exception
-      'No account for gaabrieldivine45@gmail.com. Check the spelling, and check they have signed up.';
+      'No account for gabrieldivine45@gmail.com. Check the spelling, and check they have signed up.';
   end if;
 
   -- ----------------------------------------------- the partner, and its art --
@@ -93,19 +99,23 @@ begin
   -- reads as a missing image. Add it to v_gallery if you disagree.
 
   -- ------------------------------------------------------------- the event --
+  -- Found by partner and date, NOT by title. The title is the one field
+  -- most likely to be reworded, and a lookup keyed on it stops matching the
+  -- moment it changes: the re-run would insert a second event beside the
+  -- first rather than rename the one that is there. Partner plus date is
+  -- what actually identifies this link-up.
   select id into v_event
     from public.events
    where partner_id = v_partner
-     and title = 'Trade Fair Link Up'
      and date = date '2026-09-26';
 
   if v_event is null then
     insert into public.events (
       title, category, description, date, time, end_time,
       location, state, host_id, max_attendees, cover_image_url,
-      price, event_type, gallery_urls, partner_id, auto_confirm
+      price, event_type, gallery_urls, partner_id, auto_confirm, auto_chat
     ) values (
-      'Trade Fair Link Up',
+      'Abuja International Trade Fair',
       'Market / Trade Fair',
       v_copy,
       date '2026-09-26',
@@ -120,7 +130,8 @@ begin
       'general',
       coalesce(v_gallery, '{}'),
       v_partner,
-      false          -- every join is a request, which is what reserves a space
+      true,          -- anyone can walk in; the vendor tier holds itself back
+      true           -- and the group chat opens with it
     )
     returning id into v_event;
     raise notice 'Event created.';
@@ -138,8 +149,10 @@ begin
        set cover_image_url = v_cover,
            gallery_urls    = coalesce(v_gallery, '{}'),
            price           = 0,
-           auto_confirm    = false,
+           auto_confirm    = true,
+           auto_chat       = true,
            host_id         = v_host,
+           title           = 'Abuja International Trade Fair',
            description     = v_copy
      where id = v_event;
     raise notice 'Event already existed. Host, artwork, price and approval refreshed.';
@@ -158,6 +171,7 @@ begin
          sort_order  = 0,
          is_active   = true,
          closes_at   = null,
+         requires_approval = false,
          description = 'Walk the fair with the group. Nothing to bring but cash and comfortable shoes.'
    where event_id = v_event and name = 'Coming along';
 
@@ -178,18 +192,20 @@ begin
          sort_order  = 1,
          is_active   = true,
          closes_at   = timestamptz '2026-09-19 23:59:00+01',
+         requires_approval = true,
          description = 'A table on the LinkUpNaija stand for the day, plus your name on this page and in the group chat. Bring your own display and your own float. Confirmed once we allocate the stand.'
    where event_id = v_event and name = 'Vendor space';
 
   if not found then
     insert into public.ticket_tiers (
       event_id, name, price, description, admits, quantity, sort_order,
-      is_active, closes_at
+      is_active, closes_at, requires_approval
     ) values (
       v_event, 'Vendor space', 0,
       'A table on the LinkUpNaija stand for the day, plus your name on this page and in the group chat. Bring your own display and your own float. Confirmed once we allocate the stand.',
       2, 4, 1, true,
-      timestamptz '2026-09-19 23:59:00+01'
+      timestamptz '2026-09-19 23:59:00+01',
+      true
     );
   end if;
 
@@ -204,6 +220,8 @@ select
   e.date,
   e.time,
   e.auto_confirm                           as auto_approves,
+  e.auto_chat                              as chat_opens,
+  t.requires_approval                      as by_request,
   u.email                                  as host,
   array_length(e.gallery_urls, 1)          as gallery_pictures,
   p.name                                   as partner,

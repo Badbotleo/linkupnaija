@@ -21,6 +21,15 @@ import { buyerFee, buyerTotal } from "@/lib/pricing";
  *
  * Free events render nothing. "₦0" as a headline is a worse answer than
  * saying nothing and letting the join button speak.
+ *
+ * FREE TIERS STILL RENDER, though, under a different heading. A tier can now
+ * cost nothing and still be the reason somebody came: four vendor tables at
+ * the trade fair are free, capped, and the whole point of that page. The
+ * picker inside RsvpButton could not carry that, because it sits behind an
+ * early return for logged-out visitors and only appears when there is more
+ * than one tier. So a paid tier was visible to a stranger and a free one was
+ * not, which is backwards. Choosing is the picker's job; saying what exists
+ * is this panel's, and it has to work before anybody signs in.
  */
 
 export interface TicketTier {
@@ -30,6 +39,10 @@ export interface TicketTier {
   description?: string | null;
   /** People admitted — set for tables and group packs. */
   admits?: number | null;
+  /** null when uncapped. 0 means gone. */
+  remaining?: number | null;
+  /** Held for the host to allocate, even on an instant event. */
+  requiresApproval?: boolean;
 }
 
 export default function TicketPanel({
@@ -37,6 +50,7 @@ export default function TicketPanel({
   tiers = [],
   tier = "Standard",
   note,
+  autoConfirm = false,
   children,
 }: {
   /** The event's base price, used when there are no tiers. */
@@ -44,13 +58,72 @@ export default function TicketPanel({
   tiers?: TicketTier[];
   /** Label above a single price. Ignored when tiers are present. */
   tier?: string;
+  /** Host approves by hand, so nothing free is instantly yours. Wording only. */
+  autoConfirm?: boolean;
   note?: string | null;
   /** The buy/join control. Only shown in the single-price case, where there
       is one unambiguous thing to buy. */
   children?: React.ReactNode;
 }) {
   const priced = tiers.filter((t) => t.price > 0);
-  if (priced.length === 0 && (!price || price <= 0)) return null;
+
+  // Nothing priced, but tiers exist: show what they are rather than nothing.
+  // No threshold on the count, unlike the picker. One tier is not a choice,
+  // but it is still a thing a visitor deserves to know is there.
+  if (priced.length === 0 && (!price || price <= 0)) {
+    if (tiers.length === 0) return null;
+    return (
+      <section aria-labelledby="ticket-heading">
+        <h2
+          id="ticket-heading"
+          className="text-xl font-extrabold text-gray-900 dark:text-white"
+        >
+          Ways in
+        </h2>
+        <div className="mt-3 space-y-2 rounded-3xl border border-dashed border-gray-300 p-1.5 dark:border-white/20">
+          {tiers.map((t) => {
+            const gone = t.remaining !== null && (t.remaining ?? 0) <= 0;
+            return (
+              <div
+                key={t.id}
+                className="rounded-[20px] bg-white p-4 shadow-sm dark:bg-white/[0.06]"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <p className="min-w-0 text-[15px] font-extrabold text-gray-900 dark:text-white">
+                    {t.name}
+                    {!!t.admits && t.admits > 1 && (
+                      <span className="ml-1.5 text-[13px] font-medium text-gray-400">
+                        · {t.admits} people
+                      </span>
+                    )}
+                  </p>
+                  <span className="shrink-0 text-[13px] font-black uppercase tracking-[0.1em] text-gray-500 dark:text-white/50">
+                    {gone
+                      ? "Full"
+                      : autoConfirm && !t.requiresApproval
+                        ? "Free"
+                        : "On request"}
+                  </span>
+                </div>
+                {t.description && (
+                  <p className="mt-1.5 text-[14px] leading-snug text-gray-500 dark:text-white/60">
+                    {t.description}
+                  </p>
+                )}
+                {/* Scarcity only where it is true, the same rule the picker
+                    follows. An uncapped tier says nothing. */}
+                {!gone && t.remaining !== null && (t.remaining ?? 0) <= 10 && (
+                  <p className="mt-1.5 text-[12px] font-bold text-naija-600">
+                    {t.remaining} left
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section aria-labelledby="ticket-heading">
