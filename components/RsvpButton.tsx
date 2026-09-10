@@ -454,8 +454,11 @@ export default function RsvpButton({
                       </span>
                     )}
                   </span>
+                  {/* "Free", not "N0". A tier can now cost nothing: a
+                      reservation the host approves rather than a sale. Zero
+                      rendered as an amount reads like a broken price. */}
                   <span className="shrink-0 text-sm font-extrabold tabular-nums text-gray-900">
-                    {formatNaira(x.price)}
+                    {x.price > 0 ? formatNaira(x.price) : "Free"}
                   </span>
                 </span>
                 {x.description && (

@@ -844,7 +844,11 @@ export default async function EventDetailPage({
                   <QuorumMeter state={quorum} paid={(event.price ?? 0) > 0} />
                 </div>
 
-                {(event.price > 0 || tiers.length > 0) && (
+                {/* TicketPanel renders nothing when there is no money
+                    involved, and an all-free tier list is now possible. The
+                    condition has to match what the panel actually shows, or
+                    a free event gets a 24px gap where a price used to be. */}
+                {(event.price > 0 || tiers.some((t) => t.price > 0)) && (
                   <div className="mt-6">
                     <TicketPanel price={event.price} tiers={tiers} />
                   </div>
