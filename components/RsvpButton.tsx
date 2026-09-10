@@ -454,11 +454,18 @@ export default function RsvpButton({
                       </span>
                     )}
                   </span>
-                  {/* "Free", not "N0". A tier can now cost nothing: a
-                      reservation the host approves rather than a sale. Zero
-                      rendered as an amount reads like a broken price. */}
+                  {/* Zero is not a price, and it is not always "Free"
+                      either. On an event the host approves by hand, nothing
+                      is yours until they say so, and a vendor table you have
+                      to be given is a reservation rather than a giveaway.
+                      "N0" was worse than both: it reads as a price that
+                      failed to load. */}
                   <span className="shrink-0 text-sm font-extrabold tabular-nums text-gray-900">
-                    {x.price > 0 ? formatNaira(x.price) : "Free"}
+                    {x.price > 0
+                      ? formatNaira(x.price)
+                      : autoConfirm
+                        ? "Free"
+                        : "On request"}
                   </span>
                 </span>
                 {x.description && (

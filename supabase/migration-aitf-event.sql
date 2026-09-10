@@ -13,7 +13,7 @@
 -- date. Nothing new was added to the schema.
 --
 --   Coming along   no cap, walk the fair with the group
---   Vendor space   15, closes a week out, a table on our stand
+--   Vendor space   4, closes a week out, a table on our stand
 --
 -- auto_confirm is FALSE, so both are requests you approve. That is what makes
 -- a vendor space a reservation: somebody asks, you say yes once the stand is
@@ -28,7 +28,7 @@
 -- CHECK THESE FOUR BEFORE RUNNING. Everything else is derived.
 --   the date       26 Sept 2026, the fair's first Saturday
 --   the meeting    10:00 at the main gate
---   the spaces     15
+--   the spaces     4
 --   requests close 19 Sept 2026, a week out, so you can plan the stand
 --
 -- SAFE TO RUN TWICE, AND IT CONVERGES.
@@ -48,13 +48,31 @@ declare
   v_event   uuid;
   v_cover   text;
   v_gallery text[];
+
+  -- One copy of the copy. Written once here so the insert and the re-run
+  -- update cannot say different things.
+  v_copy    text := 'Over 100,000 people pass through the Abuja International Trade Fair. Most of them walk it alone.
+
+We are going as a group. Meet at the gate, move through the stands together, stop for food when your feet start complaining. Traders, makers, and a lot of things you did not know you needed.
+
+Selling something? Ask for a vendor space on our stand when you request to join. You bring the product, we bring the foot traffic.
+
+Come for the bargains, leave with people you actually know.
+
+Free to join. Bring cash, plenty of stands still do not take transfers.';
 begin
 
   -- ------------------------------------------------------------- who hosts --
   -- By email, so no UUID is pasted into a file that lives in the repo.
-  select id into v_host from auth.users where email = 'gleonard591@gmail.com';
+  -- Lowercased on both sides: Supabase stores what was typed at signup, and
+  -- an address that differs only in case would look like no account at all.
+  select id into v_host
+    from auth.users
+   where lower(email) = lower('gaabrieldivine45@gmail.com');
+
   if v_host is null then
-    raise exception 'No account for that email. Check the address.';
+    raise exception
+      'No account for gaabrieldivine45@gmail.com. Check the spelling, and check they have signed up.';
   end if;
 
   -- ----------------------------------------------- the partner, and its art --
@@ -89,15 +107,7 @@ begin
     ) values (
       'Trade Fair Link Up',
       'Market / Trade Fair',
-      'Over 100,000 people pass through the Abuja International Trade Fair. Most of them walk it alone.
-
-We are going as a group. Meet at the gate, move through the stands together, stop for food when your feet start complaining. Traders, makers, and a lot of things you did not know you needed.
-
-Selling something? Ask for one of the 15 vendor spaces on our stand when you request to join. You bring the product, we bring the foot traffic.
-
-Come for the bargains, leave with people you actually know.
-
-Free to join. Bring cash, plenty of stands still do not take transfers.',
+      v_copy,
       date '2026-09-26',
       '10:00',
       '15:00',
@@ -115,16 +125,24 @@ Free to join. Bring cash, plenty of stands still do not take transfers.',
     returning id into v_event;
     raise notice 'Event created.';
   else
-    -- Re-run rewrites only what this file is responsible for: the artwork,
-    -- and the two fields the paid first version got wrong. Title, date, copy
-    -- and capacity are left alone, because those are yours to edit.
+    -- Re-run rewrites what this file is responsible for, and that now
+    -- includes the description. The copy named a vendor count that also
+    -- lived in ticket_tiers.quantity, so changing the cap left the prose
+    -- lying. The count is gone from the sentence and the tier row shows it
+    -- instead, but the copy already saved has to be corrected once.
+    --
+    -- Which means THIS FILE OWNS THE COPY. Edit the description here and
+    -- re-run, not on the page, or the next run will overwrite you. Title,
+    -- date, time and capacity are still left alone.
     update public.events
        set cover_image_url = v_cover,
            gallery_urls    = coalesce(v_gallery, '{}'),
            price           = 0,
-           auto_confirm    = false
+           auto_confirm    = false,
+           host_id         = v_host,
+           description     = v_copy
      where id = v_event;
-    raise notice 'Event already existed. Artwork, price and approval refreshed.';
+    raise notice 'Event already existed. Host, artwork, price and approval refreshed.';
   end if;
 
   -- -------------------------------------------------------------- the tiers --
@@ -155,7 +173,7 @@ Free to join. Bring cash, plenty of stands still do not take transfers.',
 
   update public.ticket_tiers
      set price       = 0,
-         quantity    = 15,
+         quantity    = 4,
          admits      = 2,
          sort_order  = 1,
          is_active   = true,
@@ -170,7 +188,7 @@ Free to join. Bring cash, plenty of stands still do not take transfers.',
     ) values (
       v_event, 'Vendor space', 0,
       'A table on the LinkUpNaija stand for the day, plus your name on this page and in the group chat. Bring your own display and your own float. Confirmed once we allocate the stand.',
-      2, 15, 1, true,
+      2, 4, 1, true,
       timestamptz '2026-09-19 23:59:00+01'
     );
   end if;
@@ -186,6 +204,7 @@ select
   e.date,
   e.time,
   e.auto_confirm                           as auto_approves,
+  u.email                                  as host,
   array_length(e.gallery_urls, 1)          as gallery_pictures,
   p.name                                   as partner,
   t.name                                   as tier,
@@ -194,6 +213,7 @@ select
   t.closes_at
 from public.events e
 join public.partners p on p.id = e.partner_id
+join auth.users u on u.id = e.host_id
 left join public.ticket_tiers t on t.event_id = e.id
 where p.slug = 'aitf'
 order by e.date, t.sort_order;
