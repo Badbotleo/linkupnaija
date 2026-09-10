@@ -93,7 +93,7 @@ export default function TicketPanel({
                     {t.name}
                     {!!t.admits && t.admits > 1 && (
                       <span className="ml-1.5 text-[13px] font-medium text-gray-400">
-                        · {t.admits} people
+                        · {t.admits} people each
                       </span>
                     )}
                   </p>
@@ -160,9 +160,13 @@ export default function TicketPanel({
                   </div>
                   {/* Capacity is the thing people compare tables on, so it
                       sits where the eye lands, not buried in the details. */}
+                  {/* "each", because a tier carries two different counts:
+                      how many of it exist, and how many people one of it
+                      lets in. Beside a "4 left" line, a bare "2 people" reads
+                      as the remaining number. */}
                   {!!t.admits && (
                     <span className="shrink-0 rounded-full border border-gray-200 px-2.5 py-1 text-[11px] font-bold text-gray-600 dark:border-white/20 dark:text-white/70">
-                      {t.admits} {t.admits === 1 ? "person" : "people"}
+                      {t.admits === 1 ? "1 person" : `${t.admits} people each`}
                     </span>
                   )}
                 </div>

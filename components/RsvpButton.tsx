@@ -454,9 +454,13 @@ export default function RsvpButton({
                 <span className="flex items-baseline justify-between gap-2">
                   <span className="text-sm font-bold text-gray-900">
                     {x.name}
+                    {/* "each" separates the two counts a tier carries: how
+                        many exist, and how many people one admits. The
+                        remaining line sits right below this. */}
                     {!!x.admits && (
                       <span className="ml-1.5 font-medium text-gray-400">
-                        · {x.admits} {x.admits === 1 ? "person" : "people"}
+                        ·{" "}
+                        {x.admits === 1 ? "1 person" : `${x.admits} people each`}
                       </span>
                     )}
                   </span>
