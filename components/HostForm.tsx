@@ -35,6 +35,7 @@ export default function HostForm({
     min_attendees: "",
     end_time: "",
     auto_confirm: false,
+    auto_chat: false,
     requests_open_at: "",
     price: "",
     event_type: "general" as "general" | "private",
@@ -69,6 +70,7 @@ export default function HostForm({
       description: string;
       quantity: string;
       closesAt: string;
+      requiresApproval: boolean;
     }[]
   >([]);
 
@@ -97,6 +99,7 @@ export default function HostForm({
           description: "",
           quantity: "",
           closesAt: "",
+          requiresApproval: false,
         },
       ]);
     }
@@ -319,8 +322,12 @@ export default function HostForm({
     if (form.end_time) optional.end_time = form.end_time;
     // Free only, and only when actually chosen — a host can tick this, then
     // add a price, and the checkbox disappears with the value still in state.
-    if (form.auto_confirm && Number(form.price || 0) === 0)
+    if (form.auto_confirm && Number(form.price || 0) === 0) {
       optional.auto_confirm = true;
+      // Only meaningful alongside auto_confirm: the chat is granted on the
+      // path that skips approval, and there is no such path without it.
+      if (form.auto_chat) optional.auto_chat = true;
+    }
     // datetime-local has no timezone. Hosts are in Nigeria, so it is read as
     // WAT rather than as the server's clock — otherwise a 6pm opening set in
     // Lagos would fire at 7pm for a UTC server.
@@ -329,7 +336,8 @@ export default function HostForm({
 
     const withQuorum = { ...baseEvent, ...optional };
     const isMissingColumn = (msg?: string | null) =>
-      !!msg && /min_attendees|end_time|auto_confirm|requests_open_at/.test(msg) &&
+      !!msg &&
+      /min_attendees|end_time|auto_confirm|auto_chat|requests_open_at/.test(msg) &&
       /column/i.test(msg);
 
     // The host page checks may_host() before showing this form, but the policy
@@ -450,9 +458,17 @@ export default function HostForm({
         // rather than only from the editor afterwards.
         quantity: x.quantity ? Math.max(0, Math.round(Number(x.quantity))) : null,
         closes_at: x.closesAt ? new Date(x.closesAt).toISOString() : null,
+        requires_approval: x.requiresApproval,
         sort_order: i,
+        // Blank is not zero. Number("") is 0, so without this an unfinished
+        // row with a name and no price would ship as a free ticket.
+        priced: x.price.trim() !== "",
       }))
-      .filter((r) => r.name && Number.isFinite(r.price) && r.price > 0);
+      // Free tiers are real now: a vendor table you request costs nothing and
+      // is still the reason somebody came. What gets dropped is a row nobody
+      // filled in, not a row that costs nothing.
+      .filter((r) => r.name && r.priced && Number.isFinite(r.price) && r.price >= 0)
+      .map(({ priced: _priced, ...r }) => r);
     if (rows.length > 0) {
       const { error: tErr } = await supabase.from("ticket_tiers").insert(rows);
       if (tErr) {
@@ -736,8 +752,36 @@ export default function HostForm({
             </span>
             <span className="mt-0.5 block text-[13px] leading-snug text-gray-600">
               They&apos;re confirmed the moment they tap, no waiting, which is
-              what people arriving from a link need. You still decide who gets
-              into the group chat, and you keep your capacity limit.
+              what people arriving from a link need. You keep your capacity
+              limit, and the group chat stays yours to open unless you say
+              otherwise below.
+            </span>
+          </span>
+        </label>
+      )}
+
+      {/* Nested, and only once instant joining is on.
+
+          The chat is granted on the path that skips approval, so there is no
+          such path without it. Shown on its own it would be a switch that
+          silently does nothing. */}
+      {Number(form.price || 0) === 0 && form.auto_confirm && (
+        <label className="ml-4 flex cursor-pointer items-start gap-3 rounded-2xl border border-gray-200 p-4 transition hover:border-brand/40">
+          <input
+            type="checkbox"
+            checked={form.auto_chat}
+            onChange={(e) => update("auto_chat", e.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
+          />
+          <span className="min-w-0">
+            <span className="block text-[15px] font-bold text-gray-900">
+              Open the group chat too
+            </span>
+            <span className="mt-0.5 block text-[13px] leading-snug text-gray-600">
+              They land in the chat the moment they join. Right for an open
+              link-up where the chat is the point. Leave it off and you approve
+              the room yourself, which is the safer default for anything you
+              want to keep small.
             </span>
           </span>
         </label>
@@ -846,6 +890,7 @@ export default function HostForm({
                   description: "",
                   quantity: "",
                   closesAt: "",
+                  requiresApproval: false,
                 },
               ])
             }
@@ -856,7 +901,8 @@ export default function HostForm({
         </div>
         <p className="mt-1 text-xs text-gray-400">
           Name what people are buying. Add more for combo packs, tables or an
-          early bird with its own cap and closing time.
+          early bird with its own cap and closing time. A type can cost
+          nothing, for something limited that people ask you for.
         </p>
 
         {tiers.length > 0 && (
@@ -919,6 +965,28 @@ export default function HostForm({
                       type="datetime-local"
                       className="input"
                     />
+                  </label>
+                  {/* For a limited thing a person has to allocate. A vendor
+                      table on an otherwise open event is still a request. */}
+                  <label className="flex cursor-pointer items-start gap-2.5 px-1 py-0.5">
+                    <input
+                      type="checkbox"
+                      checked={row.requiresApproval}
+                      onChange={(e) =>
+                        setTiers((t) =>
+                          t.map((x, n) =>
+                            n === i
+                              ? { ...x, requiresApproval: e.target.checked }
+                              : x
+                          )
+                        )
+                      }
+                      className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
+                    />
+                    <span className="text-[13px] leading-snug text-gray-600">
+                      Hold this one for my approval, even if anyone can join
+                      instantly
+                    </span>
                   </label>
                   <input
                     value={row.admits}
