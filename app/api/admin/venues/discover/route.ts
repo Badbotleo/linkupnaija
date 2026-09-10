@@ -65,7 +65,9 @@ export async function GET(req: Request) {
       { status: 400 }
     );
 
-  const place = await geocodeOnServer(q);
+  // The same budget the Overpass call gets. This step runs first, and on
+  // the 8s default it was the step that failed.
+  const place = await geocodeOnServer(q, BULK_TIMEOUT_MS);
   if (!place)
     return NextResponse.json(
       { error: `Couldn't find "${q}" in Nigeria.` },

@@ -18,7 +18,7 @@ export default async function CollabCard() {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("partners")
-    .select("slug, name, tagline, collab_blurb, logo_url, cover_url, brand_color, accent_color")
+    .select("slug, name, tagline, collab_blurb, logo_url, cover_url, brand_color")
     .eq("is_active", true)
     .eq("is_collab", true)
     .gt("collab_until", new Date().toISOString())
@@ -38,12 +38,10 @@ export default async function CollabCard() {
     logo_url: string | null;
     cover_url: string | null;
     brand_color: string | null;
-    accent_color: string | null;
   };
   const cover = safeUrl(p.cover_url);
   const logo = safeUrl(p.logo_url);
   const brand = safeColor(p.brand_color, "#534AB7");
-  const accent = safeColor(p.accent_color, "#FAC775");
 
   return (
     <section className="container-page mt-6">
@@ -110,13 +108,11 @@ export default async function CollabCard() {
             )}
           </div>
 
-          <p
-            className="mt-4 text-[11px] font-black uppercase tracking-[0.2em]"
-            style={{ color: accent }}
-          >
-            Collaboration
-          </p>
-          <p className="mt-1 max-w-lg text-[24px] font-extrabold uppercase leading-[1.05] tracking-[-0.01em] sm:text-[30px]">
+          {/* No "Collaboration" eyebrow. The lockup directly above is
+              "LinkUpNaija × PARTNER", which is the word made visible, and
+              labelling it as well is the caption under a photograph of
+              itself. The headline gets that space instead. */}
+          <p className="mt-4 max-w-lg text-[24px] font-extrabold uppercase leading-[1.05] tracking-[-0.01em] sm:text-[30px]">
             {p.collab_blurb ?? p.tagline ?? p.name}
           </p>
 
