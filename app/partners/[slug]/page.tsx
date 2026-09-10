@@ -63,27 +63,48 @@ export default async function PartnerPage({
     <div className="pb-24">
       <AppHeader title={partner.name} back />
 
-      {/* Their identity, not ours. */}
-      <section
-        className="relative overflow-hidden"
-        style={{ backgroundColor: brand }}
-      >
+      {/* Their identity, not ours.
+
+          The cover used to sit at opacity-30 BEHIND this text. A trade fair
+          poster carries its own headline, its own theme and its own dates
+          burned into the artwork, so our name landed on top of theirs and
+          both became unreadable, while the art itself was washed out to a
+          third of its strength. Two headlines on one image is exactly the
+          mistake the event card fixed months ago by giving the poster its own
+          panel.
+
+          So the artwork gets a band of its own at full strength, fading into
+          their brand colour, and our words start where it ends. */}
+      <section className="overflow-hidden" style={{ backgroundColor: brand }}>
         {partner.coverUrl && (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
-            src={partner.coverUrl}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover opacity-30"
-          />
-        )}
-        <div className="container-page relative py-10 text-white">
-          {partner.logoUrl && (
-            /* eslint-disable-next-line @next/next/no-img-element */
+          <div className="relative aspect-[16/10] w-full sm:aspect-[21/9]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={partner.logoUrl}
-              alt={partner.name}
-              className="mb-4 h-16 w-auto max-w-[220px] object-contain"
+              src={partner.coverUrl}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
             />
+            {/* A short fade so the band and the panel read as one surface
+                rather than a photo glued above a box. */}
+            <div
+              className="absolute inset-x-0 bottom-0 h-20"
+              style={{ backgroundImage: `linear-gradient(to top, ${brand}, transparent)` }}
+            />
+          </div>
+        )}
+        <div className="container-page relative pb-9 pt-5 text-white">
+          {partner.logoUrl && (
+            /* On white, because a partner logo is usually drawn for paper and
+               a transparent PNG disappears into whatever brand colour they
+               chose. */
+            <span className="mb-4 inline-flex rounded-2xl bg-white p-3 shadow-lg">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={partner.logoUrl}
+                alt={partner.name}
+                className="h-14 w-auto max-w-[200px] object-contain"
+              />
+            </span>
           )}
           <p
             className="text-[11px] font-black uppercase tracking-[0.2em]"
@@ -139,9 +160,26 @@ export default async function PartnerPage({
             What&apos;s coming up
           </h2>
           {events.length === 0 ? (
-            <p className="mt-2 text-sm text-gray-500">
-              Nothing listed yet. Check back shortly.
-            </p>
+            /* "Check back shortly" is a dead end on the one section that
+               justifies this page existing. Somebody reading a partner page
+               is already interested in the thing; the useful move is to let
+               them start the link-up nobody has started yet. */
+            <div className="mt-3 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-8 text-center dark:border-white/15 dark:bg-white/[0.03]">
+              <p className="font-bold text-gray-900 dark:text-white">
+                Nobody has organised a meet-up here yet
+              </p>
+              <p className="mx-auto mt-1 max-w-sm text-sm text-gray-500">
+                Going anyway? Start one and the people going can find you.
+              </p>
+              <Link
+                href={`/host?title=${encodeURIComponent(
+                  `Meet up at ${partner.name}`
+                )}${partner.state ? `&state=${encodeURIComponent(partner.state)}` : ""}`}
+                className="btn-primary mt-4 inline-flex"
+              >
+                Host one here
+              </Link>
+            </div>
           ) : (
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               {events.map((e) => (
@@ -197,12 +235,18 @@ export default async function PartnerPage({
             <h2 className="text-lg font-bold text-gray-900">{partner.name}</h2>
             <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
               {partner.posterUrls.map((url, i) => (
+                /* One shape, whatever shape they uploaded. These were
+                   rendered at their natural aspect in a two-column grid, so
+                   a landscape banner beside a portrait flyer left a hole the
+                   height of the difference. Tapping still opens the full
+                   image uncropped, which is where the stand numbers and
+                   phone numbers actually get read. */
                 <ImageLightbox
                   key={url}
                   src={url}
                   alt={`${partner.name} flyer ${i + 1}`}
-                  className="w-full"
-                  triggerClassName="block overflow-hidden rounded-2xl shadow-[var(--e1)] transition-transform duration-150 active:scale-[0.98]"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  triggerClassName="relative block aspect-[4/5] overflow-hidden rounded-2xl bg-gray-100 shadow-[var(--e1)] transition-transform duration-150 active:scale-[0.98] dark:bg-white/[0.06]"
                 />
               ))}
             </div>
