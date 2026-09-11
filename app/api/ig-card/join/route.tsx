@@ -20,10 +20,16 @@ import { ogFonts } from "@/lib/og-fonts";
  * are the brand. Everything else, ground colour included, belongs to the post.
  *
  * THE PALETTE IS THE AUDIENCE. Young, going out, on a phone at night. It runs
- * hot pink and electric blue alternating down the set, with the brand purple
- * and gold holding the middle, so a profile grid reads as somebody's night out
- * rather than a B2B deck. The first version was six shades of dark and it
- * looked like a fintech.
+ * rose and cobalt alternating down the set, with the brand violet and a warm
+ * gold holding the middle, so a profile grid reads as somebody's night out
+ * rather than a B2B deck. The first version was six shades of dark and looked
+ * like a fintech.
+ *
+ * DEEP, NOT FLUORESCENT. The pass before this used #FF3D8B and #1746E3 at full
+ * chroma across the whole 1080, which glared: a saturated ground at that size
+ * is not an accent any more, it is the light in the room, and the person
+ * looking at it is in bed. These are the same two hues walked down in
+ * saturation and lightness, which keeps the identity and stops the shouting.
  *
  * ?v=0..5 pins one. Anything else rotates by the day.
  */
@@ -184,7 +190,7 @@ function Bubble({
         maxWidth: "660px",
         padding: "20px 26px",
         borderRadius: 26,
-        backgroundColor: mine ? "#00A85A" : "#22307A",
+        backgroundColor: mine ? "#2E7D5B" : "#26325C",
         fontSize: 31,
         lineHeight: 1.3,
         color: muted ? "rgba(255,255,255,0.28)" : "rgba(255,255,255,0.94)",
@@ -215,7 +221,7 @@ function scenes(): Scene[] {
   return [
     /* 0 ── the problem, drawn as the group chat you are not in ----------- */
     {
-      ground: "#0C1E5C",
+      ground: "#141F42",
       fg: "#FFFFFF",
       fg2: "rgba(255,255,255,0.66)",
       on: "dark",
@@ -270,7 +276,7 @@ function scenes(): Scene[] {
 
     /* 1 ── how it works, drawn as the actual request card ---------------- */
     {
-      ground: "#FF3D8B",
+      ground: "#B84A6F",
       fg: "#151020",
       fg2: "rgba(255,255,255,0.95)",
       on: "light",
@@ -321,7 +327,7 @@ function scenes(): Scene[] {
                 justifyContent: "center",
                 padding: "20px 0",
                 borderRadius: 999,
-                backgroundColor: "#534AB7",
+                backgroundColor: "#4A42A3",
                 fontSize: 30,
                 fontWeight: 700,
                 color: "#fff",
@@ -378,7 +384,7 @@ function scenes(): Scene[] {
 
     /* 2 ── the host's chores, struck through ----------------------------- */
     {
-      ground: "#1746E3",
+      ground: "#31509B",
       fg: "#FFFFFF",
       fg2: "rgba(255,255,255,0.74)",
       on: "dark",
@@ -398,12 +404,12 @@ function scenes(): Scene[] {
                   width: 44,
                   height: 44,
                   borderRadius: 12,
-                  border: "3px solid #7FA6FF",
+                  border: "3px solid #9DB4E8",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <Tick color="#CFE0FF" />
+                <Tick color="#D6E1F7" />
               </div>
               <div style={{ display: "flex", position: "relative" }}>
                 <div
@@ -452,7 +458,7 @@ function scenes(): Scene[] {
 
     /* 3 ── four people you know, in a city of dots ----------------------- */
     {
-      ground: "#D6246E",
+      ground: "#8E3557",
       fg: "#FFFFFF",
       fg2: "rgba(255,255,255,0.78)",
       on: "dark",
@@ -474,7 +480,7 @@ function scenes(): Scene[] {
                 width: 46,
                 height: 46,
                 borderRadius: 23,
-                backgroundColor: i < 4 ? "#FFE070" : "#FFFFFF",
+                backgroundColor: i < 4 ? "#F0CE8E" : "#FFFFFF",
                 opacity: i < 4 ? 1 : 0.26,
               }}
             />
@@ -512,7 +518,7 @@ function scenes(): Scene[] {
 
     /* 4 ── what is on, drawn as a radius around you ---------------------- */
     {
-      ground: "#160E3D",
+      ground: "#1B1638",
       fg: "#FFFFFF",
       fg2: "rgba(255,255,255,0.66)",
       on: "dark",
@@ -537,7 +543,7 @@ function scenes(): Scene[] {
                 width: d,
                 height: d,
                 borderRadius: d / 2,
-                border: "2px solid #FF7AB8",
+                border: "2px solid #C98BA8",
                 opacity: 0.18 + i * 0.1,
               }}
             />
@@ -566,7 +572,7 @@ function scenes(): Scene[] {
                 transform: `translate(${p.x}px, ${p.y}px)`,
                 padding: "12px 22px",
                 borderRadius: 999,
-                backgroundColor: "#FF3D8B",
+                backgroundColor: "#B84A6F",
                 fontSize: 26,
                 fontWeight: 700,
                 color: "#fff",
@@ -597,7 +603,7 @@ function scenes(): Scene[] {
 
     /* 5 ── the empty seat ------------------------------------------------ */
     {
-      ground: "#FAC775",
+      ground: "#E3BE86",
       fg: "#151020",
       fg2: "rgba(21,16,32,0.66)",
       on: "light",
