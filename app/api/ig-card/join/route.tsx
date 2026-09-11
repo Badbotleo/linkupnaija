@@ -223,7 +223,7 @@ function scenes(): Scene[] {
       art: (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <Bubble text="Pool party Saturday, my place 🎉" />
-          <Bubble text="I'm in" mine />
+          <Bubble text="I’m in" mine />
           <Bubble text="Same, bringing two people" />
           <div
             style={{
@@ -434,7 +434,7 @@ function scenes(): Scene[] {
               color: "#fff",
             }}
           >
-            Post it once. Stop being the group chat's admin.
+            {"Post it once. Stop being the group chat\u2019s admin."}
           </div>
           <div
             style={{
