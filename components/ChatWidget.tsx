@@ -127,8 +127,15 @@ export default function ChatWidget() {
   }, [open]);
 
   // Let other parts of the app (e.g. the menu drawer) open the assistant.
+  //
+  // detail.human skips Paddy and goes straight to a person. A venue owner
+  // asking us to fix their listing does not want to be triaged by a bot
+  // first, and the alternative was a second inbox for the same conversation.
   useEffect(() => {
-    const openChat = () => setOpen(true);
+    const openChat = (e: Event) => {
+      setOpen(true);
+      if ((e as CustomEvent).detail?.human) setHuman(true);
+    };
     window.addEventListener("linkup:open-chat", openChat);
     return () => window.removeEventListener("linkup:open-chat", openChat);
   }, []);
