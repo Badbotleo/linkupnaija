@@ -25,6 +25,11 @@ import { ogFonts } from "@/lib/og-fonts";
  * rather than a B2B deck. The first version was six shades of dark and looked
  * like a fintech.
  *
+ * ONE PINK, not two. Six cards carrying two rose grounds made the grid read
+ * pink overall, which is a narrower signal than the audience actually is. The
+ * dots card took the naija green instead, which also puts the flag's colour
+ * somewhere other than the rule at the top.
+ *
  * DEEP, NOT FLUORESCENT. The pass before this used #FF3D8B and #1746E3 at full
  * chroma across the whole 1080, which glared: a saturated ground at that size
  * is not an accent any more, it is the light in the room, and the person
@@ -458,9 +463,9 @@ function scenes(): Scene[] {
 
     /* 3 ── four people you know, in a city of dots ----------------------- */
     {
-      ground: "#8E3557",
+      ground: "#1E4A3A",
       fg: "#FFFFFF",
-      fg2: "rgba(255,255,255,0.78)",
+      fg2: "rgba(255,255,255,0.74)",
       on: "dark",
       note: "New in town?",
       art: (
