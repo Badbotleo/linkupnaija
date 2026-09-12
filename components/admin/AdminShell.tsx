@@ -20,7 +20,20 @@ export interface AdminSection {
  * every visit. This renders a rail and mounts ONLY the open section — the
  * others aren't hidden, they don't exist, so their queries never run.
  *
- * Children must be in the same order as `sections`.
+ * PAIRED BY KEY, NOT BY POSITION.
+ *
+ * This used to take panes[index] against sections[index], with a comment
+ * asking whoever edited it to keep the two lists in the same order. That
+ * contract broke the first time somebody inserted a section in the middle of
+ * the list and appended its panel at the end: every section after the
+ * insertion point rendered the NEXT one's panel, so "Post to Instagram" drew
+ * the tournament's registrations and "Things to do this week" drew the venue
+ * list. Both halves looked plausible on their own, which is what made it hard
+ * to see, and nothing failed loudly.
+ *
+ * Each child already carries a key naming its section, so that is what
+ * decides now and order stops mattering. A section with no matching child
+ * says so rather than borrowing its neighbour's.
  */
 export default function AdminShell({
   sections,
@@ -29,7 +42,12 @@ export default function AdminShell({
   sections: AdminSection[];
   children: React.ReactNode;
 }) {
-  const panes = Children.toArray(children);
+  // Children.toArray prefixes with ".$", so "venues" arrives as ".$venues".
+  const paneByKey = new Map<string, React.ReactNode>();
+  for (const child of Children.toArray(children)) {
+    const key = (child as { key?: string | null }).key;
+    if (key) paneByKey.set(String(key).replace(/^\.\$/, ""), child);
+  }
   const [active, setActive] = useState(sections[0]?.id ?? "");
 
   // Survive a reload — an admin mid-task shouldn't be dropped back at the top.
@@ -50,8 +68,7 @@ export default function AdminShell({
     }
   }
 
-  const index = sections.findIndex((s) => s.id === active);
-  const current = sections[index];
+  const current = sections.find((s) => s.id === active);
 
   // Rail entries grouped, preserving the order they were declared in.
   const groups: { name: string; items: AdminSection[] }[] = [];
@@ -116,7 +133,13 @@ export default function AdminShell({
             </span>
           ) : null}
         </h2>
-        {index >= 0 ? panes[index] : null}
+        {current ? (
+          paneByKey.get(current.id) ?? (
+            <p className="text-sm text-gray-500">
+              No panel is wired up for &ldquo;{current.id}&rdquo;.
+            </p>
+          )
+        ) : null}
       </section>
     </div>
   );
