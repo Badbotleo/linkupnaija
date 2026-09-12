@@ -178,8 +178,8 @@ export default function AdminThingsToDo() {
     <div>
       <div className="mb-3 flex items-center justify-between gap-3">
         <p className="text-sm text-gray-500">
-          {rows.length} card{rows.length === 1 ? "" : "s"}. These lead the shelf
-          on both home pages; below them we fall back to partner venues.
+          These lead the shelf on both home pages; below them we fall back to
+          partner venues.
         </p>
         <button
           type="button"
