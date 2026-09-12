@@ -50,7 +50,6 @@ const NAV_GAP = 12;
 export default function ThingsReel({ ideas }: { ideas: ReelIdea[] }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [slidePx, setSlidePx] = useState<number | null>(null);
-  const [active, setActive] = useState(0);
 
   useEffect(() => {
     const measure = () => {
@@ -78,33 +77,6 @@ export default function ThingsReel({ ideas }: { ideas: ReelIdea[] }) {
       window.removeEventListener("orientationchange", measure);
     };
   }, []);
-
-  // Which slide is on screen, for the counter.
-  //
-  // Read off the scroll position rather than watched with an observer. An
-  // observer looked cheaper and was wrong: every slide the reel flies past
-  // reports isIntersecting, the callback batches them, and the last one in
-  // the batch wins whether or not it is still on screen. It read 5 of 57
-  // while sitting on the third. Slides are all one height, so the position
-  // IS the index, and a rAF-throttled read costs a division per frame.
-  useEffect(() => {
-    const scroller = scrollerRef.current;
-    if (!scroller) return;
-    let frame = 0;
-    const onScroll = () => {
-      if (frame) return;
-      frame = requestAnimationFrame(() => {
-        frame = 0;
-        const h = scroller.clientHeight || 1;
-        setActive(Math.round(scroller.scrollTop / h));
-      });
-    };
-    scroller.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      if (frame) cancelAnimationFrame(frame);
-      scroller.removeEventListener("scroll", onScroll);
-    };
-  }, [ideas.length]);
 
   if (ideas.length === 0) return null;
 
@@ -241,9 +213,6 @@ export default function ThingsReel({ ideas }: { ideas: ReelIdea[] }) {
         </div>
       </div>
 
-      <div className="pointer-events-none absolute right-4 top-4 rounded-full bg-black/55 px-2.5 py-1 text-xs font-bold text-white backdrop-blur-sm">
-        {Math.min(active + 1, ideas.length)} / {ideas.length}
-      </div>
     </div>
   );
 }
