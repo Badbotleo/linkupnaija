@@ -85,6 +85,30 @@ const PAGE_SIZE = 120;
 const SELECT =
   "*, rsvps(status), host:users!events_host_id_fkey(rating_avg, rating_count)";
 
+/**
+ * Has migration-listing-flag.sql been run?
+ *
+ * Sorting on a column PostgREST cannot see fails the WHOLE query, not just the
+ * ordering, and this is the busiest page on the site. So the feed refuses to
+ * depend on a migration having landed first: it asks once per server process,
+ * remembers, and sorts by date alone until the column exists.
+ *
+ * Measured 13 Sep 2026, by whether an event ever drew a single join request:
+ * an event somebody hosted here converts at 53% free and 29% paid, a listing
+ * we copied in converts at 29% and 3%. The feed sorted on date and nothing
+ * else, so 105 aggregated paid listings outranked six real hosts whenever
+ * they happened to fall sooner.
+ */
+let listingFlagExists: boolean | null = null;
+async function hasListingFlag(
+  supabase: ReturnType<typeof createClient>
+): Promise<boolean> {
+  if (listingFlagExists !== null) return listingFlagExists;
+  const { error } = await supabase.from("events").select("is_listing").limit(1);
+  listingFlagExists = !error;
+  return listingFlagExists;
+}
+
 export default async function EventsPage({
   searchParams,
 }: {
@@ -210,6 +234,10 @@ export default async function EventsPage({
       const ageDays = (Date.now() - new Date(e.created_at).getTime()) / 86400000;
       s += Math.max(0, 20 - ageDays);
       if (e.max_attendees && e.attendeeCount / e.max_attendees >= 0.6) s += 25;
+      // A copied-in listing starts behind. Large enough to lose to any real
+      // host's event, small enough that a listing in your own state still
+      // beats a hosted event three states away.
+      if ((e as { is_listing?: boolean }).is_listing) s -= 70;
       return s;
     };
     // "For you" is a recommendation feed, so it follows the same default:
@@ -278,8 +306,19 @@ export default async function EventsPage({
         .or("is_corporate.is.null,is_corporate.eq.false");
     }
 
+    // Hosted events above copied-in listings, then date.
+    //
+    // Nothing is hidden by this. Every listing is still in the feed, in date
+    // order, below the events people actually hosted here. A feed of the six
+    // organic upcoming events would look abandoned, and the listings are what
+    // stop that; they just should not be met first.
+    const rank = await hasListingFlag(supabase);
+    let ordered = rank
+      ? query.order("is_listing", { ascending: true })
+      : query;
+
     // Past events read newest-first; upcoming read soonest-first.
-    let { data, error: e, count } = await query
+    let { data, error: e, count } = await ordered
       .order("date", { ascending: !past })
       .order("time", { ascending: !past })
       .range(from, to);
@@ -311,7 +350,9 @@ export default async function EventsPage({
           .not("category", "in", professionalCategoriesFilter())
           .or("is_corporate.is.null,is_corporate.eq.false");
       }
-      ({ data, error: e, count } = await wide
+      ({ data, error: e, count } = await (rank
+        ? wide.order("is_listing", { ascending: true })
+        : wide)
         .order("date", { ascending: !past })
         .order("time", { ascending: !past })
         .range(from, to));
