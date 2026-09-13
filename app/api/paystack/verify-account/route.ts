@@ -1,9 +1,26 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
 // Resolves a Nigerian bank account via Paystack's account-resolution API.
+//
+// LOGIN REQUIRED, and it was not before. This route took an account number
+// and a bank code from anybody and answered with the account holder's real
+// name, on our Paystack secret key and our Paystack bill. That is a name
+// lookup for any Nigerian bank account in the country, open to the internet,
+// and it was reachable by anyone who read the network tab once.
+//
+// Auth is the right fix rather than a rate limit, because the only caller is
+// the payout setup form and you cannot reach that without an account.
 export async function POST(req: Request) {
+  const {
+    data: { user },
+  } = await createClient().auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Log in first." }, { status: 401 });
+  }
+
   let body: { account_number?: string; bank_code?: string };
   try {
     body = await req.json();

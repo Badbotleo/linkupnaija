@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
+import { clientKey, rateLimit } from "@/lib/rate-limit";
 import { EVENT_CATEGORIES, NIGERIAN_STATES } from "@/lib/constants";
 
 export const runtime = "nodejs";
@@ -16,6 +17,18 @@ const MODEL = "claude-haiku-4-5-20251001";
  * from our own lists, so a hallucinated value can't leak into a query string.
  */
 export async function POST(req: Request) {
+  // Every call here spends Anthropic credit, and the route has to stay open
+  // because the vibe matcher answers people who have not signed up. Auth is not
+  // available as a fix, so cost is: a loop in somebody's terminal gets 30
+  // a minute rather than a bill by morning.
+  const wait = rateLimit(clientKey(req), 30, 60000);
+  if (wait !== null) {
+    return NextResponse.json(
+      { error: "Too many requests. Try again shortly." },
+      { status: 429, headers: { "Retry-After": String(wait) } }
+    );
+  }
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return NextResponse.json(

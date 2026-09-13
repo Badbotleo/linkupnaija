@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
+import { clientKey, rateLimit } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -19,6 +20,18 @@ function truncate(text: string | null, max: number): string {
 }
 
 export async function POST(req: Request) {
+  // Every call here spends Anthropic credit, and the route has to stay open
+  // because Paddy answers people who have not signed up. Auth is not
+  // available as a fix, so cost is: a loop in somebody's terminal gets 20
+  // a minute rather than a bill by morning.
+  const wait = rateLimit(clientKey(req), 20, 60000);
+  if (wait !== null) {
+    return NextResponse.json(
+      { error: "Too many requests. Try again shortly." },
+      { status: 429, headers: { "Retry-After": String(wait) } }
+    );
+  }
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
