@@ -8,6 +8,7 @@ import ShareButtons from "@/components/ShareButtons";
 import EventTabs from "@/components/EventTabs";
 import ChatPanel from "@/components/ChatPanel";
 import ManageRequests from "@/components/ManageRequests";
+import DrawWinners from "@/components/claim/DrawWinners";
 import DeleteEventButton from "@/components/DeleteEventButton";
 import Avatar from "@/components/Avatar";
 import ApprovedGuests from "@/components/events/ApprovedGuests";
@@ -206,11 +207,20 @@ export default async function EventDetailPage({
       .order("sort_order", { ascending: true })
       .order("price", { ascending: true });
 
-  let tierRes = await readTiers(`${tierCols}, claim_code`);
+  let tierRes = await readTiers(`${tierCols}, claim_code, draw_size`);
+  if (tierRes.error) tierRes = await readTiers(`${tierCols}, claim_code`);
   if (tierRes.error) tierRes = await readTiers(tierCols);
-  const tierRows = (tierRes.data ?? []).filter(
-    (t) => !(t as { claim_code?: string | null }).claim_code
-  );
+  const allTiers = (tierRes.data ?? []) as unknown as {
+    id: string;
+    claim_code?: string | null;
+    draw_size?: number | null;
+  }[];
+  const tierRows = allTiers.filter((t) => !t.claim_code);
+
+  // The raffle tier, kept back for the host's own view. Hidden from the
+  // ticket panel above, because a free option on a paid event's page is a
+  // price cut; the host still needs somewhere to pull the names.
+  const raffle = allTiers.find((t) => t.claim_code && t.draw_size);
   const tierBase = (tierRows ?? []) as unknown as {
     requires_approval?: boolean | null;
     id: string;
@@ -740,6 +750,30 @@ export default async function EventDetailPage({
 
           {isHost && (
             <div className="mt-8 space-y-8">
+              {/* The draw, above everything, and only while there is one. It
+                  is the single time-boxed thing on this page: claims close,
+                  and the names have to come out before the day. */}
+              {raffle && (
+                <DrawWinners
+                  code={raffle.claim_code as string}
+                  drawSize={raffle.draw_size as number}
+                  claimed={
+                    rsvps.filter(
+                      (r) =>
+                        (r as { tier_id?: string | null }).tier_id ===
+                          raffle.id && r.status !== "declined"
+                    ).length
+                  }
+                  drawn={
+                    rsvps.filter(
+                      (r) =>
+                        (r as { tier_id?: string | null }).tier_id ===
+                          raffle.id && r.status === "accepted"
+                    ).length
+                  }
+                />
+              )}
+
               {/* Numbers first: before deciding whether the guest list is the
                   problem, a host wants to know how many people got as far as
                   looking. */}

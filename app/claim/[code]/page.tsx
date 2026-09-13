@@ -22,20 +22,25 @@ export const metadata = {
  * than a giveaway. Put it behind its own link and the N2,000 on the event page
  * stays the price, while ten people from somebody's group chat get in free.
  *
+ * A RAFFLE, NOT A QUEUE. First come, first served rewarded whoever happened
+ * to be holding their phone when the link went out, which is a poor offer to
+ * the other 140 members. Anybody can claim; the host draws ten.
+ *
  * THREE RULES, and they govern different things.
  *
- *   First come, first served decides who gets into the QUEUE. When the slots
- *   are gone the page says so and stops taking claims.
+ *   Claiming is open to everyone until the closing time. There is no cap,
+ *   because the eleventh claim is the point of a draw.
  *
- *   The host decides who gets IN. A claim is a request, exactly like any other
- *   request, and it lands in the same approvals list.
+ *   A fuller profile is WEIGHTED, not ranked: 1.0 with nothing filled in,
+ *   5.0 with everything. Nobody is excluded, which is the difference between
+ *   a raffle and a ranking wearing a raffle's clothes.
  *
- *   A fuller profile is read SOONER, because a host works down a list and
- *   stops. It does not buy a yes.
+ *   The host still decides. The draw sets ten to accepted and they can
+ *   decline any of them, or accept somebody by hand, like any other request.
  *
- * The page says all three out loud. A ranking nobody is told about changes no
- * behaviour, and the entire reason to rank on profile is that 23% of members
- * have a photo and a host approving strangers is currently looking at nothing.
+ * The page says all three out loud. Odds nobody is told about change no
+ * behaviour, and the entire reason to weight on profile is that 23% of
+ * members have a photo, so a host approving strangers is looking at nothing.
  */
 export default async function ClaimPage({
   params,
@@ -61,6 +66,9 @@ export default async function ClaimPage({
           remaining: number | null;
           closes_at: string | null;
           is_open: boolean;
+          draw_size: number | null;
+          claimed: number | null;
+          drawn: number | null;
         }[]
       | null
   )?.[0];
@@ -163,16 +171,23 @@ export default async function ClaimPage({
           </div>
         </div>
 
-        {/* --- how many are left --- */}
+        {/* --- how many are in the hat --- */}
+        {/* Deliberately not a countdown of remaining slots. In a draw, a
+            claim does not use anything up, and "3 left" would tell somebody
+            arriving late that they had missed it when they had not. */}
         <div className="mt-4 flex items-center justify-between rounded-2xl border border-gray-200 p-4 dark:border-white/10">
           <div>
             <p className="text-[13px] font-black uppercase tracking-[0.1em] text-gray-400">
-              Slots
+              In the draw
             </p>
             <p className="mt-0.5 text-[22px] font-extrabold tabular-nums text-gray-900 dark:text-white">
-              {slot.remaining === null
-                ? "Open"
-                : `${slot.remaining} of ${slot.quantity} left`}
+              {slot.claimed ?? 0} claimed
+              {slot.draw_size ? (
+                <span className="font-bold text-gray-400">
+                  {" "}
+                  · {slot.draw_size} win
+                </span>
+              ) : null}
             </p>
           </div>
           {!slot.is_open && (
@@ -200,22 +215,23 @@ export default async function ClaimPage({
         <div className="mt-6 space-y-3 rounded-2xl bg-gray-50 p-4 text-[14px] leading-snug text-gray-600 dark:bg-white/5 dark:text-white/65">
           <p>
             <span className="font-bold text-gray-900 dark:text-white">
-              Claiming holds your place in the queue.
+              Anyone can claim. {slot.draw_size ?? 10} get picked.
             </span>{" "}
-            It is not a ticket yet. When the slots are gone, claiming closes.
+            It is a draw, not a race, so being early does not help. Claiming
+            closes at the deadline.
           </p>
           <p>
             <span className="font-bold text-gray-900 dark:text-white">
-              The host decides who comes.
+              A fuller profile means better odds.
             </span>{" "}
-            Your claim lands with every other request and they say yes or no.
+            Filling everything in makes you five times likelier to come out of
+            the hat. Leaving it empty does not take you out of it.
           </p>
           <p>
             <span className="font-bold text-gray-900 dark:text-white">
-              A fuller profile gets read first.
+              The host has the last word.
             </span>{" "}
-            Hosts work down the list and stop. Being further up is worth more
-            than being early.
+            They run the draw and can still decide who comes.
           </p>
         </div>
 
@@ -223,7 +239,7 @@ export default async function ClaimPage({
         {user && gaps.length > 0 && (
           <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
             <p className="text-[14px] font-bold text-amber-900">
-              Add {gaps.slice(0, 2).join(" and ")} to move up the list
+              Add {gaps.slice(0, 2).join(" and ")} to improve your odds
             </p>
             <p className="mt-1 text-[13px] leading-snug text-amber-800/80">
               {gaps.length > 2

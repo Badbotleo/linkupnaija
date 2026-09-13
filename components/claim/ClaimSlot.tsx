@@ -10,14 +10,13 @@ import { createClient } from "@/lib/supabase/client";
  *
  * A claim is an ordinary join request carrying the giveaway tier, which is
  * what makes the rest of the system work without knowing this page exists: it
- * lands in the host's approvals list, the tier stock trigger enforces the slot
- * count in the database, and an accepted claim produces the same scannable
- * ticket a paid one does.
+ * lands in the host's approvals list, and a claim that wins produces the same
+ * scannable ticket a paid one does.
  *
- * WHICH ALSO MEANS THE RACE IS HANDLED WHERE IT HAS TO BE. Ten people tapping
- * at once cannot take eleven slots, because the cap is a trigger and not a
- * number this component read a moment ago. The eleventh gets the trigger's own
- * message back, which already says the tier is full.
+ * NOTHING IS CAPPED HERE, and that is deliberate. A raffle tier runs with
+ * quantity null so the stock trigger lets everybody in; draw_size decides how
+ * many win, and draw_claim_winners() picks them. A cap would refuse the
+ * eleventh claim, which in a draw is the one you most want.
  */
 export default function ClaimSlot({
   eventId,
@@ -57,11 +56,11 @@ export default function ClaimSlot({
     return (
       <div className="rounded-2xl bg-brand-50 p-4 text-center">
         <p className="text-[15px] font-bold text-brand-700">
-          Claimed. You are in the queue.
+          You are in the draw.
         </p>
         <p className="mt-1 text-[13px] leading-snug text-brand-700/75">
-          The host reviews these by hand. Fill in your profile while you wait,
-          it is what decides how soon they read you.
+          Fill in your profile while you wait. It decides your odds and it
+          counts right up to the moment of the draw.
         </p>
       </div>
     );
@@ -82,7 +81,7 @@ export default function ClaimSlot({
     return (
       <div className="rounded-2xl border border-dashed border-gray-300 p-4 text-center dark:border-white/20">
         <p className="text-[15px] font-bold text-gray-700 dark:text-white/80">
-          All the slots are gone.
+          Claiming has closed.
         </p>
         <Link
           href={`/events/${eventId}`}
@@ -118,9 +117,9 @@ export default function ClaimSlot({
     setBusy(false);
 
     if (err) {
-      // The stock trigger raises in plain English already ("Vendor space is
-      // sold out"), so it is shown as written rather than translated into
-      // something vaguer.
+      // The database raises in plain English already, whether that is a
+      // closed tier or a full one, so it is shown as written rather than
+      // translated into something vaguer.
       setError(
         /duplicate|unique/i.test(err.message)
           ? "You have already claimed this one."
@@ -140,7 +139,7 @@ export default function ClaimSlot({
         disabled={busy}
         className="btn-primary w-full disabled:opacity-50"
       >
-        {busy ? "Claiming…" : "Claim a slot"}
+        {busy ? "Claiming…" : "Enter the draw"}
       </button>
       {error && (
         <p className="mt-2 rounded-xl bg-red-50 px-3 py-2.5 text-[13px] font-semibold text-red-700">
