@@ -772,7 +772,11 @@ export default async function EventDetailPage({
 
               {/* Only the host sees this; RLS is what actually enforces it. */}
               {!eventIsOver && <TicketTiersEditor eventId={event.id} />}
-              <ManageRequests initialRequests={rsvps} isPast={eventIsOver} />
+              <ManageRequests
+                initialRequests={rsvps}
+                isPast={eventIsOver}
+                isPaidEvent={(event.price ?? 0) > 0}
+              />
               <DeleteEventButton
                 eventId={event.id}
                 hasPaidAttendees={rsvps.some((r) => r.paid)}

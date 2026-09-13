@@ -16,9 +16,12 @@ import { isProActive } from "@/lib/pro";
 export default function ManageRequests({
   initialRequests,
   isPast = false,
+  isPaidEvent = false,
 }: {
   initialRequests: RsvpWithProfile[];
   isPast?: boolean;
+  /** Costs money, so "in free" is a thing a host can give. */
+  isPaidEvent?: boolean;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -97,7 +100,24 @@ export default function ManageRequests({
     setBusyId(null);
   }
 
-  async function setStatus(id: string, status: "accepted" | "declined") {
+  /**
+   * Accept, decline, or accept without charging.
+   *
+   * The third one is what a host does for a friend, a plus one, or the ten
+   * people from their group chat who were promised a free ticket. Until now
+   * the only way to do that was for an admin to credit each person's wallet,
+   * which meant the guest had to sign up, tell somebody their email, wait, and
+   * then come back. Four steps and an admin in the middle of every one.
+   *
+   * The host has always had the database permission for this: the RLS policy
+   * lets a host update any rsvp on their own event, `paid` included. There was
+   * simply no button. So this is a button, not a new power.
+   */
+  async function setStatus(
+    id: string,
+    status: "accepted" | "declined",
+    comp = false
+  ) {
     setBusyId(id);
     setError(null);
     // .select() matters: without it an update that matches NO rows — which is
@@ -105,9 +125,9 @@ export default function ManageRequests({
     // and no data, so the click silently did nothing.
     const { data, error } = await supabase
       .from("rsvps")
-      .update({ status })
+      .update(comp ? { status, paid: true } : { status })
       .eq("id", id)
-      .select("id, status");
+      .select("id, status, paid");
 
     if (error) {
       setError(error.message);
@@ -118,7 +138,9 @@ export default function ManageRequests({
     } else {
       if (status === "accepted") confettiGold();
       setRequests((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, status } : r))
+        prev.map((r) =>
+          r.id === id ? { ...r, status, paid: comp ? true : r.paid } : r
+        )
       );
       router.refresh();
     }
@@ -231,6 +253,20 @@ export default function ManageRequests({
                     Decline
                   </button>
                 </div>
+
+                {/* Only where there is something to waive. On a free event
+                    this would be a second Accept button saying the same
+                    thing. */}
+                {isPaidEvent && (
+                  <button
+                    type="button"
+                    onClick={() => setStatus(r.id, "accepted", true)}
+                    disabled={busyId === r.id}
+                    className="mt-2 w-full rounded-xl border border-dashed border-gray-300 py-2 text-[13px] font-bold text-gray-600 transition hover:border-brand hover:text-brand disabled:opacity-50"
+                  >
+                    Let them in free
+                  </button>
+                )}
               </li>
             ))}
           </ul>
