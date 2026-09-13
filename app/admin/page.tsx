@@ -22,6 +22,7 @@ import AdminRides from "@/components/admin/AdminRides";
 import AdminPro from "@/components/admin/AdminPro";
 import AdminIdChecks from "@/components/admin/AdminIdChecks";
 import AdminVenueClaims from "@/components/admin/AdminVenueClaims";
+import AdminMembers from "@/components/admin/AdminMembers";
 import AdminPayouts from "@/components/admin/AdminPayouts";
 import AdminWalletCredit from "@/components/admin/AdminWalletCredit";
 import AdminTournament from "@/components/admin/AdminTournament";
@@ -443,6 +444,7 @@ export default async function AdminPage() {
           { id: "tournament", label: "FC26 Tournament", emoji: "🎮", group: "Content" },
           { id: "payouts", label: "Payout requests", emoji: "💸", group: "Money", badge: payouts.length },
           { id: "wallet", label: "Credit a wallet", emoji: "💰", group: "Money" },
+          { id: "members", label: "All members", emoji: "👥", group: "People" },
           { id: "pro", label: "Premium members", emoji: "⭐", group: "People" },
           { id: "idchecks", label: "ID checks", emoji: "🪪", group: "People" },
           { id: "hosts", label: "Hosts", emoji: "🏅", group: "People" },
@@ -579,6 +581,10 @@ export default async function AdminPage() {
 
         <div key="venueclaims">
 <AdminVenueClaims />
+        </div>
+
+        <div key="members">
+<AdminMembers />
         </div>
 
         <div key="hosts">

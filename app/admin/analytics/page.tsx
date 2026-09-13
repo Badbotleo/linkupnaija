@@ -51,6 +51,7 @@ export default async function AdminAnalyticsPage() {
     eventsRes,
     rsvpsRes,
     txRes,
+    premiumRes,
     trafficRes,
     pagesRes,
     splitRes,
@@ -67,6 +68,12 @@ export default async function AdminAnalyticsPage() {
       .select("id, created_at, state, category, host_id, date, price, event_type"),
     supabase.from("rsvps").select("id, status, attended, event_id, created_at"),
     supabase.from("transactions").select("amount, platform_fee"),
+    // Premium is the other half of the revenue and was never counted here.
+    // Its own table, because a subscription is not a ticket: there is no
+    // event, no host and no payout, so every naira of it is ours. Arrives
+    // with migration-premium-payments.sql; a missing table reads as zero
+    // rather than taking the page down.
+    supabase.from("premium_payments").select("amount, created_at"),
     // Site-wide visitors, the GA-style number. Returns nothing until
     // migration-site-visits.sql has been run, and nothing to non-admins.
     supabase.rpc("site_traffic", { p_days: 30 }),
@@ -91,6 +98,10 @@ export default async function AdminAnalyticsPage() {
   );
   const rsvps = rsvpsRes.data ?? [];
   const tx = txRes.data ?? [];
+  const premium = (premiumRes.data ?? []) as {
+    amount: number | null;
+    created_at: string;
+  }[];
 
   // Null when the migration hasn't run — the section says so rather than
   // rendering a confident zero, which would read as "nobody came".
@@ -226,6 +237,15 @@ export default async function AdminAnalyticsPage() {
   const gross = tx.reduce((sum, t) => sum + (t.amount ?? 0), 0);
   const fees = tx.reduce((sum, t) => sum + (t.platform_fee ?? 0), 0);
 
+  // Tickets and subscriptions are not the same kind of money and adding them
+  // into one number would flatter both. On a ticket we keep the fee and the
+  // host keeps the rest; on a subscription we keep all of it. So the kept
+  // total is fees + premium, and that is the line that says what the business
+  // actually earned.
+  const premiumGross = premium.reduce((sum, p) => sum + (p.amount ?? 0), 0);
+  const premiumSubs = premium.length;
+  const kept = fees + premiumGross;
+
   const topFunnel = Math.max(funnel[0].n, 1);
 
   return (
@@ -270,6 +290,16 @@ export default async function AdminAnalyticsPage() {
             label="Ticket sales"
             value={formatNaira(gross)}
             sub={`${formatNaira(fees)} platform fees`}
+          />
+          <Stat
+            label="Premium"
+            value={formatNaira(premiumGross)}
+            sub={`${premiumSubs} payment${premiumSubs === 1 ? "" : "s"}, all ours`}
+          />
+          <Stat
+            label="We kept"
+            value={formatNaira(kept)}
+            sub="Platform fees plus Premium"
           />
           <Stat
             label="Visitor → member"
