@@ -35,10 +35,17 @@ comment on column public.ticket_tiers.draw_size is
 
 -- ------------------------------------------------------------ what is open --
 -- Replaces the version in migration-ticket-claims.sql. Same name and shape
--- plus the two raffle columns, so the claim page reads one row as before.
+-- plus the three raffle columns, so the claim page reads one row as before.
 --
 -- is_open no longer closes on a full house, because a raffle does not fill.
 -- Only the clock and the host's switch close it.
+--
+-- DROPPED FIRST, not replaced. "create or replace" cannot change a function's
+-- return type, and this one gains three OUT columns, so replacing it fails
+-- with 42P13 and takes the rest of the file down with it. Nothing depends on
+-- claim_slots but the claim page's rpc call, so dropping it costs a moment.
+drop function if exists public.claim_slots(text);
+
 create or replace function public.claim_slots(p_code text)
 returns table (
   tier_id      uuid,
@@ -80,6 +87,8 @@ as $$
   limit 1;
 $$;
 
+-- Public on purpose: the claim page shows the count to somebody who has not
+-- logged in yet. Returns counts only, never who claimed.
 grant execute on function public.claim_slots(text) to anon, authenticated;
 
 
@@ -87,6 +96,11 @@ grant execute on function public.claim_slots(text) to anon, authenticated;
 -- Run by the event's host or an admin. Picks from claims still pending, so
 -- running it twice tops up rather than re-drawing, and anybody the host has
 -- already accepted by hand counts against the ten.
+--
+-- Same reasoning as above: dropped so a later change to what it returns is
+-- one edit rather than an error nobody expects.
+drop function if exists public.draw_claim_winners(text);
+
 create or replace function public.draw_claim_winners(p_code text)
 returns table (winner_id uuid, winner_name text, weight numeric)
 language plpgsql
@@ -107,7 +121,18 @@ begin
     raise exception 'No giveaway with that code.';
   end if;
 
-  if t.host_id <> auth.uid() and not public.is_admin() then
+  -- NULL IS NOT A FAILED COMPARISON, and this guard was written as though it
+  -- were. For an anonymous caller auth.uid() is null, so `t.host_id <>
+  -- auth.uid()` is null rather than true, `null and not is_admin()` is null,
+  -- and the IF never fires. Verified against the live database: an anon key
+  -- called this and was not refused. It drew nobody only because there were no
+  -- claims yet.
+  if auth.uid() is null then
+    raise exception 'Log in first.'
+      using errcode = 'insufficient_privilege';
+  end if;
+
+  if not coalesce(t.host_id = auth.uid(), false) and not public.is_admin() then
     raise exception 'Only the host of this event can draw.'
       using errcode = 'insufficient_privilege';
   end if;
@@ -160,6 +185,15 @@ begin
 end;
 $$;
 
+-- TWO REVOKES, and both are needed.
+--
+-- Postgres grants EXECUTE on a new function to PUBLIC by default, so granting
+-- to authenticated adds nothing. And Supabase's own bootstrap grants execute
+-- on everything in schema public to anon BY NAME, so revoking from PUBLIC
+-- leaves that direct grant untouched. Either one alone still lets an
+-- anonymous caller in.
+revoke execute on function public.draw_claim_winners(text) from public;
+revoke execute on function public.draw_claim_winners(text) from anon;
 grant execute on function public.draw_claim_winners(text) to authenticated;
 
 
@@ -173,4 +207,13 @@ update public.ticket_tiers
 
 
 -- ------------------------------------------------------------ where we are --
+-- Expect ONE row: quantity null, draw_size 10, claimed 0, drawn 0, is_open t.
 select * from public.claim_slots('potluck');
+
+-- And the guard. Expect ZERO rows: neither anon nor public should be able to
+-- execute the draw. A row here means an anonymous caller can pick the winners.
+select grantee, privilege_type
+  from information_schema.routine_privileges
+ where routine_schema = 'public'
+   and routine_name = 'draw_claim_winners'
+   and grantee in ('anon', 'PUBLIC');
