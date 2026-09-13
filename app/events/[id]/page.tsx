@@ -186,14 +186,32 @@ export default async function EventDetailPage({
   // select: if the migration hasn't run, an embed would fail the WHOLE event
   // query and take the page down. On its own, a missing table just means no
   // tiers and the single price shows as before.
-  const { data: tierRows } = await supabase
-    .from("ticket_tiers")
-    .select("id, name, price, description, admits, quantity, closes_at, requires_approval")
-    .eq("event_id", params.id)
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true })
-    .order("price", { ascending: true });
-  const tierBase = (tierRows ?? []) as {
+  //
+  // claim_code arrives with migration-ticket-claims.sql and a tier carrying
+  // one is HIDDEN here on purpose: it is a giveaway slot, reachable only at
+  // /claim/<code>. A free tier sitting on a paid event's page is not a
+  // giveaway, it is a price cut, and everybody would take it.
+  //
+  // Asked for, then asked for again without it, rather than assumed. A column
+  // PostgREST cannot see fails the whole select, and losing the tier list
+  // would take the ticket panel with it.
+  const tierCols =
+    "id, name, price, description, admits, quantity, closes_at, requires_approval";
+  const readTiers = (cols: string) =>
+    supabase
+      .from("ticket_tiers")
+      .select(cols)
+      .eq("event_id", params.id)
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .order("price", { ascending: true });
+
+  let tierRes = await readTiers(`${tierCols}, claim_code`);
+  if (tierRes.error) tierRes = await readTiers(tierCols);
+  const tierRows = (tierRes.data ?? []).filter(
+    (t) => !(t as { claim_code?: string | null }).claim_code
+  );
+  const tierBase = (tierRows ?? []) as unknown as {
     requires_approval?: boolean | null;
     id: string;
     name: string;
