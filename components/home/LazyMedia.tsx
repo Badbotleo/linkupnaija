@@ -14,6 +14,19 @@ import { useEffect, useRef, useState } from "react";
  *
  * A <video> with no src costs nothing. One with a src costs its whole file.
  * So the src arrives with the card, and playback follows visibility.
+ *
+ * AND IT LEAVES AGAIN. `near` used to be a one-way latch: once a card had
+ * been seen it kept its src for the life of the page. On a shelf of eight
+ * that is free. On the Things to do reel it is 61 full-screen slides, and a
+ * decoded 1080x1920 frame is about 8MB, so scrolling to the end left the tab
+ * holding a few hundred megabytes and Safari killed the renderer. The symptom
+ * is a black page reading "a problem repeatedly occurred", with no console
+ * error, because the process that would have logged it is gone.
+ *
+ * So the margin is wide and the latch swings both ways: media within about
+ * two slides either side stays, and anything further out gives its src back
+ * for the browser to reclaim. Wide enough that ordinary scrolling never
+ * refetches, which is what the bill above is about.
  */
 export default function LazyMedia({
   src,
@@ -38,12 +51,12 @@ export default function LazyMedia({
     if (!el) return;
     const io = new IntersectionObserver(
       ([entry]) => {
-        // rootMargin starts the fetch just before it arrives, so swiping
-        // never waits on a blank card.
-        if (entry.isIntersecting) setNear(true);
+        // Both ways. Within the margin the media loads and stays; beyond it
+        // the src is dropped so the frame can be collected.
+        setNear(entry.isIntersecting);
         setVisible(entry.intersectionRatio > 0.5);
       },
-      { rootMargin: "300px", threshold: [0, 0.5] }
+      { rootMargin: "1200px", threshold: [0, 0.5] }
     );
     io.observe(el);
     return () => io.disconnect();
@@ -53,9 +66,18 @@ export default function LazyMedia({
   // keeps downloading, which is the bill again in a quieter form.
   useEffect(() => {
     const v = video.current;
-    if (!v || !near) return;
-    if (visible) v.play().catch(() => {});
-    else v.pause();
+    if (!v) return;
+    if (near && visible) {
+      v.play().catch(() => {});
+      return;
+    }
+    v.pause();
+    // Leaving the margin drops the src, and a <video> holding a decoded
+    // buffer for a file it no longer points at is the leak this is about.
+    if (!near) {
+      v.removeAttribute("src");
+      v.load();
+    }
   }, [near, visible]);
 
   return (
