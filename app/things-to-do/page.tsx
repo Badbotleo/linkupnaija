@@ -33,10 +33,18 @@ export default async function ThingsToDoPage() {
   }
   if (!state) state = getVisitorState();
 
-  // The whole point of this page is seeing everything, so the shelf's
-  // two-per-activity cap is relaxed rather than removed — eight identical
-  // park cards in a row still reads as a bug.
-  const ideas = await buildIdeas(state, { limit: 60, perActivityCap: 6 });
+  // Thirty, not sixty.
+  //
+  // Sixty full-screen slides is what crashed the tab on a phone: every one
+  // that has been seen holds a decoded frame, and Safari killed the renderer
+  // around the end of the reel. LazyMedia now releases media it has scrolled
+  // past, which fixed the memory, but the DOM is still sixty articles deep
+  // and nobody has ever reached the bottom of it.
+  //
+  // The shelf's two-per-activity cap is still relaxed rather than removed,
+  // because the point of this page is seeing a range: eight identical park
+  // cards in a row reads as a bug. Four is enough range at this length.
+  const ideas = await buildIdeas(state, { limit: 30, perActivityCap: 4 });
 
   return (
     <div>
