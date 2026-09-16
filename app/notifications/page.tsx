@@ -88,13 +88,23 @@ export default async function NotificationsPage() {
                 )}
               </div>
             );
+            // Where tapping goes. link is preferred and event_id is the
+            // fallback, so every row that worked before still does.
+            //
+            // Only a site-relative path is followed. These rows are written
+            // by database triggers today, but a notification is a string
+            // somebody else caused to exist, and a full URL in there would be
+            // a link out of the site rendered in our own chrome.
+            const to =
+              n.link && n.link.startsWith("/") && !n.link.startsWith("//")
+                ? n.link
+                : n.event_id
+                  ? `/events/${n.event_id}`
+                  : null;
+
             return (
               <li key={n.id}>
-                {n.event_id ? (
-                  <Link href={`/events/${n.event_id}`}>{body}</Link>
-                ) : (
-                  body
-                )}
+                {to ? <Link href={to}>{body}</Link> : body}
               </li>
             );
           })}

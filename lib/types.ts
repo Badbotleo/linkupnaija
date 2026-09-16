@@ -361,6 +361,12 @@ export interface AppNotification {
   user_id: string;
   message: string;
   event_id: string | null;
+  /**
+   * Where tapping it goes, site-relative. Arrives with
+   * migration-notification-links.sql and is preferred over event_id, which
+   * could only ever point at an event and left everything else a dead end.
+   */
+  link?: string | null;
   read: boolean;
   created_at: string;
 }

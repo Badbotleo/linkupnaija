@@ -95,8 +95,30 @@ grant  execute on function public.owns_venue(uuid) to authenticated;
 -- paid is deliberately NOT revoked. The event page selects it on every load,
 -- including for logged-out visitors, so taking it away would blank the
 -- busiest page on the site to close a boolean.
-revoke select (payment_reference, paid_at, payment_due_at)
-  on public.rsvps from anon;
+--
+-- REVOKE THE TABLE, THEN GRANT THE COLUMNS BACK. A column-level revoke does
+-- nothing while the role still holds a table-wide SELECT, and Supabase grants
+-- exactly that to anon in its bootstrap. The first version of this file
+-- revoked three columns and changed nothing; anon could still read every
+-- Paystack reference afterwards, which is how it was caught. This is the same
+-- shape migration-hide-emails.sql already used on users, and it should have
+-- been used here the first time.
+revoke select on public.rsvps from anon;
+
+grant select (
+  id,
+  event_id,
+  user_id,
+  created_at,
+  status,
+  paid,
+  companion_id,
+  decided_at,
+  attended,
+  tier_id,
+  chat_approved,
+  seats
+) on public.rsvps to anon;
 
 
 -- ------------------------------------------------------------ still open --
@@ -109,6 +131,17 @@ revoke select (payment_reference, paid_at, payment_due_at)
 
 
 -- ------------------------------------------------------------ where we are --
+-- Expect ZERO rows: the three payment columns should no longer be readable by
+-- anon, while the guest-list columns above still are.
+select column_name
+  from information_schema.column_privileges
+ where table_schema = 'public'
+   and table_name = 'rsvps'
+   and grantee = 'anon'
+   and privilege_type = 'SELECT'
+   and column_name in ('payment_reference', 'paid_at', 'payment_due_at');
+
+
 -- Every definer function still reachable by anon or PUBLIC. Each row should
 -- be one of the four named above; anything else is worth a second look.
 
