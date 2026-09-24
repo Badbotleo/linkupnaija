@@ -20,6 +20,8 @@ export default function AddFriendButton({
   const [rel, setRel] = useState<Rel>("none");
   const [connId, setConnId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  /** Unfriending asks once. See the button at the bottom of this file. */
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -107,6 +109,49 @@ export default function AddFriendButton({
     router.refresh();
   }
 
+  /**
+   * Unfriend. "✓ Friends" was a full stop: you could take back a request you
+   * had sent, but once somebody accepted there was no way out of it from
+   * anywhere on the site.
+   *
+   * The database has allowed this the whole time. migration-connections.sql
+   * has a delete policy of `requester_id = auth.uid() or receiver_id =
+   * auth.uid()`, so either side could always remove the row. Only the button
+   * was missing.
+   *
+   * Deliberately silent. handle_connection_change() writes a notification on
+   * insert and on accept, and there is no case for telling somebody they have
+   * been unfriended.
+   */
+  async function unfriend() {
+    setBusy(true);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      setBusy(false);
+      return;
+    }
+    // By id when we have one, otherwise by the pair in either direction: the
+    // row belongs to whoever sent the request, which may well be them.
+    const q = supabase.from("connections").delete();
+    const { error } = connId
+      ? await q.eq("id", connId)
+      : await q.or(
+          `and(requester_id.eq.${user.id},receiver_id.eq.${targetId}),and(requester_id.eq.${targetId},receiver_id.eq.${user.id})`
+        );
+    setBusy(false);
+    setConfirming(false);
+    if (error) {
+      toast.error("Couldn't remove that friend.");
+      return;
+    }
+    setConnId(null);
+    setRel("none");
+    toast.success("Removed");
+    router.refresh();
+  }
+
   async function accept() {
     if (!connId) return;
     setBusy(true);
@@ -121,8 +166,48 @@ export default function AddFriendButton({
     }
   }
 
-  if (rel === "friends")
-    return <span className="flex-1 rounded-full bg-naija-50 py-2 text-center text-sm font-semibold text-naija-600">✓ Friends</span>;
+  /**
+   * Two taps, not a hover.
+   *
+   * The Cancel-request button below swaps its label on hover, which is fine
+   * for taking back your own unanswered request and useless on a phone, where
+   * there is no hover at all and the first tap is the only tap. Unfriending
+   * is the more final of the two, and nearly everybody here is on a phone, so
+   * it asks in a state you can see and back out of.
+   */
+  if (rel === "friends") {
+    if (confirming)
+      return (
+        <span className="flex flex-1 items-center gap-2">
+          <button
+            type="button"
+            onClick={unfriend}
+            disabled={busy}
+            className="flex-1 rounded-full bg-red-50 py-2 text-center text-sm font-semibold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
+          >
+            {busy ? "…" : "Remove friend"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setConfirming(false)}
+            disabled={busy}
+            className="rounded-full bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-600 transition hover:bg-gray-200 disabled:opacity-50"
+          >
+            Keep
+          </button>
+        </span>
+      );
+    return (
+      <button
+        type="button"
+        onClick={() => setConfirming(true)}
+        aria-label="Remove friend"
+        className="flex-1 rounded-full bg-naija-50 py-2 text-center text-sm font-semibold text-naija-600 transition hover:bg-gray-100 hover:text-gray-600"
+      >
+        ✓ Friends
+      </button>
+    );
+  }
   if (rel === "outgoing")
     return (
       <button

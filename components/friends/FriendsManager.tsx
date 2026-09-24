@@ -49,6 +49,8 @@ export default function FriendsManager({
   const [results, setResults] = useState<FriendUser[] | null>(null);
   const [searching, setSearching] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  /** The connection currently asking "remove, or keep?". */
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   const loadConnections = useCallback(async () => {
     const { data } = await supabase
@@ -154,6 +156,29 @@ export default function FriendsManager({
     setBusyId(null);
   }
 
+  /**
+   * Unfriend, from the list where you can actually see all of them.
+   *
+   * The delete policy in migration-connections.sql has always allowed either
+   * side to remove the row; there was simply no control anywhere that did it.
+   * Silent on purpose: no notification is written, and none should be.
+   */
+  async function unfriend(connId: string) {
+    setBusyId(connId);
+    const { error } = await supabase
+      .from("connections")
+      .delete()
+      .eq("id", connId);
+    setBusyId(null);
+    setConfirmingId(null);
+    if (error) {
+      toast.error("Couldn't remove that friend.");
+      return;
+    }
+    toast.success("Removed");
+    await refresh();
+  }
+
   async function respond(connId: string, status: "accepted" | "declined") {
     setBusyId(connId);
     const { error } = await supabase
@@ -170,8 +195,40 @@ export default function FriendsManager({
 
   function ActionButton({ user }: { user: FriendUser }) {
     const rel = relations.get(user.id);
-    if (rel?.status === "accepted")
-      return <span className="text-sm font-semibold text-naija-600">✓ Friends</span>;
+    if (rel?.status === "accepted") {
+      // Asks once, in a state you can see and back out of. Same reasoning as
+      // AddFriendButton: no hover on a phone, and this one is final.
+      if (confirmingId === rel.connId)
+        return (
+          <span className="flex items-center gap-1.5">
+            <button
+              type="button"
+              disabled={busyId === rel.connId}
+              onClick={() => unfriend(rel.connId)}
+              className="rounded-full bg-red-50 px-3 py-1.5 text-sm font-semibold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
+            >
+              {busyId === rel.connId ? "…" : "Remove"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmingId(null)}
+              className="rounded-full bg-gray-100 px-3 py-1.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-200"
+            >
+              Keep
+            </button>
+          </span>
+        );
+      return (
+        <button
+          type="button"
+          onClick={() => setConfirmingId(rel.connId)}
+          aria-label={`Remove ${user.name ?? "this person"} as a friend`}
+          className="rounded-full px-2 py-1.5 text-sm font-semibold text-naija-600 transition hover:bg-gray-100 hover:text-gray-600"
+        >
+          ✓ Friends
+        </button>
+      );
+    }
     if (rel?.status === "pending" && rel.direction === "out")
       return <span className="text-sm font-medium text-gray-400">Requested</span>;
     if (rel?.status === "pending" && rel.direction === "in")
