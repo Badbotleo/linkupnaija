@@ -44,13 +44,44 @@ export default async function PublicProfilePage({
   const supabase = createClient();
   const tab = TABS.find((t) => t.key === searchParams.tab)?.key ?? "events";
 
-  const { data: p } = await supabase
+  /**
+   * Named columns, not "*", on somebody else's profile.
+   *
+   * select("*") asks for every column on users, which includes email, phone,
+   * the payout group, wallet_balance and emergency contacts. It only ever
+   * worked because anon could read all of them, and the moment
+   * migration-hide-emails.sql correctly stopped that, PostgREST began
+   * rejecting the whole query with 42501 and this page called notFound(). A
+   * stranger looking up a host got "Page not found" while the browser tab
+   * showed their name, because generateMetadata asks only for the name.
+   *
+   * The list below is exactly what this page renders and nothing else, so it
+   * cannot ask for a private column by accident again when somebody adds one.
+   * The badge, banner and verification fields arrive with
+   * migration-restore-badge-grants.sql; until that runs the fallback drops
+   * them rather than taking the page down with them.
+   */
+  const PUBLIC_PROFILE =
+    "id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, profile_completed, rating_avg, rating_count, created_at, is_pro, pro_expires_at, awarded_badges, revoked_badges, banner_url, phone_verified";
+  const PUBLIC_PROFILE_MINIMAL =
+    "id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, profile_completed, rating_avg, rating_count, created_at";
+
+  let { data: p, error: profileError } = await supabase
     .from("users")
-    .select("*")
+    .select(PUBLIC_PROFILE)
     .eq("id", params.id)
     .single();
+
+  if (profileError?.code === "42703" || profileError?.code === "42501") {
+    ({ data: p } = await supabase
+      .from("users")
+      .select(PUBLIC_PROFILE_MINIMAL)
+      .eq("id", params.id)
+      .single());
+  }
+
   if (!p) notFound();
-  const profile = p as UserProfile;
+  const profile = p as unknown as UserProfile;
 
   const {
     data: { user },
@@ -428,6 +459,21 @@ function AboutCard({ profile }: { profile: UserProfile }) {
   );
 }
 
+/**
+ * A host's events, the ones still to come before the ones already over.
+ *
+ * This used to be one list ordered by date descending with no date filter at
+ * all, which put the future first only by accident of sorting and then ran
+ * straight on into the past with nothing marking the join. A host with two
+ * link-ups coming up and eighteen behind them looked like a host whose page
+ * was mostly dead events, and there was no way to tell which was which
+ * without reading twenty dates.
+ *
+ * Past events are NOT hidden. They are the only evidence a stranger has that
+ * this person actually runs things, which is the whole reason somebody opens
+ * a host's profile before requesting a spot. They are labelled and dimmed
+ * instead, so the eye reaches the upcoming ones first.
+ */
 async function HostedEvents({ userId }: { userId: string }) {
   const supabase = createClient();
   const { data } = await supabase
@@ -451,10 +497,31 @@ async function HostedEvents({ userId }: { userId: string }) {
         No public events yet.
       </p>
     );
-  return (
+
+  // Lagos, not UTC. Between midnight and 1am WAT the two disagree, and the
+  // disagreement would file tonight's link-up under "past".
+  const today = new Date().toLocaleDateString("en-CA", {
+    timeZone: "Africa/Lagos",
+  });
+  const upcoming = events
+    .filter((e) => e.date >= today)
+    .sort((a, b) => a.date.localeCompare(b.date));
+  const past = events.filter((e) => e.date < today);
+
+  const heading = (text: string) => (
+    <p className="mb-3 text-[13px] font-black uppercase tracking-[0.1em] text-gray-400">
+      {text}
+    </p>
+  );
+
+  const grid = (list: typeof events, dim: boolean) => (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-      {events.map((e) => (
-        <Link key={e.id} href={`/events/${e.id}`} className="overflow-hidden rounded-2xl bg-white shadow-sm transition hover:border-brand/30">
+      {list.map((e) => (
+        <Link
+          key={e.id}
+          href={`/events/${e.id}`}
+          className={`overflow-hidden rounded-2xl bg-white shadow-sm transition hover:border-brand/30 ${dim ? "opacity-60 hover:opacity-100" : ""}`}
+        >
           <EventCover url={e.cover_image_url} category={e.category} title={e.title} className="h-28 w-full" />
           <div className="p-3">
             <p className="truncate font-bold text-gray-900">{e.title}</p>
@@ -462,6 +529,23 @@ async function HostedEvents({ userId }: { userId: string }) {
           </div>
         </Link>
       ))}
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      {upcoming.length > 0 && (
+        <div>
+          {past.length > 0 && heading("Coming up")}
+          {grid(upcoming, false)}
+        </div>
+      )}
+      {past.length > 0 && (
+        <div>
+          {heading("Been and gone")}
+          {grid(past, true)}
+        </div>
+      )}
     </div>
   );
 }

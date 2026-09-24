@@ -174,14 +174,52 @@ export default async function DashboardPage() {
   );
 
   const allHosting = (hostingRaw ?? []) as unknown as HostingEvent[];
-  const today = new Date().toISOString().slice(0, 10);
+
+  /**
+   * Lagos, not UTC. Between midnight and 1am WAT the two disagree about what
+   * day it is, and the disagreement files tonight's link-up under "been and
+   * gone" while somebody is still on their way to it.
+   */
+  const today = new Date().toLocaleDateString("en-CA", {
+    timeZone: "Africa/Lagos",
+  });
   const hosting = allHosting.filter((e) => e.date >= today);
   const pastHosting = allHosting.filter((e) => e.date < today);
   const myRsvps = (myRsvpsRaw ?? []) as unknown as MyRsvp[];
 
-  const attending = myRsvps.filter((r) => r.status === "accepted" && r.events);
-  const pending = myRsvps.filter((r) => r.status === "pending" && r.events);
-  const declined = myRsvps.filter((r) => r.status === "declined" && r.events);
+  /**
+   * ONCE IT HAS HAPPENED IT BELONGS IN THE PAST, WHATEVER ITS STATUS.
+   *
+   * Hosting was split by date here from the beginning. These three were not,
+   * so a link-up you went to in July sat in "Going" forever, and a request
+   * nobody ever answered sat in "Pending" forever, both of them reading as
+   * live plans. The dashboard was the one place on the site still insisting
+   * that finished events were upcoming.
+   *
+   * Accepted, pending and declined all get the same treatment, because the
+   * distinction that matters to somebody reading this page is has it happened
+   * yet, not what the host decided.
+   */
+  const upcomingRsvp = (r: MyRsvp) => !!r.events && r.events.date >= today;
+  const expiredRsvp = (r: MyRsvp) => !!r.events && r.events.date < today;
+
+  const attending = myRsvps.filter(
+    (r) => r.status === "accepted" && upcomingRsvp(r)
+  );
+  const pending = myRsvps.filter(
+    (r) => r.status === "pending" && upcomingRsvp(r)
+  );
+  const declined = myRsvps.filter(
+    (r) => r.status === "declined" && upcomingRsvp(r)
+  );
+
+  // Everything that has already happened, hosted or attended, newest first.
+  // A request that expired unanswered is deliberately included: it is part of
+  // what happened, and leaving it in "Pending" was the bug.
+  const pastAttending = myRsvps.filter(
+    (r) => r.status !== "declined" && expiredRsvp(r)
+  );
+  const beenAndGoneCount = pastHosting.length + pastAttending.length;
 
   // Recent Memories — latest photos from events the user was part of (attended
   // or hosted). RLS lets accepted attendees + hosts read these galleries.
@@ -563,7 +601,7 @@ export default async function DashboardPage() {
               { id: "hosting", label: "Hosting", count: hosting.length },
               { id: "attending", label: "Going", count: attending.length },
               { id: "pending", label: "Pending", count: pending.length },
-              { id: "past", label: "Past", count: pastHosting.length },
+              { id: "past", label: "Been and gone", count: beenAndGoneCount },
               { id: "declined", label: "Declined", count: declined.length },
             ]}
           >
@@ -601,16 +639,44 @@ export default async function DashboardPage() {
           </Section>
             </div>
             <div key="past">
+          {beenAndGoneCount === 0 && (
+            <Section
+              title="Been and gone"
+              count={0}
+              emptyText="Nothing behind you yet."
+              emptyCta
+              ctaHref="/events"
+              ctaLabel="Find something to go to →"
+              emptyEmoji="🕰️"
+            >
+              {null}
+            </Section>
+          )}
           {pastHosting.length > 0 && (
             <Section
-              title="Past link-ups"
+              title="I hosted these"
               count={pastHosting.length}
               emptyText=""
             >
               {pastHosting.map((e) => (
                 <EventRowCard key={e.id} event={e}>
                   <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-500">
-                    Expired
+                    Been and gone
+                  </span>
+                </EventRowCard>
+              ))}
+            </Section>
+          )}
+          {pastAttending.length > 0 && (
+            <Section
+              title="I went to these"
+              count={pastAttending.length}
+              emptyText=""
+            >
+              {pastAttending.map((r) => (
+                <EventRowCard key={r.events!.id} event={r.events!}>
+                  <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-500">
+                    {r.status === "accepted" ? "Been and gone" : "Never answered"}
                   </span>
                 </EventRowCard>
               ))}

@@ -117,6 +117,22 @@ export default async function EventDetailPage({
    * A badge is decoration. It must never be able to 404 the page somebody
    * came to read, so the optional columns are tried and then dropped.
    *
+   * IT HAPPENED AGAIN ON 24 SEP 2026, THROUGH THE HOLE IN THIS NET. The
+   * fallback below used to test only for 42703, and migration-hide-emails.sql
+   * revoked SELECT on users from anon and granted back a list that omitted
+   * is_pro, pro_expires_at and badge_grandfathered_until. That is 42501,
+   * "permission denied", not 42703, so the fallback never fired and every
+   * event page 404'd for every logged-out visitor, ad traffic included.
+   *
+   * So the test is now both codes. A page that exists must not disappear
+   * because of what a badge wanted, whether the column is missing or merely
+   * forbidden. migration-restore-badge-grants.sql gives the three back.
+   *
+   * paystack_subaccount_code is no longer asked for here. It is a payout
+   * routing identifier, anon is rightly not allowed to read it, and it is
+   * only ever needed to open a Paystack payment, which requires a login. It
+   * is fetched below, once, for somebody signed in.
+   *
    * Written out twice rather than interpolated because supabase-js infers row
    * types from the literal select string; a template literal turns the whole
    * result into a ParserError and every field access below stops type
@@ -125,18 +141,19 @@ export default async function EventDetailPage({
   let { data: event, error: eventError } = await supabase
     .from("events")
     .select(
-      "*, host:users!events_host_id_fkey(id, name, avatar_url, state, rating_avg, rating_count, paystack_subaccount_code, instagram_url, twitter_url, facebook_url, is_pro, pro_expires_at, id_verified_at, badge_grandfathered_until)"
+      "*, host:users!events_host_id_fkey(id, name, avatar_url, state, rating_avg, rating_count, instagram_url, twitter_url, facebook_url, is_pro, pro_expires_at, badge_grandfathered_until)"
     )
     .eq("id", params.id)
     .single();
 
-  // 42703 is "column does not exist". Anything else is a real failure and
-  // must not be papered over by a second query.
-  if (eventError?.code === "42703") {
+  // 42703 is "column does not exist", 42501 is "permission denied". Both mean
+  // the decoration is unavailable and the page should render without it.
+  // Anything else is a real failure and must not be papered over.
+  if (eventError?.code === "42703" || eventError?.code === "42501") {
     ({ data: event } = await supabase
       .from("events")
       .select(
-        "*, host:users!events_host_id_fkey(id, name, avatar_url, state, rating_avg, rating_count, paystack_subaccount_code, instagram_url, twitter_url, facebook_url, is_pro, pro_expires_at)"
+        "*, host:users!events_host_id_fkey(id, name, avatar_url, state, rating_avg, rating_count, instagram_url, twitter_url, facebook_url)"
       )
       .eq("id", params.id)
       .single());
@@ -179,6 +196,23 @@ export default async function EventDetailPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // The host's Paystack subaccount, kept out of the public select above so
+  // that a payout identifier is never handed to a stranger. Only RsvpButton
+  // uses it, and only to open a payment, which needs a login anyway. If this
+  // query fails the page still renders and the payment falls back to the
+  // platform account rather than dying.
+  let hostSubaccount: string | null = null;
+  if (user && event.host_id) {
+    const { data: payoutRow } = await supabase
+      .from("users")
+      .select("paystack_subaccount_code")
+      .eq("id", event.host_id)
+      .maybeSingle();
+    hostSubaccount =
+      (payoutRow as { paystack_subaccount_code?: string | null } | null)
+        ?.paystack_subaccount_code ?? null;
+  }
 
   // The home-page reel links here, so the footage has to be here too.
   const eventRecaps = await getRecapsForEvent(params.id);
@@ -941,7 +975,7 @@ export default async function EventDetailPage({
                     isPro={isPro}
                     requestsThisMonth={requestsThisMonth}
                     eventTitle={event.title}
-                    hostSubaccount={event.host?.paystack_subaccount_code ?? null}
+                    hostSubaccount={hostSubaccount}
                     walletBalance={walletBalance}
                     reserveFirst={reserveFirst}
                     eventDate={event.date}

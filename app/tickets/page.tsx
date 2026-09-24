@@ -29,7 +29,11 @@ export default async function TicketsPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?redirect=/tickets");
 
-  const today = new Date().toISOString().slice(0, 10);
+  // Lagos, not UTC. Between midnight and 1am WAT they disagree, and the
+  // disagreement moves a ticket for tonight into "Been and gone".
+  const today = new Date().toLocaleDateString("en-CA", {
+    timeZone: "Africa/Lagos",
+  });
 
   const [{ data: me }, { data: mine }, { data: hosting }] = await Promise.all([
     supabase.from("users").select("name").eq("id", user.id).single(),

@@ -295,13 +295,24 @@ async function EventsTab({ userId }: { userId: string }) {
   }[];
   if (events.length === 0)
     return <Empty text="No link-ups hosted yet." cta={{ href: "/host", label: "Host a link-up" }} />;
-  return (
+
+  // Lagos, not UTC, or an event happening tonight reads as finished between
+  // midnight and 1am.
+  const today = new Date().toLocaleDateString("en-CA", {
+    timeZone: "Africa/Lagos",
+  });
+  const upcoming = events
+    .filter((e) => e.date >= today)
+    .sort((a, b) => a.date.localeCompare(b.date));
+  const past = events.filter((e) => e.date < today);
+
+  const grid = (list: typeof events, dim: boolean) => (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-      {events.map((e) => (
+      {list.map((e) => (
         <Link
           key={e.id}
           href={`/events/${e.id}`}
-          className="overflow-hidden rounded-2xl bg-white shadow-sm transition hover:border-brand/30"
+          className={`overflow-hidden rounded-2xl bg-white shadow-sm transition hover:border-brand/30 ${dim ? "opacity-60 hover:opacity-100" : ""}`}
         >
           <EventCover url={e.cover_image_url} category={e.category} title={e.title} className="h-28 w-full" />
           <div className="p-3">
@@ -312,6 +323,29 @@ async function EventsTab({ userId }: { userId: string }) {
           </div>
         </Link>
       ))}
+    </div>
+  );
+
+  const heading = (text: string) => (
+    <p className="mb-3 text-[13px] font-black uppercase tracking-[0.1em] text-gray-400">
+      {text}
+    </p>
+  );
+
+  return (
+    <div className="space-y-6">
+      {upcoming.length > 0 && (
+        <div>
+          {past.length > 0 && heading("Coming up")}
+          {grid(upcoming, false)}
+        </div>
+      )}
+      {past.length > 0 && (
+        <div>
+          {heading("Been and gone")}
+          {grid(past, true)}
+        </div>
+      )}
     </div>
   );
 }
