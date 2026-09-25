@@ -729,6 +729,10 @@ export default async function EventDetailPage({
                     <div className="mt-2">
                       <ApprovedGuests
                         count={attendeeCount}
+                        autoConfirm={
+                          (event as { auto_confirm?: boolean | null })
+                            .auto_confirm === true && (event.price ?? 0) === 0
+                        }
                         guests={accepted.map((a) => ({
                           user_id: a.user_id,
                           name: a.users?.name ?? null,
