@@ -89,9 +89,9 @@ export default async function AdminGrowthPage() {
   const since = new Date(Date.now() - 30 * DAY).toISOString();
 
   const [usersRes, eventsRes, rsvpsRes, txRes, premiumRes] = await Promise.all([
-    supabase.from("users").select("id, is_pro, pro_expires_at, is_admin"),
-    supabase.from("events").select("id, created_at, host_id, state, is_listing"),
-    supabase.from("rsvps").select("user_id, created_at"),
+    supabase.from("users").select("id, is_pro, pro_expires_at, is_admin, created_at"),
+    supabase.from("events").select("id, created_at, host_id, state, is_listing, date, title"),
+    supabase.from("rsvps").select("user_id, created_at, status, event_id"),
     supabase.from("transactions").select("amount, created_at"),
     supabase.from("premium_payments").select("amount, created_at, user_id, paystack_reference"),
   ]);
@@ -101,14 +101,23 @@ export default async function AdminGrowthPage() {
     is_pro: boolean | null;
     pro_expires_at: string | null;
     is_admin: boolean | null;
+    created_at: string;
   }[];
   const events = (eventsRes.data ?? []) as {
+    id: string;
     created_at: string;
     host_id: string;
     state: string | null;
     is_listing: boolean | null;
+    date: string;
+    title: string;
   }[];
-  const rsvps = (rsvpsRes.data ?? []) as { user_id: string; created_at: string }[];
+  const rsvps = (rsvpsRes.data ?? []) as {
+    user_id: string;
+    created_at: string;
+    status: string;
+    event_id: string;
+  }[];
   const tx = (txRes.data ?? []) as { amount: number | null; created_at: string }[];
   const premium = (premiumRes.data ?? []) as {
     amount: number | null;
@@ -194,6 +203,107 @@ export default async function AdminGrowthPage() {
 
   const op = currentOperating();
 
+  /* -------------------------------------------------------------- today ---- */
+  /**
+   * What to do before the end of the day, worked out rather than written down.
+   *
+   * A static checklist goes stale in a week and gets ignored in two. Every
+   * line here is a live count with a number attached, so it empties when the
+   * work is done and reappears when it is needed. If a row says zero it is
+   * not shown at all, because a list of things that are already fine is
+   * another thing not to read.
+   *
+   * Each one is chosen because it moves a target on this page, not because it
+   * is generally good practice.
+   */
+  const dayAgo = new Date(Date.now() - DAY).toISOString();
+  const weekAgo = new Date(Date.now() - 7 * DAY).toISOString();
+  const todayIso = new Date().toLocaleDateString("en-CA", { timeZone: "Africa/Lagos" });
+  const weekOut = new Date(Date.now() + 7 * DAY).toLocaleDateString("en-CA", {
+    timeZone: "Africa/Lagos",
+  });
+
+  // Somebody asked to come and nobody has answered. Kills activation and
+  // repeat rate at once, and it is the host's job you are chasing.
+  const stalePending = rsvps.filter((r) => r.status === "pending" && r.created_at < dayAgo).length;
+
+  // Signed up this week and never asked to join anything. This is the
+  // activation target, one person at a time.
+  const neverRequested = users.filter(
+    (u) => !u.is_admin && u.created_at >= weekAgo && !everRequested.has(u.id)
+  ).length;
+
+  // Hosted before, gone quiet. Cheaper to wake a host than find one, and
+  // "hosts who are not you" is the target everything else hangs off.
+  const lastHosted = new Map<string, string>();
+  for (const e of hosted) {
+    const prev = lastHosted.get(e.host_id);
+    if (!prev || e.created_at > prev) lastHosted.set(e.host_id, e.created_at);
+  }
+  const dormantHosts = Array.from(lastHosted.entries()).filter(
+    ([id, when]) => !staff.has(id) && when < since
+  ).length;
+
+  /**
+   * On this week, nearly empty, and somebody else's.
+   *
+   * STAFF EVENTS ARE EXCLUDED, and finding out why was the point of writing
+   * this. Fourteen events this week have fewer than three people and twelve
+   * of them are ours. Worse: all 47 events the founder's account created this
+   * month have ZERO accepted guests, every single one. They are imported
+   * listings in all but the is_listing flag.
+   *
+   * So counting them here would bury the two that matter under twelve that
+   * cannot be rescued by a nudge, and the reason this row exists is that a
+   * host whose first night is empty does not host a second one. That only
+   * applies to a real host.
+   */
+  const acceptedPer = new Map<string, number>();
+  for (const r of rsvps) {
+    if (r.status === "accepted") acceptedPer.set(r.event_id, (acceptedPer.get(r.event_id) ?? 0) + 1);
+  }
+  const thinThisWeek = events.filter(
+    (e) =>
+      !e.is_listing &&
+      !staff.has(e.host_id) &&
+      e.date >= todayIso &&
+      e.date <= weekOut &&
+      (acceptedPer.get(e.id) ?? 0) < 3
+  ).length;
+
+  const daysToOp = op
+    ? Math.max(1, Math.ceil((new Date(`${op.due}T23:59:59`).getTime() - Date.now()) / DAY))
+    : 0;
+  const hostGap = op ? Math.max(0, op.externalHosts - opActual.externalHosts) : 0;
+  const eventGap = op ? Math.max(0, op.externalEvents - opActual.externalEvents) : 0;
+
+  const todo = [
+    {
+      n: stalePending,
+      label: "requests waiting more than a day",
+      why: "Chase the host. An unanswered request is somebody deciding this place does not work.",
+      href: "/admin",
+    },
+    {
+      n: neverRequested,
+      label: "joined this week and have not asked to join anything",
+      why: "Message them something specific that is on soon. This is the activation target.",
+      href: "/admin",
+    },
+    {
+      n: dormantHosts,
+      label: "hosts have not posted in 30 days",
+      why: "Waking one is cheaper than finding one, and counts the same.",
+      href: "/admin",
+    },
+    {
+      n: thinThisWeek,
+      label: "of other people's events this week have fewer than 3 going",
+      why: "Push them. A host whose first night is empty does not host a second.",
+      href: "/events",
+    },
+  ].filter((t) => t.n > 0);
+
   const target = currentMilestone();
   const passed = previousMilestone();
   const daysLeft = Math.ceil(
@@ -232,6 +342,63 @@ export default async function AdminGrowthPage() {
               : "The date has passed."}
           </p>
         </div>
+
+        {/* --------------------------------------------------------- today -- */}
+        {op && (
+          <>
+            <h2 className="mb-1 mt-8 text-[13px] font-black uppercase tracking-[0.12em] text-gray-400">
+              Today
+            </h2>
+            <p className="mb-3 text-[13px] leading-snug text-gray-500">
+              The arithmetic of {op.label}, divided by the {daysToOp}{" "}
+              {daysToOp === 1 ? "day" : "days"} left.
+            </p>
+
+            <div className="rounded-3xl border-2 border-brand/25 bg-brand/[0.04] p-5">
+              <p className="text-[17px] font-extrabold leading-snug text-gray-900 dark:text-white">
+                {hostGap === 0 && eventGap === 0
+                  ? "Both host targets are met. Hold them."
+                  : hostGap > 0
+                    ? `Find ${hostGap} more ${hostGap === 1 ? "host" : "hosts"} in ${daysToOp} days.`
+                    : `Get ${eventGap} more ${eventGap === 1 ? "event" : "events"} out of the hosts you have.`}
+              </p>
+              {hostGap > 0 && (
+                <p className="mt-1 text-[15px] leading-snug text-gray-600 dark:text-white/70">
+                  One every {Math.max(1, Math.floor(daysToOp / hostGap))} days.
+                  {eventGap > 0 && ` And ${eventGap} more events between them.`}
+                </p>
+              )}
+
+              {todo.length > 0 ? (
+                <div className="mt-4 space-y-2">
+                  {todo.map((t) => (
+                    <Link
+                      key={t.label}
+                      href={t.href}
+                      className="flex items-start gap-3 rounded-2xl bg-white p-3.5 transition hover:shadow-sm dark:bg-white/5"
+                    >
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand/10 text-[15px] font-extrabold tabular-nums text-brand">
+                        {t.n}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-[15px] font-bold leading-snug text-gray-900 dark:text-white">
+                          {t.label}
+                        </span>
+                        <span className="mt-0.5 block text-[13px] leading-snug text-gray-600 dark:text-white/65">
+                          {t.why}
+                        </span>
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-4 rounded-2xl bg-white p-3.5 text-[14px] text-gray-600 dark:bg-white/5 dark:text-white/70">
+                  Nothing is waiting on you. Go and find a host.
+                </p>
+              )}
+            </div>
+          </>
+        )}
 
         {/* -------------------------------------------- the operating plan -- */}
         {op && (
