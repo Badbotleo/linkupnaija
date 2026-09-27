@@ -178,10 +178,30 @@ export default async function AdminGrowthPage() {
   const concentration = hostedRecent.length ? Math.round((top3 / hostedRecent.length) * 100) : 0;
 
   /* ------------------------------------------------ the operating plan ---- */
-  // Staff, worked out from is_admin rather than a UUID in the repo, so it
-  // survives the founder changing account and counts every staff account
-  // rather than one. The count is printed on the page so it can be checked.
-  const staff = new Set(users.filter((u) => u.is_admin).map((u) => u.id));
+  /**
+   * Who counts as the platform rather than a host on it.
+   *
+   * is_admin ALONE WAS WRONG, and the page caught it the first time anybody
+   * looked at it. The account that created 47 of last month's 51 events is
+   * not flagged is_admin, so it was counted as an outside host: "events they
+   * created" read 50 of 10 and Hit, and "your share of events" read 4%
+   * against a 70% cap. Both were the exact opposite of true, and this page
+   * exists to stop that, so it had to be the definition that changed.
+   *
+   * ANYONE WHO IMPORTS LISTINGS IS OPERATING THE PLATFORM. is_listing events
+   * are ones we added on somebody else's behalf, and only two accounts have
+   * ever created one. Both are ours. No real host has, because a real host
+   * posts their own night rather than bulk-importing other people's.
+   *
+   * So the rule is self-maintaining: it needs no UUID in the repo, no
+   * hand-flagging, and it keeps working if the founder changes account,
+   * because whichever account does the importing is by definition the one
+   * running the platform. The page prints the count so it can be checked.
+   */
+  const staff = new Set([
+    ...users.filter((u) => u.is_admin).map((u) => u.id),
+    ...events.filter((e) => e.is_listing).map((e) => e.host_id),
+  ]);
   const externalRecent = hostedRecent.filter((e) => !staff.has(e.host_id));
   const everRequested = new Set(rsvps.map((r) => r.user_id));
   const requestCount = new Map<string, number>();
@@ -301,7 +321,38 @@ export default async function AdminGrowthPage() {
   const hostGap = op ? Math.max(0, op.externalHosts - opActual.externalHosts) : 0;
   const eventGap = op ? Math.max(0, op.externalEvents - opActual.externalEvents) : 0;
 
+  /**
+   * Interest that never became a request, on events still ahead of us.
+   *
+   * The most useful row here, once there is anything in it. Somebody said
+   * they wanted to go and then did not ask, which is a different failure from
+   * never looking: the event is fine and the asking is what stopped them.
+   * Every one is a message away from being a guest.
+   *
+   * Its own query, and a failure is treated as zero rather than as an error,
+   * because event_interest arrives with a migration that may not have run.
+   */
+  const interestRes = await supabase
+    .from("event_interest")
+    .select("event_id, user_id");
+  const interestRows = (interestRes.data ?? []) as {
+    event_id: string;
+    user_id: string;
+  }[];
+  const requestedPair = new Set(rsvps.map((r) => `${r.event_id}:${r.user_id}`));
+  const warmLeads = interestRows.filter(
+    (i) =>
+      !requestedPair.has(`${i.event_id}:${i.user_id}`) &&
+      (eventDate.get(i.event_id) ?? "") >= todayIso
+  ).length;
+
   const todo = [
+    {
+      n: warmLeads,
+      label: "said they were interested and never asked to join",
+      why: "The event is fine and the asking is what stopped them. Closest thing you have to a warm lead.",
+      href: "/admin",
+    },
     {
       n: stalePending,
       label: "requests waiting more than a day",

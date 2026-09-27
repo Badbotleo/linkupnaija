@@ -35,6 +35,26 @@ export default async function TicketsPage() {
     timeZone: "Africa/Lagos",
   });
 
+  /**
+   * Interested, but not asked yet.
+   *
+   * Its own query and allowed to fail: event_interest arrives with
+   * migration-event-interest.sql, and an embed of a missing table fails the
+   * whole query and empties this page. On its own, a missing table just means
+   * no section.
+   *
+   * This is where interest has to land or it is not worth collecting. Tapping
+   * a star that goes nowhere you can find again is a worse experience than
+   * not having the star.
+   */
+  const interestRes = await supabase
+    .from("event_interest")
+    .select(
+      "event_id, created_at, events(id, title, date, time, location, state, category, cover_image_url)"
+    )
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
   const [{ data: me }, { data: mine }, { data: hosting }] = await Promise.all([
     supabase.from("users").select("name").eq("id", user.id).single(),
     supabase
@@ -125,11 +145,29 @@ export default async function TicketsPage() {
     .sort((a, b) => b.events!.date.localeCompare(a.events!.date));
   const hosted = (hosting ?? []) as unknown as Ev[];
 
+  /**
+   * Interested, minus anything you have since acted on.
+   *
+   * Two filters, both about not nagging. A past event is not a plan, and
+   * leaving it here turns the section into a graveyard. And once you have
+   * actually asked to join, your interest has done its job: showing it in
+   * both "Coming up" and "Interested" would read as two separate things you
+   * are doing on the same night.
+   */
+  const ticketedIds = new Set(rows.map((r) => r.events!.id));
+  const interested = ((interestRes.data ?? []) as unknown as { events: Ev | null }[])
+    .map((r) => r.events)
+    .filter((e): e is Ev => !!e && e.date >= today && !ticketedIds.has(e.id))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#000000]">
       <AppHeader title="Tickets" subtitle="Everything you need at the door" />
       <div className="container-page py-5">
-        {upcoming.length === 0 && hosted.length === 0 && past.length === 0 ? (
+        {upcoming.length === 0 &&
+        hosted.length === 0 &&
+        past.length === 0 &&
+        interested.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-gray-200 px-6 py-16 text-center">
             <LineIcon name="ticket" size={26} className="mx-auto text-gray-300" />
             <p className="mt-3 font-semibold text-gray-700">No tickets yet</p>
@@ -255,6 +293,41 @@ export default async function TicketsPage() {
                   </div>
                 );
               })}
+            </div>
+          </section>
+        )}
+
+        {interested.length > 0 && (
+          <section className="mt-8">
+            <h2 className="text-lg font-bold text-gray-900">Interested</h2>
+            <p className="mt-0.5 text-sm text-gray-500">
+              You haven&apos;t asked to join these yet.
+            </p>
+            <div className="mt-3 space-y-2">
+              {interested.map((e) => (
+                <Link
+                  key={e.id}
+                  href={`/events/${e.id}`}
+                  className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-md"
+                >
+                  <EventCover
+                    url={e.cover_image_url}
+                    category={e.category}
+                    title={e.title}
+                    className="h-14 w-14 shrink-0 rounded-xl"
+                    fit="cover"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-bold text-gray-900">{e.title}</p>
+                    <p className="truncate text-xs text-gray-500">
+                      {formatEventDate(e.date)} · {formatEventTime(e.time)}
+                    </p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-brand/10 px-2.5 py-1 text-[12px] font-bold text-brand">
+                    Ask to join
+                  </span>
+                </Link>
+              ))}
             </div>
           </section>
         )}

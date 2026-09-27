@@ -12,6 +12,7 @@ import DrawWinners from "@/components/claim/DrawWinners";
 import DeleteEventButton from "@/components/DeleteEventButton";
 import Avatar from "@/components/Avatar";
 import ApprovedGuests from "@/components/events/ApprovedGuests";
+import InterestButton from "@/components/events/InterestButton";
 import QuorumMeter from "@/components/events/QuorumMeter";
 import ViewRecorder from "@/components/events/ViewRecorder";
 import { quorumState } from "@/lib/quorum";
@@ -417,6 +418,29 @@ export default async function EventDetailPage({
   }
 
   // Group chat is private to accepted attendees + the host.
+  /**
+   * Interest, asked for separately and allowed to fail.
+   *
+   * Both of these arrive with migration-event-interest.sql. Neither is
+   * embedded in the event select, because a missing table in an embed fails
+   * the WHOLE query and 404s the page, which is the exact accident that took
+   * every event page down twice already. On their own, a missing table just
+   * means the button starts at zero.
+   */
+  const [interestCountRes, myInterestRes] = await Promise.all([
+    supabase.rpc("event_interest_count", { p_event: params.id }),
+    user
+      ? supabase
+          .from("event_interest")
+          .select("id")
+          .eq("event_id", params.id)
+          .eq("user_id", user.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
+  const interestCount = (interestCountRes.data as number | null) ?? 0;
+  const iAmInterested = !!(myInterestRes as { data: unknown }).data;
+
   const canChat = isHost || myStatus === "accepted";
 
   let initialMessages: ChatMessageUI[] = [];
@@ -989,6 +1013,18 @@ export default async function EventDetailPage({
                       (event as { auto_confirm?: boolean | null })
                         .auto_confirm === true && (event.price ?? 0) === 0
                     }
+                  />
+
+                  {/* The rung below asking to join. Under the join button and
+                      in outline, never beside it: a cheap action next to an
+                      expensive one will eat it if you let them look equal. */}
+                  <InterestButton
+                    eventId={event.id}
+                    initialInterested={iAmInterested}
+                    initialCount={interestCount}
+                    isLoggedIn={!!user}
+                    hasRequested={myStatus !== "none"}
+                    isHost={isHost}
                   />
 
                   {/* Add to calendar — cheapest no-show reducer. */}
