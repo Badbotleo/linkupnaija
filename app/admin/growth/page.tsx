@@ -6,10 +6,14 @@ import LineIcon from "@/components/ui/LineIcon";
 import {
   MILESTONES,
   METRICS,
+  OPERATING_PLAN,
+  OPERATING_METRICS,
+  OPERATING_BASELINE,
   currentMilestone,
+  currentOperating,
   previousMilestone,
   verdict,
-  type Milestone,
+  verdictAtMost,
   type Verdict,
 } from "@/lib/growth-plan";
 
@@ -85,14 +89,19 @@ export default async function AdminGrowthPage() {
   const since = new Date(Date.now() - 30 * DAY).toISOString();
 
   const [usersRes, eventsRes, rsvpsRes, txRes, premiumRes] = await Promise.all([
-    supabase.from("users").select("id, is_pro, pro_expires_at"),
+    supabase.from("users").select("id, is_pro, pro_expires_at, is_admin"),
     supabase.from("events").select("id, created_at, host_id, state, is_listing"),
     supabase.from("rsvps").select("user_id, created_at"),
     supabase.from("transactions").select("amount, created_at"),
-    supabase.from("premium_payments").select("amount, created_at"),
+    supabase.from("premium_payments").select("amount, created_at, user_id, paystack_reference"),
   ]);
 
-  const users = (usersRes.data ?? []) as { is_pro: boolean | null; pro_expires_at: string | null }[];
+  const users = (usersRes.data ?? []) as {
+    id: string;
+    is_pro: boolean | null;
+    pro_expires_at: string | null;
+    is_admin: boolean | null;
+  }[];
   const events = (eventsRes.data ?? []) as {
     created_at: string;
     host_id: string;
@@ -101,9 +110,37 @@ export default async function AdminGrowthPage() {
   }[];
   const rsvps = (rsvpsRes.data ?? []) as { user_id: string; created_at: string }[];
   const tx = (txRes.data ?? []) as { amount: number | null; created_at: string }[];
-  const premium = (premiumRes.data ?? []) as { amount: number | null; created_at: string }[];
+  const premium = (premiumRes.data ?? []) as {
+    amount: number | null;
+    created_at: string;
+    user_id: string;
+    paystack_reference: string | null;
+  }[];
+
+  /**
+   * Paid, not given.
+   *
+   * Eight accounts carry is_pro and seven of them were comped, so counting
+   * is_pro as "subscribers" reports eight paying customers when there is one.
+   * migration-premium-payments.sql notes that a hand-granted subscription has
+   * no paystack_reference, which is what makes this checkable rather than
+   * something you have to remember.
+   *
+   * The comped count is shown beside it rather than hidden, because giving
+   * Pro away is a real thing you did and worth seeing.
+   */
+  const payingPro = new Set(
+    premium.filter((p) => p.paystack_reference).map((p) => p.user_id)
+  );
 
   const nowIso = new Date().toISOString();
+
+  const compedPro = users.filter(
+    (u) =>
+      u.is_pro &&
+      (!u.pro_expires_at || u.pro_expires_at > nowIso) &&
+      !payingPro.has(u.id)
+  ).length;
 
   // Hosted only. 181 of the events on this platform are admin listings, and
   // counting them as supply is how the one target that looks met gets met.
@@ -117,9 +154,7 @@ export default async function AdminGrowthPage() {
       premium.filter((p) => p.created_at >= since).reduce((a, p) => a + (p.amount ?? 0), 0),
     eventsPerMonth: hostedRecent.length,
     activeHosts: new Set(hostedRecent.map((e) => e.host_id)).size,
-    proSubscribers: users.filter(
-      (u) => u.is_pro && (!u.pro_expires_at || u.pro_expires_at > nowIso)
-    ).length,
+    proSubscribers: payingPro.size,
     cities: new Set(events.map((e) => e.state).filter(Boolean)).size,
     instagramFollowers: 0,
   };
@@ -132,6 +167,32 @@ export default async function AdminGrowthPage() {
   const ranked = Array.from(perHost.values()).sort((a, b) => b - a);
   const top3 = ranked.slice(0, 3).reduce((a, b) => a + b, 0);
   const concentration = hostedRecent.length ? Math.round((top3 / hostedRecent.length) * 100) : 0;
+
+  /* ------------------------------------------------ the operating plan ---- */
+  // Staff, worked out from is_admin rather than a UUID in the repo, so it
+  // survives the founder changing account and counts every staff account
+  // rather than one. The count is printed on the page so it can be checked.
+  const staff = new Set(users.filter((u) => u.is_admin).map((u) => u.id));
+  const externalRecent = hostedRecent.filter((e) => !staff.has(e.host_id));
+  const everRequested = new Set(rsvps.map((r) => r.user_id));
+  const requestCount = new Map<string, number>();
+  for (const r of rsvps) requestCount.set(r.user_id, (requestCount.get(r.user_id) ?? 0) + 1);
+  const repeaters = Array.from(requestCount.values()).filter((n) => n > 1).length;
+
+  const opActual: Record<string, number> = {
+    externalHosts: new Set(externalRecent.map((e) => e.host_id)).size,
+    externalEvents: externalRecent.length,
+    founderSharePct: hostedRecent.length
+      ? Math.round(((hostedRecent.length - externalRecent.length) / hostedRecent.length) * 100)
+      : 0,
+    mau: actual.mau,
+    activationPct: users.length ? Math.round((everRequested.size / users.length) * 100) : 0,
+    repeatPct: everRequested.size ? Math.round((repeaters / everRequested.size) * 100) : 0,
+    revenue: actual.revenue,
+    proSubscribers: actual.proSubscribers,
+  };
+
+  const op = currentOperating();
 
   const target = currentMilestone();
   const passed = previousMilestone();
@@ -172,10 +233,134 @@ export default async function AdminGrowthPage() {
           </p>
         </div>
 
+        {/* -------------------------------------------- the operating plan -- */}
+        {op && (
+          <>
+            <h2 className="mb-1 mt-8 text-[13px] font-black uppercase tracking-[0.12em] text-gray-400">
+              This quarter · {op.label}
+            </h2>
+            <p className="mb-3 text-[13px] leading-snug text-gray-500">
+              What the next 90 days can move, measured against the 30 days to
+              27 Sep. Staff accounts ({staff.size}) are excluded from the host
+              numbers.
+            </p>
+
+            <div className="space-y-3">
+              {OPERATING_METRICS.map((m) => {
+                const t = op[m.key] as number;
+                const a = opActual[m.key];
+                const base = OPERATING_BASELINE[m.key] as number;
+                const v = m.ceiling ? verdictAtMost(a, t) : verdict(a, t);
+                const style = VERDICT_STYLE[v];
+                const ratio = m.ceiling
+                  ? Math.min(100, t > 0 ? Math.round((t / Math.max(a, 1)) * 100) : 0)
+                  : t > 0
+                    ? Math.min(100, Math.round((a / t) * 100))
+                    : 100;
+                const show = (n: number) =>
+                  m.naira ? naira(n) : `${n.toLocaleString()}${m.suffix ?? ""}`;
+
+                return (
+                  <div
+                    key={m.key}
+                    className="rounded-2xl border border-gray-200 p-4 dark:border-white/10"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-[15px] font-bold text-gray-900 dark:text-white">
+                          {m.name}
+                        </p>
+                        <p className="mt-0.5 text-[13px] leading-snug text-gray-500">
+                          {m.note}
+                        </p>
+                      </div>
+                      <span
+                        className={`shrink-0 rounded-full px-2.5 py-1 text-[12px] font-bold ${style.chip}`}
+                      >
+                        {style.word}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 flex items-baseline gap-2">
+                      <span className="text-[26px] font-extrabold tabular-nums text-gray-900 dark:text-white">
+                        {show(a)}
+                      </span>
+                      <span className="text-[15px] font-semibold text-gray-400">
+                        {m.ceiling ? "against a cap of" : "of"} {show(t)}
+                      </span>
+                      <span className="ml-auto text-[13px] font-semibold text-gray-400">
+                        {m.key === "proSubscribers" && compedPro > 0
+                          ? `+${compedPro} comped`
+                          : `was ${show(base)}`}
+                      </span>
+                    </div>
+
+                    <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-white/10">
+                      <div
+                        className={`h-full rounded-full ${style.bar}`}
+                        style={{ width: `${ratio}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-3 overflow-x-auto rounded-2xl border border-gray-200 dark:border-white/10">
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="border-b border-gray-200 text-left dark:border-white/10">
+                    <th className="px-3 py-2.5 font-bold text-gray-500">Metric</th>
+                    <th className="px-3 py-2.5 text-right font-bold text-gray-500">Sep</th>
+                    {OPERATING_PLAN.map((m) => (
+                      <th
+                        key={m.label}
+                        className={`px-3 py-2.5 text-right font-bold ${m.label === op.label ? "text-brand" : "text-gray-500"}`}
+                      >
+                        {m.label.slice(0, 3)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {OPERATING_METRICS.map((row) => {
+                    const show = (n: number) =>
+                      row.naira ? naira(n) : `${n.toLocaleString()}${row.suffix ?? ""}`;
+                    return (
+                      <tr
+                        key={row.key}
+                        className="border-b border-gray-100 last:border-0 dark:border-white/5"
+                      >
+                        <td className="px-3 py-2.5 font-semibold text-gray-700 dark:text-white/80">
+                          {row.name}
+                        </td>
+                        <td className="px-3 py-2.5 text-right tabular-nums text-gray-400">
+                          {show(OPERATING_BASELINE[row.key] as number)}
+                        </td>
+                        {OPERATING_PLAN.map((m) => (
+                          <td
+                            key={m.label}
+                            className={`px-3 py-2.5 text-right tabular-nums ${m.label === op.label ? "font-bold text-gray-900 dark:text-white" : "text-gray-500"}`}
+                          >
+                            {show(m[row.key] as number)}
+                          </td>
+                        ))}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+
         {/* ------------------------------------------------- the scorecard -- */}
-        <h2 className="mb-3 mt-8 text-[13px] font-black uppercase tracking-[0.12em] text-gray-400">
-          Against {target.label}
+        <h2 className="mb-1 mt-8 text-[13px] font-black uppercase tracking-[0.12em] text-gray-400">
+          The ambition · against {target.label}
         </h2>
+        <p className="mb-3 text-[13px] leading-snug text-gray-500">
+          The 3-year plan, unchanged.
+        </p>
 
         <div className="space-y-3">
           {METRICS.map((m) => {
