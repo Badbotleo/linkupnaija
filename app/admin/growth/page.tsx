@@ -223,9 +223,33 @@ export default async function AdminGrowthPage() {
     timeZone: "Africa/Lagos",
   });
 
-  // Somebody asked to come and nobody has answered. Kills activation and
-  // repeat rate at once, and it is the host's job you are chasing.
-  const stalePending = rsvps.filter((r) => r.status === "pending" && r.created_at < dayAgo).length;
+  /**
+   * Somebody asked to come, nobody answered, and the night has not happened
+   * yet. Kills activation and repeat rate at once.
+   *
+   * THE FIRST VERSION OF THIS COUNTED TEN AND MEANT TWO. It took every
+   * pending row older than a day, which swept up two things that are not
+   * somebody waiting:
+   *
+   *   Eight were for events that had already happened, the oldest a picnic
+   *   in June. Nobody is waiting on a night that is three months gone; that
+   *   is a stale row, not a job.
+   *
+   *   Six were the platform's own account requesting to join events. Chasing
+   *   a host on our own behalf is not the work.
+   *
+   * Both filters are on now, and the number it reports is two: one member,
+   * twice, on one host's upcoming events. That is a thing you can actually
+   * do something about this afternoon, which the ten never was.
+   */
+  const eventDate = new Map(events.map((e) => [e.id, e.date]));
+  const stalePending = rsvps.filter(
+    (r) =>
+      r.status === "pending" &&
+      r.created_at < dayAgo &&
+      !staff.has(r.user_id) &&
+      (eventDate.get(r.event_id) ?? "") >= todayIso
+  ).length;
 
   // Signed up this week and never asked to join anything. This is the
   // activation target, one person at a time.
