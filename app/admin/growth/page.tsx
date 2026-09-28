@@ -79,17 +79,41 @@ export default async function AdminGrowthPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?redirect=/admin/growth");
 
-  const { data: me } = await supabase
+  /**
+   * The one admin page a teammate can open.
+   *
+   * is_team grants this and nothing else. Asked for because Courage hosts
+   * most of what happens here and should see what we are aiming at, and
+   * is_admin would have handed him the payments desk, the support inbox,
+   * every member's email and phone, and write access to half a dozen tables.
+   *
+   * Asked for with a fallback, because is_team arrives with
+   * migration-team-flag.sql. Selecting a column that is not there yet fails
+   * the whole query in PostgREST, which would lock the founder out of his own
+   * page until the migration ran.
+   */
+  let { data: me, error: meError } = await supabase
     .from("users")
-    .select("is_admin")
+    .select("is_admin, is_team")
     .eq("id", user.id)
     .single();
-  if (!me?.is_admin) notFound();
+
+  if (meError?.code === "42703" || meError?.code === "42501") {
+    ({ data: me } = await supabase
+      .from("users")
+      .select("is_admin")
+      .eq("id", user.id)
+      .single());
+  }
+
+  const isAdmin = !!me?.is_admin;
+  const onTeam = isAdmin || !!(me as { is_team?: boolean } | null)?.is_team;
+  if (!onTeam) notFound();
 
   const since = new Date(Date.now() - 30 * DAY).toISOString();
 
   const [usersRes, eventsRes, rsvpsRes, txRes, premiumRes] = await Promise.all([
-    supabase.from("users").select("id, is_pro, pro_expires_at, is_admin, created_at"),
+    supabase.from("users").select("id, is_pro, pro_expires_at, is_admin, created_at, is_team"),
     supabase.from("events").select("id, created_at, host_id, state, is_listing, date, title"),
     supabase.from("rsvps").select("user_id, created_at, status, event_id"),
     supabase.from("transactions").select("amount, created_at"),
@@ -101,6 +125,7 @@ export default async function AdminGrowthPage() {
     is_pro: boolean | null;
     pro_expires_at: string | null;
     is_admin: boolean | null;
+    is_team?: boolean | null;
     created_at: string;
   }[];
   const events = (eventsRes.data ?? []) as {
@@ -199,7 +224,7 @@ export default async function AdminGrowthPage() {
    * running the platform. The page prints the count so it can be checked.
    */
   const staff = new Set([
-    ...users.filter((u) => u.is_admin).map((u) => u.id),
+    ...users.filter((u) => u.is_admin || u.is_team).map((u) => u.id),
     ...events.filter((e) => e.is_listing).map((e) => e.host_id),
   ]);
   const externalRecent = hostedRecent.filter((e) => !staff.has(e.host_id));
@@ -351,25 +376,25 @@ export default async function AdminGrowthPage() {
       n: warmLeads,
       label: "said they were interested and never asked to join",
       why: "The event is fine and the asking is what stopped them. Closest thing you have to a warm lead.",
-      href: "/admin",
+      href: isAdmin ? "/admin" : "/events",
     },
     {
       n: stalePending,
       label: "requests waiting more than a day",
       why: "Chase the host. An unanswered request is somebody deciding this place does not work.",
-      href: "/admin",
+      href: isAdmin ? "/admin" : "/events",
     },
     {
       n: neverRequested,
       label: "joined this week and have not asked to join anything",
       why: "Message them something specific that is on soon. This is the activation target.",
-      href: "/admin",
+      href: isAdmin ? "/admin" : "/events",
     },
     {
       n: dormantHosts,
       label: "hosts have not posted in 30 days",
       why: "Waking one is cheaper than finding one, and counts the same.",
-      href: "/admin",
+      href: isAdmin ? "/admin" : "/events",
     },
     {
       n: thinThisWeek,
@@ -776,6 +801,8 @@ export default async function AdminGrowthPage() {
           . Changing one is a commit, so a moved goalpost leaves a trace.
         </p>
 
+        {/* Analytics is is_admin only, so a teammate would land on a 404. */}
+        {isAdmin && (
         <Link
           href="/admin/analytics"
           className="mt-6 inline-flex items-center gap-2 rounded-full bg-gray-100 px-4 py-2.5 text-[14px] font-bold text-gray-700 transition hover:bg-gray-200"
@@ -783,6 +810,7 @@ export default async function AdminGrowthPage() {
           <LineIcon name="trending" size={16} />
           Full analytics
         </Link>
+        )}
       </div>
     </div>
   );
