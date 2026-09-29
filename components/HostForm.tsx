@@ -362,7 +362,22 @@ export default function HostForm({
           location: form.location.trim(),
           frequency,
           cover_image_url: coverImageUrl,
-      gallery_urls: galleryUrls,
+          // NO gallery_urls. event_series has never had that column, and
+          // sending it made PostgREST reject the whole insert with "Could not
+          // find the 'gallery_urls' column of 'event_series' in the schema
+          // cache", so creating a recurring series failed outright.
+          //
+          // It arrived on 4 Aug 2026 in "Let hosts add up to 5 pictures to an
+          // event", copied across from the event insert directly above, where
+          // it is correct. Recurring series has been broken ever since and
+          // nobody reported it, which is the same shape as instant joining:
+          // the error is at the end of a long form, so the people who hit it
+          // gave up rather than wrote in.
+          //
+          // Removing it rather than adding the column, because nothing wants
+          // it: create-series-events selects a fixed list that excludes it and
+          // inserts events without it, and no page reads it. The pictures
+          // belong to each event, which is where the form already puts them.
         })
         .select("id")
         .single();
