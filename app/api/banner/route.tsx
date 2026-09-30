@@ -58,8 +58,32 @@ const CREAM = "#FFF4E6";
  * Real members at real link-ups, trimmed of their phone letterboxing and
  * squared by hand at the point where the faces actually sit.
  */
-const HERO = "/banner/n3.jpg"; // three of them dancing, arms up
-const STRIP = ["/banner/n1.jpg", "/banner/n2.jpg", "/banner/n4.jpg"];
+/**
+ * SIX, ALL THE SAME SIZE, AND NO HERO.
+ *
+ * The version before this opened on one photograph a third of the banner
+ * tall. It was the best image we had and that was the problem: the eye
+ * landed on it, stayed there, and everything underneath became wallpaper. A
+ * banner selling "find your people" that fixes your attention on three
+ * people is arguing against itself.
+ *
+ * Equal tiles make the argument instead. Six different nights, six different
+ * rooms, nobody's face bigger than anybody else's, and the eye moves across
+ * them rather than resting on one. Ordered so that neighbours differ in
+ * light and crowd: a bright crowd next to a dim two-shot, indoors next to
+ * outdoors, so no quadrant of the grid reads as one photograph.
+ */
+const TILES = [
+  "/banner/n1.jpg", // crowd, braids, phones up
+  "/banner/m1.jpg", // two of them, indoors, close
+  "/banner/n3.jpg", // dancing, arms up
+  "/banner/n4.jpg", // outside, string lights
+  "/banner/m4.jpg", // one of them, daylight, outdoors
+  "/banner/n2.jpg", // drinks going round
+  "/banner/m2.jpg", // a group, mid-laugh
+  "/banner/m5.jpg", // daylight group shot
+  "/banner/m3.jpg", // the big group picture
+];
 
 
 /**
@@ -201,70 +225,33 @@ export async function GET(req: Request) {
           style={{ position: "absolute", top: 0, left: 0, width: W, height: H }}
         />
 
-        {/* ================================================== the hero ==== */}
-        <div style={{ display: "flex", position: "relative", width: "100%", height: u(1500) }}>
+        {/* ================================================ the header ==== */}
+        <div style={{ display: "flex", width: "100%" }}>
+          <div style={{ display: "flex", width: W / 3, height: u(22), backgroundColor: "#008753" }} />
+          <div style={{ display: "flex", width: W / 3, height: u(22), backgroundColor: "#FFFFFF" }} />
+          <div style={{ display: "flex", width: W / 3, height: u(22), backgroundColor: "#008753" }} />
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: u(24), paddingLeft: u(90), marginTop: u(74) }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={img(HERO)}
-            alt=""
-            width={W}
-            height={u(1500)}
-            style={{ width: W, height: u(1500), objectFit: "cover" }}
-          />
-
-          {/* Carries the photograph into the headline instead of stopping at
-              a hard edge. Solid at the bottom so the type below has clean
-              ground; Satori has no blur, so this does the work. */}
-          <div
-            style={{
-              position: "absolute",
-              display: "flex",
-              left: 0,
-              bottom: 0,
-              width: W,
-              height: u(640),
-              backgroundImage: `linear-gradient(to top, ${INK} 0%, ${INK} 18%, rgba(22,13,51,0) 100%)`,
-            }}
-          />
-
-          {/* The flag rule, the one constant across everything we print. */}
-          <div style={{ position: "absolute", top: 0, left: 0, display: "flex", width: W }}>
-            <div style={{ display: "flex", width: W / 3, height: u(22), backgroundColor: "#008753" }} />
-            <div style={{ display: "flex", width: W / 3, height: u(22), backgroundColor: "#FFFFFF" }} />
-            <div style={{ display: "flex", width: W / 3, height: u(22), backgroundColor: "#008753" }} />
-          </div>
-
-          {/* The mark sits ON the photograph, not in a band above it. */}
-          <div
-            style={{
-              position: "absolute",
-              display: "flex",
-              alignItems: "center",
-              gap: u(24),
-              top: u(90),
-              left: u(90),
-            }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={LOGO_MARK_DATA_URI} alt="" width={u(118)} height={u(118)} style={{ width: u(118), height: u(118) }} />
-            <div style={{ display: "flex", fontSize: u(80), fontWeight: 700, letterSpacing: "-0.02em", color: "#fff" }}>
-              Link<span style={{ color: "#A79BFF" }}>Up</span>Naija
-            </div>
+          <img src={LOGO_MARK_DATA_URI} alt="" width={u(110)} height={u(110)} style={{ width: u(110), height: u(110) }} />
+          <div style={{ display: "flex", fontSize: u(76), fontWeight: 700, letterSpacing: "-0.02em", color: "#fff" }}>
+            Link<span style={{ color: "#A79BFF" }}>Up</span>Naija
           </div>
         </div>
 
         {/* ============================================== the headline ==== */}
-        {/* Ranged left and flush to the margin. Centred type on a two metre
-            banner has no spine; ranging it left gives everything below
-            something to line up against. */}
-        <div style={{ display: "flex", flexDirection: "column", paddingLeft: u(90), paddingRight: u(90), marginTop: u(-30) }}>
-          <div style={{ display: "flex", fontSize: u(196), fontWeight: 700, color: CREAM, letterSpacing: "-0.045em", lineHeight: 1 }}>
+        {/* It carries the top now that no photograph does. On a roll-up read
+            from twenty paces something has to work at that distance, and
+            without a hero it has to be the words. */}
+        <div style={{ display: "flex", flexDirection: "column", paddingLeft: u(90), paddingRight: u(90), marginTop: u(56) }}>
+          <div style={{ display: "flex", fontSize: u(210), fontWeight: 700, color: CREAM, letterSpacing: "-0.045em", lineHeight: 1 }}>
             FIND YOUR
           </div>
-          <div style={{ display: "flex", fontSize: u(196), fontWeight: 700, color: GOLD, letterSpacing: "-0.045em", lineHeight: 1 }}>
+          <div style={{ display: "flex", fontSize: u(210), fontWeight: 700, color: GOLD, letterSpacing: "-0.045em", lineHeight: 1 }}>
             PEOPLE.
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: u(20), marginTop: u(36) }}>
+          <div style={{ display: "flex", alignItems: "center", gap: u(20), marginTop: u(34) }}>
             <div style={{ display: "flex", width: u(80), height: u(8), backgroundColor: ROSE, borderRadius: u(4) }} />
             <div style={{ display: "flex", fontSize: u(50), fontWeight: 400, color: "rgba(255,244,230,0.82)" }}>
               Real link-ups near you, every week
@@ -272,21 +259,26 @@ export async function GET(req: Request) {
           </div>
         </div>
 
-        {/* ================================================ the strip ==== */}
-        {/* Edge to edge, no borders, no gaps. Three photographs touching read
-            as one band of a night out; three framed with space between them
-            read as three separate small pictures. */}
-        <div style={{ display: "flex", width: "100%", marginTop: u(64) }}>
-          {STRIP.map((f) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={f}
-              src={img(f)}
-              alt=""
-              width={Math.round(W / 3)}
-              height={u(640)}
-              style={{ width: Math.round(W / 3), height: u(640), objectFit: "cover" }}
-            />
+        {/* ================================================ the mosaic ==== */}
+        {/* Two rows of three, edge to edge, no gaps and no borders. Touching
+            tiles read as one field of a good time; spaced ones read as six
+            small pictures and put the attention back on whichever is
+            brightest. */}
+        <div style={{ display: "flex", flexDirection: "column", width: "100%", marginTop: u(76) }}>
+          {[0, 3, 6].map((row) => (
+          <div key={row} style={{ display: "flex", width: "100%" }}>
+            {TILES.slice(row, row + 3).map((f) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={f}
+                src={img(f)}
+                alt=""
+                width={Math.round(W / 3)}
+                height={u(600)}
+                style={{ width: Math.round(W / 3), height: u(600), objectFit: "cover" }}
+              />
+            ))}
+          </div>
           ))}
         </div>
 
