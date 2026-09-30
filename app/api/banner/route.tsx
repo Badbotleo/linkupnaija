@@ -64,11 +64,11 @@ const CREAM = "#FFF4E6";
  * round trip to storage and cannot break when a member deletes a photo.
  */
 const FACES = [
-  "/banner/m1.jpg",
-  "/banner/m4.jpg",
-  "/banner/m2.jpg",
-  "/banner/m5.jpg",
-  "/banner/m3.jpg",
+  "/banner/n1.jpg", // the crowd, braids, phones up
+  "/banner/n3.jpg", // three of them dancing, arms up. The hero, so it centres
+  "/banner/n2.jpg", // drinks going round
+  "/banner/n4.jpg", // outside, string lights, evening
+  "/banner/m5.jpg", // daylight group shot, for contrast with four night scenes
 ];
 
 /** What the platform is for, in the words a stranger would use. */
