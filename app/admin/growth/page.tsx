@@ -526,47 +526,45 @@ export default async function AdminGrowthPage() {
           </p>
 
           {/* -------------------------------------------- the whole house -- */}
-          {/* Total members, new this month, and how many of them have ever
-              asked to join anything. The page is otherwise all rates and
-              targets, and a rate with no denominator on the screen is easy to
-              read as bigger than it is: 22% activation sounds healthy until
-              you see it is 22% of a couple of hundred people.
-
-              The third figure is the one that matters and the one nothing
-              else here shows. Everybody who signed up and never took the
-              first step is the cheapest growth available, and the number only
-              becomes a task once somebody can see it. */}
-          <div className="mt-5 flex flex-wrap gap-x-8 gap-y-3 border-t border-white/15 pt-4">
-            {/* "New" for signups and "never asked to join" for the dormant
-                pile, because the old pair said "joined this month" beside
-                "never joined anything" and meant two different things by the
-                same word. */}
-            {[
-              ["Members", memberCount.toLocaleString(), null],
-              ["New today", `+${newToday.toLocaleString()}`, null],
-              ["New this week", `+${newThisWeek.toLocaleString()}`, null],
-              ["New this month", `+${newThisMonth.toLocaleString()}`, null],
-              [
-                "Never asked to join",
-                dormantCount.toLocaleString(),
-                memberCount
-                  ? `${Math.round((dormantCount / memberCount) * 100)}% of everyone`
-                  : null,
-              ],
-            ].map(([label, value, note]) => (
-              <div key={label as string} className="flex flex-col">
-                <span className="text-[12px] font-bold uppercase tracking-[0.1em] text-white/45">
-                  {label}
-                </span>
-                <span className="mt-0.5 text-[26px] font-extrabold leading-none tabular-nums">
-                  {value}
-                </span>
-                {note && (
-                  <span className="mt-1 text-[12px] text-white/50">{note}</span>
-                )}
-              </div>
-            ))}
-          </div>
+          {/* One line, not four stat tiles. These are reference figures you
+              glance at on the way to the targets below, and as a block of
+              26px numbers they pushed the actual content off the first
+              screen. The dormant share stays because it is the only one of
+              the four that is a problem rather than a fact. */}
+          <p className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-1 border-t border-white/15 pt-3 text-[14px] text-white/60">
+            <span>
+              <b className="font-bold tabular-nums text-white">
+                {memberCount.toLocaleString()}
+              </b>{" "}
+              members
+            </span>
+            <span className="text-white/25">·</span>
+            <span>
+              <b className="font-bold tabular-nums text-white">
+                +{newToday.toLocaleString()}
+              </b>{" "}
+              today
+            </span>
+            <span>
+              <b className="font-bold tabular-nums text-white">
+                +{newThisWeek.toLocaleString()}
+              </b>{" "}
+              this week
+            </span>
+            <span>
+              <b className="font-bold tabular-nums text-white">
+                +{newThisMonth.toLocaleString()}
+              </b>{" "}
+              this month
+            </span>
+            <span className="text-white/25">·</span>
+            <span className="text-amber-300/90">
+              <b className="font-bold tabular-nums">
+                {dormantCount.toLocaleString()}
+              </b>{" "}
+              never asked to join
+            </span>
+          </p>
         </div>
 
         {/* --------------------------------------------------------- today -- */}

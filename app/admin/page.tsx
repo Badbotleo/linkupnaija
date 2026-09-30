@@ -409,26 +409,38 @@ export default async function AdminPage() {
       </div>
       <p className="mt-1 text-gray-600">Platform overview at a glance.</p>
 
-      {/* Signups, three ways. Month alone is a nearly complete figure on the
-          28th and noise on the 2nd, and neither tells you whether today was
-          any good. Three windows make one number into a trend. */}
-      <div className="mt-4 flex flex-wrap gap-x-8 gap-y-3 rounded-2xl border border-gray-200 px-5 py-4 dark:border-white/10">
-        {[
-          ["Members", (userCount ?? 0).toLocaleString()],
-          ["New today", `+${(newToday ?? 0).toLocaleString()}`],
-          ["New this week", `+${(newThisWeek ?? 0).toLocaleString()}`],
-          ["New this month", `+${(newThisMonth ?? 0).toLocaleString()}`],
-        ].map(([label, value]) => (
-          <div key={label} className="flex flex-col">
-            <span className="text-[12px] font-bold uppercase tracking-[0.1em] text-gray-400">
-              {label}
-            </span>
-            <span className="mt-0.5 text-[26px] font-extrabold leading-none tabular-nums text-gray-900 dark:text-white">
-              {value}
-            </span>
-          </div>
-        ))}
-      </div>
+      {/* ONE LINE. The first version was four 26px numbers in a bordered
+          box and ate the top of the screen before the operations desk
+          started. A reference figure you glance at does not need to be the
+          biggest thing on the page; it needs to be legible and out of the
+          way. */}
+      <p className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[14px] text-gray-500">
+        <span>
+          <b className="font-bold tabular-nums text-gray-900 dark:text-white">
+            {(userCount ?? 0).toLocaleString()}
+          </b>{" "}
+          members
+        </span>
+        <span className="text-gray-300 dark:text-white/20">·</span>
+        <span>
+          <b className="font-bold tabular-nums text-gray-900 dark:text-white">
+            +{(newToday ?? 0).toLocaleString()}
+          </b>{" "}
+          today
+        </span>
+        <span>
+          <b className="font-bold tabular-nums text-gray-900 dark:text-white">
+            +{(newThisWeek ?? 0).toLocaleString()}
+          </b>{" "}
+          this week
+        </span>
+        <span>
+          <b className="font-bold tabular-nums text-gray-900 dark:text-white">
+            +{(newThisMonth ?? 0).toLocaleString()}
+          </b>{" "}
+          this month
+        </span>
+      </p>
 
       {/* The numbers that carry a decision live on their own page — this one
           is an operations desk, and mixing the two makes both harder to read. */}
