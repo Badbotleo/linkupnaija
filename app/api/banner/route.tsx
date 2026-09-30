@@ -164,6 +164,23 @@ export async function GET(req: Request) {
   const u = (n: number) => Math.round((n / 1600) * W); // scale from the 1600 design
 
   /**
+   * Three banners, not three colourways.
+   *
+   *   a  mosaic     nine equal tiles. Social proof by volume: many nights,
+   *                 many rooms, no single face larger than another.
+   *   b  statement  almost no photographs. Enormous type, one band of three
+   *                 at the foot, a very large QR. Reads confident and quiet,
+   *                 and survives being seen from the far side of a hall.
+   *   c  editorial  photographs alternating with solid colour panels that
+   *                 carry one promise each. The one that actually explains
+   *                 what the platform does rather than only showing it.
+   *
+   * Same palette, same grid, same doodle field. They differ in what they ask
+   * the reader to do, which is the only difference worth printing three of.
+   */
+  const variant = (url.searchParams.get("v") ?? "a").toLowerCase();
+
+  /**
    * Absolute, and versioned by the file's own modification time.
    *
    * Satori fetches every <img> over HTTP, so a relative path resolves to
@@ -245,10 +262,10 @@ export async function GET(req: Request) {
             from twenty paces something has to work at that distance, and
             without a hero it has to be the words. */}
         <div style={{ display: "flex", flexDirection: "column", paddingLeft: u(90), paddingRight: u(90), marginTop: u(56) }}>
-          <div style={{ display: "flex", fontSize: u(210), fontWeight: 700, color: CREAM, letterSpacing: "-0.045em", lineHeight: 1 }}>
+          <div style={{ display: "flex", fontSize: u(variant === "b" ? 250 : 210), fontWeight: 700, color: CREAM, letterSpacing: "-0.045em", lineHeight: 1 }}>
             FIND YOUR
           </div>
-          <div style={{ display: "flex", fontSize: u(210), fontWeight: 700, color: GOLD, letterSpacing: "-0.045em", lineHeight: 1 }}>
+          <div style={{ display: "flex", fontSize: u(variant === "b" ? 250 : 210), fontWeight: 700, color: GOLD, letterSpacing: "-0.045em", lineHeight: 1 }}>
             PEOPLE.
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: u(20), marginTop: u(34) }}>
@@ -259,30 +276,124 @@ export async function GET(req: Request) {
           </div>
         </div>
 
-        {/* ================================================ the mosaic ==== */}
-        {/* Two rows of three, edge to edge, no gaps and no borders. Touching
-            tiles read as one field of a good time; spaced ones read as six
-            small pictures and put the attention back on whichever is
-            brightest. */}
-        <div style={{ display: "flex", flexDirection: "column", width: "100%", marginTop: u(76) }}>
-          {[0, 3, 6].map((row) => (
-          <div key={row} style={{ display: "flex", width: "100%" }}>
-            {TILES.slice(row, row + 3).map((f) => (
+        {/* ============================================ the statement ==== */}
+        {/* Variant b only. Without it the type-led version had six hundred units of
+            empty violet under the headline, which is not air, it is an
+            unfinished banner. A type-led design has to have something to say
+            in type. */}
+        {variant === "b" && (
+          <div style={{ display: "flex", flexDirection: "column", paddingLeft: u(90), paddingRight: u(90), marginTop: u(150) }}>
+            {["You already go out.", "You just don't always", "know who else is going."].map((line, i) => (
+              <div
+                key={line}
+                style={{
+                  display: "flex",
+                  fontSize: u(96),
+                  fontWeight: 700,
+                  color: i === 2 ? GOLD : "rgba(255,244,230,0.92)",
+                  letterSpacing: "-0.03em",
+                  lineHeight: 1.16,
+                }}
+              >
+                {line}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ============================================== the pictures ==== */}
+        {/* Edge to edge in every variant, because touching tiles read as one
+            field of a good time and spaced ones read as separate small
+            pictures, which puts the attention back on whichever is
+            brightest. What changes is how many and how tall. */}
+        {variant === "c" ? (
+          /* EDITORIAL. Two tiles, then a colour panel carrying a promise,
+             then two more. The panels are the argument and the photographs
+             are the evidence, alternating so neither runs long enough to
+             become scenery. */
+          <div style={{ display: "flex", flexDirection: "column", width: "100%", marginTop: u(70) }}>
+            {(
+              [
+                [[0, 2], "The host approves every guest", ROSE],
+                [[2, 4], "See who's coming before you go", CYAN],
+                [[4, 6], "Something on every single week", GOLD],
+              ] as [[number, number], string, string][]
+            ).map(([[from, to], line, colour]) => (
+              <div key={line} style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+                <div style={{ display: "flex", width: "100%" }}>
+                  {TILES.slice(from, to).map((f) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      key={f}
+                      src={img(f)}
+                      alt=""
+                      width={Math.round(W / 2)}
+                      height={u(560)}
+                      style={{ width: Math.round(W / 2), height: u(560), objectFit: "cover" }}
+                    />
+                  ))}
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    width: "100%",
+                    backgroundColor: colour,
+                    paddingLeft: u(90),
+                    paddingRight: u(90),
+                    paddingTop: u(30),
+                    paddingBottom: u(32),
+                    fontSize: u(60),
+                    fontWeight: 700,
+                    color: INK,
+                  }}
+                >
+                  {line}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : variant === "b" ? (
+          /* STATEMENT. One band of three, low down, so the top two thirds
+             are type and air. */
+          <div style={{ display: "flex", width: "100%", marginTop: u(150) }}>
+            {TILES.slice(0, 3).map((f) => (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 key={f}
                 src={img(f)}
                 alt=""
                 width={Math.round(W / 3)}
-                height={u(600)}
-                style={{ width: Math.round(W / 3), height: u(600), objectFit: "cover" }}
+                height={u(1060)}
+                style={{ width: Math.round(W / 3), height: u(1060), objectFit: "cover" }}
               />
             ))}
           </div>
-          ))}
-        </div>
+        ) : (
+          /* MOSAIC. Three rows of three. */
+          <div style={{ display: "flex", flexDirection: "column", width: "100%", marginTop: u(76) }}>
+            {[0, 3, 6].map((row) => (
+              <div key={row} style={{ display: "flex", width: "100%" }}>
+                {TILES.slice(row, row + 3).map((f) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={f}
+                    src={img(f)}
+                    alt=""
+                    width={Math.round(W / 3)}
+                    height={u(600)}
+                    style={{ width: Math.round(W / 3), height: u(600), objectFit: "cover" }}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* ================================================= what's on ==== */}
+        {/* Variant c says the same thing in its colour panels, so repeating
+            it as chips would be the banner talking twice. */}
+        {variant !== "c" && (
         <div
           style={{
             display: "flex",
@@ -325,6 +436,7 @@ export async function GET(req: Request) {
             </div>
           ))}
         </div>
+        )}
 
         {/* ============================================== the QR panel ==== */}
         {/* Cream, spanning the banner, at chest height. The one thing a
