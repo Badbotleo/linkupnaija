@@ -12,6 +12,9 @@
 // Deploy:  supabase functions deploy send-broadcast
 //
 // Usage (send the service-role key as the Bearer token):
+//   AN EMPTY BODY IS A REAL RUN, and `-d '{}'` counts as empty. There is no
+//   confirmation step. Always dry_run first.
+//
 //   # 1) Preview the audience — no emails sent:
 //   curl -X POST https://<ref>.functions.supabase.co/send-broadcast \
 //     -H "Authorization: Bearer <SERVICE_ROLE_KEY>" \
@@ -20,6 +23,13 @@
 //   # 2) Send one test to yourself first — no DB writes:
 //   curl -X POST .../send-broadcast -H "Authorization: Bearer <KEY>" \
 //     -H "Content-Type: application/json" -d '{"test_to":"you@example.com"}'
+//
+//   DEPLOY WITHOUT --no-verify-jwt. This function was once live with no
+//   authentication at all because that flag was copied from send-push, where
+//   it is deliberate. It now also checks the service role key itself, so a
+//   wrong flag cannot expose it again, but deploy it correctly anyway:
+//
+//     supabase functions deploy send-broadcast
 //
 //   # 3) Run it for real (one batch per call), repeat until remaining=0:
 //   curl -X POST .../send-broadcast -H "Authorization: Bearer <KEY>" \
@@ -112,10 +122,35 @@ function reminderEmailHtml(opts: {
 }
 
 Deno.serve(async (req) => {
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-  );
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  /**
+   * THE SERVICE ROLE KEY, CHECKED HERE, NOT LEFT TO verify_jwt.
+   *
+   * This function was reachable from the open internet with no credentials
+   * at all. Deployed with --no-verify-jwt, almost certainly copied from
+   * send-push, where that flag is deliberate and documented. Anybody who
+   * guessed the URL could POST {"campaign":"anything"} and mail every member
+   * on the platform, and could do it again with a new campaign name each
+   * time, because the idempotency key is the campaign.
+   *
+   * verify_jwt ALONE WOULD NOT HAVE FIXED IT. It accepts any valid JWT for
+   * the project, and the anon key is a valid JWT that is published in the
+   * browser bundle on every page load. So the gate has to be the service
+   * role key specifically, and it has to be inside the function where a
+   * deploy flag cannot forget it.
+   *
+   * Equality is a plain comparison rather than a timing-safe one on purpose:
+   * the attacker here is somebody who found a URL, not somebody measuring
+   * microseconds over the public internet against an Edge runtime.
+   */
+  const auth = req.headers.get("authorization") ?? "";
+  const token = auth.replace(/^Bearer\s+/i, "").trim();
+  if (!serviceKey || token !== serviceKey) {
+    return json({ error: "Unauthorized" }, 401);
+  }
+
+  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, serviceKey);
 
   let body: Record<string, unknown> = {};
   try {
