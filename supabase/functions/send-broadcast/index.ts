@@ -1,4 +1,4 @@
-// LinkUpNaija — one-off reminder broadcast to all users.
+// LinkUpNaija — segmentable re-engagement broadcast.
 //
 // Sends a branded "come back & check what's happening" reminder to every user,
 // with up to 3 upcoming events in their state. Re-engagement style, so it
@@ -27,6 +27,28 @@
 //
 //   Optional body fields:
 //     {"subject":"...", "campaign":"jul-2026", "batch":100}
+//
+//   SEGMENTING. Added because a blast to everybody is the thing this was
+//   being used to avoid. 194 of 250 members have never once asked to join
+//   anything, and mailing all 250 the same three generic events is how that
+//   stays true. The filters below let one campaign speak to one group about
+//   one night:
+//
+//     {"only_dormant":true}         only people who have NEVER requested a
+//                                   spot. The whole re-engagement audience.
+//     {"state":"FCT - Abuja"}       one city.
+//     {"joined_after":"2026-09-01"} recent signups, who answer best.
+//     {"event_id":"<uuid>"}         feature ONE event instead of three
+//                                   guessed from their state. A specific
+//                                   night with a date is a thing somebody
+//                                   can say yes to; a catalogue is homework.
+//     {"headline":"...",
+//      "body":"...",
+//      "cta":"..."}                 the copy, so a campaign does not need a
+//                                   deploy to change its words.
+//
+//   dry_run reports the segment size before anything is sent, and still
+//   does, so you always know who you are about to mail.
 
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
@@ -52,24 +74,39 @@ function reminderEmailHtml(opts: {
   state: string | null;
   events: EmailEvent[];
   unsubscribeUrl?: string;
+  headline?: string;
+  body?: string;
+  cta?: string;
+  ctaUrl?: string;
+  featured?: boolean;
 }): string {
+  // When a campaign features ONE event, do not label it "happening soon in
+  // your state" and do not list alternatives. The whole point of choosing the
+  // event is that the reader has a single decision to make.
   const eventsBlock = opts.events.length
-    ? `<p style="margin:18px 0 10px;color:#1A1040;font-size:15px;font-weight:700">
-         Happening soon${opts.state ? ` in ${escapeHtml(opts.state)}` : ""} 👇
-       </p>${opts.events.map(eventCardHtml).join("")}`
+    ? (opts.featured
+        ? opts.events.map(eventCardHtml).join("")
+        : `<p style="margin:18px 0 10px;color:#1A1040;font-size:15px;font-weight:700">
+             Happening soon${opts.state ? ` in ${escapeHtml(opts.state)}` : ""} 👇
+           </p>${opts.events.map(eventCardHtml).join("")}`)
     : "";
   return emailLayout({
     title: "Your next link-up is waiting",
     preheader: "New hangouts, parties and picnics are popping up near you.",
     unsubscribeUrl: opts.unsubscribeUrl,
     bodyHtml: `
-      ${heading(`Hey ${firstName(opts.name)}, we've missed you 👋`)}
-      ${paragraph(
-        "Nigerians are linking up on LinkUpNaija every week: hangouts, parties, picnics, game nights and more. Here's your nudge to jump back in and find your people."
+      ${heading(
+        opts.headline
+          ? opts.headline.replace("{name}", firstName(opts.name))
+          : `Hey ${firstName(opts.name)}, we've missed you 👋`
       )}
-      ${button(`${SITE_URL}/events`, "🔎 See what's happening")}
-      ${button(`${SITE_URL}/host`, "🎤 Host your own")}
+      ${paragraph(
+        opts.body ??
+          "Nigerians are linking up on LinkUpNaija every week: hangouts, parties, picnics, game nights and more. Here's your nudge to jump back in and find your people."
+      )}
       ${eventsBlock}
+      ${button(opts.ctaUrl ?? `${SITE_URL}/events`, opts.cta ?? "🔎 See what's happening")}
+      ${opts.featured ? "" : button(`${SITE_URL}/host`, "🎤 Host your own")}
     `,
   });
 }
@@ -97,6 +134,39 @@ Deno.serve(async (req) => {
       : DEFAULT_CAMPAIGN;
   const emailType = `broadcast:${campaign}`;
 
+  const onlyDormant = body.only_dormant === true;
+  const stateFilter =
+    typeof body.state === "string" && body.state.trim() ? body.state.trim() : null;
+  const joinedAfter =
+    typeof body.joined_after === "string" ? body.joined_after.trim() : null;
+  const featuredId =
+    typeof body.event_id === "string" && body.event_id.trim()
+      ? body.event_id.trim()
+      : null;
+  const copy = {
+    headline: typeof body.headline === "string" ? body.headline : undefined,
+    body: typeof body.body === "string" ? body.body : undefined,
+    cta: typeof body.cta === "string" ? body.cta : undefined,
+  };
+
+  /**
+   * The featured event is fetched ONCE, not per recipient.
+   *
+   * Everyone in this segment gets the same night, so looking it up inside the
+   * loop would be one query per person for an identical answer, and on a
+   * hundred-person batch that is a hundred round trips buying nothing.
+   */
+  let featured: EmailEvent | null = null;
+  if (featuredId) {
+    const { data } = await supabase
+      .from("events")
+      .select("id, title, date, time, location, state")
+      .eq("id", featuredId)
+      .maybeSingle();
+    featured = (data as EmailEvent | null) ?? null;
+    if (!featured) return json({ error: `No event ${featuredId}` }, 400);
+  }
+
   // --- Test mode: send one sample, no DB writes ----------------------------
   if (typeof body.test_to === "string") {
     const ok = await sendEmail({
@@ -110,12 +180,33 @@ Deno.serve(async (req) => {
   // --- Build the eligible set (everyone not yet sent THIS campaign) ---------
   const alreadySent = await collectSent(supabase, emailType);
   const users = await collectUsers(supabase);
-  const eligible = users.filter((u) => u.email && !alreadySent.has(u.id));
+
+  /**
+   * Dormant means never once asked to join anything, which is not the same as
+   * inactive. Somebody who requested a spot in June and stopped is a lapsed
+   * member with a different problem and a different message; these people
+   * signed up and never took the first step at all.
+   */
+  const requested = onlyDormant ? await collectRequesters(supabase) : null;
+
+  const eligible = users.filter((u) => {
+    if (!u.email || alreadySent.has(u.id)) return false;
+    if (requested && requested.has(u.id)) return false;
+    if (stateFilter && u.state !== stateFilter) return false;
+    if (joinedAfter && (u.created_at ?? "") < joinedAfter) return false;
+    return true;
+  });
 
   if (body.dry_run === true) {
     return json({
       campaign,
       subject,
+      segment: {
+        only_dormant: onlyDormant,
+        state: stateFilter,
+        joined_after: joinedAfter,
+        featured_event: featured ? `${featured.title} · ${featured.date}` : null,
+      },
       total_users: users.length,
       already_sent: alreadySent.size,
       eligible: eligible.length,
@@ -159,9 +250,11 @@ Deno.serve(async (req) => {
       continue;
     }
 
-    // Up to 3 upcoming events in their state.
+    // One chosen night, or up to 3 guessed from their state.
     let events: EmailEvent[] = [];
-    if (user.state) {
+    if (featured) {
+      events = [featured];
+    } else if (user.state) {
       const { data } = await supabase
         .from("events")
         .select("id, title, date, time, location, state")
@@ -185,6 +278,11 @@ Deno.serve(async (req) => {
         state: user.state,
         events,
         unsubscribeUrl,
+        headline: copy.headline,
+        body: copy.body,
+        cta: copy.cta,
+        ctaUrl: featured ? `${SITE_URL}/events/${featured.id}` : undefined,
+        featured: !!featured,
       }),
     });
     if (ok) sent++;
@@ -221,6 +319,23 @@ interface UserLite {
   name: string | null;
   email: string;
   state: string | null;
+  created_at?: string | null;
+}
+
+/** Everyone who has ever asked to join anything, at any time, any status. */
+async function collectRequesters(supabase: SupabaseClient): Promise<Set<string>> {
+  const ids = new Set<string>();
+  const PAGE = 1000;
+  for (let offset = 0; ; offset += PAGE) {
+    const { data, error } = await supabase
+      .from("rsvps")
+      .select("user_id")
+      .range(offset, offset + PAGE - 1);
+    if (error || !data?.length) break;
+    for (const r of data) ids.add(r.user_id as string);
+    if (data.length < PAGE) break;
+  }
+  return ids;
 }
 
 async function collectSent(
@@ -248,7 +363,7 @@ async function collectUsers(supabase: SupabaseClient): Promise<UserLite[]> {
   for (let offset = 0; ; offset += PAGE) {
     const { data, error } = await supabase
       .from("users")
-      .select("id, name, email, state")
+      .select("id, name, email, state, created_at")
       .range(offset, offset + PAGE - 1);
     if (error || !data?.length) break;
     out.push(...(data as UserLite[]));
