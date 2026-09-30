@@ -20,26 +20,36 @@ export const getSessionUser = cache(async () => {
 export interface UserMeta {
   id: string;
   is_admin: boolean;
+  /** On the team but not an operator. Grants /admin/growth and nothing else. */
+  is_team: boolean;
   name: string | null;
   avatar_url: string | null;
   is_pro: boolean;
   pro_expires_at: string | null;
 }
 
-/** The current user's id + admin flag + name/avatar + pro — one lookup per request. */
+/**
+ * The current user's id, roles, name/avatar and pro status — one lookup per
+ * request.
+ *
+ * is_team rides along here rather than getting its own query. This runs on
+ * every page for every signed-in visitor, so a second round trip to read one
+ * boolean would be the most expensive column on the site.
+ */
 export const getCurrentUserMeta = cache(async (): Promise<UserMeta | null> => {
   const user = await getSessionUser();
   if (!user) return null;
   const supabase = createClient();
   const { data } = await supabase
     .from("users")
-    .select("id, is_admin, name, avatar_url, is_pro, pro_expires_at")
+    .select("id, is_admin, is_team, name, avatar_url, is_pro, pro_expires_at")
     .eq("id", user.id)
     .single();
   return (
     (data as UserMeta | null) ?? {
       id: user.id,
       is_admin: false,
+      is_team: false,
       name: null,
       avatar_url: null,
       is_pro: false,

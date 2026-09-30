@@ -50,12 +50,14 @@ const MORE = [
 export default function MobileNav({
   userId,
   isAdmin,
+  isTeam = false,
   name,
   avatarUrl,
   isPro = false,
 }: {
   userId: string | null;
   isAdmin: boolean;
+  isTeam?: boolean;
   name: string | null;
   avatarUrl: string | null;
   isPro?: boolean;
@@ -194,6 +196,13 @@ export default function MobileNav({
                     <MenuRow key={m.label} href={m.href} label={m.label} icon={m.icon} />
                   ))}
                   {isAdmin && <MenuRow href="/admin" label="Admin" icon="shield" />}
+                  {/* The team's one door. Admins reach growth from /admin, so
+                      showing it twice to them would just be clutter; for a
+                      teammate this is the only admin surface they can open,
+                      and without it they have to be sent a URL. */}
+                  {isTeam && !isAdmin && (
+                    <MenuRow href="/admin/growth" label="Growth" icon="trending" />
+                  )}
                 </Section>
 
                 {/* Everything else, folded away. A native <details> keeps this

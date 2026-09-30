@@ -301,6 +301,18 @@ export default async function AdminGrowthPage() {
 
   const op = currentOperating();
 
+  // Counted here rather than fetched again: users and rsvps are already in
+  // memory for the metrics above, so these are three passes over arrays
+  // rather than three more round trips.
+  const memberCount = users.filter((u) => !u.is_admin && !u.is_team).length;
+  const monthStart = `${new Date().toLocaleDateString("en-CA", { timeZone: "Africa/Lagos" }).slice(0, 7)}-01`;
+  const newThisMonth = users.filter(
+    (u) => !u.is_admin && !u.is_team && u.created_at >= monthStart
+  ).length;
+  const dormantCount = users.filter(
+    (u) => !u.is_admin && !u.is_team && !everRequested.has(u.id)
+  ).length;
+
   /* -------------------------------------------------------------- today ---- */
   /**
    * What to do before the end of the day, worked out rather than written down.
@@ -494,6 +506,43 @@ export default async function AdminGrowthPage() {
               ? `${daysLeft} ${daysLeft === 1 ? "day" : "days"} left.`
               : "The date has passed."}
           </p>
+
+          {/* -------------------------------------------- the whole house -- */}
+          {/* Total members, new this month, and how many of them have ever
+              asked to join anything. The page is otherwise all rates and
+              targets, and a rate with no denominator on the screen is easy to
+              read as bigger than it is: 22% activation sounds healthy until
+              you see it is 22% of a couple of hundred people.
+
+              The third figure is the one that matters and the one nothing
+              else here shows. Everybody who signed up and never took the
+              first step is the cheapest growth available, and the number only
+              becomes a task once somebody can see it. */}
+          <div className="mt-5 flex flex-wrap gap-x-8 gap-y-3 border-t border-white/15 pt-4">
+            {[
+              ["Members", memberCount.toLocaleString(), null],
+              ["Joined this month", `+${newThisMonth.toLocaleString()}`, null],
+              [
+                "Never joined anything",
+                dormantCount.toLocaleString(),
+                memberCount
+                  ? `${Math.round((dormantCount / memberCount) * 100)}% of everyone`
+                  : null,
+              ],
+            ].map(([label, value, note]) => (
+              <div key={label as string} className="flex flex-col">
+                <span className="text-[12px] font-bold uppercase tracking-[0.1em] text-white/45">
+                  {label}
+                </span>
+                <span className="mt-0.5 text-[26px] font-extrabold leading-none tabular-nums">
+                  {value}
+                </span>
+                {note && (
+                  <span className="mt-1 text-[12px] text-white/50">{note}</span>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* --------------------------------------------------------- today -- */}

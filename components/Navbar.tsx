@@ -12,6 +12,7 @@ export default async function Navbar() {
   const user = await getSessionUser();
 
   let isAdmin = false;
+  let isTeam = false;
   let unreadMessages = 0;
   let myName: string | null = null;
   let myAvatar: string | null = null;
@@ -27,6 +28,7 @@ export default async function Navbar() {
         .eq("read", false),
     ]);
     isAdmin = !!meta?.is_admin;
+    isTeam = !!meta?.is_team;
     unreadMessages = count ?? 0;
     myName = meta?.name ?? null;
     myAvatar = meta?.avatar_url ?? null;
@@ -149,6 +151,7 @@ export default async function Navbar() {
           <MobileNav
             userId={user?.id ?? null}
             isAdmin={isAdmin}
+            isTeam={isTeam}
             name={myName}
             avatarUrl={myAvatar}
             isPro={isPro}
