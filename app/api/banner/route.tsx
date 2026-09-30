@@ -85,11 +85,33 @@ export async function GET(req: Request) {
   const H = Math.round(W * 2.5);
   const u = (n: number) => Math.round((n / 1600) * W); // scale from the 1600 design
 
-  // Satori fetches every <img> over HTTP, so a relative path resolves to
-  // nothing. Built from the request's own origin so it works on localhost and
-  // on the deployed site without a second configuration to keep in step.
+  /**
+   * Absolute, and versioned by the file's own modification time.
+   *
+   * Satori fetches every <img> over HTTP, so a relative path resolves to
+   * nothing: the origin comes from the request, which works on localhost and
+   * on the deployed site without a second setting to keep in step.
+   *
+   * THE ?v IS NOT DECORATION. Those fetches go through the fetch Next patches
+   * and caches, and .next/cache survives a server restart, so re-cropping the
+   * photos changed nothing on screen: the banner kept rendering the old
+   * images, byte for byte identical, through two restarts. Exactly the trap
+   * documented on /api/ig-card/jollof, where force-dynamic did not help
+   * either, because it governs whether the ROUTE re-runs and not what the
+   * fetch inside it answers with. Keying on mtime means editing a photo is
+   * enough to invalidate it.
+   */
   const origin = url.origin;
-  const faces = FACES.map((f) => `${origin}${f}`);
+  const { statSync } = await import("node:fs");
+  const faces = FACES.map((f) => {
+    let v = "0";
+    try {
+      v = String(Math.round(statSync(`${process.cwd()}/public${f}`).mtimeMs));
+    } catch {
+      // Not on disk in this environment; the plain URL still works.
+    }
+    return `${origin}${f}?v=${v}`;
+  });
 
   /**
    * A QR encoded on the server, not by the React component.
@@ -132,6 +154,80 @@ export async function GET(req: Request) {
           paddingBottom: u(150),
         }}
       >
+        {/* ------------------------------------------ the background ---- */}
+        {/* A FLAT GRADIENT IS A DEAD BANNER. Two metres of one colour reads
+            as a conference pull-up, which is what the first two attempts
+            looked like.
+
+            Built the way your own Jollof flyer is: ghosted wordmarks running
+            across the field, big soft colour blocks behind them, and confetti
+            over the top. Everything sits under the content at low opacity, so
+            it gives the surface life without competing with a single word.
+
+            No blur anywhere. Satori does not implement filter, and a
+            backdrop-blur that silently does nothing is how you end up with
+            hard-edged circles you did not intend. These are solid shapes at
+            low alpha, which is the same effect by honest means. */}
+        <div style={{ position: "absolute", top: 0, left: 0, width: `${W}px`, height: `${H}px`, display: "flex" }}>
+          {/* Colour blocks. Rose top left, cyan mid right, gold low left, so
+              the eye travels down the banner rather than sitting still. */}
+          <div style={{ position: "absolute", display: "flex", top: u(-260), left: u(-300), width: u(1100), height: u(1100), borderRadius: u(9999), backgroundColor: "rgba(255,78,142,0.15)" }} />
+          <div style={{ position: "absolute", display: "flex", top: u(1500), left: u(900), width: u(1000), height: u(1000), borderRadius: u(9999), backgroundColor: "rgba(63,208,224,0.13)" }} />
+          <div style={{ position: "absolute", display: "flex", top: u(2700), left: u(-420), width: u(1000), height: u(1000), borderRadius: u(9999), backgroundColor: "rgba(255,201,60,0.12)" }} />
+          <div style={{ position: "absolute", display: "flex", top: u(3450), left: u(1000), width: u(900), height: u(900), borderRadius: u(9999), backgroundColor: "rgba(255,78,142,0.12)" }} />
+
+          {/* The wordmark, ghosted and repeated, on a slant. */}
+          {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+            <div
+              key={`w${i}`}
+              style={{
+                position: "absolute",
+                display: "flex",
+                top: u(120 + i * 520),
+                left: i % 2 === 0 ? u(-180) : u(-460),
+                fontSize: u(190),
+                fontWeight: 700,
+                letterSpacing: "-0.03em",
+                color: "rgba(255,255,255,0.045)",
+                transform: "rotate(-8deg)",
+                whiteSpace: "nowrap",
+              }}
+            >
+              LINKUP NAIJA LINKUP NAIJA
+            </div>
+          ))}
+
+          {/* Confetti. Placed by hand rather than at random, so a re-render
+              produces the same banner and the print shop's proof matches. */}
+          {(
+            [
+              [180, 520, 18, ROSE], [1180, 300, -24, CYAN], [640, 1180, 40, GOLD],
+              [1320, 1520, -12, ROSE], [120, 1760, 32, CYAN], [1420, 2280, 16, GOLD],
+              [260, 2460, -30, ROSE], [900, 2980, 24, CYAN], [1380, 3240, -18, GOLD],
+              [200, 3520, 28, CYAN], [1100, 3880, -22, ROSE], [420, 4120, 14, GOLD],
+              [1300, 4520, 36, CYAN], [260, 4880, -16, ROSE], [980, 5260, 22, GOLD],
+              [1400, 5620, -28, ROSE], [180, 5980, 20, CYAN], [880, 6380, -14, GOLD],
+              [1340, 6740, 30, ROSE], [300, 7080, -20, CYAN], [1050, 7420, 18, GOLD],
+            ] as [number, number, number, string][]
+          ).map(([x, y, r, colour], i) => (
+            <div
+              key={`c${i}`}
+              style={{
+                position: "absolute",
+                display: "flex",
+                left: u(x),
+                top: u(y),
+                width: u(26),
+                height: u(52),
+                borderRadius: u(6),
+                backgroundColor: colour,
+                opacity: 0.5,
+                transform: `rotate(${r}deg)`,
+              }}
+            />
+          ))}
+        </div>
+
         {/* The flag rule, the one constant across everything we print. */}
         <div style={{ position: "absolute", top: 0, left: 0, display: "flex", width: `${W}px` }}>
           <div style={{ display: "flex", width: `${W / 3}px`, height: `${u(22)}px`, backgroundColor: "#008753" }} />
