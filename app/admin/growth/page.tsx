@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppHeader from "@/components/AppHeader";
 import LineIcon from "@/components/ui/LineIcon";
@@ -108,7 +108,60 @@ export default async function AdminGrowthPage() {
 
   const isAdmin = !!me?.is_admin;
   const onTeam = isAdmin || !!(me as { is_team?: boolean } | null)?.is_team;
-  if (!onTeam) notFound();
+
+  /**
+   * A refusal that says which account it refused.
+   *
+   * This used to be notFound(), and a 404 on a page somebody has been
+   * explicitly invited to is unhelpful to the point of being a bug: it cannot
+   * distinguish "the flag was never set" from "you are signed in as the wrong
+   * account", and we spent a day unable to tell which.
+   *
+   * The distinction is not hypothetical here. There are three accounts named
+   * some version of Courage, two of them empty duplicate signups, and signing
+   * in with either gives exactly the same blank 404 as a missing flag.
+   *
+   * So it names the account instead. Nothing on this screen is sensitive,
+   * every visitor has already authenticated, and 404 as an access-denied is
+   * only worth its cost when you are hiding that a page exists at all. We are
+   * not; we sent them the link.
+   */
+  if (!onTeam) {
+    const { data: whoami } = await supabase
+      .from("users")
+      .select("name")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    return (
+      <div className="pb-24">
+        <AppHeader title="Growth plan" back />
+        <div className="mx-auto max-w-md px-4 pt-10 text-center">
+          <p className="text-[44px]">🔒</p>
+          <h1 className="mt-2 text-[22px] font-extrabold text-gray-900 dark:text-white">
+            This one is for the team
+          </h1>
+          <p className="mt-2 text-[15px] leading-snug text-gray-600 dark:text-white/70">
+            You are signed in as{" "}
+            <span className="font-bold text-gray-900 dark:text-white">
+              {(whoami as { name?: string | null } | null)?.name ?? "an unnamed account"}
+            </span>
+            . That account does not have team access.
+          </p>
+          <p className="mt-4 rounded-2xl bg-gray-50 p-3.5 text-[13px] leading-snug text-gray-500 dark:bg-white/5">
+            If you were expecting to get in, check you are signed in with the
+            right account. It is easy to end up with two.
+          </p>
+          <Link
+            href="/"
+            className="mt-6 inline-flex rounded-full bg-brand px-5 py-2.5 text-[15px] font-bold text-white"
+          >
+            Back to LinkUpNaija
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const since = new Date(Date.now() - 30 * DAY).toISOString();
 
