@@ -215,7 +215,247 @@ export async function GET(req: Request) {
   });
   const qrSrc = `data:image/svg+xml,${encodeURIComponent(qrSvg)}`;
 
+
   const fonts = await ogFonts();
+
+  /* ======================================================== b · GALLERY ====
+   * Inverted. Cream ground, ink type, photographs framed by the paper rather
+   * than bleeding off it.
+   *
+   * ATTENTION COMES FROM INVERSION, NOT VOLUME. Every other banner in a
+   * Nigerian event hall is dark and loud, so the thing that stops somebody is
+   * the one that is pale and quiet. It is the same trick a gallery wall uses,
+   * and it costs nothing at the printer.
+   *
+   * CLASSIC MEANS A SYSTEM, not ornament. One margin, one rule weight, four
+   * photographs on a strict grid with equal gutters, and type set at three
+   * sizes and no more. Nothing is tilted, nothing overlaps, nothing is
+   * decorative. What makes it look expensive is that everything lines up.
+   */
+  if (variant === "b") {
+    return new ImageResponse(
+      (
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            backgroundColor: CREAM,
+            position: "relative",
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`data:image/svg+xml,${encodeURIComponent(doodleField(W, H, "rgba(22,13,51,0.05)"))}`}
+            alt=""
+            width={W}
+            height={H}
+            style={{ position: "absolute", top: 0, left: 0, width: W, height: H }}
+          />
+
+          <div style={{ display: "flex", width: "100%" }}>
+            <div style={{ display: "flex", width: W / 3, height: u(22), backgroundColor: "#008753" }} />
+            <div style={{ display: "flex", width: W / 3, height: u(22), backgroundColor: "#FFFFFF" }} />
+            <div style={{ display: "flex", width: W / 3, height: u(22), backgroundColor: "#008753" }} />
+          </div>
+
+          {/* The mark, then a hairline. A rule under a masthead is the oldest
+              signal in print that what follows has been edited. */}
+          <div style={{ display: "flex", alignItems: "center", gap: u(24), paddingLeft: u(110), marginTop: u(86) }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={LOGO_MARK_DATA_URI} alt="" width={u(104)} height={u(104)} style={{ width: u(104), height: u(104) }} />
+            <div style={{ display: "flex", fontSize: u(72), fontWeight: 700, letterSpacing: "-0.02em", color: INK }}>
+              Link<span style={{ color: "#6C5CE0" }}>Up</span>Naija
+            </div>
+          </div>
+          <div style={{ display: "flex", height: u(4), marginLeft: u(110), marginRight: u(110), marginTop: u(46), backgroundColor: "rgba(22,13,51,0.16)" }} />
+
+          <div style={{ display: "flex", flexDirection: "column", paddingLeft: u(110), paddingRight: u(110), marginTop: u(76) }}>
+            <div style={{ display: "flex", fontSize: u(196), fontWeight: 700, color: INK, letterSpacing: "-0.05em", lineHeight: 0.98 }}>
+              Find your
+            </div>
+            <div style={{ display: "flex", fontSize: u(196), fontWeight: 700, color: "#D12B63", letterSpacing: "-0.05em", lineHeight: 0.98 }}>
+              people.
+            </div>
+            <div style={{ display: "flex", fontSize: u(52), fontWeight: 400, color: "rgba(22,13,51,0.66)", marginTop: u(40), lineHeight: 1.3 }}>
+              Parties, game nights, picnics and dinners across Nigeria. The
+              host approves every guest, so you always know the room.
+            </div>
+          </div>
+
+          {/* Four photographs, equal gutters, framed by the paper. Bleeding
+              them off the edge is the loud move; holding them inside the
+              margin is the classic one. */}
+          <div style={{ display: "flex", flexDirection: "column", paddingLeft: u(110), paddingRight: u(110), marginTop: u(80), gap: u(18) }}>
+            {[[0, 2], [2, 4]].map(([a, b]) => (
+              <div key={a} style={{ display: "flex", gap: u(18) }}>
+                {TILES.slice(a, b).map((f) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={f}
+                    src={img(f)}
+                    alt=""
+                    width={Math.round((W - u(220) - u(18)) / 2)}
+                    height={u(1000)}
+                    style={{ width: Math.round((W - u(220) - u(18)) / 2), height: u(1000), objectFit: "cover" }}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+
+          {/* The QR inverts again, back to ink. On a pale banner the darkest
+              object is the one the eye finishes on, which is where the only
+              instruction should be. */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: u(52),
+              marginTop: "auto",
+              marginLeft: u(110),
+              marginRight: u(110),
+              marginBottom: u(60),
+              padding: u(52),
+              backgroundColor: INK,
+            }}
+          >
+            <div style={{ display: "flex", padding: u(18), backgroundColor: "#fff" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={qrSrc} alt="" width={u(400)} height={u(400)} style={{ width: u(400), height: u(400) }} />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div style={{ display: "flex", fontSize: u(72), fontWeight: 700, color: CREAM, letterSpacing: "-0.02em", lineHeight: 1.08 }}>
+                linkupnaija.com
+              </div>
+              <div style={{ display: "flex", fontSize: u(44), fontWeight: 400, color: "rgba(255,244,230,0.7)", marginTop: u(14) }}>
+                Point your camera. Free to join.
+              </div>
+              <div style={{ display: "flex", fontSize: u(40), fontWeight: 400, color: GOLD, marginTop: u(20) }}>
+                @officiallinkupnaija
+              </div>
+            </div>
+          </div>
+        </div>
+      ),
+      { width: W, height: H, fonts }
+    );
+  }
+
+  /* ========================================================= c · POSTER ====
+   * The Swiss concert poster, which is the oldest attention-grabber there is
+   * and has not dated in seventy years.
+   *
+   * Type does everything. Three words stacked the full width of the banner,
+   * tight leading, flush left and right to the same margin, each line a
+   * different colour. At twenty paces you read it before you have decided to.
+   *
+   * NO DOODLES, NO CHIPS, NO GRADIENT, NO ROUNDED CORNERS. Every one of those
+   * is a way of making a design interesting, and this one is interesting
+   * because of scale and restraint. Adding texture to it would be admitting
+   * it did not work.
+   *
+   * ONE PHOTOGRAPH, cinematic and full bleed, used as a band rather than a
+   * picture. It is there to prove the words are about real people, which it
+   * can do at any size, so it takes the smallest space that still reads.
+   */
+  if (variant === "c") {
+    return new ImageResponse(
+      (
+        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", backgroundColor: INK }}>
+          <div style={{ display: "flex", width: "100%" }}>
+            <div style={{ display: "flex", width: W / 3, height: u(26), backgroundColor: "#008753" }} />
+            <div style={{ display: "flex", width: W / 3, height: u(26), backgroundColor: "#FFFFFF" }} />
+            <div style={{ display: "flex", width: W / 3, height: u(26), backgroundColor: "#008753" }} />
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: u(22), paddingLeft: u(96), marginTop: u(70) }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={LOGO_MARK_DATA_URI} alt="" width={u(92)} height={u(92)} style={{ width: u(92), height: u(92) }} />
+            <div style={{ display: "flex", fontSize: u(62), fontWeight: 700, letterSpacing: "-0.02em", color: "#fff" }}>
+              Link<span style={{ color: "#A79BFF" }}>Up</span>Naija
+            </div>
+          </div>
+
+          {/* The three words. Sized so the longest fills the measure exactly,
+              which is what makes a stack like this look set rather than
+              typed. */}
+          <div style={{ display: "flex", flexDirection: "column", paddingLeft: u(96), marginTop: u(96) }}>
+            {([["FIND", CREAM], ["YOUR", ROSE], ["PEOPLE", GOLD]] as [string, string][]).map(([word, colour]) => (
+              <div
+                key={word}
+                style={{
+                  display: "flex",
+                  fontSize: u(360),
+                  fontWeight: 700,
+                  color: colour,
+                  letterSpacing: "-0.055em",
+                  lineHeight: 0.86,
+                }}
+              >
+                {word}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: "flex", height: u(6), marginLeft: u(96), marginRight: u(96), marginTop: u(76), backgroundColor: "rgba(255,244,230,0.28)" }} />
+
+          <div style={{ display: "flex", paddingLeft: u(96), paddingRight: u(96), marginTop: u(44), fontSize: u(56), fontWeight: 400, color: "rgba(255,244,230,0.9)", lineHeight: 1.28 }}>
+            Real link-ups across Nigeria, every week. The host approves every
+            guest.
+          </div>
+
+          <div style={{ display: "flex", width: "100%", marginTop: u(76) }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={img(TILES[2])}
+              alt=""
+              width={W}
+              height={u(1660)}
+              style={{ width: W, height: u(1660), objectFit: "cover" }}
+            />
+          </div>
+
+          {/* A square black-on-gold block. No rounding, no shadow, no panel
+              inside a panel: the QR and the address are one object. */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+              marginTop: "auto",
+              backgroundColor: GOLD,
+              paddingLeft: u(96),
+              paddingRight: u(96),
+              paddingTop: u(52),
+              paddingBottom: u(52),
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div style={{ display: "flex", fontSize: u(84), fontWeight: 700, color: INK, letterSpacing: "-0.03em" }}>
+                linkupnaija.com
+              </div>
+              <div style={{ display: "flex", fontSize: u(46), fontWeight: 400, color: "rgba(22,13,51,0.72)", marginTop: u(14) }}>
+                Free to join. Takes a minute.
+              </div>
+              <div style={{ display: "flex", fontSize: u(42), fontWeight: 700, color: "rgba(22,13,51,0.72)", marginTop: u(22) }}>
+                @officiallinkupnaija
+              </div>
+            </div>
+            <div style={{ display: "flex", padding: u(16), backgroundColor: "#fff" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={qrSrc} alt="" width={u(340)} height={u(340)} style={{ width: u(340), height: u(340) }} />
+            </div>
+          </div>
+        </div>
+      ),
+      { width: W, height: H, fonts }
+    );
+  }
+
+  /* ============================================ a · MOSAIC, unchanged ==== */
 
   return new ImageResponse(
     (
@@ -370,19 +610,25 @@ export async function GET(req: Request) {
             ))}
           </div>
         ) : (
-          /* MOSAIC. Three rows of three. */
+          /* MOSAIC. Four tiles, not nine.
+             Nine was too many: at that size each photograph is a thumbnail,
+             the faces stop being legible from standing distance, and the
+             block reads as a texture rather than as people. Four at double
+             the size occupies exactly the same height and you can actually
+             see who is in them, which was the entire point of using real
+             members. */
           <div style={{ display: "flex", flexDirection: "column", width: "100%", marginTop: u(76) }}>
-            {[0, 3, 6].map((row) => (
+            {[0, 2].map((row) => (
               <div key={row} style={{ display: "flex", width: "100%" }}>
-                {TILES.slice(row, row + 3).map((f) => (
+                {TILES.slice(row, row + 2).map((f) => (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     key={f}
                     src={img(f)}
                     alt=""
-                    width={Math.round(W / 3)}
-                    height={u(600)}
-                    style={{ width: Math.round(W / 3), height: u(600), objectFit: "cover" }}
+                    width={Math.round(W / 2)}
+                    height={u(900)}
+                    style={{ width: Math.round(W / 2), height: u(900), objectFit: "cover" }}
                   />
                 ))}
               </div>
