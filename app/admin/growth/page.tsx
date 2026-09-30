@@ -304,14 +304,32 @@ export default async function AdminGrowthPage() {
   // Counted here rather than fetched again: users and rsvps are already in
   // memory for the metrics above, so these are three passes over arrays
   // rather than three more round trips.
-  const memberCount = users.filter((u) => !u.is_admin && !u.is_team).length;
-  const monthStart = `${new Date().toLocaleDateString("en-CA", { timeZone: "Africa/Lagos" }).slice(0, 7)}-01`;
-  const newThisMonth = users.filter(
-    (u) => !u.is_admin && !u.is_team && u.created_at >= monthStart
-  ).length;
-  const dormantCount = users.filter(
-    (u) => !u.is_admin && !u.is_team && !everRequested.has(u.id)
-  ).length;
+  const members = users.filter((u) => !u.is_admin && !u.is_team);
+  const memberCount = members.length;
+
+  /**
+   * Signups today, this week and this month.
+   *
+   * Month alone was not enough: on the 28th it is a nearly complete figure
+   * and on the 2nd it is noise, and either way it cannot tell you whether
+   * today was good. Three windows turn one number into a trend you can read
+   * at a glance, which is the only reason to put a number on a wall.
+   *
+   * Today is midnight in LAGOS, not UTC. The two disagree for the first hour
+   * of every day, which is exactly when somebody checking last night's
+   * numbers would be looking.
+   */
+  const lagosToday = new Date().toLocaleDateString("en-CA", {
+    timeZone: "Africa/Lagos",
+  });
+  const dayStart = `${lagosToday}T00:00:00`;
+  const weekStart = new Date(Date.now() - 7 * DAY).toISOString();
+  const monthStart = `${lagosToday.slice(0, 7)}-01`;
+
+  const newToday = members.filter((u) => u.created_at >= dayStart).length;
+  const newThisWeek = members.filter((u) => u.created_at >= weekStart).length;
+  const newThisMonth = members.filter((u) => u.created_at >= monthStart).length;
+  const dormantCount = members.filter((u) => !everRequested.has(u.id)).length;
 
   /* -------------------------------------------------------------- today ---- */
   /**
@@ -519,11 +537,17 @@ export default async function AdminGrowthPage() {
               first step is the cheapest growth available, and the number only
               becomes a task once somebody can see it. */}
           <div className="mt-5 flex flex-wrap gap-x-8 gap-y-3 border-t border-white/15 pt-4">
+            {/* "New" for signups and "never asked to join" for the dormant
+                pile, because the old pair said "joined this month" beside
+                "never joined anything" and meant two different things by the
+                same word. */}
             {[
               ["Members", memberCount.toLocaleString(), null],
-              ["Joined this month", `+${newThisMonth.toLocaleString()}`, null],
+              ["New today", `+${newToday.toLocaleString()}`, null],
+              ["New this week", `+${newThisWeek.toLocaleString()}`, null],
+              ["New this month", `+${newThisMonth.toLocaleString()}`, null],
               [
-                "Never joined anything",
+                "Never asked to join",
                 dormantCount.toLocaleString(),
                 memberCount
                   ? `${Math.round((dormantCount / memberCount) * 100)}% of everyone`

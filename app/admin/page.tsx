@@ -74,6 +74,10 @@ export default async function AdminPage() {
   if (!me?.is_admin) notFound(); // hide the page from non-admins
 
   const supabase = createClient();
+  const lagosToday = new Date().toLocaleDateString("en-CA", {
+    timeZone: "Africa/Lagos",
+  });
+
   const [
     { count: userCount },
     { count: eventCount },
@@ -87,6 +91,9 @@ export default async function AdminPage() {
     { data: tournamentRows },
     { data: opportunityRows },
     { data: circleRows },
+    { count: newToday },
+    { count: newThisWeek },
+    { count: newThisMonth },
   ] = await Promise.all([
     supabase.from("users").select("*", { count: "exact", head: true }),
     supabase.from("events").select("*", { count: "exact", head: true }),
@@ -140,7 +147,30 @@ export default async function AdminPage() {
       .from("circles")
       .select("id, name, cover_image_url, member_count")
       .order("member_count", { ascending: false })
-      .limit(20)
+      .limit(20),
+    /**
+     * Signups today, this week and this month.
+     *
+     * head: true so these are counts on the server and no rows cross the
+     * wire: three queries that each transfer a single integer, which is
+     * cheaper than pulling every user row here to count them locally.
+     *
+     * Today is midnight in LAGOS, not UTC. The two disagree for the first
+     * hour of every day, which is exactly when somebody checking last
+     * night's numbers is looking.
+     */
+    supabase
+      .from("users")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", `${lagosToday}T00:00:00`),
+    supabase
+      .from("users")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", new Date(Date.now() - 7 * 86_400_000).toISOString()),
+    supabase
+      .from("users")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", `${lagosToday.slice(0, 7)}-01T00:00:00`),
   ]);
 
   const tournamentRegs = (tournamentRows ?? []) as TournamentRegistration[];
@@ -378,6 +408,27 @@ export default async function AdminPage() {
         </span>
       </div>
       <p className="mt-1 text-gray-600">Platform overview at a glance.</p>
+
+      {/* Signups, three ways. Month alone is a nearly complete figure on the
+          28th and noise on the 2nd, and neither tells you whether today was
+          any good. Three windows make one number into a trend. */}
+      <div className="mt-4 flex flex-wrap gap-x-8 gap-y-3 rounded-2xl border border-gray-200 px-5 py-4 dark:border-white/10">
+        {[
+          ["Members", (userCount ?? 0).toLocaleString()],
+          ["New today", `+${(newToday ?? 0).toLocaleString()}`],
+          ["New this week", `+${(newThisWeek ?? 0).toLocaleString()}`],
+          ["New this month", `+${(newThisMonth ?? 0).toLocaleString()}`],
+        ].map(([label, value]) => (
+          <div key={label} className="flex flex-col">
+            <span className="text-[12px] font-bold uppercase tracking-[0.1em] text-gray-400">
+              {label}
+            </span>
+            <span className="mt-0.5 text-[26px] font-extrabold leading-none tabular-nums text-gray-900 dark:text-white">
+              {value}
+            </span>
+          </div>
+        ))}
+      </div>
 
       {/* The numbers that carry a decision live on their own page — this one
           is an operations desk, and mixing the two makes both harder to read. */}
