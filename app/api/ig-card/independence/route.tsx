@@ -33,6 +33,65 @@ const GREEN = "#0A5C2E";
 const GREEN_DEEP = "#073F20";
 const PAPER = "#FBFBF8";
 
+
+/**
+ * A flag with folds in it, rather than three rectangles.
+ *
+ * The reference is a photograph of real cloth: the green panel hangs from the
+ * top, the edge waves, and the folds catch light. Three flat bands read as a
+ * web page header instead of a flag, which is what the first version looked
+ * like.
+ *
+ * Satori has no filters, no blur and no mesh gradients, so the cloth is built
+ * the way a flat illustrator would build it: a wavy silhouette, the three
+ * colours clipped inside it, then a handful of straight-edged shadow and
+ * highlight shapes laid over the top at low alpha. Folds are quadrilaterals,
+ * not blurs. At a metre away on a phone that reads as fabric, which is all it
+ * has to do.
+ *
+ * Returned as one SVG data URI and placed as a single <img>, because Satori
+ * lays out every element it is handed and a flag made of forty divs is both
+ * slow and fragile.
+ */
+function drapedFlag(w: number, h: number): string {
+  const G = "#0A5C2E";
+  const G_DARK = "#063F1E";
+  const G_LIGHT = "#1C7A42";
+  const third = w / 3;
+
+  // The hanging edge. Two long waves, deeper on the right, so the cloth looks
+  // like it is held at the top and falling rather than pinned flat.
+  const edge =
+    `M0,0 L${w},0 L${w},${h * 0.62} ` +
+    `C${w * 0.82},${h * 0.92} ${w * 0.68},${h * 0.52} ${w * 0.5},${h * 0.76} ` +
+    `C${w * 0.33},${h * 0.98} ${w * 0.18},${h * 0.6} 0,${h * 0.86} Z`;
+
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">` +
+    `<defs><clipPath id="c"><path d="${edge}"/></clipPath></defs>` +
+    `<g clip-path="url(#c)">` +
+      `<rect x="0" y="0" width="${third}" height="${h}" fill="${G}"/>` +
+      `<rect x="${third}" y="0" width="${third}" height="${h}" fill="#FFFFFF"/>` +
+      `<rect x="${third * 2}" y="0" width="${third}" height="${h}" fill="${G}"/>` +
+
+      // Folds. Each is a slanted band: one dark where the cloth turns away,
+      // one light on the crest beside it.
+      `<path d="M${w * 0.06},0 L${w * 0.17},0 L${w * 0.12},${h} L${w * 0.01},${h} Z" fill="${G_DARK}" opacity="0.5"/>` +
+      `<path d="M${w * 0.17},0 L${w * 0.235},0 L${w * 0.185},${h} L${w * 0.12},${h} Z" fill="${G_LIGHT}" opacity="0.45"/>` +
+      `<path d="M${w * 0.40},0 L${w * 0.49},0 L${w * 0.455},${h} L${w * 0.365},${h} Z" fill="#000000" opacity="0.07"/>` +
+      `<path d="M${w * 0.55},0 L${w * 0.61},0 L${w * 0.585},${h} L${w * 0.525},${h} Z" fill="#000000" opacity="0.05"/>` +
+      `<path d="M${w * 0.72},0 L${w * 0.83},0 L${w * 0.80},${h} L${w * 0.69},${h} Z" fill="${G_DARK}" opacity="0.55"/>` +
+      `<path d="M${w * 0.83},0 L${w * 0.90},0 L${w * 0.875},${h} L${w * 0.80},${h} Z" fill="${G_LIGHT}" opacity="0.4"/>` +
+
+      // The hem: the cloth is thicker and darker where it folds under.
+      `<path d="M0,${h * 0.80} C${w * 0.18},${h * 0.54} ${w * 0.33},${h * 0.92} ${w * 0.5},${h * 0.70} ` +
+        `C${w * 0.68},${h * 0.46} ${w * 0.82},${h * 0.86} ${w},${h * 0.56} ` +
+        `L${w},${h * 0.62} C${w * 0.82},${h * 0.92} ${w * 0.68},${h * 0.52} ${w * 0.5},${h * 0.76} ` +
+        `C${w * 0.33},${h * 0.98} ${w * 0.18},${h * 0.6} 0,${h * 0.86} Z" fill="#000000" opacity="0.13"/>` +
+    `</g></svg>`
+  );
+}
+
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const story = url.searchParams.get("ratio") === "story";
@@ -61,8 +120,16 @@ export async function GET(req: Request) {
    * not clip or scroll, it just draws one thing on top of another, so an
    * overflow is silent and looks like a design decision.
    */
-  const BIG = story ? 142 : 116;
-  const DAY = story ? 96 : 78;
+  /**
+   * One line, which decides the size.
+   *
+   * INDEPENDENCE is twelve capitals. On a 1080 card with a 60px margin either
+   * side that is 960px for twelve letters, so at Noto Sans Bold with the
+   * tracking below it lands just under 100px. Bigger than that and it clips,
+   * which Satori does silently.
+   */
+  const BIG = story ? 99 : 93;
+  const DAY = story ? 104 : 86;
   const v = (n: number) => Math.round((n / 1350) * H);
 
   const fonts = await ogFonts();
@@ -80,12 +147,14 @@ export async function GET(req: Request) {
           position: "relative",
         }}
       >
-        {/* The flag, across the top. Green, white, green. */}
-        <div style={{ display: "flex", width: W, height: v(120) }}>
-          <div style={{ display: "flex", width: W / 3, height: v(120), backgroundColor: GREEN }} />
-          <div style={{ display: "flex", width: W / 3, height: v(120), backgroundColor: "#FFFFFF" }} />
-          <div style={{ display: "flex", width: W / 3, height: v(120), backgroundColor: GREEN }} />
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`data:image/svg+xml,${encodeURIComponent(drapedFlag(W, v(story ? 420 : 330)))}`}
+          alt=""
+          width={W}
+          height={v(story ? 420 : 330)}
+          style={{ width: W, height: v(story ? 420 : 330) }}
+        />
 
         {/* Our mark, small, at the top. The flag outranks us today. */}
         <div style={{ display: "flex", alignItems: "center", gap: t(16), marginTop: v(54) }}>
@@ -101,14 +170,8 @@ export async function GET(req: Request) {
           <div style={{ display: "flex", fontSize: story ? t(74) : t(62), fontWeight: 400, color: GREEN, letterSpacing: "-0.01em" }}>
             Happy
           </div>
-          {/* Split across two lines, as the reference does. One word of
-              twelve letters on a 1080 card is either tiny or clipped; broken
-              in two it can be the biggest thing on the card and still fit. */}
-          <div style={{ display: "flex", fontSize: BIG, fontWeight: 700, color: GREEN_DEEP, letterSpacing: "-0.045em", lineHeight: 1.0, marginTop: v(-4) }}>
-            INDEPEN
-          </div>
-          <div style={{ display: "flex", fontSize: BIG, fontWeight: 700, color: GREEN_DEEP, letterSpacing: "-0.045em", lineHeight: 1.0 }}>
-            DENCE
+          <div style={{ display: "flex", fontSize: BIG, fontWeight: 700, color: GREEN_DEEP, letterSpacing: "-0.03em", lineHeight: 1.05, marginTop: v(2) }}>
+            INDEPENDENCE
           </div>
           <div style={{ display: "flex", fontSize: DAY, fontWeight: 400, color: GREEN, letterSpacing: "-0.02em", marginTop: v(4) }}>
             Day
@@ -152,7 +215,8 @@ export async function GET(req: Request) {
             flexDirection: "column",
             alignItems: "center",
             marginTop: "auto",
-            marginBottom: v(64),
+            paddingTop: v(60),
+            marginBottom: v(76),
             paddingLeft: t(110),
             paddingRight: t(110),
           }}
@@ -177,12 +241,6 @@ export async function GET(req: Request) {
           </div>
         </div>
 
-        {/* The flag again, closing the card. */}
-        <div style={{ display: "flex", width: W, height: v(34) }}>
-          <div style={{ display: "flex", width: W / 3, height: v(34), backgroundColor: GREEN }} />
-          <div style={{ display: "flex", width: W / 3, height: v(34), backgroundColor: "#FFFFFF" }} />
-          <div style={{ display: "flex", width: W / 3, height: v(34), backgroundColor: GREEN }} />
-        </div>
       </div>
     ),
     { width: W, height: H, fonts }
