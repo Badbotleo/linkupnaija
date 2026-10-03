@@ -1,6 +1,7 @@
 import Link from "next/link";
 import AppHeader from "@/components/AppHeader";
 import { notFound } from "next/navigation";
+import { isOnline, lastSeenLabel } from "@/lib/presence";
 import { createClient } from "@/lib/supabase/server";
 import Avatar from "@/components/Avatar";
 import EventCover from "@/components/EventCover";
@@ -218,6 +219,26 @@ export default async function PublicProfilePage({
           <p className="flex items-center gap-1 text-sm text-gray-500">
             <LineIcon name="pin" size={13} className="text-gray-400" />
             {profile.state}
+          </p>
+        )}
+        {/* Presence. Online gets a green dot and green text because it is the
+            one state worth acting on: that person will answer now. Everything
+            else is grey, because "last seen four days ago" is context, not an
+            invitation. Renders nothing at all when we have no reading, since
+            "last seen: never" reads as a judgement on them rather than a gap
+            in our data. */}
+        {lastSeenLabel((profile as { last_seen_at?: string | null }).last_seen_at) && (
+          <p
+            className={`mt-0.5 flex items-center gap-1.5 text-sm ${
+              isOnline((profile as { last_seen_at?: string | null }).last_seen_at)
+                ? "font-semibold text-naija-600"
+                : "text-gray-400"
+            }`}
+          >
+            {isOnline((profile as { last_seen_at?: string | null }).last_seen_at) && (
+              <span className="inline-flex h-2 w-2 shrink-0 rounded-full bg-naija-500" />
+            )}
+            {lastSeenLabel((profile as { last_seen_at?: string | null }).last_seen_at)}
           </p>
         )}
         {badges.length > 0 && (

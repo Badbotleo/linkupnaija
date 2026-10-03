@@ -23,6 +23,7 @@ export interface UserProfile {
   payout_account_name: string | null;
   paystack_subaccount_code: string | null;
   last_login_at: string | null;
+  last_seen_at: string | null;
   wallet_balance: number;
   referral_code: string | null;
   emergency_contact_name: string | null;

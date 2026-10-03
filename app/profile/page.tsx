@@ -1,3 +1,4 @@
+import { isOnline, lastSeenLabel } from "@/lib/presence";
 import Link from "next/link";
 import AppHeader from "@/components/AppHeader";
 import { redirect } from "next/navigation";
@@ -111,6 +112,24 @@ export default async function ProfilePage({
           <p className="flex items-center gap-1 text-sm text-gray-500">
             <LineIcon name="pin" size={13} className="text-gray-400" />
             {profile.state}
+          </p>
+        )}
+        {/* Your own presence, shown to you exactly as others see it. A
+            status you cannot see on yourself is one you cannot reason about,
+            and this is the page where somebody would come looking to turn it
+            off. */}
+        {lastSeenLabel(profile?.last_seen_at) && (
+          <p
+            className={`mt-0.5 flex items-center gap-1.5 text-sm ${
+              isOnline(profile?.last_seen_at)
+                ? "font-semibold text-naija-600"
+                : "text-gray-400"
+            }`}
+          >
+            {isOnline(profile?.last_seen_at) && (
+              <span className="inline-flex h-2 w-2 shrink-0 rounded-full bg-naija-500" />
+            )}
+            {lastSeenLabel(profile?.last_seen_at)}
           </p>
         )}
         {badges.length > 0 && (
