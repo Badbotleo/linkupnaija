@@ -272,15 +272,33 @@ export async function GET(req: Request) {
           <div style={{ display: "flex", height: u(4), marginLeft: u(110), marginRight: u(110), marginTop: u(46), backgroundColor: "rgba(22,13,51,0.16)" }} />
 
           <div style={{ display: "flex", flexDirection: "column", paddingLeft: u(110), paddingRight: u(110), marginTop: u(76) }}>
-            <div style={{ display: "flex", fontSize: u(196), fontWeight: 700, color: INK, letterSpacing: "-0.05em", lineHeight: 0.98 }}>
+            <div style={{ display: "flex", fontSize: u(224), fontWeight: 700, color: INK, letterSpacing: "-0.055em", lineHeight: 0.96 }}>
               Find your
             </div>
-            <div style={{ display: "flex", fontSize: u(196), fontWeight: 700, color: "#D12B63", letterSpacing: "-0.05em", lineHeight: 0.98 }}>
+            <div style={{ display: "flex", fontSize: u(224), fontWeight: 700, color: "#D12B63", letterSpacing: "-0.055em", lineHeight: 0.96 }}>
               people.
             </div>
-            <div style={{ display: "flex", fontSize: u(52), fontWeight: 400, color: "rgba(22,13,51,0.66)", marginTop: u(40), lineHeight: 1.3 }}>
-              Parties, game nights, picnics and dinners across Nigeria. The
-              host approves every guest, so you always know the room.
+            {/* Three lines, not a paragraph. B was carrying the argument as
+                three lines of grey prose, which is exactly what I criticised
+                in the Poster: at four metres a paragraph is a grey rectangle
+                and nobody reads a rectangle. Same claims, same order and the
+                same coloured marks as C, so the two banners sound like one
+                brand rather than two agencies. */}
+            <div style={{ display: "flex", flexDirection: "column", marginTop: u(46), gap: u(20) }}>
+              {(
+                [
+                  ["The host approves every guest", "#D12B63"],
+                  ["You see who is coming before you go", "#0F7F8C"],
+                  ["Something on, every single week", "#B07A00"],
+                ] as [string, string][]
+              ).map(([line, colour]) => (
+                <div key={line} style={{ display: "flex", alignItems: "center", gap: u(22) }}>
+                  <div style={{ display: "flex", width: u(28), height: u(9), backgroundColor: colour }} />
+                  <div style={{ display: "flex", fontSize: u(54), fontWeight: 700, color: INK, letterSpacing: "-0.015em" }}>
+                    {line}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -297,8 +315,8 @@ export async function GET(req: Request) {
                     src={img(f)}
                     alt=""
                     width={Math.round((W - u(220) - u(18)) / 2)}
-                    height={u(1000)}
-                    style={{ width: Math.round((W - u(220) - u(18)) / 2), height: u(1000), objectFit: "cover" }}
+                    height={u(1010)}
+                    style={{ width: Math.round((W - u(220) - u(18)) / 2), height: u(1010), objectFit: "cover" }}
                   />
                 ))}
               </div>
@@ -313,10 +331,10 @@ export async function GET(req: Request) {
               display: "flex",
               alignItems: "center",
               gap: u(52),
-              marginTop: "auto",
+              marginTop: u(64),
               marginLeft: u(110),
               marginRight: u(110),
-              marginBottom: u(60),
+              marginBottom: u(0),
               padding: u(52),
               backgroundColor: INK,
             }}
@@ -336,6 +354,16 @@ export async function GET(req: Request) {
                 @officiallinkupnaija
               </div>
             </div>
+          </div>
+
+          {/* A base. Without it the whole composition trailed off into a
+              quarter of empty cream, which on a two metre banner reads as a
+              printing error rather than as white space. The flag closes it,
+              the same rule that opens it. */}
+          <div style={{ display: "flex", width: "100%", marginTop: "auto" }}>
+            <div style={{ display: "flex", width: W / 3, height: u(26), backgroundColor: "#008753" }} />
+            <div style={{ display: "flex", width: W / 3, height: u(26), backgroundColor: "#FFFFFF" }} />
+            <div style={{ display: "flex", width: W / 3, height: u(26), backgroundColor: "#008753" }} />
           </div>
         </div>
       ),
