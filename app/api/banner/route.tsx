@@ -401,9 +401,32 @@ export async function GET(req: Request) {
 
           <div style={{ display: "flex", height: u(6), marginLeft: u(96), marginRight: u(96), marginTop: u(76), backgroundColor: "rgba(255,244,230,0.28)" }} />
 
-          <div style={{ display: "flex", paddingLeft: u(96), paddingRight: u(96), marginTop: u(44), fontSize: u(56), fontWeight: 400, color: "rgba(255,244,230,0.9)", lineHeight: 1.28 }}>
-            Real link-ups across Nigeria, every week. The host approves every
-            guest.
+          {/* ------------------------------------------------ the claim ---- */}
+          {/* C had the whole argument compressed into one small sentence
+              under an enormous headline, so the thing that makes this
+              platform different was the least legible object on a banner
+              about it. FIND YOUR PEOPLE is what every events app says; THE
+              HOST APPROVES EVERY GUEST is what only this one does.
+
+              Still Swiss: flush left to the same margin, one weight, one
+              size, no decoration. Three lines rather than a paragraph,
+              because a paragraph at four metres is a grey rectangle. The
+              coloured marks carry the only hierarchy. */}
+          <div style={{ display: "flex", flexDirection: "column", paddingLeft: u(96), paddingRight: u(96), marginTop: u(46), gap: u(22) }}>
+            {(
+              [
+                ["The host approves every guest", ROSE],
+                ["You see who is coming before you go", CYAN],
+                ["Something on, every single week", GOLD],
+              ] as [string, string][]
+            ).map(([line, colour]) => (
+              <div key={line} style={{ display: "flex", alignItems: "center", gap: u(24) }}>
+                <div style={{ display: "flex", width: u(30), height: u(10), backgroundColor: colour }} />
+                <div style={{ display: "flex", fontSize: u(58), fontWeight: 700, color: CREAM, letterSpacing: "-0.015em" }}>
+                  {line}
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* ------------------------------------------- the QR, lifted ---- */}
@@ -451,8 +474,8 @@ export async function GET(req: Request) {
               src={img(TILES[2])}
               alt=""
               width={W}
-              height={u(1500)}
-              style={{ width: W, height: u(1500), objectFit: "cover" }}
+              height={u(1455)}
+              style={{ width: W, height: u(1455), objectFit: "cover" }}
             />
           </div>
 
