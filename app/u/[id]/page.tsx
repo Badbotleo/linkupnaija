@@ -63,7 +63,7 @@ export default async function PublicProfilePage({
    * them rather than taking the page down with them.
    */
   const PUBLIC_PROFILE =
-    "id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, profile_completed, rating_avg, rating_count, created_at, is_pro, pro_expires_at, awarded_badges, revoked_badges, banner_url, phone_verified";
+    "id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, profile_completed, rating_avg, rating_count, created_at, is_pro, pro_expires_at, awarded_badges, revoked_badges, banner_url, phone_verified, last_seen_at";
   const PUBLIC_PROFILE_MINIMAL =
     "id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, profile_completed, rating_avg, rating_count, created_at";
 
