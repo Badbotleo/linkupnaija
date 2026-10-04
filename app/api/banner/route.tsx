@@ -363,7 +363,26 @@ export async function GET(req: Request) {
   if (variant === "c") {
     return new ImageResponse(
       (
-        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", backgroundColor: INK }}>
+        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", backgroundColor: INK, position: "relative" }}>
+          {/* ------------------------------------------- the doodle field ---- */}
+          {/* I left these off C on purpose, arguing that a type-led poster
+              should be interesting through scale and restraint rather than
+              texture. That was a defensible design position and the wrong
+              call for a brand: the field is drawn from our own icon set, it
+              runs on every other asset we make, and a banner without it is
+              the one that looks like somebody else's.
+
+              Fainter here than on the mosaic, 0.055 against 0.085. On a
+              violet ground behind 360px type, anything stronger starts
+              competing with the only three words that matter. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`data:image/svg+xml,${encodeURIComponent(doodleField(W, H, "rgba(255,255,255,0.055)"))}`}
+            alt=""
+            width={W}
+            height={H}
+            style={{ position: "absolute", top: 0, left: 0, width: W, height: H }}
+          />
           <div style={{ display: "flex", width: "100%" }}>
             <div style={{ display: "flex", width: W / 3, height: u(26), backgroundColor: "#008753" }} />
             <div style={{ display: "flex", width: W / 3, height: u(26), backgroundColor: "#FFFFFF" }} />
