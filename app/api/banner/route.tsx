@@ -406,14 +406,53 @@ export async function GET(req: Request) {
             guest.
           </div>
 
+          {/* ------------------------------------------- the QR, lifted ---- */}
+          {/* CHEST HEIGHT, NOT THE FOOT OF THE BANNER. It sat in the gold bar
+              at the bottom, which on a two metre roll-up is about 100mm off
+              the floor: you scan that by crouching, and nobody crouches at a
+              party holding a drink. Here it lands around 1.2m, which is where
+              a phone already is when somebody is standing.
+
+              On cream, because the one thing a passer-by has to act on should
+              be the highest-contrast object on a dark banner, and inverting
+              it costs nothing. */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: u(44),
+              marginTop: u(72),
+              marginLeft: u(96),
+              marginRight: u(96),
+              padding: u(40),
+              backgroundColor: CREAM,
+            }}
+          >
+            <div style={{ display: "flex", padding: u(14), backgroundColor: "#fff" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={qrSrc} alt="" width={u(300)} height={u(300)} style={{ width: u(300), height: u(300) }} />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div style={{ display: "flex", fontSize: u(62), fontWeight: 700, color: INK, letterSpacing: "-0.02em", lineHeight: 1.08 }}>
+                Point your
+              </div>
+              <div style={{ display: "flex", fontSize: u(62), fontWeight: 700, color: INK, letterSpacing: "-0.02em", lineHeight: 1.08 }}>
+                camera here
+              </div>
+              <div style={{ display: "flex", fontSize: u(36), fontWeight: 400, color: "rgba(22,13,51,0.66)", marginTop: u(12) }}>
+                Free to join. Takes a minute.
+              </div>
+            </div>
+          </div>
+
           <div style={{ display: "flex", width: "100%", marginTop: u(76) }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={img(TILES[2])}
               alt=""
               width={W}
-              height={u(1660)}
-              style={{ width: W, height: u(1660), objectFit: "cover" }}
+              height={u(1500)}
+              style={{ width: W, height: u(1500), objectFit: "cover" }}
             />
           </div>
 
@@ -422,7 +461,7 @@ export async function GET(req: Request) {
           <div
             style={{
               display: "flex",
-              alignItems: "center",
+              alignItems: "baseline",
               justifyContent: "space-between",
               width: "100%",
               marginTop: "auto",
@@ -437,16 +476,13 @@ export async function GET(req: Request) {
               <div style={{ display: "flex", fontSize: u(84), fontWeight: 700, color: INK, letterSpacing: "-0.03em" }}>
                 linkupnaija.com
               </div>
-              <div style={{ display: "flex", fontSize: u(46), fontWeight: 400, color: "rgba(22,13,51,0.72)", marginTop: u(14) }}>
-                Free to join. Takes a minute.
-              </div>
-              <div style={{ display: "flex", fontSize: u(42), fontWeight: 700, color: "rgba(22,13,51,0.72)", marginTop: u(22) }}>
+              {/* The footer no longer repeats "Free to join. Takes a
+                  minute." The QR panel above it already says that, and a
+                  banner that tells you the same thing twice in two feet
+                  reads as though nobody edited it. */}
+              <div style={{ display: "flex", fontSize: u(46), fontWeight: 700, color: "rgba(22,13,51,0.75)", marginTop: u(16) }}>
                 @officiallinkupnaija
               </div>
-            </div>
-            <div style={{ display: "flex", padding: u(16), backgroundColor: "#fff" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={qrSrc} alt="" width={u(340)} height={u(340)} style={{ width: u(340), height: u(340) }} />
             </div>
           </div>
         </div>
