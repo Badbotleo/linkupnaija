@@ -35,6 +35,8 @@ const nextConfig = {
       "/api/ig-card/claim": ["./assets/fonts/**"],
       "/api/ig-card/jollof": ["./assets/fonts/**"],
       "/api/banner": ["./assets/fonts/**"],
+      "/api/logo": ["./assets/fonts/**"],
+      "/api/tag": ["./assets/fonts/**"],
       "/api/ig-card/independence": ["./assets/fonts/**"],
       "/events/[id]/opengraph-image": ["./assets/fonts/**"],
     },
