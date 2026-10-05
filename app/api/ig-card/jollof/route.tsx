@@ -287,8 +287,13 @@ export async function GET() {
                 which wrapped to two lines at this size and ran into the
                 address beside it. One line or it does not belong here. */}
             <div style={{ display: "flex", flexDirection: "column", maxWidth: 730 }}>
+              {/* The row's own location, not a copy of it. The constant that
+                  used to sit here said "Abuja Chamber of Commerce Trade Fair
+                  Complex" and dropped "and Industry" from the venue's actual
+                  name — while this route was already fetching `location` and
+                  throwing it away. */}
               <div style={{ display: "flex", fontSize: 26, fontWeight: 400, color: "rgba(255,243,224,0.7)" }}>
-                Abuja Chamber of Commerce Trade Fair Complex, Airport Road
+                {rows.find((r) => r.location)?.location?.trim() ?? ""}
               </div>
               <div style={{ display: "flex", fontSize: 31, fontWeight: 700, color: "#fff", marginTop: 10 }}>
                 linkupnaija.com
