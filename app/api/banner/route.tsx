@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import QRCode from "qrcode";
 import { LOGO_MARK_DATA_URI } from "@/lib/logo-svg";
 import { SITE_ORIGIN } from "@/lib/qr";
+import { pngToPdf } from "@/lib/print-pdf";
 import { ogFonts } from "@/lib/og-fonts";
 import { PATHS } from "@/components/ui/LineIcon";
 
@@ -46,6 +47,11 @@ import { PATHS } from "@/components/ui/LineIcon";
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+/**
+ * A 4000px render is slow, and decoding it back out again for the PDF is
+ * slower. Nothing waits on this but a print job.
+ */
+export const maxDuration = 60;
 
 const INK = "#160D33";
 const INK_2 = "#241657";
@@ -59,7 +65,7 @@ const CREAM = "#FFF4E6";
  * squared by hand at the point where the faces actually sit.
  */
 /**
- * SIX, ALL THE SAME SIZE, AND NO HERO.
+ * EQUAL TILES, AND NO HERO.
  *
  * The version before this opened on one photograph a third of the banner
  * tall. It was the best image we had and that was the problem: the eye
@@ -67,23 +73,46 @@ const CREAM = "#FFF4E6";
  * banner selling "find your people" that fixes your attention on three
  * people is arguing against itself.
  *
- * Equal tiles make the argument instead. Six different nights, six different
- * rooms, nobody's face bigger than anybody else's, and the eye moves across
- * them rather than resting on one. Ordered so that neighbours differ in
- * light and crowd: a bright crowd next to a dim two-shot, indoors next to
- * outdoors, so no quadrant of the grid reads as one photograph.
+ * Equal tiles make the argument instead. Different nights, different rooms,
+ * nobody's face bigger than anybody else's, and the eye moves across them
+ * rather than resting on one.
+ *
+ * ORDERED SO THAT THE FIRST FOUR ARE FOUR DIFFERENT EVENTS. This matters
+ * more than it sounds, because both the gallery and the mosaic take the
+ * first four and the old order gave them n1 and n3 together. Those two are
+ * the same night in the same room under the same hanging wisteria, and at
+ * tile size they read as one photograph printed twice. Somebody spotted it
+ * immediately: "2 frames have the same people."
+ *
+ * n1, n2 and n3 ARE ONE NIGHT and n1 and n2 share a face, so at most one of
+ * them belongs in any grid. They sit at the end of the list where no slice
+ * of four can reach two of them.
+ *
+ * Beyond that the order alternates on every axis that reads at a distance:
+ * night then day, crowd then pair, indoors then out. No quadrant of a grid
+ * should resemble the one beside it.
  */
 const TILES = [
-  "/banner/n1.jpg", // crowd, braids, phones up
-  "/banner/m1.jpg", // two of them, indoors, close
-  "/banner/n3.jpg", // dancing, arms up
-  "/banner/n4.jpg", // outside, string lights
-  "/banner/m4.jpg", // one of them, daylight, outdoors
-  "/banner/n2.jpg", // drinks going round
-  "/banner/m2.jpg", // a group, mid-laugh
-  "/banner/m5.jpg", // daylight group shot
-  "/banner/m3.jpg", // the big group picture
+  "/banner/n3.jpg", // night, club, dancing, arms up
+  "/banner/m5.jpg", // daylight, park, nine of them standing
+  "/banner/m1.jpg", // indoors, two of them, close
+  "/banner/m2.jpg", // night, five faces, flash, close
+  "/banner/n4.jpg", // dusk, outdoors, string lights
+  "/banner/m3.jpg", // daylight, the big group picture
+  "/banner/m4.jpg", // daylight, one of them, outdoors
+  "/banner/n1.jpg", // same night as n3 — keep away from it
+  "/banner/n2.jpg", // same night as n3, and shares a face with n1
 ];
+
+/**
+ * The Poster's full-bleed photograph, named rather than indexed.
+ *
+ * It used to be TILES[2], which quietly meant "whatever ends up third in a
+ * list ordered for grid variety". Reordering that list for the gallery
+ * would have swapped the poster's hero from a dance floor to a two-shot
+ * without anybody touching the poster. A hero is a choice; it gets a name.
+ */
+const HERO = "/banner/n3.jpg";
 
 
 /**
@@ -157,9 +186,61 @@ function doodleField(w: number, h: number, stroke: string): string {
   );
 }
 
+/**
+ * The banner, delivered.
+ *
+ * `?format=pdf` wraps the render in a PDF at the real printed size, which
+ * for a roll-up is 800 by 2000mm. The design is already 1:2.5, so that is
+ * the artwork at its own proportions rather than a crop or a stretch.
+ *
+ * This matters more here than anywhere else we print. A PNG does not state
+ * how big it is, and a large-format shop handed a 4000px PNG has to guess:
+ * guess high and the banner prints soft, guess low and it prints cropped.
+ * The MediaBox is not a guess.
+ *
+ * ?mm=  the printed width in millimetres, if the stand is not 800.
+ * ?w=   pixels, capped at 3200 for the reason given on the cap itself. For
+ *       PDF it defaults to that cap, which at 800mm is about 102dpi.
+ */
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const W = Math.min(4000, Math.max(600, Number(url.searchParams.get("w")) || 1600));
+  const wantsPdf = (url.searchParams.get("format") ?? "").toLowerCase() === "pdf";
+  const img = await renderBanner(req, wantsPdf);
+  if (!wantsPdf) return img;
+
+  const mm = Math.min(3000, Math.max(100, Number(url.searchParams.get("mm")) || 800));
+  const png = Buffer.from(await img.arrayBuffer());
+  const pdf = pngToPdf(png, mm, mm * 2.5, "LinkUpNaija banner");
+  return new Response(new Uint8Array(pdf), {
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": 'inline; filename="linkupnaija-banner.pdf"',
+      "Cache-Control": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+    },
+  });
+}
+
+async function renderBanner(req: Request, wantsPdf: boolean) {
+  const url = new URL(req.url);
+  /**
+   * 3200 IS A HARD CEILING, FOUND BY BISECTION, NOT A ROUND NUMBER.
+   *
+   * Above it Satori stops drawing the photographs. It does not fail: it
+   * returns 200 with a perfectly composed banner that has four empty holes
+   * where the people were, and the only tell is the file size collapsing
+   * from 15MB to 437KB. At 4000 the render also takes 82 seconds to produce
+   * that nothing. Measured: 3200 renders in 25s with every tile present,
+   * 3600 in 51s with none of them.
+   *
+   * This is the same shape of bug as the WebP one — a silent blank where an
+   * image should be, which reads as a design decision rather than a failure
+   * — so the cap is set below it rather than left for somebody to discover
+   * from a proof.
+   *
+   * 3200px across 800mm is about 102dpi, which is normal for large format.
+   * Nobody reads a roll-up from nine inches away.
+   */
+  const W = Math.min(3200, Math.max(600, Number(url.searchParams.get("w")) || (wantsPdf ? 3200 : 1600)));
   const H = Math.round(W * 2.5);
   const u = (n: number) => Math.round((n / 1600) * W); // scale from the 1600 design
 
@@ -518,7 +599,7 @@ export async function GET(req: Request) {
           <div style={{ display: "flex", width: "100%", marginTop: u(76) }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={img(TILES[2])}
+              src={img(HERO)}
               alt=""
               width={W}
               height={u(1455)}
