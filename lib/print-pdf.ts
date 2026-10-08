@@ -157,19 +157,21 @@ function decodePng(png: Buffer): Png {
  * `title` becomes the document title, which is what a print shop's queue
  * shows instead of "Untitled" or a route name.
  */
-export function pngToPdf(png: Buffer, mmWidth: number, mmHeight: number, title: string): Buffer {
-  const { width, height, rgb } = decodePng(png);
-  const data = deflateSync(rgb);
+/**
+ * A PDF of one or more pages, each holding one PNG, sized in millimetres.
+ *
+ * Every page is the same size, which is what a document is. `title` becomes
+ * the document title, so a print shop's queue shows the thing's name rather
+ * than "Untitled".
+ */
+export function pngsToPdf(pages: Buffer[], mmWidth: number, mmHeight: number, title: string): Buffer {
+  if (pages.length === 0) throw new Error("A PDF needs at least one page");
 
   const pw = +(mmWidth * PT_PER_MM).toFixed(3);
   const ph = +(mmHeight * PT_PER_MM).toFixed(3);
 
-  // The image is drawn across the whole MediaBox, so the page IS the artwork
-  // and there is no margin for a printer to interpret.
-  const content = Buffer.from(`q\n${pw} 0 0 ${ph} 0 0 cm\n/Im0 Do\nQ\n`, "latin1");
-
-  // Dates in PDF are D:YYYYMMDDHHmmSS, and a file with no date is one that
-  // sorts unpredictably in whatever the shop drops it into.
+  // Dates in PDF are D:YYYYMMDDHHmmSS, and a file with no date sorts
+  // unpredictably in whatever the reader drops it into.
   const d = new Date();
   const z = (n: number) => String(n).padStart(2, "0");
   const stamp =
@@ -180,41 +182,70 @@ export function pngToPdf(png: Buffer, mmWidth: number, mmHeight: number, title: 
   // carrying one would truncate the object and corrupt the file.
   const safeTitle = title.replace(/([\\()])/g, "\\$1");
 
+  /**
+   * Object numbering, fixed up front so the Kids array can name pages that
+   * have not been built yet.
+   *
+   * 1 catalog, 2 page tree, then three objects per page (the page, its
+   * content stream, its image), then the info dictionary last.
+   */
+  const pageObj = (i: number) => 3 + i * 3;
+  const contentObj = (i: number) => 4 + i * 3;
+  const imageObj = (i: number) => 5 + i * 3;
+  const infoObj = 3 + pages.length * 3;
+
+  const kids = pages.map((_, i) => `${pageObj(i)} 0 R`).join(" ");
+
   const objects: Buffer[] = [
     Buffer.from("<< /Type /Catalog /Pages 2 0 R >>", "latin1"),
-    Buffer.from("<< /Type /Pages /Kids [3 0 R] /Count 1 >>", "latin1"),
-    Buffer.from(
-      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pw} ${ph}] ` +
-        `/Resources << /XObject << /Im0 5 0 R >> /ProcSet [/PDF /ImageC] >> ` +
-        `/Contents 4 0 R >>`,
-      "latin1"
-    ),
-    Buffer.concat([
-      Buffer.from(`<< /Length ${content.length} >>\nstream\n`, "latin1"),
-      content,
-      Buffer.from("endstream", "latin1"),
-    ]),
-    Buffer.concat([
+    Buffer.from(`<< /Type /Pages /Kids [${kids}] /Count ${pages.length} >>`, "latin1"),
+  ];
+
+  for (let i = 0; i < pages.length; i++) {
+    const { width, height, rgb } = decodePng(pages[i]);
+    const data = deflateSync(rgb);
+
+    // The image is drawn across the whole MediaBox, so the page IS the
+    // artwork and there is no margin for a reader to interpret.
+    const content = Buffer.from(`q\n${pw} 0 0 ${ph} 0 0 cm\n/Im0 Do\nQ\n`, "latin1");
+
+    objects.push(
       Buffer.from(
-        `<< /Type /XObject /Subtype /Image /Width ${width} /Height ${height} ` +
-          `/ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /FlateDecode ` +
-          `/Length ${data.length} >>\nstream\n`,
+        `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pw} ${ph}] ` +
+          `/Resources << /XObject << /Im0 ${imageObj(i)} 0 R >> /ProcSet [/PDF /ImageC] >> ` +
+          `/Contents ${contentObj(i)} 0 R >>`,
         "latin1"
       ),
-      data,
-      Buffer.from("\nendstream", "latin1"),
-    ]),
+      Buffer.concat([
+        Buffer.from(`<< /Length ${content.length} >>\nstream\n`, "latin1"),
+        content,
+        Buffer.from("endstream", "latin1"),
+      ]),
+      Buffer.concat([
+        Buffer.from(
+          `<< /Type /XObject /Subtype /Image /Width ${width} /Height ${height} ` +
+            `/ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /FlateDecode ` +
+            `/Length ${data.length} >>\nstream\n`,
+          "latin1"
+        ),
+        data,
+        Buffer.from("\nendstream", "latin1"),
+      ])
+    );
+  }
+
+  objects.push(
     Buffer.from(
       `<< /Title (${safeTitle}) /Producer (LinkUpNaija) /CreationDate (${stamp}) >>`,
       "latin1"
-    ),
-  ];
+    )
+  );
 
   /**
    * The cross-reference table is byte offsets into this very file, so the
-   * parts have to be assembled in order and measured as they go. Get one
-   * offset wrong and some readers repair it silently while others refuse the
-   * file outright, which is the kind of bug you discover at the print shop.
+   * parts are assembled in order and measured as they go. Get one offset
+   * wrong and some readers repair it silently while others refuse the file
+   * outright, which is the kind of bug you find at the print shop.
    */
   const chunks: Buffer[] = [Buffer.from("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n", "latin1")];
   let offset = chunks[0].length;
@@ -235,11 +266,16 @@ export function pngToPdf(png: Buffer, mmWidth: number, mmHeight: number, title: 
   let xref = `xref\n0 ${count}\n0000000000 65535 f \n`;
   for (const o of offsets) xref += `${String(o).padStart(10, "0")} 00000 n \n`;
   xref +=
-    `trailer\n<< /Size ${count} /Root 1 0 R /Info ${objects.length} 0 R >>\n` +
+    `trailer\n<< /Size ${count} /Root 1 0 R /Info ${infoObj} 0 R >>\n` +
     `startxref\n${offset}\n%%EOF\n`;
   chunks.push(Buffer.from(xref, "latin1"));
 
   return Buffer.concat(chunks);
+}
+
+/** One page. The shape the tag and banner routes already use. */
+export function pngToPdf(png: Buffer, mmWidth: number, mmHeight: number, title: string): Buffer {
+  return pngsToPdf([png], mmWidth, mmHeight, title);
 }
 
 export { PT_PER_MM };
