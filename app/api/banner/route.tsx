@@ -4,7 +4,7 @@ import { LOGO_MARK_DATA_URI } from "@/lib/logo-svg";
 import { SITE_ORIGIN } from "@/lib/qr";
 import { pngToPdf } from "@/lib/print-pdf";
 import { ogFonts } from "@/lib/og-fonts";
-import { PATHS } from "@/components/ui/LineIcon";
+import { doodleField } from "@/lib/doodle-field";
 
 /**
  * The pull-up banner. 800 × 2000 mm, the standard Nigerian roll-up.
@@ -114,77 +114,6 @@ const TILES = [
  */
 const HERO = "/banner/n3.jpg";
 
-
-/**
- * The doodle field, built from our own icon set.
- *
- * Asked for after the WhatsApp chat wallpaper: a dense, all-over scatter of
- * small line drawings, low contrast, covering the whole ground. That pattern
- * works because it is busy enough to read as texture and faint enough to read
- * as nothing at all.
- *
- * OURS ARE OUR OWN ICONS, not generic doodles. components/ui/LineIcon already
- * holds forty stroke glyphs at a 24 viewBox, and the ones chosen here are the
- * things the platform is actually about: a calendar, a ticket, a gamepad, a
- * pin, a heart, people. A stranger reads it as texture; anybody who has used
- * the app is looking at its own furniture.
- *
- * ONE <img>, NOT HUNDREDS OF DIVS. Satori lays out every element it is given,
- * and a few hundred absolutely positioned nodes is both slow and a good way
- * to blow the layout up. This is a single SVG, placed once, and being vector
- * it stays exact at 3150px wide.
- *
- * Deterministic on purpose: a seeded generator rather than Math.random, so a
- * re-render produces the identical banner and the printer's proof still
- * matches what was approved.
- */
-function doodleField(w: number, h: number, stroke: string): string {
-  const keys = [
-    "calendar", "ticket", "users", "heart", "star", "pin", "gamepad", "gift",
-    "camera", "mic", "trophy", "sparkles", "chat", "car", "video", "play",
-    "zap", "clock", "circles", "share", "trending", "eye", "building", "link",
-    "phone", "search", "bell", "shield", "activity", "send", "image", "home",
-  ].filter((k) => PATHS[k]);
-
-  // Mulberry32. Small, fast, and repeatable from a fixed seed.
-  let t = 0x9e3779b9;
-  const rnd = () => {
-    t += 0x6d2b79f5;
-    let x = Math.imul(t ^ (t >>> 15), 1 | t);
-    x ^= x + Math.imul(x ^ (x >>> 7), 61 | x);
-    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
-  };
-
-  // Thirteen across. Eight left gaps you could drive through and read
-  // as scattered marks rather than a field; the reference wallpaper is dense
-  // enough that no single glyph is the thing you notice.
-  const step = Math.round(w / 13);
-  const size = Math.round(step * 0.66);
-  const parts: string[] = [];
-
-  for (let y = -step; y < h + step; y += step) {
-    for (let x = -step; x < w + step; x += step) {
-      const k = keys[Math.floor(rnd() * keys.length)];
-      const jx = (rnd() - 0.5) * step * 0.55;
-      const jy = (rnd() - 0.5) * step * 0.55;
-      const rot = Math.round((rnd() - 0.5) * 60);
-      const sc = size / 24;
-      const cx = x + jx;
-      const cy = y + jy;
-      parts.push(
-        `<g transform="translate(${cx.toFixed(1)} ${cy.toFixed(1)}) rotate(${rot}) scale(${sc.toFixed(3)}) translate(-12 -12)">` +
-          `<path d="${PATHS[k]}"/></g>`
-      );
-    }
-  }
-
-  return (
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">` +
-    `<g fill="none" stroke="${stroke}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">` +
-    parts.join("") +
-    `</g></svg>`
-  );
-}
 
 /**
  * The banner, delivered.
@@ -300,8 +229,9 @@ async function renderBanner(req: Request, wantsPdf: boolean) {
   const fonts = await ogFonts();
 
   /* ======================================================== b · GALLERY ====
-   * Inverted. Cream ground, ink type, photographs framed by the paper rather
-   * than bleeding off it.
+   * Inverted, either way round. Purple ground with cream type by default,
+   * ?ground=cream for the pale original. Photographs framed by the ground
+   * rather than bleeding off it.
    *
    * ATTENTION COMES FROM INVERSION, NOT VOLUME. Every other banner in a
    * Nigerian event hall is dark and loud, so the thing that stops somebody is
@@ -313,6 +243,63 @@ async function renderBanner(req: Request, wantsPdf: boolean) {
    * sizes and no more. Nothing is tilted, nothing overlaps, nothing is
    * decorative. What makes it look expensive is that everything lines up.
    */
+  /**
+   * The Gallery's ground, and everything that has to move with it.
+   *
+   * "Make the background purple" is never only the background. The cream
+   * version sets its three claim marks in crimson, teal and ochre, all of
+   * which are DARKER than brand violet: drop them straight onto purple and
+   * they go muddy and then invisible, which on a two metre banner means
+   * three claims nobody can see. So the ground and its palette move
+   * together, as one switch, rather than as a colour somebody overrides and
+   * a set of accents somebody forgets.
+   *
+   * The dark-ground accents are not invented here. GOLD, ROSE and CYAN are
+   * already in the palette at the top of this file and were chosen for
+   * exactly this: light marks that hold up on a dark field.
+   *
+   * THE QR PANEL INVERTS WITH IT, and that is the point of the whole
+   * exercise rather than a detail. On a pale banner the darkest object is
+   * the one the eye finishes on; on a dark banner it is the lightest. The
+   * only instruction on the banner has to be the last thing you look at, so
+   * the panel is ink on cream and now becomes cream on purple.
+   *
+   * ?ground=cream gets the original back. Both are right, for different
+   * halls: pale stands out in a room of dark banners, purple stands out in
+   * a room of white ones.
+   */
+  const cream = (url.searchParams.get("ground") ?? "").toLowerCase() === "cream";
+  const G = cream
+    ? {
+        bg: CREAM,
+        type: INK,
+        up: "#6C5CE0",
+        rule: "rgba(22,13,51,0.16)",
+        doodle: "rgba(22,13,51,0.05)",
+        accent: "#D12B63",
+        marks: ["#D12B63", "#0F7F8C", "#B07A00"],
+        panel: INK,
+        panelType: CREAM,
+        panelSub: "rgba(255,244,230,0.7)",
+        panelTag: GOLD,
+      }
+    : {
+        // Deeper than the brand violet on purpose. #534AB7 is right for a
+        // button at arm's length and too light under a hall's lights, where
+        // it greys off and stops holding white type.
+        bg: "#3B2D8F",
+        type: CREAM,
+        up: "#C9BFFF",
+        rule: "rgba(255,244,230,0.26)",
+        doodle: "rgba(255,255,255,0.07)",
+        accent: ROSE,
+        marks: [ROSE, CYAN, GOLD],
+        panel: CREAM,
+        panelType: INK,
+        panelSub: "rgba(22,13,51,0.66)",
+        panelTag: "#8A6300",
+      };
+
   if (variant === "b") {
     return new ImageResponse(
       (
@@ -322,13 +309,13 @@ async function renderBanner(req: Request, wantsPdf: boolean) {
             height: "100%",
             display: "flex",
             flexDirection: "column",
-            backgroundColor: CREAM,
+            backgroundColor: G.bg,
             position: "relative",
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={`data:image/svg+xml,${encodeURIComponent(doodleField(W, H, "rgba(22,13,51,0.05)"))}`}
+            src={`data:image/svg+xml,${encodeURIComponent(doodleField(W, H, G.doodle))}`}
             alt=""
             width={W}
             height={H}
@@ -346,17 +333,17 @@ async function renderBanner(req: Request, wantsPdf: boolean) {
           <div style={{ display: "flex", alignItems: "center", gap: u(24), paddingLeft: u(110), marginTop: u(86) }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={LOGO_MARK_DATA_URI} alt="" width={u(104)} height={u(104)} style={{ width: u(104), height: u(104) }} />
-            <div style={{ display: "flex", fontSize: u(72), fontWeight: 700, letterSpacing: "-0.02em", color: INK }}>
-              Link<span style={{ color: "#6C5CE0" }}>Up</span>Naija
+            <div style={{ display: "flex", fontSize: u(72), fontWeight: 700, letterSpacing: "-0.02em", color: G.type }}>
+              Link<span style={{ color: G.up }}>Up</span>Naija
             </div>
           </div>
-          <div style={{ display: "flex", height: u(4), marginLeft: u(110), marginRight: u(110), marginTop: u(46), backgroundColor: "rgba(22,13,51,0.16)" }} />
+          <div style={{ display: "flex", height: u(4), marginLeft: u(110), marginRight: u(110), marginTop: u(46), backgroundColor: G.rule }} />
 
           <div style={{ display: "flex", flexDirection: "column", paddingLeft: u(110), paddingRight: u(110), marginTop: u(76) }}>
-            <div style={{ display: "flex", fontSize: u(224), fontWeight: 700, color: INK, letterSpacing: "-0.055em", lineHeight: 0.96 }}>
+            <div style={{ display: "flex", fontSize: u(224), fontWeight: 700, color: G.type, letterSpacing: "-0.055em", lineHeight: 0.96 }}>
               Find your
             </div>
-            <div style={{ display: "flex", fontSize: u(224), fontWeight: 700, color: "#D12B63", letterSpacing: "-0.055em", lineHeight: 0.96 }}>
+            <div style={{ display: "flex", fontSize: u(224), fontWeight: 700, color: G.accent, letterSpacing: "-0.055em", lineHeight: 0.96 }}>
               people.
             </div>
             {/* Three lines, not a paragraph. B was carrying the argument as
@@ -368,14 +355,14 @@ async function renderBanner(req: Request, wantsPdf: boolean) {
             <div style={{ display: "flex", flexDirection: "column", marginTop: u(46), gap: u(20) }}>
               {(
                 [
-                  ["The host approves every guest", "#D12B63"],
-                  ["You see who is coming before you go", "#0F7F8C"],
-                  ["Something on, every single week", "#B07A00"],
+                  ["The host approves every guest", G.marks[0]],
+                  ["You see who is coming before you go", G.marks[1]],
+                  ["Something on, every single week", G.marks[2]],
                 ] as [string, string][]
               ).map(([line, colour]) => (
                 <div key={line} style={{ display: "flex", alignItems: "center", gap: u(22) }}>
                   <div style={{ display: "flex", width: u(28), height: u(9), backgroundColor: colour }} />
-                  <div style={{ display: "flex", fontSize: u(54), fontWeight: 700, color: INK, letterSpacing: "-0.015em" }}>
+                  <div style={{ display: "flex", fontSize: u(54), fontWeight: 700, color: G.type, letterSpacing: "-0.015em" }}>
                     {line}
                   </div>
                 </div>
@@ -417,7 +404,7 @@ async function renderBanner(req: Request, wantsPdf: boolean) {
               marginRight: u(110),
               marginBottom: u(0),
               padding: u(52),
-              backgroundColor: INK,
+              backgroundColor: G.panel,
             }}
           >
             <div style={{ display: "flex", padding: u(18), backgroundColor: "#fff" }}>
@@ -425,13 +412,13 @@ async function renderBanner(req: Request, wantsPdf: boolean) {
               <img src={qrSrc} alt="" width={u(400)} height={u(400)} style={{ width: u(400), height: u(400) }} />
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
-              <div style={{ display: "flex", fontSize: u(72), fontWeight: 700, color: CREAM, letterSpacing: "-0.02em", lineHeight: 1.08 }}>
+              <div style={{ display: "flex", fontSize: u(72), fontWeight: 700, color: G.panelType, letterSpacing: "-0.02em", lineHeight: 1.08 }}>
                 linkupnaija.com
               </div>
-              <div style={{ display: "flex", fontSize: u(44), fontWeight: 400, color: "rgba(255,244,230,0.7)", marginTop: u(14) }}>
+              <div style={{ display: "flex", fontSize: u(44), fontWeight: 400, color: G.panelSub, marginTop: u(14) }}>
                 Point your camera. Free to join.
               </div>
-              <div style={{ display: "flex", fontSize: u(40), fontWeight: 400, color: GOLD, marginTop: u(20) }}>
+              <div style={{ display: "flex", fontSize: u(40), fontWeight: 400, color: G.panelTag, marginTop: u(20) }}>
                 @officiallinkupnaija
               </div>
             </div>
