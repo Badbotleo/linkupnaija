@@ -6,6 +6,7 @@ import { payWithPaystack, formatNaira } from "@/lib/paystack";
 import { NIGERIAN_STATES } from "@/lib/constants";
 import { TOURNAMENT } from "@/lib/tournament";
 import { confettiPs5 } from "@/lib/confetti";
+import StateIcon from "@/components/ui/StateIcon";
 
 const inputCls =
   "w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-white placeholder-white/40 focus:border-[#7F77DD] focus:outline-none focus:ring-2 focus:ring-[#7F77DD]/40";
@@ -109,7 +110,7 @@ export default function TournamentRegistration() {
       {/* Form / success */}
       {done ? (
         <div className="rounded-2xl border-2 border-[#FAC775]/60 bg-[#121212] p-8 text-center">
-          <p className="text-4xl">🎮</p>
+          <StateIcon name="gamepad" tone="brand" size={48} />
           <h3 className="mt-3 text-xl font-extrabold text-white">
             You&apos;re on the waitlist!
           </h3>

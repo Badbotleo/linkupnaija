@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import StateIcon from "@/components/ui/StateIcon";
 
 export default function DeleteEventButton({
   eventId,
@@ -65,7 +66,7 @@ export default function DeleteEventButton({
             className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="text-4xl">⚠️</p>
+            <StateIcon name="trash" tone="bad" size={48} />
             <h3 className="mt-3 text-lg font-bold text-gray-900">
               Are you sure?
             </h3>

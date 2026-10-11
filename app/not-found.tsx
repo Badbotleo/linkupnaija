@@ -1,9 +1,10 @@
 import Link from "next/link";
+import StateIcon from "@/components/ui/StateIcon";
 
 export default function NotFound() {
   return (
     <div className="container-page flex flex-col items-center py-24 text-center">
-      <p className="text-6xl">🤔</p>
+      <StateIcon name="search" tone="quiet" size={64} />
       <h1 className="mt-4 text-3xl font-extrabold text-gray-900">
         Page not found
       </h1>

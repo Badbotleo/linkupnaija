@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import StateIcon from "@/components/ui/StateIcon";
 
 interface Result {
   ok: boolean;
@@ -58,7 +59,7 @@ export default function CheckInClient({ rsvpId }: { rsvpId: string }) {
           </>
         ) : result?.ok ? (
           <>
-            <p className="text-6xl">{result.already ? "✅" : "🎉"}</p>
+            <StateIcon name={result.already ? "check" : "sparkles"} tone="good" size={64} />
             <h1 className="mt-4 text-2xl font-extrabold text-gray-900">
               {result.name} is in!
             </h1>
@@ -97,7 +98,7 @@ export default function CheckInClient({ rsvpId }: { rsvpId: string }) {
           </>
         ) : (
           <>
-            <p className="text-6xl">🚫</p>
+            <StateIcon name="x" tone="bad" size={64} />
             <h1 className="mt-4 text-xl font-extrabold text-gray-900">
               Couldn&apos;t check in
             </h1>

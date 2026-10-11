@@ -4,6 +4,7 @@
 // fetching, this renders instead of crashing the whole app, with a retry.
 import { useEffect } from "react";
 import Link from "next/link";
+import StateIcon from "@/components/ui/StateIcon";
 
 export default function Error({
   error,
@@ -19,7 +20,7 @@ export default function Error({
 
   return (
     <div className="container-page flex flex-col items-center py-24 text-center">
-      <p className="text-5xl">😕</p>
+      <StateIcon name="zap" tone="bad" size={56} />
       <h1 className="mt-4 text-2xl font-extrabold text-gray-900">
         Something went wrong
       </h1>

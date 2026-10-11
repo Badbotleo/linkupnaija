@@ -21,6 +21,7 @@ import { openLabel } from "@/lib/opening-hours";
 import SwipeDeck from "../home/SwipeDeck";
 import VenuesReel, { type ReelVenue } from "./VenuesReel";
 import VenueArt from "./VenueArt";
+import StateIcon from "@/components/ui/StateIcon";
 
 interface PartnerVenue {
   id: string;
@@ -634,7 +635,7 @@ function EmptyState({
 }) {
   return (
     <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-14 text-center">
-      <p className="text-4xl">🚀</p>
+      <StateIcon name="pin" tone="brand" size={48} />
       <h3 className="mt-3 text-lg font-bold text-gray-900">
         {category} in {label} — coming soon
       </h3>

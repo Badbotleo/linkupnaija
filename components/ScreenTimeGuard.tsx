@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import StateIcon from "@/components/ui/StateIcon";
 
 // LinkUpNaija's goal is real-life connections — so we cap daily in-app time at
 // 5 hours and gently nudge people to go meet up in person. Time is counted only
@@ -57,7 +58,7 @@ export default function ScreenTimeGuard() {
       style={{ backgroundColor: "#121212" }}
     >
       <div className="max-w-md">
-        <p className="text-6xl">🌱</p>
+        <StateIcon name="clock" tone="good" size={64} />
         <h2 className="mt-5 text-3xl font-extrabold">Time to touch grass</h2>
         <p className="mt-3 text-lg text-white/80">
           You&apos;ve spent 5 hours on LinkUpNaija today. The best connections

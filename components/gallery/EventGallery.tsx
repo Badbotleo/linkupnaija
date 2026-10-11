@@ -7,6 +7,7 @@ import { compressImage } from "@/lib/image";
 import { toast } from "@/lib/toast";
 import Avatar from "../Avatar";
 import type { EventPhoto } from "@/lib/types";
+import StateIcon from "@/components/ui/StateIcon";
 
 const MAX_PER_UPLOAD = 10;
 
@@ -234,7 +235,7 @@ export default function EventGallery({
       {/* Gallery */}
       {photos.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-16 text-center">
-          <p className="text-4xl">📸</p>
+          <StateIcon name="camera" tone="quiet" size={48} />
           <p className="mt-3 font-semibold text-gray-700">
             Be the first to share a memory from this event 📸
           </p>

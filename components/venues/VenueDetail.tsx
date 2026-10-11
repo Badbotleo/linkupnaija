@@ -10,6 +10,7 @@ import ReservationModal from "./ReservationModal";
 import QrModalButton from "../qr/QrModalButton";
 import { SkeletonBox } from "../skeletons/Skeletons";
 import { SITE_ORIGIN } from "@/lib/qr";
+import StateIcon from "@/components/ui/StateIcon";
 
 const VenuesMap = dynamic(() => import("./VenuesMap"), {
   ssr: false,
@@ -65,7 +66,7 @@ export default function VenueDetail({
   if (!venue) {
     return (
       <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-16 text-center">
-        <p className="text-4xl">🤔</p>
+        <StateIcon name="search" tone="quiet" size={48} />
         <h2 className="mt-3 text-lg font-bold text-gray-900">
           Venue not found
         </h2>

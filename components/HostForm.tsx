@@ -11,6 +11,7 @@ import { formatEventDate } from "@/lib/format";
 import { validateLocation, MAX_LOCATION_LENGTH } from "@/lib/content-guards";
 import { detectLeaks, LEAK_LABELS } from "@/lib/external-links";
 import type { SeriesFrequency } from "@/lib/types";
+import StateIcon from "@/components/ui/StateIcon";
 
 export default function HostForm({
   hostState,
@@ -1065,7 +1066,7 @@ export default function HostForm({
             />
           ) : (
             <div className="text-center text-gray-400">
-              <p className="text-3xl">🖼️</p>
+              <StateIcon name="image" tone="quiet" size={40} />
               <p className="mt-1 text-sm font-medium">
                 Tap to upload a cover image
               </p>

@@ -5,6 +5,7 @@ import ThingsReel from "@/components/things/ThingsReel";
 import { createClient } from "@/lib/supabase/server";
 import { getVisitorState } from "@/lib/visitor-geo";
 import { buildIdeas, hostHref } from "@/lib/things-to-do";
+import StateIcon from "@/components/ui/StateIcon";
 
 export const dynamic = "force-dynamic";
 
@@ -76,7 +77,7 @@ export default async function ThingsToDoPage() {
 
         {ideas.length === 0 ? (
           <div className="mt-6 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-14 text-center">
-            <p className="text-4xl">🗓️</p>
+            <StateIcon name="calendar" tone="quiet" size={48} />
             <h2 className="mt-3 text-lg font-bold text-gray-900">
               Nothing here yet
             </h2>

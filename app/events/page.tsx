@@ -26,6 +26,7 @@ import EventsStories from "@/components/EventsStories";
 import StatePicker from "@/components/events/StatePicker";
 import { computeBadges, type Badge } from "@/lib/hostBadges";
 import type { EventRow, RsvpStatus } from "@/lib/types";
+import StateIcon from "@/components/ui/StateIcon";
 
 export const dynamic = "force-dynamic";
 
@@ -735,7 +736,7 @@ export default async function EventsPage({
       ) : askedFor && feedEvents.length === 0 ? (
         /* A miss is a request. See components/events/WishCapture. */
         <div className="mt-8 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-12 text-center dark:border-white/15 dark:bg-white/[0.03]">
-          <p className="text-4xl">🔍</p>
+          <StateIcon name="search" tone="quiet" size={48} />
           <h2 className="mt-3 text-lg font-bold text-gray-900 dark:text-white">
             Nobody is doing that yet
           </h2>
@@ -757,7 +758,7 @@ export default async function EventsPage({
         </div>
       ) : past && feedEvents.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-12 text-center">
-          <p className="text-4xl">🕰️</p>
+          <StateIcon name="clock" tone="quiet" size={48} />
           <h2 className="mt-3 text-lg font-bold text-gray-900">
             Nothing behind you yet
           </h2>

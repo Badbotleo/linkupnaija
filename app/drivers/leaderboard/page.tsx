@@ -2,6 +2,7 @@ import AppHeader from "@/components/AppHeader";
 import Avatar from "@/components/Avatar";
 import LineIcon from "@/components/ui/LineIcon";
 import { createClient } from "@/lib/supabase/server";
+import StateIcon from "@/components/ui/StateIcon";
 
 export const dynamic = "force-dynamic";
 
@@ -67,7 +68,7 @@ export default async function DriverLeaderboardPage() {
           </p>
         ) : rows.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-14 text-center">
-            <p className="text-4xl">🚗</p>
+            <StateIcon name="car" tone="brand" size={48} />
             <h2 className="mt-3 text-lg font-bold text-gray-900">
               No drivers yet
             </h2>

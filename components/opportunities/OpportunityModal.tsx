@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { NIGERIAN_STATES } from "@/lib/constants";
 import { toast } from "@/lib/toast";
 import type { OpportunityDef } from "@/lib/opportunities";
+import StateIcon from "@/components/ui/StateIcon";
 
 const inputCls = "input";
 
@@ -90,7 +91,7 @@ export default function OpportunityModal({
 
         {done ? (
           <div className="py-8 text-center">
-            <p className="text-4xl">✅</p>
+            <StateIcon name="check" tone="good" size={48} />
             <p className="mt-3 font-semibold text-gray-900">
               Application submitted!
             </p>

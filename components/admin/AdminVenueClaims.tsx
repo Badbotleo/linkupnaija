@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "@/lib/toast";
 import Avatar from "@/components/Avatar";
 import LineIcon from "@/components/ui/LineIcon";
+import StateIcon from "@/components/ui/StateIcon";
 
 /**
  * "I run this place" — the queue where somebody says yes.
@@ -106,7 +107,7 @@ export default function AdminVenueClaims() {
   if (rows.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-gray-200 px-6 py-12 text-center dark:border-white/10">
-        <p className="text-3xl">🔑</p>
+        <StateIcon name="key" tone="quiet" size={40} />
         <p className="mt-3 font-bold text-gray-900 dark:text-white">
           No claims waiting
         </p>

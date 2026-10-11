@@ -1,5 +1,6 @@
 import AppHeader from "@/components/AppHeader";
 import Link from "next/link";
+import StateIcon from "@/components/ui/StateIcon";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ export default function VerifyEmailPage({
       <AppHeader title="Check your email" back />
       <div className="container-page flex max-w-md flex-col py-6 text-center">
       <div className="rounded-2xl bg-white p-8 shadow-card">
-        <p className="text-5xl">📬</p>
+        <StateIcon name="mail" tone="brand" size={56} />
         <h1 className="mt-4 text-2xl font-extrabold text-gray-900">
           Check your email
         </h1>

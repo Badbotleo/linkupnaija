@@ -63,6 +63,10 @@ export const PATHS: Record<string, string> = {
   link:
     "M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7",
   chat: "M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z",
+  // Drawn for the empty and error states that used to be large emoji.
+  lock: "M5 11h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1zM8 11V7a4 4 0 0 1 8 0v4",
+  key: "M14.5 9.5a4.5 4.5 0 1 0-4.1 4.48L9 15.4V17H7v2H5v2H2v-2.6l7.52-7.52c-.01-.13-.02-.25-.02-.38a4.5 4.5 0 0 0 5-4.5zM16 7h.01",
+  mail: "M3 7.5A1.5 1.5 0 0 1 4.5 6h15A1.5 1.5 0 0 1 21 7.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16.5zM3.5 7l8.5 6 8.5-6",
   // Drawn for the venue categories, which were still on emoji after the
   // event chips moved off them.
   tree: "M12 21v-5M12 16a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11z",

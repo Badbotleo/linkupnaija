@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "@/lib/toast";
+import StateIcon from "@/components/ui/StateIcon";
 
 const REASONS = [
   "Spam or misleading",
@@ -90,7 +91,7 @@ export default function ReportButton({
           >
             {done ? (
               <div className="text-center">
-                <p className="text-4xl">✅</p>
+                <StateIcon name="check" tone="good" size={48} />
                 <h2 className="mt-2 text-lg font-bold text-gray-900">
                   Thanks for flagging
                 </h2>

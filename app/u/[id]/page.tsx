@@ -20,6 +20,7 @@ import AvatarLightbox from "@/components/profile/AvatarLightbox";
 import { computeBadges } from "@/lib/hostBadges";
 import { formatEventDate } from "@/lib/format";
 import type { UserProfile, HostStats } from "@/lib/types";
+import StateIcon from "@/components/ui/StateIcon";
 
 export const dynamic = "force-dynamic";
 
@@ -99,7 +100,7 @@ export default async function PublicProfilePage({
     if (blocked) {
       return (
         <div className="container-page max-w-2xl py-16 text-center">
-          <p className="text-4xl">🚫</p>
+          <StateIcon name="shield" tone="bad" size={48} />
           <p className="mt-3 font-semibold text-gray-900">You&apos;ve blocked this user.</p>
           <Link href="/events" className="btn-outline mt-6">Back to link-ups</Link>
         </div>

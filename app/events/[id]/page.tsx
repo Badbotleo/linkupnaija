@@ -44,6 +44,7 @@ import { eventJsonLd, jsonLdScript } from "@/lib/structured-data";
 import RecapReel from "@/components/home/RecapReel";
 import { getRecapsForEvent } from "@/lib/recaps";
 import { isProActive, showsVerifiedBadge } from "@/lib/pro";
+import StateIcon from "@/components/ui/StateIcon";
 import type {
   ChatMessageUI,
   RsvpStatus,
@@ -1131,7 +1132,7 @@ function LockedChat({
 }) {
   return (
     <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-14 text-center">
-      <p className="text-4xl">🔒</p>
+      <StateIcon name="lock" tone="quiet" size={48} />
       <h2 className="mt-3 text-lg font-bold text-gray-900">
         Group chat is for attendees
       </h2>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import EventCard from "./EventCard";
 import type { EventRow } from "@/lib/types";
+import StateIcon from "@/components/ui/StateIcon";
 
 type FeedEvent = EventRow & {
   attendeeCount: number;
@@ -84,7 +85,7 @@ function EmptyState({
 }) {
   return (
     <div className="mt-10 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-16 text-center">
-      <p className="text-4xl">🗓️</p>
+      <StateIcon name="calendar" tone="quiet" size={48} />
       <h2 className="mt-3 text-lg font-bold text-gray-900">{title}</h2>
       <p className="mt-1 text-gray-500">{subtitle}</p>
       {cta && (

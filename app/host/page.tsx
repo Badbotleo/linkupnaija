@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { FREE_HOST_LIMIT, isProActive, monthStartISO } from "@/lib/pro";
 import HostForm from "@/components/HostForm";
+import StateIcon from "@/components/ui/StateIcon";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +48,7 @@ export default async function HostPage({
   if (status === "restricted" || status === "blocked") {
     return (
       <div className="container-page max-w-lg py-16 text-center">
-        <p className="text-5xl">🚫</p>
+        <StateIcon name="shield" tone="bad" size={56} />
         <h1 className="mt-4 text-2xl font-extrabold text-gray-900">
           Hosting unavailable
         </h1>
@@ -79,7 +80,7 @@ export default async function HostPage({
         <AppHeader title="Host a link-up" back />
         <div className="container-page max-w-lg py-10 text-center">
           <div className="surface p-7">
-            <p className="text-4xl">📱</p>
+            <StateIcon name="phone" tone="brand" size={48} />
             <h1 className="mt-3 text-2xl font-extrabold text-gray-900">
               Verify your number to host
             </h1>
@@ -132,7 +133,7 @@ export default async function HostPage({
             className="overflow-hidden rounded-3xl p-7 text-white shadow-card"
             style={{ background: "linear-gradient(135deg, #534AB7 0%, #121212 100%)" }}
           >
-            <p className="text-4xl">🎪</p>
+            <StateIcon name="sparkles" tone="brand" size={48} />
             <h1 className="mt-3 text-2xl font-extrabold">
               That&apos;s {FREE_HOST_LIMIT} events this month
             </h1>

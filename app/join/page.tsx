@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import AuthForm from "@/components/AuthForm";
+import StateIcon from "@/components/ui/StateIcon";
 
 export const dynamic = "force-dynamic";
 
@@ -52,7 +53,7 @@ export default async function JoinPage({
           gradient is the treatment the host page and the chat widget already
           use for exactly this. */}
       <div className="rounded-2xl bg-brand p-6 text-center text-white shadow-card dark:bg-gradient-to-br dark:from-brand-600 dark:to-[#121212]">
-        <p className="text-3xl">🎉</p>
+        <StateIcon name="sparkles" tone="brand" size={40} />
         {/* Without a code there is no referrer, and complete_referral pays
             nothing — so the invited copy would be promising ₦600 that never
             arrives. It only ever reached people who followed a real invite

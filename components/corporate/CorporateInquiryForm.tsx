@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { NIGERIAN_STATES } from "@/lib/constants";
 import { toast } from "@/lib/toast";
+import StateIcon from "@/components/ui/StateIcon";
 
 const INDUSTRIES = [
   "Technology",
@@ -104,7 +105,7 @@ export default function CorporateInquiryForm({
   if (done) {
     return (
       <div className="rounded-2xl bg-white p-8 text-center shadow-card">
-        <p className="text-4xl">🎉</p>
+        <StateIcon name="check" tone="good" size={48} />
         <h3 className="mt-3 text-xl font-bold text-gray-900">Thanks, we&apos;ve got it!</h3>
         <p className="mt-2 text-gray-600">
           Our team will reach out to {form.email} within one business day with a

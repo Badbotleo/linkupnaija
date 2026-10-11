@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import StateIcon from "@/components/ui/StateIcon";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Unsubscribe" };
@@ -24,7 +25,7 @@ export default async function UnsubscribePage({
 
   return (
     <div className="container-page flex flex-col items-center py-24 text-center">
-      <p className="text-5xl">{ok ? "👋" : "🤔"}</p>
+      <StateIcon name={ok ? "check" : "search"} tone={ok ? "good" : "quiet"} size={56} />
       <h1 className="mt-4 text-2xl font-extrabold text-gray-900">
         {ok ? "You're unsubscribed" : "Link not recognised"}
       </h1>

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { EVENT_CATEGORIES } from "@/lib/constants";
 import { toast } from "@/lib/toast";
 import type { Venue } from "@/lib/overpass";
+import StateIcon from "@/components/ui/StateIcon";
 
 export default function ReservationModal({
   venue,
@@ -123,7 +124,7 @@ export default function ReservationModal({
 
         {done ? (
           <div className="py-8 text-center">
-            <p className="text-4xl">✅</p>
+            <StateIcon name="check" tone="good" size={48} />
             <p className="mt-3 font-semibold text-gray-900">
               Reservation request sent!
             </p>
