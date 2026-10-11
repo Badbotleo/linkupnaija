@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import LineIcon from "@/components/ui/LineIcon";
+import { venueIcon } from "@/lib/category-icons";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { fetchVenueById, VENUE_CATEGORIES, type Venue } from "@/lib/overpass";
@@ -79,8 +81,11 @@ export default function VenueDetail({
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand">
-          {cat?.emoji} {venue.category}
+        {/* The same glyph the chips on /venues use. This badge was the one
+            place the old emoji survived the swap. */}
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand">
+          <LineIcon name={venueIcon(venue.category)} size={13} className="shrink-0" />
+          {venue.category}
         </span>
         {venue.stars ? (
           <span className="text-sm font-semibold text-amber-500">

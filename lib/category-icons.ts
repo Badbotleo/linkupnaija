@@ -102,3 +102,40 @@ export const CATEGORY_ICON: Record<string, keyof typeof PATHS> = {
 export function categoryIcon(category: string): keyof typeof PATHS {
   return CATEGORY_ICON[category] ?? "sparkles";
 }
+
+/**
+ * The venue categories, which kept their emoji when the event chips lost
+ * theirs. Same reasoning: these chips are the first thing on /venues.
+ *
+ * Keyed off VENUE_CATEGORIES in lib/overpass.ts. That list still carries an
+ * emoji per category because the map pins use it, and a pin is a different
+ * problem — it is a coloured dot on a map, not UI chrome.
+ */
+export const VENUE_ICON: Record<string, keyof typeof PATHS> = {
+  Clubs: "volume",
+  Restaurants: "utensils",
+  Cinemas: "video",
+  Parks: "tree",
+  Bars: "glass",
+  Gyms: "activity",
+  Bowling: "bowling",
+  Karaoke: "mic",
+  Museums: "building",
+  Beaches: "sun",
+  Stadiums: "trophy",
+  Hotels: "bed",
+  Camping: "mountain",
+  "Cafés": "cup",
+  "Event Centres": "ticket",
+  "Art Galleries": "image",
+  "Amusement Parks": "sparkles",
+  Golf: "flag",
+  Swimming: "wave",
+  Malls: "bag",
+  Arcades: "gamepad",
+};
+
+/** The glyph for a venue category, falling back to a map pin. */
+export function venueIcon(category: string): keyof typeof PATHS {
+  return VENUE_ICON[category] ?? "pin";
+}

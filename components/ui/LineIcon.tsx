@@ -63,6 +63,14 @@ export const PATHS: Record<string, string> = {
   link:
     "M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7",
   chat: "M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z",
+  // Drawn for the venue categories, which were still on emoji after the
+  // event chips moved off them.
+  tree: "M12 21v-5M12 16a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11z",
+  glass: "M5 4h14l-7 8zM12 12v7M8 19h8",
+  bed: "M2 19v-7h20v7M2 12V6M2 19v2M22 19v2M6 12V9h5v3",
+  cup: "M4 8h12v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4zM16 9h2a2.5 2.5 0 0 1 0 5h-2M4 21h14",
+  bag: "M6 8h12l-1 12H7zM9 8V6a3 3 0 0 1 6 0v2",
+  flag: "M6 21V3M6 3l10 3-10 3",
   // Drawn for the category chips, which used emoji until somebody said the
   // site looked AI-generated and was half right. Emoji standing in for an
   // icon set is the loudest tell there is, and this set already existed.

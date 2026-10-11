@@ -13,6 +13,7 @@ import {
 } from "@/lib/overpass";
 import ReservationModal from "./ReservationModal";
 import LineIcon from "../ui/LineIcon";
+import { venueIcon } from "@/lib/category-icons";
 import { createClient } from "@/lib/supabase/client";
 import { mergePartnersWithOsm } from "@/lib/venue-match";
 import { formatPriceRange } from "@/lib/format";
@@ -336,9 +337,15 @@ export default function VenuesExplorer({
                   : "border-gray-200 bg-white text-gray-600 hover:border-brand/40 hover:text-brand"
               }`}
             >
-              <span aria-hidden className="mr-1">
-                {c.emoji}
-              </span>
+              {/* Our own glyph, not an emoji. Same reason as the event
+                  chips on the home page: emoji standing in for an icon set
+                  is the loudest signal that nobody designed a thing, and
+                  this row is the first UI on the page. */}
+              <LineIcon
+                name={venueIcon(c.key)}
+                size={15}
+                className="mr-1.5 inline-block shrink-0 align-[-2px] opacity-80"
+              />
               {c.key}
             </button>
           ))}
