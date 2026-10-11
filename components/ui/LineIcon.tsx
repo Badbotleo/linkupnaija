@@ -63,6 +63,15 @@ export const PATHS: Record<string, string> = {
   link:
     "M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7",
   chat: "M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z",
+  // Drawn for the category chips, which used emoji until somebody said the
+  // site looked AI-generated and was half right. Emoji standing in for an
+  // icon set is the loudest tell there is, and this set already existed.
+  wave: "M2 11q3-4 6 0t6 0t6 0M2 17q3-4 6 0t6 0t6 0",
+  utensils: "M7 3v5a2.5 2.5 0 0 0 5 0V3M9.5 10.5V21M17 3c1.8 1.8 1.8 6.2 0 8v10",
+  mountain: "M2 19l5.5-8.5 3.5 5 3.5-5.5L22 19H2z",
+  music: "M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z",
+  bowling: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.5 8h.01M13.5 7.5h.01M11 11.5h.01",
+  sun: "M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4",
   ticket:
     "M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 6v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-6z",
 };

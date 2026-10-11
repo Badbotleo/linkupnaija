@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
-import { CATEGORY_STYLES } from "@/lib/constants";
 import EventCover from "@/components/EventCover";
 import { formatEventDate } from "@/lib/format";
 import LoggedInHome from "@/components/home/LoggedInHome";
@@ -13,13 +12,14 @@ import CollabCard from "@/components/home/CollabCard";
 import ProvenRail from "@/components/home/ProvenRail";
 import ScreenTour from "@/components/home/ScreenTour";
 import LineIcon from "@/components/ui/LineIcon";
-import CategoryEmoji from "@/components/ui/CategoryEmoji";
+import { categoryIcon } from "@/lib/category-icons";
 import NaijaFlag from "@/components/ui/NaijaFlag";
 import { dedupeEvents } from "@/lib/content-guards";
 import { professionalCategoriesFilter } from "@/lib/event-kind";
 import { LogoMark } from "@/components/Logo";
 import { getSessionUser } from "@/lib/supabase/auth";
 import { getVisitorState } from "@/lib/visitor-geo";
+import { scopeState } from "@/lib/geo-scope";
 
 // Vibes our core audience actually searches for, leading the chip row.
 const TOP_CATEGORIES = [
@@ -87,6 +87,73 @@ const getSupplyProof = unstable_cache(
     return { count: count ?? 0, states: distinct.size };
   },
   ["home-supply-proof"],
+  { revalidate: 600 }
+);
+
+/**
+ * How many link-ups are on, where the visitor is, in the next few days.
+ *
+ * WHY THIS REPLACED THE SLOGAN. The hero used to read "This weekend, you're
+ * going out," under a second tagline saying much the same thing. Two
+ * promises stacked, neither telling anybody what was actually on, and the
+ * white-line-then-accent-line shape is the house style of every generated
+ * landing page — which is what somebody meant when they said the site looked
+ * AI-ish. A real count cannot be generated, changes every week, and proves
+ * the place is alive instead of claiming it.
+ *
+ * SCOPED THE SAME WAY THE FEED IS. A Lagos visitor is told about Lagos,
+ * because a national number includes events they cannot reach, which is the
+ * exact mistake lib/geo-scope.ts exists to prevent. Outside the dense states
+ * it counts the country, because scoping Plateau to Plateau would print a
+ * confident zero.
+ *
+ * IT WIDENS RATHER THAN PRINTS A SAD NUMBER. A count run on a Sunday night
+ * finds almost nothing, and "2 link-ups this weekend" argues against us. So
+ * it tries the weekend, then the fortnight, then the month, and the label
+ * says which one it answered. The first version stopped at a fortnight and
+ * printed 6 nationally, which was true and sold us short: there are forty
+ * upcoming, they are just not all in the next two weeks.
+ */
+const getHeroCount = unstable_cache(
+  async (state: string | null) => {
+    const now = new Date();
+    const today = now.toISOString().slice(0, 10);
+    // Sunday of the current week, in whole days, so a Wednesday visitor is
+    // told about the weekend ahead and a Saturday visitor about today.
+    const toSunday = (7 - now.getDay()) % 7;
+    const sunday = new Date(now.getTime() + toSunday * 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+    const fortnight = new Date(now.getTime() + 14 * 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+
+
+    const count = async (until: string) => {
+      // Everything, deliberately. The shelves below exclude professional
+      // listings because a first-time visitor who opens on a conference has
+      // misread what this is, but the headline is a count of what is on,
+      // and a conference is a thing that is on.
+      let q = cache()
+        .from("events")
+        .select("id", { count: "exact", head: true })
+        .gte("date", today)
+        .lte("date", until);
+      if (state) q = q.eq("state", state);
+      const { count: n } = await q;
+      return n ?? 0;
+    };
+
+    const weekend = await count(sunday);
+    if (weekend >= 3) return { n: weekend, window: "this weekend" };
+    const soon = await count(fortnight);
+    if (soon >= 8) return { n: soon, window: "in the next two weeks" };
+    const month = new Date(now.getTime() + 30 * 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+    return { n: await count(month), window: "in the next month" };
+  },
+  ["home-hero-count"],
   { revalidate: 600 }
 );
 
@@ -185,6 +252,12 @@ export default async function HomePage() {
   // (local dev, VPN, non-Vercel host) we show neither rather than defaulting
   // to "everyone sees Abuja" — that's the behaviour this replaces.
   const visitorState = getVisitorState();
+  // The same scoping rule the feed uses, so the number and the shelves below
+  // it are describing the same place.
+  const heroState = scopeState({ visitorState });
+  const hero = await getHeroCount(heroState);
+  const heroPlace =
+    heroState === "FCT - Abuja" ? "Abuja" : (heroState ?? "Nigeria");
   // Always a real link-up now. FC26 used to take this slot for Abuja, which
   // meant the most prominent card on the homepage advertised one tournament
   // instead of the thing the product is for. It still has its own page, its
@@ -233,9 +306,9 @@ export default async function HomePage() {
             the one detail that makes the promise credible instead of warm:
             you have already spoken to the room before you walk into it. */}
         <h1 className="mt-2 text-[30px] font-extrabold leading-[1.05] tracking-[-0.035em] text-gray-900 sm:text-[38px]">
-          This weekend,
+          <span className="text-brand">{hero.n}</span> link-ups in {heroPlace}
           <br />
-          <span className="text-brand">you&apos;re going out.</span>
+          {hero.window}.
         </h1>
 
         {/* Safety is third: the reason to trust the offer, which only matters
@@ -270,12 +343,10 @@ export default async function HomePage() {
             href={`/events?category=${encodeURIComponent(c)}`}
             className="inline-flex shrink-0 snap-start items-center gap-1.5 whitespace-nowrap rounded-full border border-gray-200 bg-white px-3.5 py-2 text-sm font-bold text-gray-700 transition hover:border-brand hover:text-brand"
           >
-            {/* Drawn, not typed — the flag is the one emoji that inherits
-                text colour when it falls back. See CategoryEmoji. */}
-            <CategoryEmoji
-              emoji={CATEGORY_STYLES[c as keyof typeof CATEGORY_STYLES]?.emoji}
-              size={13}
-            />
+            {/* Our own glyph, not an emoji. Emoji standing in for an icon
+                set is the loudest signal that nobody designed a thing, and
+                these chips are the first UI a stranger sees. */}
+            <LineIcon name={categoryIcon(c)} size={15} className="shrink-0 opacity-70" />
             {c}
           </Link>
         ))}
