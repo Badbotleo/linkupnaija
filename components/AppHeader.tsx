@@ -48,7 +48,19 @@ export default function AppHeader({
     // visible only in dark mode because the light tint happens to match the
     // light page. Matching the page in both themes leaves the border doing
     // the separating, which is the app pattern.
-    <header className="sticky top-16 z-30 lg:top-0 border-b border-gray-100 bg-[#F7F7F9]/85 backdrop-blur-md dark:bg-black/85">
+    // NOT STICKY ON A PHONE. It was `sticky top-16`, pinned under a navbar
+    // that is also sticky, and on pages like /venues and /events a second
+    // sticky bar of filters pins to the same top-16. Two translucent slabs
+    // stacked at one offset covered about a third of the screen and the
+    // content scrolled behind them, which is what "it obstructs scrolling"
+    // means. The note below already counted 362px of furniture before the
+    // first event.
+    //
+    // A page title does not need to be on screen at all times; a filter row
+    // does. So the title scrolls away on mobile and only the functional bar
+    // stays. Desktop keeps it, where the rail means there is room and no
+    // mobile navbar above it to stack with.
+    <header className="relative z-30 border-b border-gray-100 bg-[#F7F7F9]/85 backdrop-blur-md lg:sticky lg:top-0 dark:bg-black/85">
       {/* Tighter on a phone than on a desktop, deliberately.
           On /events this bar, the navbar above it, the tab row and the story
           rail come to 362px before the first event on an iPhone 13, and an
