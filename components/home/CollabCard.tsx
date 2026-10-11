@@ -18,7 +18,7 @@ export default async function CollabCard() {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("partners")
-    .select("slug, name, tagline, collab_blurb, cover_url, brand_color")
+    .select("id, slug, name, tagline, collab_blurb, cover_url, brand_color")
     .eq("is_active", true)
     .eq("is_collab", true)
     .gt("collab_until", new Date().toISOString())
@@ -31,6 +31,7 @@ export default async function CollabCard() {
   if (error || !data) return null;
 
   const p = data as {
+    id: string;
     slug: string;
     name: string;
     tagline: string | null;
@@ -38,6 +39,27 @@ export default async function CollabCard() {
     cover_url: string | null;
     brand_color: string | null;
   };
+
+  /**
+   * A collaboration with nothing left to go to is not a collaboration.
+   *
+   * collab_until is a date somebody types, and somebody has to remember to
+   * move it. Nobody did: the AITF card sat on the home page for five days
+   * after the fair ended, under a tagline that said "25 Sept to 6 Oct 2026",
+   * because collab_until had been set to December.
+   *
+   * So the date is now the outside limit rather than the whole test. The
+   * card also has to find at least one event of theirs still to come, which
+   * is a fact about the world rather than an intention somebody recorded.
+   * It retires itself the day the last one passes.
+   */
+  const today = new Date().toISOString().slice(0, 10);
+  const { count: stillOn } = await supabase
+    .from("events")
+    .select("id", { count: "exact", head: true })
+    .eq("partner_id", p.id)
+    .gte("date", today);
+  if (!stillOn) return null;
   const cover = safeUrl(p.cover_url);
   const brand = safeColor(p.brand_color, "#534AB7");
 
