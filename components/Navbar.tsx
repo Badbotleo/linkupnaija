@@ -4,7 +4,8 @@ import { getSessionUser, getCurrentUserMeta } from "@/lib/supabase/auth";
 import NotificationsBell from "./NotificationsBell";
 import ThemeToggle from "./ThemeToggle";
 import MobileNav from "./MobileNav";
-import Logo from "./Logo";
+import { LogoMark } from "./Logo";
+import StickyHeader from "./StickyHeader";
 import { isProActive } from "@/lib/pro";
 
 export default async function Navbar() {
@@ -36,10 +37,15 @@ export default async function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-gray-100 bg-white/90 pt-[env(safe-area-inset-top)] backdrop-blur lg:hidden">
+    <StickyHeader className="sticky top-0 z-40 border-b border-gray-100 bg-white/90 pt-[env(safe-area-inset-top)] backdrop-blur lg:hidden">
       <nav className="container-page flex h-16 items-center justify-between">
+        {/* The mark alone on mobile. The wordmark is six characters of brand
+            on a bar whose other job is a hamburger, and the mark already
+            carries the name for anybody who has been here before. The
+            wordmark is still on every desktop screen, every share card and
+            every printed thing we make. */}
         <Link href="/" aria-label="LinkUpNaija home">
-          <Logo size={34} textClassName="text-lg" pulse />
+          <LogoMark size={34} pulse />
         </Link>
 
         {/* Right side: a few primary links on desktop + a hamburger menu that
@@ -158,6 +164,6 @@ export default async function Navbar() {
           />
         </div>
       </nav>
-    </header>
+    </StickyHeader>
   );
 }
