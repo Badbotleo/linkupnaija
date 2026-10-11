@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { AppNotification } from "@/lib/types";
 import EnablePush from "@/components/EnablePush";
 import LineIcon from "@/components/ui/LineIcon";
+import InboxTabs from "@/components/InboxTabs";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Notifications" };
@@ -32,6 +33,14 @@ export default async function NotificationsPage() {
     .limit(50);
   const items = (data ?? []) as AppNotification[];
 
+  // The other half of the inbox, for the switcher's badge. Counted here
+  // rather than in the layout because only this page shows the number.
+  const { count: unreadDms } = await supabase
+    .from("messages")
+    .select("*", { count: "exact", head: true })
+    .eq("receiver_id", user.id)
+    .eq("read", false);
+
   // Mark everything read on view.
   await supabase
     .from("notifications")
@@ -50,6 +59,7 @@ export default async function NotificationsPage() {
         }
         back
       />
+      <InboxTabs alerts={0} messages={unreadDms ?? 0} />
       <div className="container-page max-w-2xl py-5">
       <div className="mt-1">
         <EnablePush />

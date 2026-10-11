@@ -102,20 +102,29 @@ export default async function RootLayout({
 }) {
   const user = await getSessionUser();
   let unread = 0;
+  let unreadDms = 0;
   let isAdmin = false;
   if (user) {
     const supabase = createClient();
     // Both in one round trip — the rail needs the admin flag to know whether
     // to show the Admin row, and previously only the top navbar knew.
-    const [{ count }, { data: me }] = await Promise.all([
+    const [{ count }, { count: dms }, { data: me }] = await Promise.all([
       supabase
         .from("notifications")
         .select("*", { count: "exact", head: true })
         .eq("user_id", user.id)
         .eq("read", false),
+      // Messages moved into the bottom bar's inbox, so its badge has to know
+      // about them. Same round trip as the other two.
+      supabase
+        .from("messages")
+        .select("*", { count: "exact", head: true })
+        .eq("receiver_id", user.id)
+        .eq("read", false),
       supabase.from("users").select("is_admin").eq("id", user.id).single(),
     ]);
     unread = count ?? 0;
+    unreadDms = dms ?? 0;
     isAdmin = !!me?.is_admin;
   }
 
@@ -144,7 +153,7 @@ export default async function RootLayout({
       <body className="flex min-h-screen flex-col">
         <ScrollProgress />
         <NavProgress />
-        <DesktopRail isLoggedIn={!!user} unread={unread} isAdmin={isAdmin} />
+        <DesktopRail isLoggedIn={!!user} unread={unread} unreadDms={unreadDms} isAdmin={isAdmin} />
         <Navbar />
         {/* pb clears the mobile bottom nav */}
         <main className="flex-1 lg:pl-[248px]">{children}</main>
@@ -154,7 +163,7 @@ export default async function RootLayout({
           <Footer />
         </div>
         <DeferredWidgets />
-        <BottomNav isLoggedIn={!!user} unread={unread} />
+        <BottomNav isLoggedIn={!!user} unread={unread} unreadDms={unreadDms} />
         <Toaster />
         {/* Who the site is, and its search endpoint. Once, sitewide. */}
         <script

@@ -19,11 +19,16 @@ import { LogoMark } from "./Logo";
 const MAIN = [
   { href: "/", label: "Home", icon: "home" },
   { href: "/events", label: "Explore", icon: "search" },
-  { href: "/circles", label: "Circles", icon: "circles" },
+  // Messages takes the third slot, which Circles held. Circles has not found
+  // its audience yet and a conversation is the thing people come back for,
+  // so the prominent position goes to the one being used. Circles is still
+  // here, just further down, and still in the hamburger on mobile.
+  { href: "/messages", label: "Messages", icon: "chat" },
   { href: "/venues", label: "Venues", icon: "pin" },
   { href: "/things-to-do", label: "Things to do", icon: "sparkles" },
   { href: "/rides", label: "Rides", icon: "car" },
   { href: "/drive", label: "Drive with us", icon: "car" },
+  { href: "/circles", label: "Circles", icon: "circles" },
 ];
 
 const YOU = [
@@ -39,10 +44,13 @@ const YOU = [
 export default function DesktopRail({
   isLoggedIn,
   unread = 0,
+  unreadDms = 0,
   isAdmin = false,
 }: {
   isLoggedIn: boolean;
   unread?: number;
+  /** Counted separately so each row carries its own number. */
+  unreadDms?: number;
   isAdmin?: boolean;
 }) {
   const pathname = usePathname();
@@ -61,14 +69,14 @@ export default function DesktopRail({
       </Link>
 
       <nav className="flex-1 overflow-y-auto">
-        <RailGroup items={MAIN} active={active} />
+        <RailGroup items={MAIN} active={active} unreadDms={unreadDms} />
 
         {isLoggedIn && (
           <>
             <p className="mb-1 mt-5 px-3 text-[11px] font-black uppercase tracking-[0.14em] text-gray-400">
               You
             </p>
-            <RailGroup items={YOU} active={active} unread={unread} />
+            <RailGroup items={YOU} active={active} unread={unread} unreadDms={unreadDms} />
 
             <p className="mb-1 mt-5 px-3 text-[11px] font-black uppercase tracking-[0.14em] text-gray-400">
               Account
@@ -132,10 +140,12 @@ function RailGroup({
   items,
   active,
   unread = 0,
+  unreadDms = 0,
 }: {
   items: { href: string; label: string; icon: string }[];
   active: (href: string) => boolean;
   unread?: number;
+  unreadDms?: number;
 }) {
   return (
     <ul className="space-y-0.5">
@@ -154,11 +164,19 @@ function RailGroup({
             >
               <LineIcon name={i.icon} size={20} className="shrink-0" />
               <span className="min-w-0 flex-1 truncate">{i.label}</span>
-              {i.href === "/notifications" && unread > 0 && (
-                <span className="shrink-0 rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-black text-white">
-                  {unread > 9 ? "9+" : unread}
-                </span>
-              )}
+              {(() => {
+                const n =
+                  i.href === "/notifications"
+                    ? unread
+                    : i.href === "/messages"
+                      ? unreadDms
+                      : 0;
+                return n > 0 ? (
+                  <span className="shrink-0 rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-black text-white">
+                    {n > 9 ? "9+" : n}
+                  </span>
+                ) : null;
+              })()}
             </Link>
           </li>
         );

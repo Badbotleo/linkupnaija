@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 import UserMessages from "@/components/UserMessages";
+import InboxTabs from "@/components/InboxTabs";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -28,9 +29,17 @@ export default async function MessagesPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?redirect=/messages");
 
+  // The other half of the inbox, for the switcher's badge.
+  const { count: unreadAlerts } = await supabase
+    .from("notifications")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .eq("read", false);
+
   return (
     <div>
       <AppHeader title="Messages" subtitle="Hosts, guests and your paddies" back />
+      <InboxTabs alerts={unreadAlerts ?? 0} messages={0} />
 
       <div className="container-page max-w-[720px] py-4">
         <UserMessages meId={user.id} />

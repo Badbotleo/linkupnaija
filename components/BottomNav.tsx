@@ -8,15 +8,26 @@ const BRAND = "#534AB7";
 export default function BottomNav({
   isLoggedIn,
   unread = 0,
+  unreadDms = 0,
 }: {
   isLoggedIn: boolean;
   unread?: number;
+  unreadDms?: number;
 }) {
   const pathname = usePathname();
   const active = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
-  const notifHref = isLoggedIn ? "/notifications" : "/login?redirect=/notifications";
+  /**
+   * The inbox opens on MESSAGES, not alerts.
+   *
+   * The first cut of this landed on /notifications and put a DM two taps
+   * away, which is backwards: alerts are pushed to you and are mostly
+   * "somebody joined your event", while a conversation is the thing people
+   * come back for. Alerts are one tap away inside, which is the right way
+   * round for a platform whose premise is people talking to each other.
+   */
+  const inboxHref = isLoggedIn ? "/messages" : "/login?redirect=/messages";
   const profileHref = isLoggedIn ? "/profile" : "/login?redirect=/profile";
 
   return (
@@ -51,12 +62,17 @@ export default function BottomNav({
           </span>
         </Link>
 
+        {/* One Inbox, holding Alerts and Messages.
+            Messages used to be an icon in the top bar, which was the right
+            answer until that bar started hiding on scroll and took the
+            unread badge with it. Here it is in the thumb zone and always
+            visible; InboxTabs switches between the two inside. */}
         <Tab
-          href={notifHref}
-          label="Alerts"
-          active={active("/notifications")}
-          icon={<BellIcon />}
-          dot={unread > 0}
+          href={inboxHref}
+          label="Inbox"
+          active={active("/notifications") || active("/messages")}
+          icon={<InboxIcon />}
+          dot={unread + unreadDms > 0}
         />
         <Tab
           href={profileHref}
@@ -136,11 +152,12 @@ function PlusIcon() {
     </svg>
   );
 }
-function BellIcon() {
+function InboxIcon() {
+  // A conversation, because the tab opens on Messages. It was a bell while
+  // this slot was Alerts, and a bell over a screen of DMs is a small lie.
   return (
     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+      <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.9-.9L3 21l1.9-4.6A8.4 8.4 0 0 1 4 11.5a8.5 8.5 0 0 1 8.5-8.5A8.4 8.4 0 0 1 21 11.5z" />
     </svg>
   );
 }
