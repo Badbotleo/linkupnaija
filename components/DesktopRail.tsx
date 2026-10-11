@@ -19,13 +19,15 @@ import { LogoMark } from "./Logo";
 const MAIN = [
   { href: "/", label: "Home", icon: "home" },
   { href: "/events", label: "Explore", icon: "search" },
-  // Messages takes the third slot, which Circles held. Circles has not found
-  // its audience yet and a conversation is the thing people come back for,
-  // so the prominent position goes to the one being used. Circles is still
-  // here, just further down, and still in the hamburger on mobile.
-  { href: "/messages", label: "Messages", icon: "chat" },
-  { href: "/venues", label: "Venues", icon: "pin" },
+  // Things to do takes the third slot, which Circles held.
+  //
+  // The rule is to stop burying the things that work. Things to do has its
+  // own page, its own generator in lib/things-to-do.ts and its own share
+  // card, and it sat fifth behind a feature that has not found its audience
+  // yet. Circles still ships and is still here, just last, and still in the
+  // hamburger on mobile.
   { href: "/things-to-do", label: "Things to do", icon: "sparkles" },
+  { href: "/venues", label: "Venues", icon: "pin" },
   { href: "/rides", label: "Rides", icon: "car" },
   { href: "/drive", label: "Drive with us", icon: "car" },
   { href: "/circles", label: "Circles", icon: "circles" },
@@ -35,6 +37,10 @@ const YOU = [
   { href: "/dashboard", label: "My link-ups", icon: "calendar" },
   { href: "/tickets", label: "Tickets", icon: "ticket" },
   { href: "/friends", label: "Friends", icon: "users" },
+  // Desktop's only route to a DM. The mobile header is lg:hidden and the
+  // bottom bar's Inbox tab is too, so without this row a desktop user
+  // reaches their messages by typing the URL.
+  { href: "/messages", label: "Messages", icon: "chat" },
   { href: "/notifications", label: "Alerts", icon: "bell" },
   { href: "/refer", label: "Invite & earn", icon: "gift" },
   // See MobileNav: the paid tier had no entry point outside a paywall.
@@ -69,7 +75,7 @@ export default function DesktopRail({
       </Link>
 
       <nav className="flex-1 overflow-y-auto">
-        <RailGroup items={MAIN} active={active} unreadDms={unreadDms} />
+        <RailGroup items={MAIN} active={active} />
 
         {isLoggedIn && (
           <>
