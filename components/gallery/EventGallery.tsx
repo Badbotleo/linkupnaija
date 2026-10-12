@@ -8,6 +8,7 @@ import { toast } from "@/lib/toast";
 import Avatar from "../Avatar";
 import type { EventPhoto } from "@/lib/types";
 import StateIcon from "@/components/ui/StateIcon";
+import LineIcon from "@/components/ui/LineIcon";
 
 const MAX_PER_UPLOAD = 10;
 
@@ -127,8 +128,11 @@ export default function EventGallery({
 
   return (
     <div>
-      {/* Upload */}
-      {canUpload && (
+      {/* Upload
+          Hidden while the gallery is empty and nothing is staged: in that
+          case the empty state below carries the prompt, and two buttons
+          asking for the same photos is one more than anybody needs. */}
+      {canUpload && (photos.length > 0 || staged.length > 0) && (
         <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm">
           {staged.length === 0 ? (
             <>
@@ -145,7 +149,8 @@ export default function EventGallery({
                 onClick={() => fileInput.current?.click()}
                 className="btn-primary w-full"
               >
-                📸 Upload photos
+                <LineIcon name="camera" size={17} className="mr-2 inline-block align-[-3px]" />
+                Upload photos
               </button>
               <p className="mt-2 text-center text-xs text-gray-400">
                 Up to {MAX_PER_UPLOAD} photos at a time.
@@ -227,18 +232,59 @@ export default function EventGallery({
             onClick={() => shareCollage(photos, eventTitle)}
             className="btn-outline text-sm"
           >
-            🖼️ Share event memories
+            <LineIcon name="image" size={16} className="mr-2 inline-block align-[-3px]" />
+            Share event memories
           </button>
         </div>
       )}
 
       {/* Gallery */}
       {photos.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-16 text-center">
-          <StateIcon name="camera" tone="quiet" size={48} />
-          <p className="mt-3 font-semibold text-gray-700">
-            Be the first to share a memory from this event 📸
-          </p>
+        /* Two different people read this.
+           Somebody who was there can fix it, so they get asked directly and
+           get the button. Somebody who was not can only be told, so they
+           are told once and not nagged about a thing they cannot do.
+           "Be the first to share a memory" was shown to both, and to the
+           one who could act it was a statement rather than a request: the
+           upload button sat in a separate card above it, so the sentence
+           that noticed the gap and the control that closed it were two
+           different things in two different boxes. */
+        <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-12 text-center dark:border-white/10 dark:bg-white/5">
+          <StateIcon name="camera" tone={canUpload ? "brand" : "quiet"} size={52} />
+          {canUpload ? (
+            <>
+              <p className="mt-4 text-lg font-extrabold text-gray-900 dark:text-white">
+                You were there. Show us.
+              </p>
+              <p className="mx-auto mt-1.5 max-w-xs text-sm text-gray-500 dark:text-white/60">
+                Nothing has been posted from this one yet. Put yours up and
+                everybody who came gets to see the night again.
+              </p>
+              <input
+                ref={fileInput}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={onPick}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInput.current?.click()}
+                className="btn-primary mt-5"
+              >
+                <LineIcon name="camera" size={17} className="mr-2 inline-block align-[-3px]" />
+                Add your photos
+              </button>
+              <p className="mt-2 text-xs text-gray-400">
+                Up to {MAX_PER_UPLOAD} at a time.
+              </p>
+            </>
+          ) : (
+            <p className="mt-3 font-semibold text-gray-500 dark:text-white/60">
+              Nothing posted from this one yet.
+            </p>
+          )}
         </div>
       ) : (
         <div className="columns-2 gap-3 sm:columns-3">
