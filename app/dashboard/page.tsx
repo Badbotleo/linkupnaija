@@ -240,6 +240,34 @@ export default async function DashboardPage() {
     recentPhotos = data ?? [];
   }
 
+  /**
+   * Past nights that nobody has posted a photo from.
+   *
+   * The gallery already asks for photos, but only if somebody reopens the
+   * event, and nobody reopens a party from three weeks ago. This is the
+   * same ask placed where people actually go back to: the row for the
+   * night itself, in Been and gone.
+   *
+   * Only events the viewer could upload to. A host and an accepted guest
+   * can; somebody whose request expired unanswered cannot, and asking them
+   * for photos of a night they did not attend is worse than silence.
+   */
+  const uploadablePastIds = [
+    ...pastHosting.map((e) => e.id),
+    ...pastAttending.filter((r) => r.status === "accepted").map((r) => r.events!.id),
+  ];
+  const pastWithPhotos = new Set<string>();
+  if (uploadablePastIds.length) {
+    const { data } = await supabase
+      .from("event_photos")
+      .select("event_id")
+      .in("event_id", uploadablePastIds);
+    for (const row of (data ?? []) as { event_id: string }[]) {
+      pastWithPhotos.add(row.event_id);
+    }
+  }
+  const needsPhotos = uploadablePastIds.filter((id) => !pastWithPhotos.has(id));
+
   // Payouts for the host's paid events.
   // Every paid link-up gets a card; whether the button works is a separate
   // question, answered by the date. Hiding the card until the day after would
@@ -639,6 +667,22 @@ export default async function DashboardPage() {
           </Section>
             </div>
             <div key="past">
+          {/* Said once at the top, because somebody scanning the tab should
+              not have to read every row to notice. */}
+          {needsPhotos.length > 0 && (
+            <div className="mb-4 flex items-start gap-3 rounded-2xl border border-brand/20 bg-brand-50 px-4 py-3 dark:border-brand/30 dark:bg-brand/10">
+              <span className="mt-0.5 shrink-0 text-brand">
+                <LineIcon name="camera" size={18} />
+              </span>
+              <p className="text-sm text-gray-700 dark:text-white/80">
+                <span className="font-bold text-gray-900 dark:text-white">
+                  {needsPhotos.length} night{needsPhotos.length === 1 ? "" : "s"} with no photos yet.
+                </span>{" "}
+                You were there. Post yours and everybody else who came gets to
+                see it again.
+              </p>
+            </div>
+          )}
           {beenAndGoneCount === 0 && (
             <Section
               title="Been and gone"
@@ -660,9 +704,18 @@ export default async function DashboardPage() {
             >
               {pastHosting.map((e) => (
                 <EventRowCard key={e.id} event={e}>
-                  <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-500">
-                    Been and gone
-                  </span>
+                  {pastWithPhotos.has(e.id) ? (
+                    <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-500">
+                      Been and gone
+                    </span>
+                  ) : (
+                    <Link
+                      href={`/events/${e.id}#gallery`}
+                      className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand hover:bg-brand/15"
+                    >
+                      Add your photos
+                    </Link>
+                  )}
                 </EventRowCard>
               ))}
             </Section>
@@ -675,9 +728,18 @@ export default async function DashboardPage() {
             >
               {pastAttending.map((r) => (
                 <EventRowCard key={r.events!.id} event={r.events!}>
-                  <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-500">
-                    {r.status === "accepted" ? "Been and gone" : "Never answered"}
-                  </span>
+                  {r.status === "accepted" && !pastWithPhotos.has(r.events!.id) ? (
+                    <Link
+                      href={`/events/${r.events!.id}#gallery`}
+                      className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand hover:bg-brand/15"
+                    >
+                      Add your photos
+                    </Link>
+                  ) : (
+                    <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-500">
+                      {r.status === "accepted" ? "Been and gone" : "Never answered"}
+                    </span>
+                  )}
                 </EventRowCard>
               ))}
             </Section>
