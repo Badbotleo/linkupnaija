@@ -51,6 +51,7 @@ export default function TicketPanel({
   tier = "Standard",
   note,
   autoConfirm = false,
+  isPast = false,
   children,
 }: {
   /** The event's base price, used when there are no tiers. */
@@ -61,10 +62,36 @@ export default function TicketPanel({
   /** Host approves by hand, so nothing free is instantly yours. Wording only. */
   autoConfirm?: boolean;
   note?: string | null;
+  /** The event has already happened: prices are history, not an offer. */
+  isPast?: boolean;
   /** The buy/join control. Only shown in the single-price case, where there
       is one unambiguous thing to buy. */
   children?: React.ReactNode;
 }) {
+  /**
+   * After the event, the panel states what it cost and offers nothing.
+   *
+   * Not hidden outright: the price is still information somebody might want
+   * about a night they missed, and a gap where a price used to be reads as
+   * a bug. It is the buy control that has to go, which `children` carries.
+   */
+  if (isPast) {
+    const was = tiers.filter((t) => t.price > 0).map((t) => t.price);
+    const low = was.length ? Math.min(...was) : price;
+    return (
+      <section aria-labelledby="ticket-heading" className="rounded-2xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+        <h2 id="ticket-heading" className="text-xs font-black uppercase tracking-[0.12em] text-gray-500">
+          Ticket sales closed
+        </h2>
+        {low > 0 && (
+          <p className="mt-1 text-sm text-gray-500 dark:text-white/60">
+            Tickets were {was.length > 1 ? "from " : ""}₦{low.toLocaleString("en-NG")}.
+          </p>
+        )}
+      </section>
+    );
+  }
+
   const priced = tiers.filter((t) => t.price > 0);
 
   // Nothing priced, but tiers exist: show what they are rather than nothing.

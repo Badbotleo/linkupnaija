@@ -534,8 +534,12 @@ export default async function EventDetailPage({
       </Link>
 
       {/* Only for people who are not already in. A host, or somebody whose
-          request is already accepted, has nothing to tap. */}
-      {!isHost && myStatus !== "accepted" && (
+          request is already accepted, has nothing to tap.
+          And not after the event: this bar floats over the page on a phone,
+          so it was the last thing still saying "Get a ticket" on a party
+          that finished last month, after the panel and the button below had
+          both been closed. */}
+      {!isHost && myStatus !== "accepted" && !eventIsOver && (
         <StickyJoinBar
           targetId="join-cta"
           price={event.price > 0 ? formatNaira(event.price) : null}
@@ -984,6 +988,7 @@ export default async function EventDetailPage({
                     <TicketPanel
                       price={event.price}
                       tiers={tiers}
+                      isPast={eventIsOver}
                       autoConfirm={
                         (event as { auto_confirm?: boolean | null })
                           .auto_confirm === true
@@ -1008,6 +1013,7 @@ export default async function EventDetailPage({
                     walletBalance={walletBalance}
                     reserveFirst={reserveFirst}
                     eventDate={event.date}
+                    isPast={eventIsOver}
                     eventTime={event.time}
                     eventLocation={event.location}
                     autoConfirm={

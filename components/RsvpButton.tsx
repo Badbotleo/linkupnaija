@@ -35,6 +35,7 @@ export default function RsvpButton({
   walletBalance = 0,
   reserveFirst = false,
   eventDate,
+  isPast = false,
   eventTime,
   eventLocation = null,
   autoConfirm = false,
@@ -70,6 +71,8 @@ export default function RsvpButton({
   reserveFirst?: boolean;
   /** For the join sheet's add-to-calendar. */
   eventDate: string;
+  /** The event has already happened. Nothing here is for sale. */
+  isPast?: boolean;
   eventTime: string;
   eventLocation?: string | null;
   /** Host let anyone join instantly — wording only; the write is the same. */
@@ -186,6 +189,25 @@ export default function RsvpButton({
   const fee = buyerFee(subtotal);
   // What the buyer is charged. The host is owed the subtotal, all of it.
   const dueNow = buyerTotal(subtotal);
+
+  /**
+   * A finished event sells nothing.
+   *
+   * This sat below the sign-in branch and the tier picker and the pay
+   * button, none of which asked what day it was, so an event that happened
+   * last month still offered "Pay ₦4,000 & request to join". Somebody could
+   * buy a ticket to a party that was already over.
+   *
+   * First check in the component, before any of the buying machinery, so
+   * there is no path through it that reaches a payment.
+   */
+  if (isPast) {
+    return (
+      <div className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-center text-sm font-bold text-gray-500 dark:border-white/10 dark:bg-white/5 dark:text-white/60">
+        This link-up has been and gone
+      </div>
+    );
+  }
 
   if (!isLoggedIn) {
     // Was a full page load to /login, then possibly another to /signup, then
