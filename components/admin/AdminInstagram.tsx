@@ -26,6 +26,10 @@ interface Row {
   cover_image_url: string | null;
   /** When the host posted it — this list is ordered by it. */
   created_at: string;
+  /** A listing: somebody else runs it, and they are who we tag. */
+  is_listing?: boolean | null;
+  organiser_name?: string | null;
+  organiser_instagram?: string | null;
   host: {
     name: string | null;
     instagram_url: string | null;
@@ -73,7 +77,7 @@ export default function AdminInstagram() {
     supabase
       .from("events")
       .select(
-        "id, title, category, state, location, date, price, cover_image_url, created_at, host:users!events_host_id_fkey(name, instagram_url)"
+        "id, title, category, state, location, date, price, cover_image_url, created_at, is_listing, organiser_name, organiser_instagram, host:users!events_host_id_fkey(name, instagram_url)"
       )
       .gte("date", today)
       // Newest listing first, not soonest event.
@@ -111,7 +115,19 @@ export default function AdminInstagram() {
     : rows;
 
   function caption(r: Row): string {
-    const tag = instagramHandle(r.host?.instagram_url);
+    /**
+     * A listing is tagged to its organiser, not to us.
+     *
+     * Tagging the host is the whole reason this tool exists: the post lands
+     * in their notifications and they reshare it to their own following,
+     * which is free reach. On a listing the host is the admin account that
+     * posted it, so the old behaviour tagged LinkUpNaija in LinkUpNaija's
+     * own post and reached nobody new.
+     */
+    const organiser = r.organiser_instagram?.trim().replace(/^@+/, "");
+    const tag = organiser
+      ? `@${organiser}`
+      : instagramHandle(r.host?.instagram_url);
     const emoji =
       CATEGORY_STYLES[r.category as keyof typeof CATEGORY_STYLES]?.emoji ?? "📍";
     const where = r.location || r.state || "Nigeria";
@@ -126,7 +142,7 @@ export default function AdminInstagram() {
       `🎟️ ${money}`,
       "",
       tag
-        ? `Hosted by ${tag} — tap the link in our bio to request a spot.`
+        ? `${r.is_listing ? "By" : "Hosted by"} ${tag} — tap the link in our bio to request a spot.`
         : `Tap the link in our bio to request a spot.`,
       "",
       "#LinkUpNaija #NaijaEvents #" + r.category.replace(/[^A-Za-z0-9]/g, ""),

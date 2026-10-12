@@ -16,8 +16,15 @@ import StateIcon from "@/components/ui/StateIcon";
 export default function HostForm({
   hostState,
   prefill,
+  isAdmin = false,
 }: {
   hostState: string | null;
+  /**
+   * Unlocks listing mode. Only staff list other people's events; a host
+   * filling this form is hosting, and offering them the choice would be
+   * asking a question they cannot answer.
+   */
+  isAdmin?: boolean;
   /** Carried in from a "Things to do" idea, so the form opens part-done. */
   prefill?: { category?: string; location?: string; state?: string; title?: string };
 }) {
@@ -41,6 +48,23 @@ export default function HostForm({
     price: "",
     event_type: "general" as "general" | "private",
   });
+
+  /**
+   * Listing mode: somebody else's event, posted by us.
+   *
+   * is_listing has been on the events table since the beginning and 181 rows
+   * carry it, but nothing in the app ever set it — listings were made
+   * outside the product and the flag flipped by hand afterwards. So a
+   * listing created through this form became an event hosted by the admin
+   * account: guests RSVP'd believing we were running it, the organiser was
+   * credited nowhere, and the growth dashboard counted it as hosted, which
+   * is the number the business plan rests on.
+   */
+  const [isListing, setIsListing] = useState(false);
+  const [organiserName, setOrganiserName] = useState("");
+  // Stored bare and printed with the @, so a host who types one does not
+  // produce "@@blackboyafrika" everywhere it appears.
+  const [organiserIg, setOrganiserIg] = useState("");
   const [coverFile, setCoverFile] = useState<File | null>(null);
   // Extra pictures beyond the cover. Four here plus the cover is the five a
   // host is offered.
@@ -334,6 +358,15 @@ export default function HostForm({
     // Lagos would fire at 7pm for a UTC server.
     if (form.requests_open_at)
       optional.requests_open_at = `${form.requests_open_at}:00+01:00`;
+    // organiser_* arrive with migration-listing-organiser.sql and are
+    // attached here for the same reason min_attendees is: a database that
+    // has not run it must still accept the insert.
+    if (isAdmin && isListing) {
+      optional.is_listing = true;
+      if (organiserName.trim()) optional.organiser_name = organiserName.trim();
+      const handle = organiserIg.trim().replace(/^@+/, "");
+      if (handle) optional.organiser_instagram = handle;
+    }
 
     const withQuorum = { ...baseEvent, ...optional };
     const isMissingColumn = (msg?: string | null) =>
@@ -514,6 +547,70 @@ export default function HostForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+
+      {/* Listing mode, staff only. First thing on the form because it
+          changes what the rest of it means: who the host is, who gets
+          credited, and whether this counts as a hosted event. */}
+      {isAdmin && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/30 dark:bg-amber-500/10">
+          <label className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              checked={isListing}
+              onChange={(e) => setIsListing(e.target.checked)}
+              className="mt-1 h-4 w-4 shrink-0 accent-amber-600"
+            />
+            <span className="min-w-0">
+              <span className="block text-sm font-bold text-gray-900 dark:text-white">
+                This is a listing, not ours
+              </span>
+              <span className="mt-0.5 block text-[13px] leading-snug text-gray-600 dark:text-white/70">
+                Somebody else is running it. We are posting it so people can
+                find it. It will not count as a hosted event.
+              </span>
+            </span>
+          </label>
+
+          {isListing && (
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <label htmlFor="organiser_name" className="label">
+                  Organiser
+                </label>
+                <input
+                  id="organiser_name"
+                  value={organiserName}
+                  onChange={(e) => setOrganiserName(e.target.value)}
+                  required
+                  placeholder="Black Boy Afrika"
+                  className="input"
+                />
+              </div>
+              <div>
+                <label htmlFor="organiser_ig" className="label">
+                  Their Instagram
+                </label>
+                {/* The @ is furniture, not data. Typed into the field it
+                    becomes "@@handle" everywhere it is printed, so it lives
+                    in the prefix and the value is stored bare. */}
+                <div className="flex items-center rounded-xl border border-gray-200 bg-white focus-within:border-brand dark:border-white/10 dark:bg-white/5">
+                  <span className="pl-3 text-gray-400">@</span>
+                  <input
+                    id="organiser_ig"
+                    value={organiserIg}
+                    onChange={(e) => setOrganiserIg(e.target.value)}
+                    placeholder="blackboyafrika"
+                    className="w-full bg-transparent px-2 py-2.5 text-[15px] outline-none"
+                  />
+                </div>
+                <p className="mt-1 text-xs text-gray-500">
+                  Tagged when we post this to Instagram.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <div>
         <span className="label">Visibility</span>

@@ -34,13 +34,14 @@ export default async function HostPage({
 
   const { data: profile } = await supabase
     .from("users")
-    .select("state, moderation_status, is_pro, pro_expires_at")
+    .select("state, moderation_status, is_pro, pro_expires_at, is_admin")
     .eq("id", user.id)
     .single<{
       state: string | null;
       moderation_status?: string;
       is_pro?: boolean | null;
       pro_expires_at?: string | null;
+      is_admin?: boolean | null;
     }>();
 
   // Restricted/blocked accounts can't host (also enforced by a DB trigger).
@@ -190,6 +191,7 @@ export default async function HostPage({
       <div className="surface p-6 sm:p-8">
         <HostForm
           hostState={profile?.state ?? null}
+          isAdmin={!!profile?.is_admin}
           prefill={{
             category: searchParams.category,
             location: searchParams.location,

@@ -667,6 +667,28 @@ export default async function EventDetailPage({
             cue="Get directions"
           />
         )}
+        {/* On a listing, say whose event it is.
+            The host row is the admin account that posted it, which tells a
+            guest nothing and implies we are running the night. Credit goes
+            to the organiser, and their handle is the link, because somebody
+            deciding whether this is real will go and look at their page. */}
+        {(event as { organiser_name?: string | null }).organiser_name && (
+          <Fact
+            icon="users"
+            label={(event as { organiser_name?: string }).organiser_name!}
+            sub="Organiser"
+            href={
+              (event as { organiser_instagram?: string | null }).organiser_instagram
+                ? `https://instagram.com/${(event as { organiser_instagram?: string }).organiser_instagram!.replace(/^@+/, "")}`
+                : undefined
+            }
+            cue={
+              (event as { organiser_instagram?: string | null }).organiser_instagram
+                ? `@${(event as { organiser_instagram?: string }).organiser_instagram!.replace(/^@+/, "")}`
+                : undefined
+            }
+          />
+        )}
         {event.price > 0 && (
           <Fact
             icon="ticket"
