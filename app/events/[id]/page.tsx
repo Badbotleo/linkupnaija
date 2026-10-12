@@ -37,6 +37,7 @@ import { formatEventDate, formatEventTimeRange } from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
 import { attendanceProof, ATTENDANCE_REVEAL_AT } from "@/lib/social-proof";
 import TicketPanel from "@/components/events/TicketPanel";
+import Directions from "@/components/events/Directions";
 import TicketTiersEditor from "@/components/events/TicketTiersEditor";
 import EventPictures from "@/components/events/EventPictures";
 import StickyJoinBar from "@/components/events/StickyJoinBar";
@@ -668,6 +669,13 @@ export default async function EventDetailPage({
           />
         )}
       </dl>
+
+      {/* Where it is, and one tap to get there. Below the facts, because
+          somebody reads what the thing is before they work out how to
+          reach it. */}
+      {event.location && (
+        <Directions location={event.location} state={event.state} />
+      )}
 
       {friendsGoing.length > 0 && (
         <div className="mt-3 flex items-center gap-2 rounded-2xl bg-brand-50 px-4 py-3 text-sm font-semibold text-brand dark:bg-brand/20">
