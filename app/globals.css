@@ -653,3 +653,20 @@ footer,
     transform: none;
   }
 }
+
+/* The venue row on an event page is a link to directions, and on a phone
+   there is no hover to reveal that. So the little arrow drifts right and
+   back on its own: enough movement to read as "this goes somewhere",
+   gentle enough not to be a distraction in a list of facts. The long
+   neutral tail is the same trick logo-pulse uses — it moves briefly, then
+   sits still for most of the cycle. */
+@keyframes nudge-right {
+  0%, 70%, 100% { transform: translateX(0); }
+  80% { transform: translateX(3px); }
+}
+.animate-nudge-right {
+  animation: nudge-right 2.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-nudge-right { animation: none; }
+}

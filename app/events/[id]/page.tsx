@@ -37,7 +37,7 @@ import { formatEventDate, formatEventTimeRange } from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
 import { attendanceProof, ATTENDANCE_REVEAL_AT } from "@/lib/social-proof";
 import TicketPanel from "@/components/events/TicketPanel";
-import Directions from "@/components/events/Directions";
+import { directionsHref } from "@/lib/directions";
 import TicketTiersEditor from "@/components/events/TicketTiersEditor";
 import EventPictures from "@/components/events/EventPictures";
 import StickyJoinBar from "@/components/events/StickyJoinBar";
@@ -659,7 +659,13 @@ export default async function EventDetailPage({
           }
         />
         {event.location && (
-          <Fact icon="pin" label={event.location} sub={stateSuffix || null} />
+          <Fact
+            icon="pin"
+            label={event.location}
+            sub={stateSuffix || null}
+            href={directionsHref(event.location, event.state)}
+            cue="Get directions"
+          />
         )}
         {event.price > 0 && (
           <Fact
@@ -669,13 +675,6 @@ export default async function EventDetailPage({
           />
         )}
       </dl>
-
-      {/* Where it is, and one tap to get there. Below the facts, because
-          somebody reads what the thing is before they work out how to
-          reach it. */}
-      {event.location && (
-        <Directions location={event.location} state={event.state} />
-      )}
 
       {friendsGoing.length > 0 && (
         <div className="mt-3 flex items-center gap-2 rounded-2xl bg-brand-50 px-4 py-3 text-sm font-semibold text-brand dark:bg-brand/20">
@@ -1167,19 +1166,37 @@ function LockedChat({
   );
 }
 
+/**
+ * One line of the what/when/where list.
+ *
+ * `href` turns the row itself into the link. Directions started as a
+ * section of its own with a heading and two buttons, which is a lot of a
+ * phone screen for one tap — and it duplicated the address, which was
+ * already sitting three rows up. The venue line IS the thing you tap.
+ *
+ * `cue` is shown instead of `sub` and carries an arrow that drifts on its
+ * own. On a phone there is no hover to reveal that a row goes somewhere,
+ * so the affordance has to be visible at rest.
+ */
 function Fact({
   icon,
   label,
   sub,
+  href,
+  cue,
 }: {
   icon: string;
   label: string;
   sub?: string | null;
+  href?: string;
+  cue?: string;
 }) {
-  return (
-    <div className="flex items-start gap-3 py-3.5">
+  const body = (
+    <>
       <span
-        className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand/[0.08] text-brand"
+        className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand/[0.08] text-brand ${
+          href ? "transition group-hover:bg-brand group-hover:text-white" : ""
+        }`}
         aria-hidden
       >
         <LineIcon name={icon} size={16} />
@@ -1188,12 +1205,35 @@ function Fact({
         <dt className="text-[15px] font-bold leading-snug text-gray-900 dark:text-white">
           {label}
         </dt>
-        {sub && (
-          <dd className="mt-0.5 text-[13.5px] leading-snug text-gray-500">
-            {sub}
+        {cue ? (
+          <dd className="mt-0.5 flex items-center gap-1 text-[13.5px] font-bold leading-snug text-brand">
+            {cue}
+            <span className="inline-flex animate-nudge-right" aria-hidden>
+              <LineIcon name="chevronRight" size={14} />
+            </span>
           </dd>
+        ) : (
+          sub && (
+            <dd className="mt-0.5 text-[13.5px] leading-snug text-gray-500">
+              {sub}
+            </dd>
+          )
         )}
       </div>
-    </div>
+    </>
+  );
+
+  if (!href) {
+    return <div className="flex items-start gap-3 py-3.5">{body}</div>;
+  }
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group -mx-2 flex items-start gap-3 rounded-xl px-2 py-3.5 transition hover:bg-brand/[0.05]"
+    >
+      {body}
+    </a>
   );
 }
