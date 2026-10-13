@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { NIGERIAN_STATES } from "@/lib/constants";
 import { toast } from "@/lib/toast";
 import { isRealText } from "@/lib/content-guards";
-import { capturePoster } from "@/lib/video-poster";
+import { capturePoster, probeMedia } from "@/lib/video-poster";
 import LineIcon from "../ui/LineIcon";
 
 /**
@@ -127,19 +127,31 @@ export default function AdminRecaps() {
       toast.error(`${file.name}: over 25MB — skipped.`);
       return null;
     }
-    // Warn, don't block. A .mov is a QuickTime container: Safari plays it,
-    // Chrome and Firefox usually don't, so it uploads fine and then renders
-    // as a black frame for most of the country. Some .mov files are H.264
-    // that Chrome will play, which is why this asks the browser rather than
-    // trusting the extension — and why it's a warning and not a rejection.
-    if (isVideo) {
-      const probe = document.createElement("video");
-      const playable = probe.canPlayType(file.type || "");
-      if (!playable || file.type === "video/quicktime") {
-        toast.error(
-          `${file.name}: this browser can't play that format — most people won't see it. Re-export as MP4 (H.264). Uploading anyway.`
-        );
-      }
+    // DOES IT ACTUALLY DECODE, AND AT WHAT SIZE.
+    //
+    // This used to ask canPlayType and then upload anyway. canPlayType is a
+    // guess about a MIME string, not about the file, and "uploading anyway"
+    // is how three .heic photos and a 4K clip got onto the home page where
+    // most of the country cannot see them. So the file is decoded here, and
+    // a file that will not decode is not uploaded.
+    const probe = await probeMedia(file, isVideo);
+    if (!probe.ok) {
+      toast.error(
+        isVideo
+          ? `${file.name}: this file won't play in a normal browser. Re-export as MP4 (H.264) and try again.`
+          : `${file.name}: this format won't display for most people — iPhone photos save as HEIC. Export as JPEG and try again.`
+      );
+      return null;
+    }
+    // 4K is a phone's default and nobody's phone can play it back. A 2160 by
+    // 3840 clip decodes on a laptop and drops the video track on a mid-range
+    // Android, which is heard as sound with a black screen. 1080p vertical is
+    // what the player shows anyway.
+    if (isVideo && Math.max(probe.w, probe.h) > 2200) {
+      toast.error(
+        `${file.name}: ${probe.w}x${probe.h} is too big to play on most phones. Export at 1080p and try again.`
+      );
+      return null;
     }
     const ext =
       file.name.split(".").pop()?.toLowerCase() || (isVideo ? "mp4" : "jpg");
