@@ -150,7 +150,7 @@ export default function SearchPill() {
           aria-live="polite"
           className="mt-2 flex items-center gap-1.5 pl-2 text-[13px] font-medium text-gray-600 dark:text-white/70"
         >
-          <span aria-hidden>✨</span>
+          
           {note}
         </p>
       )}

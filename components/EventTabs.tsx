@@ -23,14 +23,14 @@ export default function EventTabs({
           Details
         </TabButton>
         <TabButton active={tab === "chat"} onClick={() => setTab("chat")}>
-          💬 Chat
+          Chat
         </TabButton>
         {gallery && (
           <TabButton
             active={tab === "gallery"}
             onClick={() => setTab("gallery")}
           >
-            📸 Gallery
+            Gallery
           </TabButton>
         )}
       </div>

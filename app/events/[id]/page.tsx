@@ -822,7 +822,7 @@ export default async function EventDetailPage({
                           mode="invite"
                           eventId={event.id}
                           eventTitle={event.title}
-                          buttonLabel="🤝 Invite a Friend"
+                          buttonLabel="Invite a Friend"
                           buttonClassName="btn-outline"
                         />
                       </div>
@@ -1123,7 +1123,7 @@ export default async function EventDetailPage({
                         mode="join"
                         eventId={event.id}
                         eventTitle={event.title}
-                        buttonLabel="🤝 Join with a friend"
+                        buttonLabel="Join with a friend"
                         buttonClassName="btn-outline w-full"
                       />
                     </div>

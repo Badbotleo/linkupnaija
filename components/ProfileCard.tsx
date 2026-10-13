@@ -33,7 +33,7 @@ export default function ProfileCard({
             {verified && <VerifiedBadge />}
           </div>
           {profile.state && (
-            <p className="mt-0.5 text-sm text-gray-500">📍 {profile.state}</p>
+            <p className="mt-0.5 text-sm text-gray-500">{profile.state}</p>
           )}
           {rating && (
             <RatingSummary

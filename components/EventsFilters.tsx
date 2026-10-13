@@ -75,7 +75,7 @@ export default function EventsFilters() {
               : "border-gray-200 bg-white text-gray-600 hover:border-brand/40 hover:text-brand"
           }`}
         >
-          🔄 Series only
+          Series only
         </button>
 
         {activeCategory && (
@@ -109,7 +109,7 @@ export default function EventsFilters() {
         aria-expanded={browsing}
         className="flex w-full items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-left text-sm font-bold text-gray-700 transition hover:border-brand/40 hover:text-brand dark:border-white/15 dark:bg-transparent dark:text-white/80"
       >
-        <span aria-hidden>🎛️</span>
+        
         Browse by vibe
         <span className="ml-auto text-[13px] font-semibold text-gray-500 dark:text-white/60">
           {CATEGORY_GROUPS.length} kinds

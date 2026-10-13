@@ -115,7 +115,7 @@ export default function ChatPanel({
   return (
     <div className="flex flex-col surface">
       <div className="border-b border-gray-100 px-5 py-3">
-        <h2 className="font-bold text-gray-900">💬 Group chat</h2>
+        <h2 className="font-bold text-gray-900">Group chat</h2>
         <p className="text-xs text-gray-500">
           Private to everyone going to this event.
         </p>
@@ -127,7 +127,7 @@ export default function ChatPanel({
       >
         {messages.length === 0 ? (
           <p className="m-auto text-center text-sm text-gray-400">
-            No messages yet. Say hi to your fellow attendees! 👋
+            No messages yet. Say hi to your fellow attendees.
           </p>
         ) : (
           messages.map((m) => {

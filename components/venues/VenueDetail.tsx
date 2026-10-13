@@ -99,7 +99,7 @@ export default function VenueDetail({
         {venue.name}
       </h1>
       {venue.address && (
-        <p className="mt-1 text-gray-600">📍 {venue.address}</p>
+        <p className="mt-1 text-gray-600">{venue.address}</p>
       )}
 
       <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">

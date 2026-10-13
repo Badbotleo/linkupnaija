@@ -134,7 +134,7 @@ export default function ReviewsSection({
 
           <div className="mt-3">
             <p className="text-sm font-semibold text-gray-700">
-              🛟 Did you feel safe?
+              Did you feel safe?
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
               {(

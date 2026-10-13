@@ -28,7 +28,7 @@ export default function EventsMapToggle({ events }: { events: MapEvent[] }) {
         className="btn-outline flex items-center gap-2 py-2"
         aria-expanded={open}
       >
-        <span aria-hidden>🗺️</span>
+        
         {open ? "Hide map" : `Map view · ${events.length} across ${states} state${states === 1 ? "" : "s"}`}
       </button>
       {open && (

@@ -29,7 +29,7 @@ export default async function ProfileSetupPage() {
       <div className="container-page max-w-2xl py-6">
       <div className="text-center">
         <h1 className="text-3xl font-extrabold text-gray-900">
-          Set up your profile ✨
+          Set up your profile
         </h1>
         <p className="mt-2 text-gray-600">
           Add a photo and your socials so hosts know you&apos;re a real person.

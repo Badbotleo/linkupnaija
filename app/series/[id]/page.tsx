@@ -115,11 +115,11 @@ export default async function SeriesPage({
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand">
-              🔄 {frequencyLabel(series.frequency as SeriesFrequency)} series
+              {frequencyLabel(series.frequency as SeriesFrequency)} series
             </span>
             {series.state && (
               <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600">
-                📍 {series.state}
+                {series.state}
               </span>
             )}
           </div>
@@ -155,9 +155,9 @@ export default async function SeriesPage({
                   <div className="p-4">
                     <p className="font-bold text-gray-900">{e.title}</p>
                     <p className="mt-1 text-sm text-gray-500">
-                      📅 {formatEventDate(e.date)} · {formatEventTime(e.time)}
+                      {formatEventDate(e.date)} · {formatEventTime(e.time)}
                     </p>
-                    <p className="text-sm text-gray-400">📍 {e.location}</p>
+                    <p className="text-sm text-gray-400">{e.location}</p>
                   </div>
                 </Link>
               ))}
@@ -200,7 +200,7 @@ export default async function SeriesPage({
                         </p>
                         <p className="text-xs text-gray-400">
                           {formatEventDate(e.date)}
-                          {thumb ? " · 📸 photos" : ""}
+                          {thumb ? " · photos" : ""}
                         </p>
                       </div>
                     </Link>

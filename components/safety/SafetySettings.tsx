@@ -34,7 +34,7 @@ export default function SafetySettings({
   return (
     <div className="surface p-6 sm:p-8">
       <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900">
-        🛟 Safety
+        Safety
       </h2>
       <p className="mt-1 text-sm text-gray-500">
         Add an emergency contact. It pre-fills &quot;Share my plans&quot; when

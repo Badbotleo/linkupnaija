@@ -73,7 +73,7 @@ export default function SeriesSubscribeButton({
         disabled={busy}
         className={subscribed ? "btn-outline w-full" : "btn-primary w-full"}
       >
-        {busy ? "…" : subscribed ? "✓ Subscribed" : "🔔 Subscribe to Series"}
+        {busy ? "…" : subscribed ? "Subscribed" : "Subscribe to Series"}
       </button>
       <p className="mt-2 text-center text-sm text-gray-500">
         {count} {count === 1 ? "person follows" : "people follow"} this series

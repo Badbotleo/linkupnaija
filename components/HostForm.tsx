@@ -621,7 +621,7 @@ export default function HostForm({
               { v: "general", label: "General", hint: "Visible to everyone" },
               {
                 v: "private",
-                label: "Private 🔒",
+                label: "Private",
                 hint: "Invited guests only",
               },
             ] as const
@@ -1288,7 +1288,7 @@ export default function HostForm({
           />
           <span>
             <span className="block text-sm font-bold text-gray-900">
-              🔄 Make this a recurring series
+              Make this a recurring series
             </span>
             <span className="block text-xs text-gray-500">
               We&apos;ll create the first 3 events automatically based on your
@@ -1389,8 +1389,8 @@ export default function HostForm({
         {loading
           ? "Publishing…"
           : isSeries
-            ? "Create series 🔄"
-            : "Publish event 🚀"}
+            ? "Create series"
+            : "Publish event"}
       </button>
     </form>
   );

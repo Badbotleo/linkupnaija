@@ -173,7 +173,7 @@ export default function ManageRequests({
   return (
     <div className="rounded-2xl bg-white p-5 shadow-card sm:p-6">
       <h2 className="text-lg font-bold text-gray-900">
-        🛂 Manage requests
+        Manage requests
         {pending.length > 0 && (
           <span className="ml-2 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-700">
             {pending.length} pending
@@ -233,14 +233,14 @@ export default function ManageRequests({
                       {r.users && hasSocialLinks(r.users) && <VerifiedBadge />}
                       {r.companion_id && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand">
-                          🤝 with {nameById.get(r.companion_id) ?? "a friend"}
+                          with {nameById.get(r.companion_id) ?? "a friend"}
                         </span>
                       )}
                     </div>
                     {(r.users?.state || r.users?.gender) && (
                       <p className="text-sm capitalize text-gray-500">
                         {[
-                          r.users?.state && `📍 ${r.users.state}`,
+                          r.users?.state && `${r.users.state}`,
                           r.users?.gender &&
                             r.users.gender !== "prefer not to say" &&
                             r.users.gender,

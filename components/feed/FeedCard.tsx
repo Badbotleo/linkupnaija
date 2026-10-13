@@ -120,7 +120,20 @@ export default function FeedCard({
           href={`/events/${event.id}`}
           className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-2 text-[13.5px] font-bold text-gray-700 transition hover:bg-gray-50 dark:hover:bg-white/5"
         >
-          <LineIcon name="calendar" size={15} />
+          {/* The icon follows the label. It was a calendar under every one
+              of them, so "Get a ticket" came with a date picker. */}
+          <LineIcon
+            name={
+              mine === "hosting"
+                ? "mic"
+                : price > 0
+                  ? "ticket"
+                  : mine === "going"
+                    ? "check"
+                    : "calendar"
+            }
+            size={15}
+          />
           {mine === "hosting"
             ? "Your event"
             : mine === "going"

@@ -79,7 +79,7 @@ export default function PhoneVerify({
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-4">
       <p className="text-sm font-semibold text-gray-900">
-        📱 Verify your phone number
+        Verify your phone number
       </p>
       <p className="mt-0.5 text-xs text-gray-500">
         A verified number builds trust. Hosts approve verified guests faster.

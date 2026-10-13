@@ -650,7 +650,7 @@ function EmptyState({
             onClick={() => onCategory("Restaurants")}
             className="btn-outline"
           >
-            🍽️ Try Restaurants
+            Try Restaurants
           </button>
         )}
         {label !== DEFAULT_CENTER.label && (

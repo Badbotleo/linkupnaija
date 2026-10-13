@@ -49,7 +49,7 @@ export default async function LoginPage({
     <div className="container-page flex max-w-md flex-col py-14">
       <div className="text-center">
         <h1 className="text-3xl font-extrabold text-gray-900">
-          Welcome back to LinkUp<span className="text-brand">Naija</span> 👋
+          Welcome back to LinkUp<span className="text-brand">Naija</span>
         </h1>
         <p className="mt-2 text-gray-600">
           Log in to join events and host your own.

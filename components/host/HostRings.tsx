@@ -96,7 +96,7 @@ export default function HostRings({
   return (
     <div className="rounded-2xl bg-white p-5 shadow-card">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-bold text-gray-900">🏅 Your host scorecard</h2>
+        <h2 className="text-lg font-bold text-gray-900">Your host scorecard</h2>
       </div>
       {badges.length > 0 && (
         <div className="mt-3">
@@ -123,7 +123,7 @@ export default function HostRings({
 
       {percentile != null && percentile <= 50 && (
         <p className="mt-4 rounded-xl bg-brand-50 px-4 py-2.5 text-center text-sm font-semibold text-brand">
-          🎉 You&apos;re in the top {percentile}% of hosts in your state
+          You&apos;re in the top {percentile}% of hosts in your state
         </p>
       )}
 

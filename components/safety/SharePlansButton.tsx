@@ -76,7 +76,7 @@ export default function SharePlansButton({
         onClick={() => setOpen(true)}
         className="btn-outline w-full"
       >
-        🛟 Share my plans
+        Share my plans
       </button>
 
       {mounted &&

@@ -132,7 +132,7 @@ export default function AttendeeProfileModal({
                   onClick={blockUser}
                   className="block w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
                 >
-                  🚫 Block user
+                  Block user
                 </button>
               </div>
             )}
@@ -168,7 +168,7 @@ export default function AttendeeProfileModal({
               {hasSocialLinks(profile) && <VerifiedBadge />}
             </div>
             {profile.state && (
-              <p className="mt-0.5 text-sm text-gray-500">📍 {profile.state}</p>
+              <p className="mt-0.5 text-sm text-gray-500">{profile.state}</p>
             )}
             {profile.gender && profile.gender !== "prefer not to say" && (
               <p className="mt-0.5 text-sm capitalize text-gray-500">

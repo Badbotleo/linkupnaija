@@ -34,14 +34,14 @@ export default function SafetyCheckinButton({ eventId }: { eventId: string }) {
   if (done) {
     return (
       <p className="rounded-xl bg-naija-50 px-4 py-2.5 text-center text-sm font-semibold text-naija-700">
-        ✅ Checked in safe
+        Checked in safe
       </p>
     );
   }
 
   return (
     <button type="button" onClick={checkIn} disabled={busy} className="btn-outline w-full">
-      {busy ? "…" : "✅ Check in as safe"}
+      {busy ? "…" : "Check in as safe"}
     </button>
   );
 }

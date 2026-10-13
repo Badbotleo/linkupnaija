@@ -48,7 +48,7 @@ export default function AddToCalendar({ event }: { event: CalendarEvent }) {
             onClick={() => setOpen(false)}
             className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-brand-50 hover:text-brand"
           >
-            📅 Google Calendar
+            Google Calendar
           </a>
           <a
             href={icsDataUri(event)}
@@ -57,7 +57,7 @@ export default function AddToCalendar({ event }: { event: CalendarEvent }) {
             onClick={() => setOpen(false)}
             className="block border-t border-gray-50 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-brand-50 hover:text-brand"
           >
-            🍎 Apple / Outlook (.ics)
+            Apple / Outlook (.ics)
           </a>
         </div>
       )}

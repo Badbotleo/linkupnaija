@@ -216,7 +216,7 @@ export default function FriendPickerButton({
                           </p>
                           {f.state && (
                             <p className="truncate text-xs text-gray-500">
-                              📍 {f.state}
+                              {f.state}
                             </p>
                           )}
                         </div>
