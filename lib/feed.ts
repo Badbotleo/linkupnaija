@@ -1,4 +1,6 @@
+import { createClient } from "@supabase/supabase-js";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { unstable_cache } from "next/cache";
 import type { FriendUser } from "./types";
 import { categoriesForInterests } from "./constants";
 import { dedupeEvents } from "./content-guards";
@@ -118,35 +120,61 @@ const VISITOR_PAGE = 20;
  * asked for twice on the way down, both times at the moment it would buy
  * something specific, never as a toll gate on arrival.
  */
+/**
+ * The logged-out column's data, cached.
+ *
+ * Nothing in it varies by visitor: the same upcoming events are fetched for
+ * everybody and the place filter is applied in memory afterwards. So it runs
+ * on the anon key through unstable_cache rather than on the request's own
+ * client, and the home page stops making two round trips per anonymous hit
+ * on the busiest page we have.
+ *
+ * Five minutes. An event added now is on the home page before anybody has
+ * finished telling their friends about it.
+ */
+const getVisitorEvents = unstable_cache(
+  async () => {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const today = new Date().toISOString().slice(0, 10);
+
+    const [{ data: rows }, { data: featuredRows }] = await Promise.all([
+      supabase
+        .from("events")
+        .select(
+          "id, title, category, date, time, location, state, price, cover_image_url, is_listing, organiser_name"
+        )
+        .eq("event_type", "general")
+        .gte("date", today)
+        .order("date", { ascending: true })
+        .limit(60),
+      supabase
+        .from("events")
+        .select("id")
+        .eq("featured", true)
+        .gt("featured_until", new Date().toISOString())
+        .gte("date", today),
+    ]);
+
+    return {
+      rows: (rows ?? []) as FeedEvent[],
+      featured: ((featuredRows ?? []) as { id: string }[]).map((r) => r.id),
+    };
+  },
+  ["visitor-feed-events"],
+  { revalidate: 300 }
+);
+
 export async function buildVisitorFeed(
-  supabase: SupabaseClient,
   guessedState: string | null,
   chosenState: string | null
 ): Promise<VisitorFeedResult> {
-  const today = new Date().toISOString().slice(0, 10);
+  const { rows, featured } = await getVisitorEvents();
 
-  const [{ data: rows }, { data: featuredRows }] = await Promise.all([
-    supabase
-      .from("events")
-      .select(
-        "id, title, category, date, time, location, state, price, cover_image_url, is_listing, organiser_name"
-      )
-      .eq("event_type", "general")
-      .gte("date", today)
-      .order("date", { ascending: true })
-      .limit(60),
-    supabase
-      .from("events")
-      .select("id")
-      .eq("featured", true)
-      .gt("featured_until", new Date().toISOString())
-      .gte("date", today),
-  ]);
-
-  const all = dedupeEvents((rows ?? []) as FeedEvent[]);
-  const featuredIds = new Set(
-    ((featuredRows ?? []) as { id: string }[]).map((r) => r.id)
-  );
+  const all = dedupeEvents(rows);
+  const featuredIds = new Set(featured);
 
   const counts = new Map<string, number>();
   for (const e of all) {
