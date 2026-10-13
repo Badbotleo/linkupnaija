@@ -1,0 +1,151 @@
+import Link from "next/link";
+import EventCover from "@/components/EventCover";
+import LineIcon from "@/components/ui/LineIcon";
+import FriendsGoing from "./FriendsGoing";
+import { categoryIcon } from "@/lib/category-icons";
+import { formatEventDate, formatEventTime } from "@/lib/format";
+import { formatNaira } from "@/lib/paystack";
+import { directionsHref } from "@/lib/directions";
+import type { FeedEvent } from "@/lib/feed";
+import type { FriendUser } from "@/lib/types";
+
+/**
+ * One event, full width, in a column.
+ *
+ * The shelf card is 268px wide and has room for a title, a date and a badge.
+ * Everything else about the night has to be discovered by tapping. A column
+ * card is three times the width and costs nothing extra to scroll past, so it
+ * carries the things that actually decide whether someone goes: who else is
+ * going, what it costs, and where it is.
+ */
+export default function FeedCard({
+  event,
+  friends,
+  reason,
+  mine,
+}: {
+  event: FeedEvent;
+  friends: FriendUser[];
+  reason: string;
+  mine: "going" | "hosting" | null;
+}) {
+  const price = event.price ?? 0;
+
+  return (
+    <article className="overflow-hidden rounded-2xl bg-white shadow-[var(--e1)] dark:bg-white/[0.04]">
+      {/* The reason line. Meta hides its ranking behind "Suggested for you";
+          saying it plainly costs one line and makes the sort arguable, by
+          the member and by us.
+
+          Suppressed when friends are going, because then the reason IS the
+          friend row further down and printing it twice on one card is just
+          noise. Faces win, so the faces keep it. */}
+      {friends.length === 0 && (
+        <div className="flex items-center gap-2 px-4 pt-3.5">
+          <LineIcon
+            name={mine ? "check" : "sparkles"}
+            size={14}
+            className={mine ? "text-brand" : "text-gray-400"}
+          />
+          <p
+            className={`min-w-0 truncate text-[13px] ${
+              mine ? "font-bold text-gray-900" : "font-medium text-gray-500"
+            }`}
+          >
+            {reason}
+          </p>
+        </div>
+      )}
+
+      <Link
+        href={`/events/${event.id}`}
+        className={`group block ${friends.length === 0 ? "mt-3" : "pt-3.5"}`}
+      >
+        <div className="relative">
+          <EventCover
+            url={event.cover_image_url}
+            category={event.category}
+            title={event.title}
+            className="h-[196px] w-full sm:h-[260px]"
+          />
+          {mine === "hosting" && (
+            <span className="absolute left-3 top-3 rounded-full bg-brand px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-white">
+              Hosting
+            </span>
+          )}
+          {price > 0 && (
+            <span className="absolute right-3 top-3 rounded-full bg-black/70 px-2.5 py-1 text-[12px] font-extrabold tabular-nums text-white backdrop-blur">
+              {formatNaira(price)}
+            </span>
+          )}
+        </div>
+
+        <div className="px-4 pt-3">
+          <h3 className="text-[19px] font-extrabold leading-tight tracking-[-0.02em] text-gray-900 group-hover:text-brand">
+            {event.title}
+          </h3>
+          <p className="mt-1 text-[13.5px] text-gray-500">
+            {formatEventDate(event.date)}
+            {event.time ? ` · ${formatEventTime(event.time)}` : ""}
+          </p>
+          {/* A listing is somebody else's night. Saying whose, on the card,
+              is the difference between carrying an event and claiming it. */}
+          {event.is_listing && event.organiser_name && (
+            <p className="mt-0.5 text-[13px] text-gray-500">
+              By{" "}
+              <span className="font-semibold text-gray-700">
+                {event.organiser_name}
+              </span>
+            </p>
+          )}
+        </div>
+      </Link>
+
+      {friends.length > 0 && (
+        <div className="px-4 pt-3">
+          <FriendsGoing friends={friends} line={reason} />
+        </div>
+      )}
+
+      {/* The venue name is the one piece of text here with no length limit,
+          so it gets the leftover width and nothing else may wrap. Equal
+          flex-1 halves put "Get a ticket" on two lines and still pushed the
+          address past the card edge. */}
+      <div className="mt-3 flex items-center gap-1 border-t border-gray-100 px-3 py-2 dark:border-white/10">
+        <Link
+          href={`/events/${event.id}`}
+          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-2 text-[13.5px] font-bold text-gray-700 transition hover:bg-gray-50 dark:hover:bg-white/5"
+        >
+          <LineIcon name="calendar" size={15} />
+          {mine === "hosting"
+            ? "Your event"
+            : mine === "going"
+              ? "Your ticket"
+              : price > 0
+                ? "Get a ticket"
+                : "Join this"}
+        </Link>
+        <span aria-hidden className="h-5 w-px shrink-0 bg-gray-100 dark:bg-white/10" />
+        <a
+          href={directionsHref(event.location, event.state)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex min-w-0 flex-1 items-center gap-1.5 rounded-xl px-3 py-2 text-[13.5px] font-bold text-gray-700 transition hover:bg-gray-50 dark:hover:bg-white/5"
+        >
+          <LineIcon name="pin" size={15} className="shrink-0" />
+          <span className="min-w-0 truncate">{event.location}</span>
+        </a>
+      </div>
+
+      {/* A line icon, not the emoji chip CategoryBadge still draws. The home
+          page moved its category chips off emoji in the sweep; this is the
+          same chip, kept consistent. */}
+      <div className="px-4 pb-3.5">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600 dark:bg-white/[0.07] dark:text-white/70">
+          <LineIcon name={categoryIcon(event.category)} size={12} />
+          {event.category}
+        </span>
+      </div>
+    </article>
+  );
+}

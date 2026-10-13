@@ -1,0 +1,478 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { FriendUser } from "./types";
+import { categoriesForInterests } from "./constants";
+import { dedupeEvents } from "./content-guards";
+import { getRecapsFor, type Recap } from "./recaps";
+
+/**
+ * One ranked column, the way a feed-shaped product builds a home page.
+ *
+ * The shelved home page (LoggedInHome) makes one editorial decision for all
+ * 300 members: Featured above Picked for you above Happening in Lagos. That
+ * ordering is a guess, and it is the same guess for everybody. This builds a
+ * single list instead and sorts it per person, so a member with two friends
+ * going to a party on Friday sees that party first and a member with none
+ * sees whatever is soonest in their state.
+ *
+ * WHAT THIS IS NOT. There is no model here and there shouldn't be. Ranking
+ * learns from interactions, and 108 lifetime RSVPs across 39 upcoming events
+ * is not a training set, it is a rounding error. So the score below is a
+ * hand-written sort with weights you can read, argue with and change in one
+ * line. At this inventory that is not a compromise: sorting 13 Lagos events
+ * well beats ranking them badly, and when there are 300 a week the shape here
+ * is already right and only the weights need to move.
+ *
+ * THE ONE REAL EDGE. `friends` on a unit. Who else is going outperforms
+ * category, cover photo and price put together, and nothing on the current
+ * home page shows it anywhere. If this experiment wins, that is why.
+ */
+
+export interface FeedEvent {
+  id: string;
+  title: string;
+  category: string;
+  date: string;
+  time: string | null;
+  location: string;
+  state: string | null;
+  price: number | null;
+  cover_image_url: string | null;
+  is_listing: boolean | null;
+  organiser_name: string | null;
+}
+
+export type FeedUnit =
+  | { kind: "signup"; variant: "first" | "second" }
+  | {
+      kind: "event";
+      event: FeedEvent;
+      /** Accepted friends with an accepted RSVP. The headline signal. */
+      friends: FriendUser[];
+      /** Why this is here, in the member's own terms. */
+      reason: string;
+      /** Their relationship to it, when they already have one. */
+      mine: "going" | "hosting" | null;
+    }
+  | { kind: "stories"; recaps: Recap[] }
+  | { kind: "circle"; circle: FeedCircle }
+  | { kind: "venue"; venue: FeedVenue }
+  | { kind: "ideas" }
+  | { kind: "rate" };
+
+export interface FeedCircle {
+  id: string;
+  name: string;
+  category: string | null;
+  state: string | null;
+  member_count: number;
+  cover_image_url: string | null;
+}
+
+export interface FeedVenue {
+  id: string;
+  name: string;
+  category: string;
+  state: string | null;
+  image_url: string | null;
+}
+
+export interface FeedResult {
+  firstName: string;
+  state: string | null;
+  units: FeedUnit[];
+  /** Shown under the composer so the page can be argued about with numbers. */
+  debug: {
+    candidates: number;
+    withFriends: number;
+    friendCount: number;
+    inState: number;
+  };
+}
+
+export interface VisitorFeedResult {
+  /** The state the column is scoped to, chosen or guessed. */
+  state: string | null;
+  /** Every state with something on, biggest first, for the picker. */
+  places: { state: string; n: number }[];
+  /** Everything upcoming, which is what the headline counts. */
+  total: number;
+  /** How many of them this column actually renders. */
+  shown: number;
+  units: FeedUnit[];
+}
+
+/** A column is a first impression, not a catalogue. /events is the catalogue. */
+const VISITOR_PAGE = 20;
+
+/**
+ * The logged-out column.
+ *
+ * Meta's logged-out home is a login box, because their front door is never
+ * the home page: it is a shared post, an invite, a tagged photo, and each one
+ * is its own landing page. Ours is the same shape. People arrive on an event
+ * page from a WhatsApp link, so `/` does not have to carry the whole pitch.
+ *
+ * What it does have to do is prove, in the first screen, that something is
+ * actually happening near the person reading. So: no slogan, no tour, no
+ * testimonials. A count, a place picker, and the real list. The account is
+ * asked for twice on the way down, both times at the moment it would buy
+ * something specific, never as a toll gate on arrival.
+ */
+export async function buildVisitorFeed(
+  supabase: SupabaseClient,
+  guessedState: string | null,
+  chosenState: string | null
+): Promise<VisitorFeedResult> {
+  const today = new Date().toISOString().slice(0, 10);
+
+  const [{ data: rows }, { data: featuredRows }] = await Promise.all([
+    supabase
+      .from("events")
+      .select(
+        "id, title, category, date, time, location, state, price, cover_image_url, is_listing, organiser_name"
+      )
+      .eq("event_type", "general")
+      .gte("date", today)
+      .order("date", { ascending: true })
+      .limit(60),
+    supabase
+      .from("events")
+      .select("id")
+      .eq("featured", true)
+      .gt("featured_until", new Date().toISOString())
+      .gte("date", today),
+  ]);
+
+  const all = dedupeEvents((rows ?? []) as FeedEvent[]);
+  const featuredIds = new Set(
+    ((featuredRows ?? []) as { id: string }[]).map((r) => r.id)
+  );
+
+  const counts = new Map<string, number>();
+  for (const e of all) {
+    if (!e.state) continue;
+    counts.set(e.state, (counts.get(e.state) ?? 0) + 1);
+  }
+  // Array.from rather than a spread: the tsconfig target here predates
+  // iterating a Map directly.
+  const places = Array.from(counts.entries())
+    .map(([state, n]) => ({ state, n }))
+    .sort((a, b) => b.n - a.n || a.state.localeCompare(b.state));
+
+  // A chosen place wins. A guessed one only counts if there is anything on
+  // there, because scoping someone to an empty state to be clever about
+  // their IP is worse than showing them the whole country.
+  const state =
+    chosenState && counts.has(chosenState)
+      ? chosenState
+      : guessedState && counts.has(guessedState)
+        ? guessedState
+        : null;
+
+  const ranked = [...all].sort((a, b) => {
+    const sa = state && a.state === state ? 0 : 1;
+    const sb = state && b.state === state ? 0 : 1;
+    if (sa !== sb) return sa - sb;
+    const fa = featuredIds.has(a.id) ? 0 : 1;
+    const fb = featuredIds.has(b.id) ? 0 : 1;
+    if (fa !== fb) return fa - fb;
+    return a.date.localeCompare(b.date);
+  });
+
+  // Scoped to a state the column is short anyway; across the country it is
+  // 39 full-width cards and 39 cover images, which is a catalogue rather than
+  // a first impression. The headline still counts all of them and /events
+  // still holds all of them.
+  const sorted = ranked.slice(0, VISITOR_PAGE);
+
+  const recaps = await getRecapsFor(state, 12);
+
+  const units: FeedUnit[] = [];
+  if (recaps.length > 0) units.push({ kind: "stories", recaps });
+
+  if (sorted.length === 0) {
+    units.push({ kind: "ideas" });
+  } else {
+    sorted.forEach((event, i) => {
+      const days = daysUntil(event.date);
+      const inState = !!state && event.state === state;
+      const reason = inState
+        ? days <= 0
+          ? `In ${event.state}, today`
+          : days === 1
+            ? `In ${event.state}, tomorrow`
+            : `In ${event.state}, ${days} days away`
+        : featuredIds.has(event.id)
+          ? "Featured this week"
+          : event.state
+            ? `In ${event.state}`
+            : "Coming up on LinkUpNaija";
+      units.push({ kind: "event", event, friends: [], reason, mine: null });
+      // Asked after enough has been shown to be worth keeping, and again at
+      // the point someone has read the lot.
+      if (i === 2) units.push({ kind: "signup", variant: "first" });
+      if (i === 8) units.push({ kind: "signup", variant: "second" });
+    });
+    units.push({ kind: "ideas" });
+  }
+
+  return { state, places, total: all.length, shown: sorted.length, units };
+}
+
+function daysUntil(date: string): number {
+  const d = new Date(`${date}T00:00:00`).getTime();
+  const now = new Date();
+  const today = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  ).getTime();
+  return Math.round((d - today) / 86_400_000);
+}
+
+function firstNames(friends: FriendUser[]): string {
+  const names = friends.map((f) => f.name?.split(" ")[0]).filter(Boolean);
+  if (names.length === 0) return "";
+  if (names.length === 1) return `${names[0]} is going`;
+  if (names.length === 2) return `${names[0]} and ${names[1]} are going`;
+  return `${names[0]} and ${names.length - 1} others are going`;
+}
+
+export async function buildFeed(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<FeedResult> {
+  const today = new Date().toISOString().slice(0, 10);
+
+  const EVENT_COLS =
+    "id, title, category, date, time, location, state, price, cover_image_url, is_listing, organiser_name";
+
+  const [
+    { data: profile },
+    { data: rsvpRows },
+    { data: hostingRows },
+    { data: connRows },
+    { data: candidateRows },
+    { data: featuredRows },
+  ] = await Promise.all([
+    supabase
+      .from("users")
+      .select("name, state, interests")
+      .eq("id", userId)
+      .single(),
+    supabase
+      .from("rsvps")
+      .select(`events(${EVENT_COLS})`)
+      .eq("user_id", userId)
+      .eq("status", "accepted")
+      .gte("events.date", today)
+      .limit(10),
+    supabase
+      .from("events")
+      .select(EVENT_COLS)
+      .eq("host_id", userId)
+      .gte("date", today)
+      .order("date", { ascending: true })
+      .limit(6),
+    supabase
+      .from("connections")
+      .select("requester_id, receiver_id")
+      .eq("status", "accepted")
+      .or(`requester_id.eq.${userId},receiver_id.eq.${userId}`),
+    // One query for the whole column. 60 is more than the platform currently
+    // holds, so in practice this is every upcoming event, which is the point:
+    // at this size ranking is sorting, and sorting wants the full set.
+    supabase
+      .from("events")
+      .select(EVENT_COLS)
+      .eq("event_type", "general")
+      .gte("date", today)
+      .order("date", { ascending: true })
+      .limit(60),
+    supabase
+      .from("events")
+      .select("id")
+      .eq("featured", true)
+      .gt("featured_until", new Date().toISOString())
+      .gte("date", today),
+  ]);
+
+  const state = profile?.state ?? null;
+  const firstName = profile?.name?.split(" ")[0] ?? "there";
+
+  // Yours, pinned. Hosting first so a host never has to hunt for their own
+  // night, then by date.
+  const joined = ((rsvpRows ?? []) as unknown as { events: FeedEvent | null }[])
+    .map((r) => r.events)
+    .filter(Boolean) as FeedEvent[];
+  const hosting = (hostingRows ?? []) as FeedEvent[];
+  const hostingIds = new Set(hosting.map((e) => e.id));
+  const mineSeen = new Set<string>();
+  const mine = [...hosting, ...joined]
+    .filter((e) => (mineSeen.has(e.id) ? false : (mineSeen.add(e.id), true)))
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(0, 3);
+
+  const friendIds = (
+    (connRows ?? []) as { requester_id: string; receiver_id: string }[]
+  ).map((c) => (c.requester_id === userId ? c.receiver_id : c.requester_id));
+
+  // event_id -> the friends going to it.
+  const friendsByEvent = new Map<string, FriendUser[]>();
+  if (friendIds.length > 0) {
+    const [{ data: friendRsvps }, { data: friendUsers }] = await Promise.all([
+      supabase
+        .from("rsvps")
+        .select("event_id, user_id")
+        .eq("status", "accepted")
+        .in("user_id", friendIds),
+      supabase
+        .from("users")
+        .select("id, name, avatar_url, state")
+        .in("id", friendIds),
+    ]);
+    const byId = new Map(
+      ((friendUsers ?? []) as FriendUser[]).map((u) => [u.id, u])
+    );
+    for (const r of (friendRsvps ?? []) as {
+      event_id: string;
+      user_id: string;
+    }[]) {
+      const u = byId.get(r.user_id);
+      if (!u) continue;
+      const list = friendsByEvent.get(r.event_id) ?? [];
+      // A friend can hold more than one RSVP row to the same event.
+      if (!list.some((f) => f.id === u.id)) list.push(u);
+      friendsByEvent.set(r.event_id, list);
+    }
+  }
+
+  const featuredIds = new Set(
+    ((featuredRows ?? []) as { id: string }[]).map((r) => r.id)
+  );
+  const interestCats = new Set<string>(
+    categoriesForInterests(profile?.interests ?? [])
+  );
+
+  const candidates = dedupeEvents(
+    ((candidateRows ?? []) as FeedEvent[]).filter((e) => !mineSeen.has(e.id))
+  );
+
+  const scored = candidates
+    .map((event) => {
+      const friends = friendsByEvent.get(event.id) ?? [];
+      const days = daysUntil(event.date);
+      const sameState = !!state && event.state === state;
+      const onTaste = interestCats.has(event.category);
+
+      // Weights, in the order they matter. Someone you know going is worth
+      // more than everything else on the card combined, which is the whole
+      // bet of this layout.
+      let score = 0;
+      if (friends.length > 0) score += 120 + Math.min(friends.length, 5) * 20;
+      if (sameState) score += 45;
+      if (onTaste) score += 30;
+      if (featuredIds.has(event.id)) score += 25;
+      // Soon beats later, but only inside a month. Beyond that the date stops
+      // being a reason to look now.
+      score += Math.max(0, 30 - Math.max(days, 0)) * 2;
+      // A listing is somebody else's night that we merely carry. Worth
+      // showing, worth showing second.
+      if (event.is_listing) score -= 8;
+
+      const reason = friends.length
+        ? firstNames(friends)
+        : onTaste && sameState
+          ? `${event.category} in ${event.state}, your kind of thing`
+          : sameState
+            ? days <= 1
+              ? `In ${event.state}, ${days <= 0 ? "today" : "tomorrow"}`
+              : `In ${event.state}, ${days} days away`
+            : onTaste
+              ? `Matches your taste for ${event.category}`
+              : featuredIds.has(event.id)
+                ? "Featured this week"
+                : "Coming up on LinkUpNaija";
+
+      return { event, friends, reason, score };
+    })
+    .sort((a, b) => b.score - a.score || a.event.date.localeCompare(b.event.date));
+
+  // The supporting units. One circle and one venue, not a shelf of eight:
+  // in a single column a suggestion is a card like any other, and eight of
+  // them in a row is the shelf problem again.
+  const [{ data: memberRows }, { data: circleRows }, { data: venueRows }] =
+    await Promise.all([
+      supabase.from("circle_members").select("circle_id").eq("user_id", userId),
+      supabase
+        .from("circles")
+        .select("id, name, category, state, member_count, cover_image_url")
+        .eq("is_private", false)
+        .order("member_count", { ascending: false })
+        .limit(12),
+      supabase
+        .from("venues")
+        .select("id, name, category, state, image_url")
+        .eq("is_active", true)
+        .order("is_featured", { ascending: false })
+        .limit(12),
+    ]);
+
+  const myCircles = new Set(
+    ((memberRows ?? []) as { circle_id: string }[]).map((r) => r.circle_id)
+  );
+  const circlePool = ((circleRows ?? []) as FeedCircle[]).filter(
+    (c) => !myCircles.has(c.id)
+  );
+  const circle =
+    circlePool.find((c) => state && c.state === state) ?? circlePool[0] ?? null;
+
+  const venuePool = (venueRows ?? []) as FeedVenue[];
+  const venue =
+    venuePool.find((v) => state && v.state === state) ?? venuePool[0] ?? null;
+
+  const recaps = await getRecapsFor(state, 12);
+
+  // Assembly. Stories first because they are the only moving thing we own,
+  // then yours, then the ranked column with the supporting units dropped in
+  // at fixed depths so there is always something different a screen away.
+  const units: FeedUnit[] = [];
+  if (recaps.length > 0) units.push({ kind: "stories", recaps });
+
+  for (const e of mine) {
+    units.push({
+      kind: "event",
+      event: e,
+      friends: friendsByEvent.get(e.id) ?? [],
+      reason: hostingIds.has(e.id) ? "You're hosting this" : "You said yes",
+      mine: hostingIds.has(e.id) ? "hosting" : "going",
+    });
+  }
+
+  // A feed that announces its own emptiness is the one thing Meta would never
+  // ship. With nothing to rank, the ideas shelf moves to the top and becomes
+  // the feed rather than the apology at the end of it.
+  if (scored.length === 0) {
+    units.push({ kind: "ideas" });
+  } else {
+    scored.forEach((s, i) => {
+      units.push({ kind: "event", event: s.event, friends: s.friends, reason: s.reason, mine: null });
+      if (i === 1) units.push({ kind: "rate" });
+      if (i === 4 && circle) units.push({ kind: "circle", circle });
+      if (i === 7 && venue) units.push({ kind: "venue", venue });
+    });
+    units.push({ kind: "ideas" });
+  }
+
+  return {
+    firstName,
+    state,
+    units,
+    debug: {
+      candidates: candidates.length,
+      withFriends: scored.filter((s) => s.friends.length > 0).length,
+      friendCount: friendIds.length,
+      inState: candidates.filter((e) => !!state && e.state === state).length,
+    },
+  };
+}
