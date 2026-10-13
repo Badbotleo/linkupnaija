@@ -10,7 +10,13 @@ import EventsFilters from "@/components/EventsFilters";
 // rendered here as of 31 Aug 2026. Kept in the repo, not deleted: EventCard is
 // still what /circles and the profile pages render, and the other two are one
 // import away if this page ever wants them back.
-import EventReel from "@/components/events/EventReel";
+// EventReel is no longer rendered here: the list is the same column of cards
+// the home page uses, so the two surfaces stop disagreeing about what an
+// event looks like. Kept in the repo rather than deleted, the way EventCard
+// and EventsList were, because the component is sound and the decision is
+// about consistency rather than quality.
+import FeedCard from "@/components/feed/FeedCard";
+import { friendsLine } from "@/lib/feed";
 import { dedupeEvents } from "@/lib/content-guards";
 import {
   filterByKind,
@@ -416,9 +422,17 @@ export default async function EventsPage({
 
   // --- Social proof: which of the viewer's friends are going -----------------
   // Map event_id -> { count, names, avatars } for a "friends going" badge.
+  // Gained `id` so the avatar row can key on a person rather than on their
+  // position in an array, and so it can draw a generated face for somebody
+  // with no photo the way every other avatar in the app does.
   const friendsGoing: Record<
     string,
-    { count: number; names: string[]; avatars: (string | null)[] }
+    {
+      count: number;
+      names: string[];
+      avatars: (string | null)[];
+      people: { id: string; name: string | null; avatar_url: string | null }[];
+    }
   > = {};
   if (user && feedEvents.length) {
     const { data: connRows } = await supabase
@@ -432,20 +446,31 @@ export default async function EventsPage({
     if (friendIds.length) {
       const { data: fr } = await supabase
         .from("rsvps")
-        .select("event_id, users!rsvps_user_id_fkey(name, avatar_url)")
+        .select("event_id, user_id, users!rsvps_user_id_fkey(name, avatar_url)")
         .eq("status", "accepted")
         .in("user_id", friendIds)
         .in("event_id", feedEvents.map((e) => e.id));
       for (const row of (fr ?? []) as unknown as {
         event_id: string;
+        user_id: string;
         users: { name: string | null; avatar_url: string | null } | null;
       }[]) {
-        const g = (friendsGoing[row.event_id] ??= { count: 0, names: [], avatars: [] });
+        const g = (friendsGoing[row.event_id] ??= {
+          count: 0,
+          names: [],
+          avatars: [],
+          people: [],
+        });
         g.count++;
         if (g.names.length < 3) {
           g.names.push(row.users?.name ?? "A friend");
           g.avatars.push(row.users?.avatar_url ?? null);
         }
+        g.people.push({
+          id: row.user_id,
+          name: row.users?.name ?? null,
+          avatar_url: row.users?.avatar_url ?? null,
+        });
       }
     }
   }
@@ -631,9 +656,68 @@ export default async function EventsPage({
         </p>
       )}
 
+      {/* ONE COLUMN, THE SAME ONE THE HOME PAGE IS NOW.
+          This was a full-screen swipe reel. It is a good reel, and that was
+          the problem: the home page is a column of cards, so "See all 39
+          link-ups" took somebody out of one interaction and dropped them in
+          a different one, on the same events, two taps apart. Whichever of
+          the two is better, having both is worse than having either.
+
+          Everything the reel was fed still happens: the filters, the search,
+          the geo scoping, the widening fallback, the pagination, the
+          trending pass and the host badges all run exactly as before. Only
+          the shape of the list changed. */}
       {!error && feedEvents.length > 0 && (
-        <div className="mt-2 sm:mt-4">
-          <EventReel events={feedEvents} past={past} />
+        <div className="mx-auto mt-3 max-w-[600px] space-y-3 sm:mt-4">
+          {feedEvents.map((e) => {
+            const g = friendsGoing[e.id];
+            const friends = g?.people ?? [];
+            const days = Math.round(
+              (new Date(`${e.date}T00:00:00`).getTime() -
+                new Date(new Date().toDateString()).getTime()) /
+                86_400_000
+            );
+            return (
+              <FeedCard
+                key={e.id}
+                event={{
+                  id: e.id,
+                  title: e.title,
+                  category: e.category,
+                  date: e.date,
+                  time: e.time,
+                  location: e.location,
+                  state: e.state,
+                  price: e.price,
+                  cover_image_url: e.cover_image_url,
+                  is_listing:
+                    (e as { is_listing?: boolean | null }).is_listing ?? null,
+                  organiser_name:
+                    (e as { organiser_name?: string | null }).organiser_name ??
+                    null,
+                }}
+                friends={friends.map((p) => ({ ...p, state: null }))}
+                reason={
+                  friends.length > 0
+                    ? friendsLine(friends.map((p) => p.name))
+                    : // Trending is the strongest thing we can say to
+                      // somebody with no friends on the platform yet, and it
+                      // was previously computed and then shown nowhere on
+                      // this list.
+                      trendingIds.includes(e.id)
+                      ? "Filling up fast this week"
+                      : past
+                        ? `${e.location}${e.state ? `, ${e.state}` : ""}`
+                        : days <= 0
+                          ? "Today"
+                          : days === 1
+                            ? "Tomorrow"
+                            : `${days} days away${e.state ? ` in ${e.state}` : ""}`
+                }
+                mine={null}
+              />
+            );
+          })}
         </div>
       )}
 
