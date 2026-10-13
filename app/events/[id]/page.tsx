@@ -43,6 +43,8 @@ import EventPictures from "@/components/events/EventPictures";
 import StickyJoinBar from "@/components/events/StickyJoinBar";
 import { eventJsonLd, jsonLdScript } from "@/lib/structured-data";
 import RecapReel from "@/components/home/RecapReel";
+import FriendsGoing from "@/components/feed/FriendsGoing";
+import { friendsLine } from "@/lib/feed";
 import { getRecapsForEvent } from "@/lib/recaps";
 import { isProActive, showsVerifiedBadge } from "@/lib/pro";
 import StateIcon from "@/components/ui/StateIcon";
@@ -642,6 +644,30 @@ export default async function EventDetailPage({
         {event.title}
       </h1>
 
+      {/* WHO ELSE IS GOING, BEFORE THE FACTS.
+          It was a tinted strip of text under the facts strip, led by a
+          handshake emoji the sweep missed, reading "Your friends Tobi and 2
+          others are going to this". Faces are read before text is parsed:
+          you recognise your own people at a glance and the sentence only
+          confirms it. And it belongs above the date and the price, because
+          for anybody who has a friend going it is the fact the decision is
+          actually made on. */}
+      {friendsGoing.length > 0 && (
+        <div className="mt-3.5">
+          <FriendsGoing
+            friends={friendsGoing.map((a) => ({
+              id: a.user_id,
+              name: a.users?.name ?? null,
+              avatar_url: a.users?.avatar_url ?? null,
+              state: null,
+            }))}
+            line={friendsLine(
+              friendsGoing.map((a) => a.users?.name ?? null)
+            )}
+          />
+        </div>
+      )}
+
       {/* One aligned icon column and hairline rules, in place of a four-box
           grid that lived behind a tab. These are the facts the decision is
           made on, so they are not a tab. */}
@@ -697,19 +723,6 @@ export default async function EventDetailPage({
           />
         )}
       </dl>
-
-      {friendsGoing.length > 0 && (
-        <div className="mt-3 flex items-center gap-2 rounded-2xl bg-brand-50 px-4 py-3 text-sm font-semibold text-brand dark:bg-brand/20">
-          <span aria-hidden>🤝</span>
-          <span>
-            {friendsGoing.length === 1
-              ? `Your friend ${friendsGoing[0].users?.name ?? "is"} is going to this`
-              : `Your friends ${friendsGoing[0].users?.name ?? ""} and ${
-                  friendsGoing.length - 1
-                } other${friendsGoing.length - 1 > 1 ? "s" : ""} are going to this`}
-          </span>
-        </div>
-      )}
 
       {/* The host's other pictures. `gallery_urls` only exists once
           migration-event-gallery.sql has run, so read it defensively —

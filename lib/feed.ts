@@ -258,12 +258,23 @@ function daysUntil(date: string): number {
   return Math.round((d - today) / 86_400_000);
 }
 
+/**
+ * "Tobi and 2 others are going."
+ *
+ * Exported because the event page says the same thing about the same people,
+ * and two places phrasing it differently is how a product starts to feel like
+ * several products. First names only: a guest list is not a register.
+ */
+export function friendsLine(names: (string | null | undefined)[]): string {
+  const first = names.map((n) => n?.split(" ")[0]).filter(Boolean);
+  if (first.length === 0) return "";
+  if (first.length === 1) return `${first[0]} is going`;
+  if (first.length === 2) return `${first[0]} and ${first[1]} are going`;
+  return `${first[0]} and ${first.length - 1} others are going`;
+}
+
 function firstNames(friends: FriendUser[]): string {
-  const names = friends.map((f) => f.name?.split(" ")[0]).filter(Boolean);
-  if (names.length === 0) return "";
-  if (names.length === 1) return `${names[0]} is going`;
-  if (names.length === 2) return `${names[0]} and ${names[1]} are going`;
-  return `${names[0]} and ${names.length - 1} others are going`;
+  return friendsLine(friends.map((f) => f.name));
 }
 
 export async function buildFeed(
