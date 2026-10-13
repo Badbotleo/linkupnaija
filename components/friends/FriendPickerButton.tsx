@@ -67,7 +67,7 @@ export default function FriendPickerButton({
       if (mode === "invite") {
         const { error } = await supabase.rpc("notify_friend", {
           p_friend: friend.id,
-          p_message: `wants you to join "${eventTitle}" on LinkUpNaija! 🎉`,
+          p_message: `wants you to join "${eventTitle}" on LinkUpNaija!`,
           p_event: eventId,
         });
         if (error) throw error;
@@ -77,7 +77,7 @@ export default function FriendPickerButton({
             body: { friendId: friend.id, eventId },
           })
           .catch(() => {});
-        toast.success(`Invited ${friend.name ?? "your friend"} 🎉`);
+        toast.success(`Invited ${friend.name ?? "your friend"}`);
         setOpen(false);
       } else {
         const { error } = await supabase.rpc("join_with_friend", {
@@ -86,7 +86,7 @@ export default function FriendPickerButton({
         });
         if (error) throw error;
         toast.success(
-          `Request sent for you and ${friend.name ?? "your friend"} 🤝`
+          `Request sent for you and ${friend.name ?? "your friend"}`
         );
         setOpen(false);
         router.refresh();

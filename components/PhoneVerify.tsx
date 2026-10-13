@@ -57,7 +57,7 @@ export default function PhoneVerify({
       setCode(testCode);
       toast.success(`Test mode: your code is ${testCode}`);
     } else {
-      toast.success("Code sent 📲");
+      toast.success("Code sent");
     }
     setStep("code");
   }
@@ -73,7 +73,7 @@ export default function PhoneVerify({
       return;
     }
     setVerified(true);
-    toast.success("Phone verified ✅");
+    toast.success("Phone verified");
   }
 
   return (

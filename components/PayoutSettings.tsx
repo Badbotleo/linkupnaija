@@ -84,7 +84,7 @@ export default function PayoutSettings({
         setError(data.error || "Could not save payout details.");
       } else {
         if (data.account_name) setAccountName(data.account_name);
-        setMsg("Payout details saved & subaccount created ✅");
+        setMsg("Payout details saved and subaccount created");
         router.refresh();
       }
     } catch {

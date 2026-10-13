@@ -3,13 +3,19 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { subscribeToasts, type ToastItem } from "@/lib/toast";
+import LineIcon from "@/components/ui/LineIcon";
 
-const STYLES: Record<ToastItem["type"], { bar: string; ring: string; icon: string }> =
-  {
-    success: { bar: "bg-naija", ring: "border-naija-200", icon: "✅" },
-    error: { bar: "bg-red-500", ring: "border-red-200", icon: "⚠️" },
-    info: { bar: "bg-brand", ring: "border-brand/30", icon: "💜" },
-  };
+// Drawn glyphs, not typed ones. A toast already carried a tick emoji of its
+// own, so every message ending in one showed two, and the purple heart on an
+// informational toast was a mood rather than a status.
+const STYLES: Record<
+  ToastItem["type"],
+  { bar: string; ring: string; icon: string; tint: string }
+> = {
+  success: { bar: "bg-naija", ring: "border-naija-200", icon: "check", tint: "text-naija" },
+  error: { bar: "bg-red-500", ring: "border-red-200", icon: "flag", tint: "text-red-500" },
+  info: { bar: "bg-brand", ring: "border-brand/30", icon: "bell", tint: "text-brand" },
+};
 
 const DURATION = 4000;
 
@@ -58,7 +64,7 @@ function ToastCard({
       className={`pointer-events-auto relative w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border bg-white shadow-lg ${s.ring}`}
     >
       <div className="flex items-start gap-2.5 p-3.5 pr-9 text-sm text-gray-800">
-        <span aria-hidden>{s.icon}</span>
+        <LineIcon name={s.icon} size={17} className={`mt-px shrink-0 ${s.tint}`} />
         <p className="flex-1">{item.message}</p>
       </div>
       <button

@@ -57,7 +57,7 @@ export default function ProfilePhotos({
     }
     setPhotos((prev) => [...added, ...prev]);
     setBusy(false);
-    if (added.length) toast.success(`Added ${added.length} photo${added.length > 1 ? "s" : ""} 📸`);
+    if (added.length) toast.success(`Added ${added.length} photo${added.length > 1 ? "s" : ""}`);
   }
 
   async function remove(id: string) {

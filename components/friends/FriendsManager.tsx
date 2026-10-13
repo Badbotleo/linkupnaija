@@ -219,7 +219,7 @@ export default function FriendsManager({
       .insert({ requester_id: meId, receiver_id: userId, status: "pending" });
     if (error) toast.error("Couldn't send request. You may already be connected.");
     else {
-      toast.success("Friend request sent 👋");
+      toast.success("Friend request sent");
       await loadConnections();
     }
     setBusyId(null);
@@ -256,7 +256,7 @@ export default function FriendsManager({
       .eq("id", connId);
     if (error) toast.error("Something went wrong.");
     else {
-      toast.success(status === "accepted" ? "You're now friends 🤝" : "Request declined");
+      toast.success(status === "accepted" ? "You're now friends" : "Request declined");
       await refresh();
     }
     setBusyId(null);

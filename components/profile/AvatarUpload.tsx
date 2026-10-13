@@ -48,7 +48,7 @@ export default function AvatarUpload({
     if (error) toast.error("Couldn't save photo.");
     else {
       setUrl(publicUrl);
-      toast.success("Photo updated ✨");
+      toast.success("Photo updated");
       router.refresh();
     }
   }

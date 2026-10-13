@@ -390,7 +390,7 @@ export default function RsvpButton({
       await supabase.from("notifications").insert({
         user_id: user.id,
         event_id: eventId,
-        message: `Payment confirmed ✅ You're going to ${eventTitle}!`,
+        message: `Payment confirmed. You're going to ${eventTitle}!`,
       });
     }
 
@@ -399,8 +399,8 @@ export default function RsvpButton({
     else confettiJoin();
     toast.success(
       dueNow > 0
-        ? "Payment confirmed ✅ Your request has been sent!"
-        : "Request sent 🎉 The host will review it."
+        ? "Payment confirmed. Your request has been sent!"
+        : "Request sent. The host will review it."
     );
     setStatus("pending");
     router.refresh();
@@ -591,7 +591,7 @@ export default function RsvpButton({
       {status === "accepted" && (
         <>
           <div className="rounded-xl bg-naija-50 px-4 py-3 text-center text-sm font-semibold text-naija-700">
-            ✓ You&apos;re going! See you there 🎉
+            You&apos;re going. See you there
           </div>
           <button
             type="button"

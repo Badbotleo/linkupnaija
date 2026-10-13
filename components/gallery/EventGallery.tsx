@@ -100,7 +100,7 @@ export default function EventGallery({
     setPhotos((prev) => [...added, ...prev]);
     setStaged([]);
     setUploading(false);
-    if (added.length) toast.success(`Shared ${added.length} photo${added.length > 1 ? "s" : ""} 📸`);
+    if (added.length) toast.success(`Shared ${added.length} photo${added.length > 1 ? "s" : ""}`);
   }
 
   async function remove(photo: EventPhoto) {
@@ -461,7 +461,7 @@ async function sharePhoto(photo: EventPhoto) {
   }
   try {
     await navigator.clipboard.writeText(url);
-    toast.success("Photo link copied 📋");
+    toast.success("Photo link copied");
   } catch {
     toast.error("Couldn't copy the link.");
   }
@@ -524,7 +524,7 @@ async function shareCollage(photos: EventPhoto[], eventTitle: string) {
     a.href = url;
     a.download = "linkupnaija-memories.png";
     a.click();
-    toast.success("Collage downloaded. Share it anywhere! 🖼️");
+    toast.success("Collage downloaded. Share it anywhere.");
   } catch {
     // Tainted canvas / load failure — fall back to sharing the event link.
     try {

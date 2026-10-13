@@ -75,7 +75,7 @@ export default function AddFriendButton({
     else {
       if (data?.id) setConnId(data.id);
       setRel("outgoing");
-      toast.success("Friend request sent 👋");
+      toast.success("Friend request sent");
     }
   }
 

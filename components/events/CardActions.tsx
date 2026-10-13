@@ -107,7 +107,7 @@ export default function CardActions({
     if (error) toast.error(error.message);
     else {
       setGoing("pending");
-      toast.success("Request sent 🎉 The host will review it.");
+      toast.success("Request sent. The host will review it.");
     }
     setBusy(false);
   }

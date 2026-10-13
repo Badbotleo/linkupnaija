@@ -6,6 +6,7 @@ import type { AppNotification } from "@/lib/types";
 import EnablePush from "@/components/EnablePush";
 import LineIcon from "@/components/ui/LineIcon";
 import InboxTabs from "@/components/InboxTabs";
+import { notificationKind } from "@/lib/notification-kind";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Notifications" };
@@ -78,14 +79,19 @@ export default async function NotificationsPage() {
       ) : (
         <ul className="mt-5 space-y-2">
           {items.map((n) => {
+            // Was a bell in a brand disc on every single row, which made a
+            // payout, a friend request and a ticket sale indistinguishable.
+            const kind = notificationKind(n.message, n.link);
             const body = (
               <div
                 className={`flex items-start gap-3 rounded-2xl border p-4 shadow-sm ${
                   n.read ? "border-gray-100 bg-white" : "border-brand/20 bg-brand-50/40"
                 }`}
               >
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-50 text-brand">
-                  <LineIcon name="bell" size={17} />
+                <span
+                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${kind.tone}`}
+                >
+                  <LineIcon name={kind.icon} size={17} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm text-gray-800">{n.message}</p>

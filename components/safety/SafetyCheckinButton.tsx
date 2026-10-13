@@ -27,7 +27,7 @@ export default function SafetyCheckinButton({ eventId }: { eventId: string }) {
     if (error) toast.error("Couldn't check in. Try again.");
     else {
       setDone(true);
-      toast.success("Glad you're safe! ✅");
+      toast.success("Glad you're safe.");
     }
   }
 

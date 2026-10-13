@@ -89,7 +89,7 @@ export default function ReservationModal({
       toast.error(error.message);
     } else {
       setDone(true);
-      toast.success("Reservation request sent! 🎉");
+      toast.success("Reservation request sent.");
     }
     setLoading(false);
   }

@@ -21,7 +21,7 @@ export default function EnablePush() {
     setBusy(false);
     if (ok) {
       setStatus("granted");
-      toast.success("Push notifications on 🔔");
+      toast.success("Push notifications on");
     } else {
       const s = await pushStatus();
       setStatus(s);

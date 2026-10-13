@@ -538,7 +538,7 @@ export default function HostForm({
         circle_id: postToCircle,
         user_id: user.id,
         event_id: data.id,
-        content: `📣 New event: ${form.title.trim()}`,
+        content: `New event: ${form.title.trim()}`,
       });
     }
 

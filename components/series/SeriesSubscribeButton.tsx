@@ -58,7 +58,7 @@ export default function SeriesSubscribeButton({
       if (!error) {
         setSubscribed(true);
         setCount((c) => c + 1);
-        toast.success("Subscribed 🔔 You'll be notified of new events.");
+        toast.success("Subscribed. You'll be notified of new events.");
       }
     }
     setBusy(false);

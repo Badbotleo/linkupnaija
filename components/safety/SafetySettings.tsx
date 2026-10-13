@@ -28,7 +28,7 @@ export default function SafetySettings({
       .eq("id", userId);
     setSaving(false);
     if (error) toast.error("Couldn't save. Try again.");
-    else toast.success("Emergency contact saved ✅");
+    else toast.success("Emergency contact saved");
   }
 
   return (

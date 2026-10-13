@@ -29,17 +29,30 @@ export default async function MessagesPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?redirect=/messages");
 
-  // The other half of the inbox, for the switcher's badge.
-  const { count: unreadAlerts } = await supabase
-    .from("notifications")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", user.id)
-    .eq("read", false);
+  // Both halves of the inbox, for the switcher's badges.
+  //
+  // The Messages count was hardcoded to zero here. Alerts can honestly show
+  // zero on their own page because that page marks them read on view; this
+  // one does not, since a DM is read by opening its thread. So somebody
+  // arriving with five unread conversations saw no badge on the tab they
+  // were standing on, which is the one number they needed.
+  const [{ count: unreadAlerts }, { count: unreadDms }] = await Promise.all([
+    supabase
+      .from("notifications")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("read", false),
+    supabase
+      .from("messages")
+      .select("*", { count: "exact", head: true })
+      .eq("receiver_id", user.id)
+      .eq("read", false),
+  ]);
 
   return (
     <div>
       <AppHeader title="Messages" subtitle="Hosts, guests and your paddies" back />
-      <InboxTabs alerts={unreadAlerts ?? 0} messages={0} />
+      <InboxTabs alerts={unreadAlerts ?? 0} messages={unreadDms ?? 0} />
 
       <div className="container-page max-w-[720px] py-4">
         <UserMessages meId={user.id} />

@@ -43,7 +43,7 @@ export default function BannerUpload({
     if (error) toast.error("Couldn't save banner.");
     else {
       setUrl(publicUrl);
-      toast.success("Banner updated ✨");
+      toast.success("Banner updated");
       router.refresh();
     }
   }
