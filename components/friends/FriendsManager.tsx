@@ -85,12 +85,75 @@ export default function FriendsManager({
 
   const loadSuggestions = useCallback(
     async (rel: Map<string, Relation>) => {
-      if (!myState) {
-        setSuggestions([]);
+      // WHO YOU WERE IN A ROOM WITH, FIRST.
+      //
+      // This offered a random slice of everybody in your state, which is a
+      // stranger in a city of twenty million. Nobody adds that person, so
+      // almost nobody on the platform has connections, and every signal built
+      // on connections renders nothing: the friends row on an event, the
+      // avatars on a circle, the whole ranking of the feed. The weakest link
+      // in the product was here.
+      //
+      // Somebody who went to the same link-up is a different proposition
+      // entirely. You stood in the same room. The data has existed since the
+      // first RSVP and nothing has ever read it for this.
+      //
+      // Ranked by how many link-ups you have shared, so the person you keep
+      // running into comes first.
+      const met = new Map<string, number>();
+      const { data: mine } = await supabase
+        .from("rsvps")
+        .select("event_id")
+        .eq("user_id", meId)
+        .eq("status", "accepted");
+      const myEventIds = ((mine ?? []) as { event_id: string }[]).map(
+        (r) => r.event_id
+      );
+      if (myEventIds.length > 0) {
+        const { data: others } = await supabase
+          .from("rsvps")
+          .select("user_id")
+          .in("event_id", myEventIds)
+          .eq("status", "accepted")
+          .neq("user_id", meId);
+        for (const r of (others ?? []) as { user_id: string }[]) {
+          met.set(r.user_id, (met.get(r.user_id) ?? 0) + 1);
+        }
+      }
+
+      const metIds = Array.from(met.entries())
+        .filter(([id]) => !rel.has(id))
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map(([id]) => id);
+
+      let metPeople: FriendUser[] = [];
+      if (metIds.length > 0) {
+        const { data: people } = await supabase
+          .from("users")
+          .select("id, name, avatar_url, state, is_pro, pro_expires_at")
+          .in("id", metIds);
+        // Back into shared-event order: `in` returns whatever order it likes.
+        const byId = new Map(
+          ((people ?? []) as FriendUser[]).map((u) => [u.id, u])
+        );
+        metPeople = metIds
+          .map((id) => byId.get(id))
+          .filter((u): u is FriendUser => !!u);
+      }
+
+      if (metPeople.length >= 6) {
+        setSuggestions(metPeople.slice(0, 6));
         return;
       }
-      // "People you might know" — same-state members, excluding me + anyone
-      // already connected/requested. Random offset gives variety on refresh.
+
+      // Then, and only to fill the gap, people near you. Kept because a new
+      // member who has been to nothing yet would otherwise be shown an empty
+      // panel on the one screen that exists to introduce them to somebody.
+      if (!myState) {
+        setSuggestions(metPeople);
+        return;
+      }
       const { count } = await supabase
         .from("users")
         .select("*", { count: "exact", head: true })
@@ -108,7 +171,13 @@ export default function FriendsManager({
         .range(offset, offset + 29);
 
       const candidates = (data ?? []) as FriendUser[];
-      setSuggestions(candidates.filter((u) => !rel.has(u.id)).slice(0, 6));
+      const already = new Set(metPeople.map((u) => u.id));
+      setSuggestions(
+        [
+          ...metPeople,
+          ...candidates.filter((u) => !rel.has(u.id) && !already.has(u.id)),
+        ].slice(0, 6)
+      );
     },
     [meId, myState, supabase]
   );
