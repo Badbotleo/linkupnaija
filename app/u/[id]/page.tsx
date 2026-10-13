@@ -139,6 +139,52 @@ export default async function PublicProfilePage({
     friendCount = count ?? 0;
   }
 
+  // WHERE YOU TWO HAVE ALREADY BEEN IN THE SAME ROOM.
+  //
+  // This page carried three counts and a join date, all of them about the
+  // stranger on their own. None of it answers the question somebody opening
+  // a profile is actually asking, which is "do I know this person". A shared
+  // night answers it outright, and it is the thing that turns a profile view
+  // into a friend request.
+  //
+  // Not mutual friends, which would be stronger still: RLS on connections
+  // only exposes rows the viewer is part of, so counting somebody else's
+  // friends needs a SECURITY DEFINER function and a migration. Accepted
+  // RSVPs are readable today, which is why this is the version that ships.
+  let together: { id: string; title: string; date: string }[] = [];
+  if (user && user.id !== params.id) {
+    const [{ data: mineRows }, { data: theirRows }] = await Promise.all([
+      supabase
+        .from("rsvps")
+        .select("event_id")
+        .eq("user_id", user.id)
+        .eq("status", "accepted"),
+      supabase
+        .from("rsvps")
+        .select("event_id")
+        .eq("user_id", params.id)
+        .eq("status", "accepted"),
+    ]);
+    const mineIds = new Set(
+      ((mineRows ?? []) as { event_id: string }[]).map((r) => r.event_id)
+    );
+    const shared = Array.from(
+      new Set(
+        ((theirRows ?? []) as { event_id: string }[])
+          .map((r) => r.event_id)
+          .filter((id) => mineIds.has(id))
+      )
+    );
+    if (shared.length > 0) {
+      const { data: evs } = await supabase
+        .from("events")
+        .select("id, title, date")
+        .in("id", shared)
+        .order("date", { ascending: false });
+      together = (evs ?? []) as { id: string; title: string; date: string }[];
+    }
+  }
+
   const { data: hs } = await supabase
     .from("host_stats")
     .select("*")
@@ -242,6 +288,27 @@ export default async function PublicProfilePage({
             {lastSeenLabel((profile as { last_seen_at?: string | null }).last_seen_at)}
           </p>
         )}
+        {/* Above the badges and the counts, because it is the only line on
+            this page that is about the two of you rather than about them. */}
+        {together.length > 0 && (
+          <div className="mt-3 inline-flex max-w-full items-center gap-2 rounded-full bg-brand-50 px-3.5 py-2 text-left dark:bg-brand/20">
+            <LineIcon name="users" size={15} className="shrink-0 text-brand" />
+            <p className="min-w-0 text-[13.5px] font-semibold text-brand">
+              You were both at{" "}
+              <Link
+                href={`/events/${together[0].id}`}
+                className="underline underline-offset-2 hover:opacity-80"
+              >
+                {together[0].title}
+              </Link>
+              {together.length > 1 &&
+                ` and ${together.length - 1} other${
+                  together.length - 1 === 1 ? "" : "s"
+                }`}
+            </p>
+          </div>
+        )}
+
         {badges.length > 0 && (
           <div className="mt-2">
             <HostBadges badges={badges} />

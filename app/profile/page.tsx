@@ -161,6 +161,40 @@ export default async function ProfilePage({
           />
         </div>
 
+        {/* The one nudge this page has earned.
+            A Friends count of zero is the platform's actual bottleneck: the
+            friend row on an event, the faces on a circle and the ranking of
+            the feed all read connections, and all of them render nothing
+            without any. Shown only to somebody who has actually been out,
+            because "add the people you met" is meaningless to a member who
+            has not met anybody yet, and it names the number so it reads as a
+            fact about them rather than a prompt we show everyone. */}
+        {(friends.count ?? 0) === 0 && (attending.count ?? 0) > 0 && (
+          <Link
+            href="/friends"
+            className="mt-3 flex items-center gap-3 rounded-2xl bg-brand-50 px-4 py-3 transition active:scale-[0.99] dark:bg-brand/20"
+          >
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/80 text-brand dark:bg-white/10">
+              <LineIcon name="users" size={17} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[14.5px] font-bold text-gray-900 dark:text-white">
+                You&apos;ve been to {attending.count} link-up
+                {attending.count === 1 ? "" : "s"} and added nobody
+              </span>
+              <span className="mt-0.5 block text-[13px] text-gray-600 dark:text-white/70">
+                The people who were there with you are waiting on your friends
+                page.
+              </span>
+            </span>
+            <LineIcon
+              name="chevronRight"
+              size={16}
+              className="shrink-0 text-gray-400"
+            />
+          </Link>
+        )}
+
         {/* Edit, Share, and their Instagram — one row, the way every profile
             people already use lays it out. The header keeps a gear rather
             than a second "Edit", which was the same action twice. */}
