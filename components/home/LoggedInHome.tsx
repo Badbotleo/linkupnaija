@@ -17,6 +17,7 @@ import FeaturedRail from "@/components/home/FeaturedRail";
 import CollabCard from "@/components/home/CollabCard";
 import { REFERRAL_REWARD } from "@/lib/constants";
 import { formatNaira } from "@/lib/paystack";
+import { getFeaturedEvents } from "@/lib/featured";
 
 interface CircleLite {
   id: string;
@@ -83,7 +84,7 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
   const supabase = createClient();
   const today = new Date().toISOString().slice(0, 10);
 
-  const [{ data: profile }, { data: rsvpRows }, { data: hostingRows }] =
+  const [{ data: profile }, { data: rsvpRows }, { data: hostingRows }, featured] =
     await Promise.all([
       supabase.from("users").select("name, state, interests").eq("id", userId).single(),
       supabase
@@ -102,6 +103,10 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
         .gte("date", today)
         .order("date", { ascending: true })
         .limit(4),
+      // Fetched here rather than inside FeaturedRail so the ids are known
+      // before the personalised and local shelves are built, and can be held
+      // back from both.
+      getFeaturedEvents(8),
     ]);
 
   const firstName = profile?.name?.split(" ")[0] ?? "there";
@@ -117,6 +122,11 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 4);
   const hostingIds = new Set(hosting.map((e) => e.id));
+
+  // Featured is the first events shelf on the page, so nothing below it
+  // should repeat it. Added after `upcoming` is built, on purpose: an event
+  // you've joined still belongs in your own line-up.
+  for (const e of featured) seen.add(e.id);
 
   // Picked for you — upcoming events whose category matches the user's
   // interests, soonest first. Events they already have are excluded.
@@ -250,19 +260,29 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
         </Rail>
       )}
 
-      {/* Moved above the collab and featured rails.
-          It sat sixth, under the greeting, the shortcuts, your line-up, an
-          events rail, the partner card and the featured shelf. A member with
-          nothing in their calendar had to scroll past five things telling
-          them about events they had already declined to reach the one screen
-          that answers "where could I go". */}
-      <ThingsToDo state={profile?.state ?? null} />
+      {/* Rate anywhere they booked and have now been to. A chore, not
+          browsing, so it sits in the block about their own activity rather
+          than interrupting the shelves further down. */}
+      <RateVenuePrompt userId={userId} />
 
-      <CollabCard />
+      {/* ─── Where to go ───────────────────────────────────────────────
+          Three shelves of real, upcoming, bookable events, back to back:
+          curated, then personal, then local. Nothing else is allowed in
+          between them.
 
-      <FeaturedRail />
+          "Things to do this week" used to lead here, above every one of
+          them. The note justifying that said it was "the one screen that
+          answers 'where could I go'" — but it isn't. It's a shelf of ideas
+          whose buttons say "Host it". It answers "what could I organise",
+          which is a far bigger ask than joining something already happening,
+          and it was outranking every event on the platform to do it. It now
+          sits at the bottom, where it belongs: the answer for a member who
+          has read the whole feed and found nothing.
 
-      <PastEventsReel state={profile?.state ?? null} />
+          Note the visitor home already had this order. The two pages
+          disagreed about which came first; this is the logged-in one
+          catching up. */}
+      <FeaturedRail events={featured} />
 
       {/* Picked for you — a deck, because a recommendation deserves a look
           rather than a skim past */}
@@ -358,13 +378,19 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
         </Rail>
       )}
 
-      {/* Rate anywhere they booked and have now been to */}
-      <RateVenuePrompt userId={userId} />
+      {/* ─── Proof ─────────────────────────────────────────────────────
+          Everything above this line is a promise about a night that hasn't
+          happened. These two are the receipts: footage from link-ups that
+          already went ahead, and the brands running them with us. They earn
+          their place here by making the three shelves above believable, and
+          they'd be wasted at the top where there's nothing yet to believe. */}
+      <PastEventsReel state={profile?.state ?? null} />
 
-      {/* Turn browsing into hosting — same shelf as the visitor home, but
-          ranked against the state on their own profile. */}
+      <CollabCard />
 
-      {/* Somewhere to belong between events */}
+      {/* ─── Go deeper ─────────────────────────────────────────────────
+          For the member who has found their night and is still scrolling:
+          somewhere to belong between events, and somewhere to book. */}
       {circles.length > 0 && (
         <Rail
           title="Circles to join"
@@ -429,6 +455,14 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
         </Rail>
       )}
 
+      {/* ─── Nothing for you? Make it yourself ─────────────────────────
+          The end of the feed, and the only honest place for an ask this big.
+          A member who has scrolled past the featured shelf, their own
+          recommendations, their state and the circles has told us plainly
+          that nothing on the platform fits. That is the moment "you be the
+          host" lands, and it's the one moment it does. */}
+      <ThingsToDo state={profile?.state ?? null} />
+
       {/* The two ways out when the feed has nothing for you.
           Deliberately not a gradient marketing banner: an ad for the app,
           inside the app, at the end of somebody's own feed, is the wrong
@@ -437,8 +471,10 @@ export default async function LoggedInHome({ userId }: { userId: string }) {
           tiles, side by side, are loud enough to be offers and quiet enough
           to still belong to the page. */}
       <section className="container-page mt-9">
+        {/* Was "Nothing catching your eye?", which now reads oddly directly
+            under a shelf that has just made eight suggestions. */}
         <h2 className="text-[13px] font-bold uppercase tracking-[0.12em] text-gray-400">
-          Nothing catching your eye?
+          While you&apos;re here
         </h2>
 
         <div className="mt-2 grid grid-cols-2 gap-3">

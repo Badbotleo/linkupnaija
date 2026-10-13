@@ -4,17 +4,28 @@ import EventCover from "@/components/EventCover";
 import LineIcon from "@/components/ui/LineIcon";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
-import { getFeaturedEvents } from "@/lib/featured";
+import { getFeaturedEvents, type FeaturedEvent } from "@/lib/featured";
 
 /**
  * The featured shelf, on both home pages.
  *
  * Renders nothing when nothing is featured — an empty "Featured" heading
  * advertises that we had nothing worth pushing.
+ *
+ * Takes the events as a prop when the caller has already fetched them. The
+ * logged-in home needs the ids before it builds its other shelves, so that a
+ * featured event doesn't also turn up under "Picked for you" and "Happening
+ * in Lagos" — the same night three times is most of what makes a feed feel
+ * scattered. Fetches for itself otherwise, which is what the visitor home
+ * does.
  */
-export default async function FeaturedRail() {
+export default async function FeaturedRail({
+  events: provided,
+}: {
+  events?: FeaturedEvent[];
+} = {}) {
   // Eight, so the desktop grid is two full rows of four.
-  const events = await getFeaturedEvents(8);
+  const events = provided ?? (await getFeaturedEvents(8));
   if (events.length === 0) return null;
 
   // Desktop shows only whole rows. Six featured events in a four-column grid
