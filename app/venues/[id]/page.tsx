@@ -1,6 +1,7 @@
 import AppHeader from "@/components/AppHeader";
 import { createClient } from "@/lib/supabase/server";
 import VenueDetail from "@/components/venues/VenueDetail";
+import GoogleReviews from "@/components/venues/GoogleReviews";
 import OnboardedVenue, {
   type OnboardedVenueData,
 } from "@/components/venues/OnboardedVenue";
@@ -113,6 +114,18 @@ export default async function VenuePage({
         );
       }
 
+      // Its own query, deliberately. google_place_id arrives with
+      // migration-venue-google-place.sql, and PostgREST rejects the ENTIRE
+      // select when it names a column the role cannot read: folding this into
+      // the select above would 404 every venue page on a database that has
+      // not run the migration yet. Asked separately, a missing column costs
+      // one failed query and no reviews.
+      const { data: placeRow } = await supabase
+        .from("venues")
+        .select("google_place_id")
+        .eq("id", params.id)
+        .maybeSingle<{ google_place_id: string | null }>();
+
       const v = venue as unknown as OnboardedVenueData;
       return (
         <div>
@@ -126,6 +139,12 @@ export default async function VenuePage({
                 takenBy === true &&
                 (mine as { status?: string } | null)?.status !== "approved"
               }
+            />
+            {/* Borrowed opinion, until we have our own. Renders nothing
+                without a key, without a place id, or when Google is slow. */}
+            <GoogleReviews
+              placeId={placeRow?.google_place_id ?? null}
+              venueName={v.name}
             />
           </div>
         </div>
