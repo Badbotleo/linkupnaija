@@ -47,6 +47,22 @@ export default function CirclesExplorer({
    * than any number does.
    */
   const [faces, setFaces] = useState<Map<string, { name: string | null; avatar_url: string | null }[]>>(new Map());
+  /**
+   * The viewer's own friends, per circle.
+   *
+   * `faces` answers "is there anybody in here", which was the right question
+   * when this page had nobody on it. It is no longer the strongest one
+   * available. Four strangers prove a circle exists; one person you actually
+   * know is a reason to join it, and it is the same signal the event feed
+   * leads with. Where this has an answer it replaces the generic faces, and
+   * the circle is ranked above circles that do not.
+   *
+   * Empty for a logged-out viewer and for anybody with no connections yet, in
+   * which case the page behaves exactly as it did.
+   */
+  const [friendsIn, setFriendsIn] = useState<
+    Map<string, { id: string; name: string | null; avatar_url: string | null }[]>
+  >(new Map());
 
   const load = useCallback(async () => {
     const [{ data: circleRows }, memRes] = await Promise.all([
@@ -109,6 +125,51 @@ export default function CirclesExplorer({
         }
       }
       setFaces(f);
+
+      // Who you know, in each of them. Its own pair of queries rather than a
+      // filter over the 600 members above: that list is capped and ordered by
+      // nothing in particular, so a friend sitting at position 700 of a big
+      // circle would silently not exist. Only runs for a signed-in viewer who
+      // has connections.
+      if (meId) {
+        const { data: connRows } = await supabase
+          .from("connections")
+          .select("requester_id, receiver_id")
+          .eq("status", "accepted")
+          .or(`requester_id.eq.${meId},receiver_id.eq.${meId}`);
+        const friendIds = (
+          (connRows ?? []) as { requester_id: string; receiver_id: string }[]
+        ).map((c) => (c.requester_id === meId ? c.receiver_id : c.requester_id));
+
+        if (friendIds.length > 0) {
+          const { data: friendRows } = await supabase
+            .from("circle_members")
+            .select("circle_id, user_id, users(name, avatar_url)")
+            .eq("status", "active")
+            .in("circle_id", rows.map((c) => c.id))
+            .in("user_id", friendIds);
+          const fi = new Map<
+            string,
+            { id: string; name: string | null; avatar_url: string | null }[]
+          >();
+          for (const r of (friendRows ?? []) as unknown as {
+            circle_id: string;
+            user_id: string;
+            users: { name: string | null; avatar_url: string | null } | null;
+          }[]) {
+            const list = fi.get(r.circle_id) ?? [];
+            if (!list.some((p) => p.id === r.user_id)) {
+              list.push({
+                id: r.user_id,
+                name: r.users?.name ?? null,
+                avatar_url: r.users?.avatar_url ?? null,
+              });
+            }
+            fi.set(r.circle_id, list);
+          }
+          setFriendsIn(fi);
+        }
+      }
     }
   }, [meId, supabase]);
 
@@ -152,8 +213,12 @@ export default function CirclesExplorer({
    * Yours leads, because a circle you have already joined is the one you came
    * back for.
    */
+  // Somebody you know outranks a busy week and a big membership together.
+  // Posts prove a circle is alive; a friend in it is the reason to walk in.
   const score = (c: Circle) =>
-    (activity.get(c.id)?.posts ?? 0) * 10 + c.member_count;
+    (friendsIn.get(c.id)?.length ?? 0) * 500 +
+    (activity.get(c.id)?.posts ?? 0) * 10 +
+    c.member_count;
 
   const mine = circles.filter((c) => memberships.get(c.id) === "active");
   const taken = new Set(mine.map((c) => c.id));
@@ -171,6 +236,7 @@ export default function CirclesExplorer({
       circle={c}
       activity={activity.get(c.id)}
       faces={faces.get(c.id) ?? []}
+      friends={friendsIn.get(c.id) ?? []}
       status={memberships.get(c.id)}
       busy={busyId === c.id}
       canJoin={!!meId}
@@ -340,11 +406,23 @@ function pulse(a?: { posts: number; last: string }): string | null {
   return `${a.posts} post${a.posts === 1 ? "" : "s"} this week`;
 }
 
+/** "Tobi and 2 others you know." First names: a circle is not a register. */
+function knownLine(
+  people: { name: string | null }[]
+): string {
+  const names = people.map((p) => p.name?.split(" ")[0]).filter(Boolean);
+  if (names.length === 0) return "";
+  if (names.length === 1) return `${names[0]} is in this`;
+  if (names.length === 2) return `${names[0]} and ${names[1]} are in this`;
+  return `${names[0]} and ${names.length - 1} others you know are in this`;
+}
+
 function Card({
   circle,
   status,
   activity,
   faces,
+  friends,
   busy,
   canJoin,
   onJoin,
@@ -353,6 +431,7 @@ function Card({
   status?: "active" | "pending";
   activity?: { posts: number; last: string };
   faces: { name: string | null; avatar_url: string | null }[];
+  friends: { id: string; name: string | null; avatar_url: string | null }[];
   busy: boolean;
   canJoin: boolean;
   onJoin: () => void;
@@ -385,7 +464,25 @@ function Card({
         )}
         <div className="mt-3 flex items-center justify-between gap-2">
           <span className="flex min-w-0 flex-col gap-0.5">
-            {faces.length > 0 ? (
+            {/* Your people first. Four strangers prove the circle exists;
+                one person you know is the reason to join it. */}
+            {friends.length > 0 ? (
+              <span className="flex items-center gap-2">
+                <span className="flex -space-x-2">
+                  {friends.slice(0, 4).map((f) => (
+                    <span
+                      key={f.id}
+                      className="rounded-full ring-2 ring-white dark:ring-[#121212]"
+                    >
+                      <Avatar name={f.name} url={f.avatar_url} size="xs" />
+                    </span>
+                  ))}
+                </span>
+                <span className="truncate text-xs font-bold text-brand">
+                  {knownLine(friends)}
+                </span>
+              </span>
+            ) : faces.length > 0 ? (
               <span className="flex items-center gap-2">
                 <span className="flex -space-x-2">
                   {faces.map((f, i) => (
