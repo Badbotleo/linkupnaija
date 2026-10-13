@@ -1,8 +1,8 @@
 import Link from "next/link";
 import EventCover from "@/components/EventCover";
 import LineIcon from "@/components/ui/LineIcon";
+import CategoryBadge from "@/components/CategoryBadge";
 import FriendsGoing from "./FriendsGoing";
-import { categoryIcon } from "@/lib/category-icons";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { formatNaira } from "@/lib/paystack";
 import { directionsHref } from "@/lib/directions";
@@ -42,8 +42,12 @@ export default function FeedCard({
           noise. Faces win, so the faces keep it. */}
       {friends.length === 0 && (
         <div className="flex items-center gap-2 px-4 pt-3.5">
+          {/* A calendar, because every reason that reaches this line is about
+              when: "Today", "15 days away in Lagos", "You said yes". The
+              sparkle that used to sit here appeared on every card in the
+              app and meant nothing. */}
           <LineIcon
-            name={mine ? "check" : "sparkles"}
+            name={mine ? "check" : "calendar"}
             size={14}
             className={mine ? "text-brand" : "text-gray-400"}
           />
@@ -137,14 +141,19 @@ export default function FeedCard({
         </a>
       </div>
 
-      {/* A line icon, not the emoji chip CategoryBadge still draws. The home
-          page moved its category chips off emoji in the sweep; this is the
-          same chip, kept consistent. */}
+      {/* OUR OWN SET, NOT A LINE ICON.
+          This drew categoryIcon(), which falls back to a sparkle for any
+          category it has no glyph for. Twelve of the twenty-two categories
+          actually in use fall back, Party and Networking among them, so most
+          cards wore the same little star and the chip told you nothing.
+
+          CATEGORY_STYLES has a hand-picked emoji for every one of them, in
+          its own colour, including the drawn Nigerian flag for Cultural Day.
+          That is the set, and CategoryBadge is what draws it. The emoji
+          sweep earlier was about decoration stuck on headings and empty
+          states; this is content. */}
       <div className="px-4 pb-3.5">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600 dark:bg-white/[0.07] dark:text-white/70">
-          <LineIcon name={categoryIcon(event.category)} size={12} />
-          {event.category}
-        </span>
+        <CategoryBadge category={event.category} />
       </div>
     </article>
   );
