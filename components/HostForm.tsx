@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/image";
 import Link from "next/link";
 import { EVENT_CATEGORIES, NIGERIAN_STATES } from "@/lib/constants";
+import LineIcon from "@/components/ui/LineIcon";
 import { FREQUENCY_OPTIONS, nextDates } from "@/lib/series";
 import { formatEventDate } from "@/lib/format";
 import { validateLocation, MAX_LOCATION_LENGTH } from "@/lib/content-guards";
@@ -1185,6 +1186,26 @@ export default function HostForm({
         </label>
       </div>
 
+      {/* Everything most hosts never touch, folded away.
+
+          The form asked eighteen questions before a first-time host could
+          post a picnic. Extra pictures, posting to a circle and setting up a
+          recurring series are all real features and none of them is a
+          decision somebody makes the first time: they are things you come
+          back for once you have hosted one and know what you want.
+
+          A details element rather than React state, because a closed one is the
+          browser's job and the inputs inside stay mounted either way — a
+          host who opens it, types, then closes it does not lose what they
+          typed, which is what a conditional render would have done. */}
+      <details className="group rounded-xl border border-gray-200 dark:border-white/10">
+        <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-bold text-gray-700 dark:text-white/80">
+          More options
+          <span className="text-gray-400 transition group-open:rotate-90">
+            <LineIcon name="chevronRight" size={16} />
+          </span>
+        </summary>
+        <div className="space-y-5 border-t border-gray-200 p-4 dark:border-white/10">
       {/* Up to four more, so five pictures in total. */}
       <div>
         <span className="label">
@@ -1335,6 +1356,8 @@ export default function HostForm({
           </div>
         )}
       </div>
+        </div>
+      </details>
 
       {error && (
         /* The monthly-limit trigger raises a plain Postgres error. Dropping a
