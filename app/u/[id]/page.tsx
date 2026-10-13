@@ -15,6 +15,7 @@ import { showsVerifiedBadge } from "@/lib/pro";
 import ProfilePhotos from "@/components/profile/ProfilePhotos";
 import HostScorecard from "@/components/host/HostScorecard";
 import HostBadges from "@/components/host/HostBadges";
+import FriendsGoing from "@/components/feed/FriendsGoing";
 import BrandIcon from "@/components/ui/BrandIcon";
 import AvatarLightbox from "@/components/profile/AvatarLightbox";
 import { computeBadges } from "@/lib/hostBadges";
@@ -151,6 +152,19 @@ export default async function PublicProfilePage({
   // only exposes rows the viewer is part of, so counting somebody else's
   // friends needs a SECURITY DEFINER function and a migration. Accepted
   // RSVPs are readable today, which is why this is the version that ships.
+  // Friends in common. Arrives with migration-mutual-friends.sql; until that
+  // runs the RPC 404s and this stays empty, which costs one failed call and
+  // no section. See the migration for why it has to be SECURITY DEFINER and
+  // why that is safe.
+  let mutuals: { id: string; name: string | null; avatar_url: string | null }[] =
+    [];
+  if (user && user.id !== params.id) {
+    const { data: mf } = await supabase.rpc("mutual_friends", {
+      uid: params.id,
+    });
+    mutuals = (mf ?? []) as typeof mutuals;
+  }
+
   let together: { id: string; title: string; date: string }[] = [];
   if (user && user.id !== params.id) {
     const [{ data: mineRows }, { data: theirRows }] = await Promise.all([
@@ -288,6 +302,22 @@ export default async function PublicProfilePage({
             {lastSeenLabel((profile as { last_seen_at?: string | null }).last_seen_at)}
           </p>
         )}
+        {/* Friends in common, above everything else about them.
+            Faces first: you recognise your own people before you read a
+            count, which is the same reason the event cards lead with them. */}
+        {mutuals.length > 0 && (
+          <div className="mt-3">
+            <FriendsGoing
+              friends={mutuals.map((m) => ({ ...m, state: null }))}
+              line={
+                mutuals.length === 1
+                  ? `${mutuals[0].name?.split(" ")[0] ?? "A friend"} is a friend of you both`
+                  : `${mutuals.length} friends in common`
+              }
+            />
+          </div>
+        )}
+
         {/* Above the badges and the counts, because it is the only line on
             this page that is about the two of you rather than about them. */}
         {together.length > 0 && (
