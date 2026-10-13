@@ -323,7 +323,7 @@ export default function ChatWidget() {
           onClick={() => setHuman(true)}
           className="border-t border-gray-100 bg-white px-3 py-2 text-[12px] font-bold text-brand transition hover:bg-brand-50"
         >
-          Talk to a human →
+          Talk to a human
         </button>
         </>
         )}

@@ -217,7 +217,7 @@ export default function AttendeeProfileModal({
               onClick={onClose}
               className="btn-outline mt-4 w-full"
             >
-              View full profile →
+              View full profile
             </Link>
           </div>
         )}

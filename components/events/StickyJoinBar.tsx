@@ -109,7 +109,6 @@ export default function StickyJoinBar({
             aria-hidden
           />
           {label}
-          <span aria-hidden>→</span>
         </button>
       </div>
     </div>,

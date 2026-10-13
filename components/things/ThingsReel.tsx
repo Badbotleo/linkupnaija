@@ -185,7 +185,8 @@ export default function ThingsReel({ ideas }: { ideas: ReelIdea[] }) {
                   className="transition-transform duration-200 group-hover:translate-x-1"
                   aria-hidden
                 >
-                  →
+
+                  <LineIcon name="chevronRight" size={14} className="ml-0.5 inline align-[-1px]" />
                 </span>
               </Link>
             </div>

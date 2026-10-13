@@ -889,11 +889,13 @@ export default async function EventsPage({
               </span>
               {page < totalPages ? (
                 <Link href={pageHref(page + 1)} className="btn-outline py-2">
-                  Next →
+                  Next
+                  <LineIcon name="chevronRight" size={14} className="ml-0.5 inline align-[-1px]" />
                 </Link>
               ) : (
                 <span className="btn-outline cursor-not-allowed py-2 opacity-40">
-                  Next →
+                  Next
+                  <LineIcon name="chevronRight" size={14} className="ml-0.5 inline align-[-1px]" />
                 </span>
               )}
             </nav>

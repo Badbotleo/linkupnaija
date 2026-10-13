@@ -70,7 +70,7 @@ export default function ScreenTimeGuard() {
             onClick={snooze}
             className="rounded-xl bg-[#FAC775] px-6 py-3 font-bold text-[#121212]"
           >
-            Find a real-life link-up →
+            Find a real-life link-up
           </a>
           <button
             type="button"

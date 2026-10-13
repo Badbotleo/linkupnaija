@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LineIcon from "@/components/ui/LineIcon";
 
 /**
  * The swipeable promo rail.
@@ -111,7 +112,7 @@ export default function PromoCarousel() {
               className={`grid h-11 w-11 shrink-0 place-items-center rounded-full text-[20px] font-bold transition-transform duration-200 group-hover:translate-x-0.5 ${p.arrow}`}
               aria-hidden
             >
-              →
+              <LineIcon name="chevronRight" size={20} />
             </span>
           </div>
         </Link>

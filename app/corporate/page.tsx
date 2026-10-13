@@ -66,7 +66,7 @@ export default function CorporatePage() {
             From team outings to client entertainment, we handle everything.
           </p>
           <a href="#quote" className="btn mt-8 inline-block bg-[#FAC775] px-6 py-3 text-base font-bold text-[#121212] hover:opacity-90">
-            Get a quote →
+            Get a quote
           </a>
         </div>
       </section>

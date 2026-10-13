@@ -135,7 +135,12 @@ export default function HostRings({
           <ul className="mt-2 space-y-1.5">
             {tips.map((t) => (
               <li key={t} className="flex items-start gap-2 text-sm text-gray-600">
-                <span className="text-brand" aria-hidden>→</span>
+                {/* The marker was a typed arrow. A dot carries the same list
+                    meaning and renders in every font we load. */}
+                <span
+                  aria-hidden
+                  className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-brand"
+                />
                 {t}
               </li>
             ))}

@@ -188,7 +188,7 @@ export default function EventCard({
         )}
 
         <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
-          {/* Empty span keeps "View →" hard right when there's no proof to show. */}
+          {/* Empty span keeps "View" hard right when there's no proof to show. */}
           {proof ? (
             proof.tone === "urgent" ? (
               <span className="inline-flex animate-spot-pulse items-center gap-1.5 text-sm font-bold text-red-600">
@@ -210,7 +210,8 @@ export default function EventCard({
             <span />
           )}
           <span className="inline-flex items-center gap-1 text-sm font-semibold text-brand opacity-0 transition-[transform,opacity] duration-200 group-hover:translate-x-1 group-hover:opacity-100">
-            View →
+            View
+            <LineIcon name="chevronRight" size={14} className="ml-0.5 inline align-[-1px]" />
           </span>
         </div>
       </div>

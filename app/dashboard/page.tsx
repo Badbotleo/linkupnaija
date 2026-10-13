@@ -1,5 +1,6 @@
 import Link from "next/link";
 import LineIcon from "@/components/ui/LineIcon";
+import StateIcon from "@/components/ui/StateIcon";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { subscriberProof } from "@/lib/social-proof";
@@ -640,8 +641,8 @@ export default async function DashboardPage() {
             emptyText="Ready to bring people together?"
             emptyCta
             ctaHref="/host"
-            ctaLabel="Host your first event →"
-            emptyEmoji="🎤"
+            ctaLabel="Host your first event"
+            emptyIcon="mic"
           >
             {hosting.map((e) => {
               const accepted = e.rsvps.filter(
@@ -690,8 +691,8 @@ export default async function DashboardPage() {
               emptyText="Nothing behind you yet."
               emptyCta
               ctaHref="/events"
-              ctaLabel="Find something to go to →"
-              emptyEmoji="🕰️"
+              ctaLabel="Find something to go to"
+              emptyIcon="calendar"
             >
               {null}
             </Section>
@@ -752,8 +753,8 @@ export default async function DashboardPage() {
             emptyText="You haven't joined any events yet."
             emptyCta
             ctaHref="/events"
-            ctaLabel="Browse what's happening →"
-            emptyEmoji="🎟️"
+            ctaLabel="Browse what's happening"
+            emptyIcon="ticket"
           >
             {attending.map((r) => (
               <EventRowCard key={r.events!.id} event={r.events!}>
@@ -946,7 +947,8 @@ export default async function DashboardPage() {
               href="/hosts/leaderboard"
               className="mt-2 block text-center text-sm font-semibold text-brand hover:underline"
             >
-              View the host leaderboard →
+              View the host leaderboard
+              <LineIcon name="chevronRight" size={14} className="ml-0.5 inline align-[-1px]" />
             </Link>
           </div>
         )}
@@ -1038,7 +1040,7 @@ function Section({
   emptyCta = false,
   ctaHref = "/events",
   ctaLabel = "Explore events",
-  emptyEmoji,
+  emptyIcon,
   children,
 }: {
   title: string;
@@ -1047,7 +1049,8 @@ function Section({
   emptyCta?: boolean;
   ctaHref?: string;
   ctaLabel?: string;
-  emptyEmoji?: string;
+  /** A StateIcon name. Was a bare emoji at 3xl, which the sweep missed. */
+  emptyIcon?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -1060,11 +1063,18 @@ function Section({
       </h2>
       {count === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-10 text-center">
-          {emptyEmoji && <p className="text-3xl">{emptyEmoji}</p>}
+          {emptyIcon && <StateIcon name={emptyIcon} tone="quiet" size={48} />}
           <p className="mt-2 text-sm text-gray-600">{emptyText}</p>
           {emptyCta && (
-            <Link href={ctaHref} className="btn-primary mt-4">
+            <Link
+              href={ctaHref}
+              className="btn-primary mt-4 inline-flex items-center gap-1"
+            >
               {ctaLabel}
+              {/* Drawn, not typed. These labels used to end in a typed arrow
+                  character, which renders as tofu in the latin-ext subset
+                  these pages load. */}
+              <LineIcon name="chevronRight" size={14} />
             </Link>
           )}
         </div>

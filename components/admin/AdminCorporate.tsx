@@ -190,7 +190,7 @@ export default function AdminCorporate({
                   href={`/events/${a.event_id}`}
                   className="text-sm font-semibold text-brand hover:underline"
                 >
-                  🏢 View corporate event →
+                  🏢 View corporate event
                 </Link>
               ) : (
                 <button
