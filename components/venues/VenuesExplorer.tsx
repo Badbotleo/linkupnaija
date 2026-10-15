@@ -90,6 +90,24 @@ export default function VenuesExplorer({
   const [mapOpen, setMapOpen] = useState(true);
   const [locating, setLocating] = useState(false);
   const [partners, setPartners] = useState<PartnerVenue[]>([]);
+  /**
+   * Venues matching what is typed, by name.
+   *
+   * The search box only ever geocoded: it took the text, asked for a place in
+   * Nigeria and recentred the map. So with 304 venues on the platform,
+   * typing the name of one of them returned "Couldn't find Bheerhugz in
+   * Nigeria", which is the single most obvious thing somebody would type
+   * into a box on a venues page.
+   *
+   * Searched nationally on purpose, ignoring stateScope. Somebody typing a
+   * venue by name already knows which venue they want, and scoping that to
+   * the state we guessed from their IP is how you fail to find a place you
+   * could name.
+   *
+   * Null means "not searching", which is different from an empty array
+   * meaning "searched and found none".
+   */
+  const [nameHits, setNameHits] = useState<PartnerVenue[] | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -164,13 +182,83 @@ export default function VenuesExplorer({
     if (!q) return;
     setLoading(true);
     setError(null);
+
+    // NAMES FIRST, PLACES SECOND.
+    //
+    // "Bheerhugz" and "Ikeja" both arrive in this box and they are different
+    // questions. A name is the more specific one and the more likely to be
+    // typed deliberately, so it is asked first; geocoding is the fallback for
+    // when nothing on the platform is called that.
+    const hits = await searchByName(q);
+    if (hits.length > 0) {
+      setNameHits(hits);
+      setLoading(false);
+
+      // BOTH, WHERE BOTH APPLY. "Ikeja" matches a venue actually called
+      // Cilantro Ikeja and is also a place with forty other spots in it.
+      // Showing the one and refusing to move the map would answer half the
+      // question, so the area wins the map and the name wins the list.
+      // Falls back to the first hit with coordinates when the text is not a
+      // place at all, which is the ordinary case for a venue name.
+      const place = await geocode(q);
+      if (place) {
+        setCenter(place);
+        return;
+      }
+      const located = hits.find((h) => h.lat != null && h.lng != null);
+      if (located) {
+        // The label is what the map pill shows, so it names the venue rather
+        // than inheriting whatever area we were centred on before.
+        setCenter({
+          lat: located.lat!,
+          lng: located.lng!,
+          label: located.name,
+        });
+      }
+      return;
+    }
+
+    setNameHits(null);
     const place = await geocode(q);
     if (!place) {
-      setError(`Couldn't find "${q}" in Nigeria. Try another city or area.`);
+      setError(
+        `No venue called "${q}", and no such place in Nigeria either. Try a venue name, a city or an area.`
+      );
       setLoading(false);
       return;
     }
     setCenter(place);
+  }
+
+  /**
+   * Venues whose NAME contains the text. Names only, deliberately.
+   *
+   * The first cut matched the address too, and that broke the thing this
+   * page was already good at: "Ikeja" returned the single venue whose street
+   * happened to say Ikeja, instead of geocoding and showing everything
+   * around Ikeja. An area typed into this box should move the map; only a
+   * name should produce a list. Addresses are what the map is for.
+   *
+   * ilike with the term escaped: a venue called "100%" or a stray underscore
+   * would otherwise be read as a wildcard and quietly match everything.
+   */
+  async function searchByName(q: string): Promise<PartnerVenue[]> {
+    const supabase = createClient();
+    const safe = q.replace(/[%_]/g, " ").trim();
+    if (!safe) return [];
+    const { data } = await supabase
+      .from("venues")
+      .select(
+        "id, name, category, address, state, image_url, description, price_range, is_featured, lat, lng"
+      )
+      .eq("is_active", true)
+      .ilike("name", `%${safe}%`)
+      .order("is_featured", { ascending: false })
+      .limit(24);
+    return ((data ?? []) as unknown as Omit<
+      PartnerVenue,
+      "rating" | "opening_hours"
+    >[]).map((v) => ({ ...v, rating: null, opening_hours: null }));
   }
 
   // A venue finder that can't answer "what's near me" is missing the point.
@@ -484,6 +572,77 @@ export default function VenuesExplorer({
           The deck above is for the handful being pushed; this is the long
           tail the importer produces, and a horizontal rail made its fortieth
           entry effectively unreachable. */}
+      {/* Name matches, above everything else on the page.
+          Somebody who typed a venue name is not browsing, and making them
+          scroll past the featured deck to reach the one place they asked
+          for would be the page ignoring them. */}
+      {nameHits !== null && (
+        <section className="mt-5">
+          <div className="mb-3 flex items-end justify-between gap-3">
+            <h2 className="text-[19px] font-extrabold tracking-[-0.02em] text-gray-900">
+              {nameHits.length} match{nameHits.length === 1 ? "" : "es"} for
+              &quot;{query.trim()}&quot;
+            </h2>
+            <button
+              type="button"
+              onClick={() => {
+                setNameHits(null);
+                setQuery("");
+              }}
+              className="shrink-0 whitespace-nowrap text-sm font-bold text-brand hover:underline"
+            >
+              Clear
+            </button>
+          </div>
+
+          {nameHits.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-8 text-center text-sm text-gray-500">
+              Nothing on the platform by that name yet.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {nameHits.map((v) => (
+                <Link
+                  key={v.id}
+                  href={`/venues/${v.id}`}
+                  className="group flex items-center gap-3 rounded-2xl bg-white p-3 shadow-[var(--e1)] transition hover:-translate-y-0.5"
+                >
+                  {v.image_url ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={v.image_url}
+                      alt=""
+                      className="h-16 w-16 shrink-0 rounded-xl object-cover"
+                    />
+                  ) : (
+                    <VenueArt
+                      name={v.name}
+                      category={v.category}
+                      className="h-16 w-16 shrink-0 overflow-hidden rounded-xl"
+                    />
+                  )}
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-bold text-gray-900 group-hover:text-brand">
+                      {v.name}
+                    </span>
+                    <span className="mt-0.5 block truncate text-[13px] text-gray-500">
+                      {[v.category, v.address || v.state]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </span>
+                  </span>
+                  <LineIcon
+                    name="chevronRight"
+                    size={16}
+                    className="shrink-0 text-gray-400"
+                  />
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
       {reelVenues.length > 0 && (
         <div className="mt-6">
           <div className="mb-3 flex items-end justify-between gap-3">
