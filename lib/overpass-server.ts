@@ -319,6 +319,114 @@ export async function fetchVenueByIdFromOverpass(id: string): Promise<Venue | nu
  * often as not and told the admin the place could not be found, when the
  * place was found and we hung up on the answer.
  */
+export interface PlaceHit {
+  /** "node-123", the same shape /venues/[id] already resolves. */
+  id: string;
+  name: string;
+  /** Where it is, in words, for the second line of a result row. */
+  where: string;
+  lat: number;
+  lng: number;
+}
+
+/**
+ * Places on the map matching a name, for the venues search box.
+ *
+ * Our own 304 venues are searched in the database; this is the other half,
+ * so typing "Terra Kulture" finds it whether or not anybody has onboarded
+ * it yet. Nominatim is already the geocoder behind this page, so it is one
+ * more call to a service we already depend on rather than a new one.
+ *
+ * FILTERED TO THINGS YOU COULD WALK INTO. A bare Nominatim search returns
+ * states, LGAs and roads alongside restaurants, and a venue search answering
+ * "Lagos State" is noise. Only the OSM classes that describe a venue are
+ * kept, and only results carrying an osm_type we can build an id from.
+ *
+ * Nominatim's policy caps this at roughly one call a second and requires an
+ * identifying user agent, which is why it lives on the server behind our own
+ * route and is never called from a keystroke handler.
+ */
+export async function searchPlacesOnServer(
+  query: string,
+  timeoutMs?: number
+): Promise<PlaceHit[]> {
+  const q = query.trim();
+  if (q.length < 3) return [];
+
+  const url =
+    `${NOMINATIM_URL}?format=json&limit=10&countrycodes=ng` +
+    `&addressdetails=1&q=${encodeURIComponent(q)}`;
+  try {
+    const res = await timedFetch(
+      url,
+      {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "LinkUpNaija/1.0 (support@linkupnaija.com)",
+        },
+      },
+      timeoutMs
+    );
+    if (!res.ok) return [];
+    const data = (await res.json()) as Array<{
+      osm_type?: string;
+      osm_id?: number;
+      class?: string;
+      type?: string;
+      lat: string;
+      lon: string;
+      name?: string;
+      display_name: string;
+      address?: Record<string, string>;
+    }>;
+
+    const KEEP = new Set([
+      "amenity",
+      "leisure",
+      "tourism",
+      "shop",
+      "club",
+      "sport",
+      "historic",
+    ]);
+
+    const out: PlaceHit[] = [];
+    const seen = new Set<string>();
+    for (const r of data) {
+      if (!r.osm_type || !r.osm_id) continue;
+      if (!["node", "way", "relation"].includes(r.osm_type)) continue;
+      if (!r.class || !KEEP.has(r.class)) continue;
+
+      const name = (r.name || r.display_name.split(",")[0]).trim();
+      if (!name) continue;
+      const key = name.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      const a = r.address ?? {};
+      const where =
+        [
+          a.suburb || a.neighbourhood || a.city_district,
+          a.city || a.town || a.state,
+        ]
+          .filter(Boolean)
+          .join(", ") || r.display_name.split(",").slice(1, 3).join(",").trim();
+
+      out.push({
+        id: `${r.osm_type}-${r.osm_id}`,
+        name,
+        where,
+        lat: parseFloat(r.lat),
+        lng: parseFloat(r.lon),
+      });
+      if (out.length >= 6) break;
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
 export async function geocodeOnServer(
   query: string,
   timeoutMs?: number

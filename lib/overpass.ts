@@ -125,6 +125,34 @@ export async function geocode(
   }
 }
 
+export interface PlaceHit {
+  id: string;
+  name: string;
+  where: string;
+  lat: number;
+  lng: number;
+}
+
+/**
+ * Places on the map matching a name, via our proxy.
+ *
+ * Returns an empty list on any failure. The venues page already has its own
+ * results by the time this resolves, so a slow or unavailable Nominatim
+ * costs the extra suggestions and nothing else.
+ */
+export async function searchPlaces(query: string): Promise<PlaceHit[]> {
+  try {
+    const res = await fetch(
+      `/api/venues/search?q=${encodeURIComponent(query)}`
+    );
+    if (!res.ok) return [];
+    const data = (await res.json()) as { places?: PlaceHit[] };
+    return data.places ?? [];
+  } catch {
+    return [];
+  }
+}
+
 /** One OpenStreetMap venue by encoded id, via our proxy. */
 export async function fetchVenueById(id: string): Promise<Venue | null> {
   try {

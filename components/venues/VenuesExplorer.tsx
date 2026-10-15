@@ -9,7 +9,9 @@ import {
   geocode,
   fetchVenues,
   distanceKm,
+  searchPlaces,
   type Venue,
+  type PlaceHit,
 } from "@/lib/overpass";
 import ReservationModal from "./ReservationModal";
 import LineIcon from "../ui/LineIcon";
@@ -108,6 +110,19 @@ export default function VenuesExplorer({
    * meaning "searched and found none".
    */
   const [nameHits, setNameHits] = useState<PartnerVenue[] | null>(null);
+  /**
+   * The same search, run against the map.
+   *
+   * Our own rows are 304 of the places in Nigeria. Somebody typing "Terra
+   * Kulture" means it whether or not anybody has onboarded it, and a search
+   * box that answers "nothing by that name" about a famous venue reads as a
+   * broken product rather than as an empty database.
+   *
+   * Arrives after the partner results and never blocks them: the section
+   * renders as soon as the database answers, and these fill in underneath
+   * when Nominatim comes back.
+   */
+  const [placeHits, setPlaceHits] = useState<PlaceHit[]>([]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -189,6 +204,12 @@ export default function VenuesExplorer({
     // questions. A name is the more specific one and the more likely to be
     // typed deliberately, so it is asked first; geocoding is the fallback for
     // when nothing on the platform is called that.
+    setPlaceHits([]);
+    // Fired, not awaited. The partner rows are the answer; these are the
+    // supplement, and making somebody wait on a third party for them would
+    // be charging the common case for the rare one.
+    void searchPlaces(q).then((p) => setPlaceHits(p));
+
     const hits = await searchByName(q);
     if (hits.length > 0) {
       setNameHits(hits);
@@ -449,6 +470,113 @@ export default function VenuesExplorer({
         <span className="font-semibold text-gray-700">{center.label}</span>
       </p>
 
+      {/* Name matches, above everything else on the page.
+          Somebody who typed a venue name is not browsing, and making them
+          scroll past the featured deck to reach the one place they asked
+          for would be the page ignoring them. */}
+      {(nameHits !== null || placeHits.length > 0) && (
+        <section className="mt-5">
+          <div className="mb-3 flex items-end justify-between gap-3">
+            <h2 className="text-[19px] font-extrabold tracking-[-0.02em] text-gray-900">
+              {(nameHits?.length ?? 0) + placeHits.length} match
+              {(nameHits?.length ?? 0) + placeHits.length === 1 ? "" : "es"} for
+              &quot;{query.trim()}&quot;
+            </h2>
+            <button
+              type="button"
+              onClick={() => {
+                setNameHits(null);
+                setPlaceHits([]);
+                setQuery("");
+              }}
+              className="shrink-0 whitespace-nowrap text-sm font-bold text-brand hover:underline"
+            >
+              Clear
+            </button>
+          </div>
+
+          {(nameHits?.length ?? 0) === 0 && placeHits.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-8 text-center text-sm text-gray-500">
+              Nothing by that name yet.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {(nameHits ?? []).map((v) => (
+                <Link
+                  key={v.id}
+                  href={`/venues/${v.id}`}
+                  className="group flex items-center gap-3 rounded-2xl bg-white p-3 shadow-[var(--e1)] transition hover:-translate-y-0.5"
+                >
+                  {v.image_url ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={v.image_url}
+                      alt=""
+                      className="h-16 w-16 shrink-0 rounded-xl object-cover"
+                    />
+                  ) : (
+                    <VenueArt
+                      name={v.name}
+                      category={v.category}
+                      className="h-16 w-16 shrink-0 overflow-hidden rounded-xl"
+                    />
+                  )}
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-bold text-gray-900 group-hover:text-brand">
+                      {v.name}
+                    </span>
+                    <span className="mt-0.5 block truncate text-[13px] text-gray-500">
+                      {[v.category, v.address || v.state]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </span>
+                  </span>
+                  <LineIcon
+                    name="chevronRight"
+                    size={16}
+                    className="shrink-0 text-gray-400"
+                  />
+                </Link>
+              ))}
+
+              {/* FROM THE MAP, AND SAID SO.
+                  These are OpenStreetMap records, not places we can take a
+                  reservation for. Dressing them identically to a partner row
+                  would promise a booking we cannot honour, so they carry a
+                  quieter card and a label. Tapping one still opens the venue
+                  page, which handles an OSM id and offers the claim flow. */}
+              {placeHits.map((p) => (
+                <Link
+                  key={p.id}
+                  href={`/venues/${p.id}`}
+                  className="group flex items-center gap-3 rounded-2xl border border-dashed border-gray-200 bg-gray-50/60 p-3 transition hover:border-brand/40 dark:border-white/10 dark:bg-white/[0.03]"
+                >
+                  <span className="grid h-16 w-16 shrink-0 place-items-center rounded-xl bg-white text-gray-400 dark:bg-white/5">
+                    <LineIcon name="pin" size={22} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-bold text-gray-900 group-hover:text-brand">
+                      {p.name}
+                    </span>
+                    <span className="mt-0.5 block truncate text-[13px] text-gray-500">
+                      {p.where || "On the map"}
+                    </span>
+                    <span className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.1em] text-gray-400">
+                      From the map
+                    </span>
+                  </span>
+                  <LineIcon
+                    name="chevronRight"
+                    size={16}
+                    className="shrink-0 text-gray-400"
+                  />
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
       {/* Featured venues get a deck of their own: these are the spots we can
           actually book, and they deserve more than a row in a grid.
 
@@ -572,77 +700,6 @@ export default function VenuesExplorer({
           The deck above is for the handful being pushed; this is the long
           tail the importer produces, and a horizontal rail made its fortieth
           entry effectively unreachable. */}
-      {/* Name matches, above everything else on the page.
-          Somebody who typed a venue name is not browsing, and making them
-          scroll past the featured deck to reach the one place they asked
-          for would be the page ignoring them. */}
-      {nameHits !== null && (
-        <section className="mt-5">
-          <div className="mb-3 flex items-end justify-between gap-3">
-            <h2 className="text-[19px] font-extrabold tracking-[-0.02em] text-gray-900">
-              {nameHits.length} match{nameHits.length === 1 ? "" : "es"} for
-              &quot;{query.trim()}&quot;
-            </h2>
-            <button
-              type="button"
-              onClick={() => {
-                setNameHits(null);
-                setQuery("");
-              }}
-              className="shrink-0 whitespace-nowrap text-sm font-bold text-brand hover:underline"
-            >
-              Clear
-            </button>
-          </div>
-
-          {nameHits.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-5 py-8 text-center text-sm text-gray-500">
-              Nothing on the platform by that name yet.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {nameHits.map((v) => (
-                <Link
-                  key={v.id}
-                  href={`/venues/${v.id}`}
-                  className="group flex items-center gap-3 rounded-2xl bg-white p-3 shadow-[var(--e1)] transition hover:-translate-y-0.5"
-                >
-                  {v.image_url ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={v.image_url}
-                      alt=""
-                      className="h-16 w-16 shrink-0 rounded-xl object-cover"
-                    />
-                  ) : (
-                    <VenueArt
-                      name={v.name}
-                      category={v.category}
-                      className="h-16 w-16 shrink-0 overflow-hidden rounded-xl"
-                    />
-                  )}
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-bold text-gray-900 group-hover:text-brand">
-                      {v.name}
-                    </span>
-                    <span className="mt-0.5 block truncate text-[13px] text-gray-500">
-                      {[v.category, v.address || v.state]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </span>
-                  </span>
-                  <LineIcon
-                    name="chevronRight"
-                    size={16}
-                    className="shrink-0 text-gray-400"
-                  />
-                </Link>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
-
       {reelVenues.length > 0 && (
         <div className="mt-6">
           <div className="mb-3 flex items-end justify-between gap-3">
