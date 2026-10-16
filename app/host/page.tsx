@@ -32,17 +32,43 @@ export default async function HostPage({
   // Middleware also guards this, but double-check on the server.
   if (!user) redirect("/login?redirect=/host");
 
-  const { data: profile } = await supabase
+  type HostProfile = {
+    state: string | null;
+    moderation_status?: string;
+    is_pro?: boolean | null;
+    pro_expires_at?: string | null;
+    is_admin?: boolean | null;
+    is_team?: boolean | null;
+  };
+
+  // is_team as well as is_admin.
+  //
+  // Listing mode was gated on is_admin, which is the flag that also carries
+  // the payments desk, the support inbox and every member's phone number.
+  // Courage is deliberately is_team and not is_admin for exactly that reason,
+  // and he hosts most of what happens here, so the one person doing the
+  // listing was the one person who could not reach the switch.
+  //
+  // Asked for with a fallback, the same way /admin/growth does it: is_team
+  // arrives with migration-team-flag.sql, and naming a column PostgREST
+  // cannot see fails the WHOLE select, which here would mean no state
+  // prefill, no Pro check and no moderation gate for everybody.
+  let { data: profile, error: profileErr } = await supabase
     .from("users")
-    .select("state, moderation_status, is_pro, pro_expires_at, is_admin")
+    .select("state, moderation_status, is_pro, pro_expires_at, is_admin, is_team")
     .eq("id", user.id)
-    .single<{
-      state: string | null;
-      moderation_status?: string;
-      is_pro?: boolean | null;
-      pro_expires_at?: string | null;
-      is_admin?: boolean | null;
-    }>();
+    .single<HostProfile>();
+
+  if (profileErr?.code === "42703" || profileErr?.code === "42501") {
+    ({ data: profile } = await supabase
+      .from("users")
+      .select("state, moderation_status, is_pro, pro_expires_at, is_admin")
+      .eq("id", user.id)
+      .single<HostProfile>());
+  }
+
+  // Who may post somebody else's event as a listing rather than claiming it.
+  const canList = !!profile?.is_admin || !!profile?.is_team;
 
   // Restricted/blocked accounts can't host (also enforced by a DB trigger).
   const status = profile?.moderation_status;
@@ -191,7 +217,7 @@ export default async function HostPage({
       <div className="surface p-6 sm:p-8">
         <HostForm
           hostState={profile?.state ?? null}
-          isAdmin={!!profile?.is_admin}
+          canList={canList}
           prefill={{
             category: searchParams.category,
             location: searchParams.location,

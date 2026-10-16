@@ -17,7 +17,7 @@ import StateIcon from "@/components/ui/StateIcon";
 export default function HostForm({
   hostState,
   prefill,
-  isAdmin = false,
+  canList = false,
 }: {
   hostState: string | null;
   /**
@@ -25,7 +25,8 @@ export default function HostForm({
    * filling this form is hosting, and offering them the choice would be
    * asking a question they cannot answer.
    */
-  isAdmin?: boolean;
+  /** May post somebody else's event as a listing. Admins and team. */
+  canList?: boolean;
   /** Carried in from a "Things to do" idea, so the form opens part-done. */
   prefill?: { category?: string; location?: string; state?: string; title?: string };
 }) {
@@ -362,7 +363,7 @@ export default function HostForm({
     // organiser_* arrive with migration-listing-organiser.sql and are
     // attached here for the same reason min_attendees is: a database that
     // has not run it must still accept the insert.
-    if (isAdmin && isListing) {
+    if (canList && isListing) {
       optional.is_listing = true;
       if (organiserName.trim()) optional.organiser_name = organiserName.trim();
       const handle = organiserIg.trim().replace(/^@+/, "");
@@ -552,7 +553,7 @@ export default function HostForm({
       {/* Listing mode, staff only. First thing on the form because it
           changes what the rest of it means: who the host is, who gets
           credited, and whether this counts as a hosted event. */}
-      {isAdmin && (
+      {canList && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/30 dark:bg-amber-500/10">
           <label className="flex cursor-pointer items-start gap-3">
             <input
