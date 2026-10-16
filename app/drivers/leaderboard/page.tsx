@@ -6,8 +6,16 @@ import StateIcon from "@/components/ui/StateIcon";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * PARKED. public_drivers has no rows, so this ranks nobody.
+ *
+ * "Nigeria's best-rated drivers" as a search result, opening on an empty
+ * list, says more about us than saying nothing would. Back in as soon as
+ * there are drivers to rank.
+ */
 export const metadata = {
   title: "Top drivers",
+  robots: { index: false, follow: false },
   description:
     "Nigeria's best-rated LinkUpNaija drivers, ranked by riders who actually rode with them.",
 };

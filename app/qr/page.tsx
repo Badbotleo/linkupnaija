@@ -2,8 +2,13 @@ import Logo from "@/components/Logo";
 import QrCode from "@/components/qr/QrCode";
 import { SITE_ORIGIN } from "@/lib/qr";
 
+/**
+ * An internal tool: generate a QR for flyers and posters. Useful to us,
+ * meaningless as a search result for our own brand.
+ */
 export const metadata = {
   title: "QR Code",
+  robots: { index: false, follow: false },
   description:
     "Scan to discover events near you on LinkUpNaija. Download a high-resolution QR code for flyers, posters and business cards.",
 };

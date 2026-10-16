@@ -4,7 +4,14 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Live" };
+/**
+ * PARKED. An activity ticker over 108 lifetime RSVPs is a quiet room, and
+ * nothing in the app links here, so the only arrival is from search.
+ */
+export const metadata = {
+  title: "Live",
+  robots: { index: false, follow: false },
+};
 
 function ago(iso: string): string {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);

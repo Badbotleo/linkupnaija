@@ -9,8 +9,20 @@ import { TOURNAMENT } from "@/lib/tournament";
 import { formatNaira } from "@/lib/paystack";
 import { SITE_ORIGIN } from "@/lib/qr";
 
+/**
+ * PARKED, NOT DELETED.
+ *
+ * The page is finished and the tournament has never been announced: the
+ * countdown is still <Countdown date={null} /> with a note to pass a date
+ * "once announced". Nothing links here. So the only way anybody reaches it
+ * is a search engine, and what they find is a page promising a two million
+ * naira prize with no date, no venue and no way to tell it is not running.
+ *
+ * noindex until there is a date. Take this off the moment there is one.
+ */
 export const metadata = {
   title: "FC26 Tournament · Abuja",
+  robots: { index: false, follow: false },
   description:
     "Abuja's first PS5 FC26 tournament. ₦2,000,000 prize, winner takes all. 40 players only. Register for ₦10,000.",
 };
