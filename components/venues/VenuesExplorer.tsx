@@ -470,6 +470,17 @@ export default function VenuesExplorer({
         <span className="font-semibold text-gray-700">{center.label}</span>
       </p>
 
+      {/* The answer to a search sits under the search box.
+          This used to render after the featured deck and the whole reel,
+          which on a phone is three screens down: somebody typed a name, got
+          no visible response, and scrolled past forty venues to find out
+          why. */}
+      {error && (
+        <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+          {error}
+        </p>
+      )}
+
       {/* Name matches, above everything else on the page.
           Somebody who typed a venue name is not browsing, and making them
           scroll past the featured deck to reach the one place they asked
@@ -735,12 +746,6 @@ export default function VenuesExplorer({
             }}
           />
         </div>
-      )}
-
-      {error && (
-        <p className="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
-          {error}
-        </p>
       )}
 
       {/* ---------------------------------------------------------------- */}
