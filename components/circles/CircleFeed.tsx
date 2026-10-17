@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/image";
+import MediaCarousel, { type MediaItem } from "@/components/media/MediaCarousel";
+import MediaPicker, { type PickedFile } from "@/components/media/MediaPicker";
 import ImageLightbox from "@/components/ui/ImageLightbox";
 import { SITE_ORIGIN } from "@/lib/qr";
 import { formatEventDate, formatEventTime, timeAgo } from "@/lib/format";
@@ -22,13 +24,45 @@ const POST_SELECT =
   "event:events!circle_posts_event_id_fkey(id, title, date, time, location, state, category, cover_image_url)";
 
 const ORIGINAL_SELECT =
-  "id, content, image_url, video_url, created_at, user_id, repost_count, " +
+  "id, content, image_url, video_url, media, created_at, user_id, repost_count, " +
   "author:users!circle_posts_user_id_fkey(name, avatar_url)";
 
 const EVENT_LINK = /\/events\/([0-9a-fA-F-]{36})/;
 
 // Phone clips get big fast; reject early with a clear number rather than
 // letting a 200MB upload crawl and fail.
+/**
+ * The media on a post, in order, old shape or new.
+ *
+ * Reads `media` where it exists and falls back to the single image_url /
+ * video_url pair, which is every post written before the carousel. Anything
+ * malformed in the jsonb is dropped rather than rendered, because a slide
+ * with no url is a blank panel somebody has to swipe past.
+ */
+function postMedia(src: {
+  media?: unknown;
+  image_url?: string | null;
+  video_url?: string | null;
+}): MediaItem[] {
+  if (Array.isArray(src.media)) {
+    const out = (src.media as unknown[])
+      .map((m) => {
+        if (!m || typeof m !== "object") return null;
+        const o = m as { url?: unknown; type?: unknown };
+        if (typeof o.url !== "string" || !o.url) return null;
+        return {
+          url: o.url,
+          type: o.type === "video" ? "video" : "image",
+        } satisfies MediaItem;
+      })
+      .filter((m): m is MediaItem => !!m);
+    if (out.length > 0) return out;
+  }
+  if (src.image_url) return [{ url: src.image_url, type: "image" }];
+  if (src.video_url) return [{ url: src.video_url, type: "video" }];
+  return [];
+}
+
 const MAX_VIDEO_MB = 50;
 const MAX_VIDEO_BYTES = MAX_VIDEO_MB * 1024 * 1024;
 
@@ -65,21 +99,11 @@ export default function CircleFeed({
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [repostedIds, setRepostedIds] = useState<Set<string>>(new Set());
   const [content, setContent] = useState("");
-  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  // An ordered list now, not one file. MediaPicker owns the previews and
+  // the decode check, so the composer no longer builds object URLs itself.
+  const [picked, setPicked] = useState<PickedFile[]>([]);
   const [posting, setPosting] = useState(false);
   const [me, setMe] = useState<{ name: string | null; avatar_url: string | null } | null>(null);
-
-  // Local preview for the composer, revoked when the pick changes.
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  useEffect(() => {
-    if (!mediaFile) {
-      setPreviewUrl(null);
-      return;
-    }
-    const url = URL.createObjectURL(mediaFile);
-    setPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [mediaFile]);
 
   const load = useCallback(async () => {
     let query = supabase
@@ -145,36 +169,35 @@ export default function CircleFeed({
 
   async function submitPost(e: React.FormEvent) {
     e.preventDefault();
-    if (!meId || (!content.trim() && !mediaFile)) return;
+    if (!meId || (!content.trim() && picked.length === 0)) return;
     setPosting(true);
 
-    let imageUrl: string | null = null;
-    let videoUrl: string | null = null;
-
-    if (mediaFile) {
+    // Uploaded in order, one at a time.
+    //
+    // Sequential, not Promise.all: a batch from a phone is tens of megabytes
+    // and firing ten at once on a Nigerian connection is how uploads start
+    // timing out together. Order is the post, so a parallel race that
+    // resolves out of sequence would shuffle somebody's night.
+    const media: MediaItem[] = [];
+    for (const item of picked) {
       try {
-        const isVideo = mediaFile.type.startsWith("video/");
-
-        if (isVideo && mediaFile.size > MAX_VIDEO_BYTES) {
-          toast.error(
-            `That clip is ${(mediaFile.size / 1024 / 1024).toFixed(0)}MB. Keep videos under ${MAX_VIDEO_MB}MB.`
-          );
-          setPosting(false);
-          return;
-        }
+        const isVideo = item.type === "video";
 
         // Images get resized; videos upload as-is.
         const file = isVideo
-          ? mediaFile
-          : await compressImage(mediaFile, { maxDimension: 1600 });
+          ? item.file
+          : await compressImage(item.file, { maxDimension: 1600 });
 
-        // Compression falls back to the original file for formats the browser
-        // can't decode (HEIC from an iPhone, for one), so derive the extension
-        // and content type from what we're ACTUALLY uploading — writing a HEIC
-        // to a ".jpg" path stored it fine but rendered broken for everyone.
+        // Compression falls back to the original for formats the browser
+        // cannot decode, so the extension and content type come from what is
+        // ACTUALLY being uploaded. Writing a HEIC to a ".jpg" path stored it
+        // fine and rendered broken for everyone.
         const type = file.type || (isVideo ? "video/mp4" : "image/jpeg");
-        const ext = (type.split("/")[1] || (isVideo ? "mp4" : "jpg")).replace("jpeg", "jpg");
-        const path = `${meId}/post-${Date.now()}.${ext}`;
+        const ext = (type.split("/")[1] || (isVideo ? "mp4" : "jpg")).replace(
+          "jpeg",
+          "jpg"
+        );
+        const path = `${meId}/post-${Date.now()}-${media.length}.${ext}`;
 
         const { error: upErr } = await supabase.storage
           .from("event-covers")
@@ -190,12 +213,14 @@ export default function CircleFeed({
           return;
         }
 
-        const url = supabase.storage.from("event-covers").getPublicUrl(path).data.publicUrl;
-        if (isVideo) videoUrl = url;
-        else imageUrl = url;
+        media.push({
+          url: supabase.storage.from("event-covers").getPublicUrl(path).data
+            .publicUrl,
+          type: isVideo ? "video" : "image",
+        });
       } catch (err) {
-        // Without this the promise rejected and the form stayed stuck on
-        // "Posting…" with no explanation.
+        // Without this the promise rejected and the form stayed on
+        // "Posting..." with no explanation.
         console.error("circle post media error:", err);
         toast.error("Couldn't process that file. Try another one.");
         setPosting(false);
@@ -203,19 +228,26 @@ export default function CircleFeed({
       }
     }
 
+    // The old columns still carry the FIRST item. Everything that reads this
+    // table outside this component, and every post already written, speaks
+    // image_url and video_url, and a carousel is not a reason to break them.
+    const firstImage = media.find((m) => m.type === "image") ?? null;
+    const firstVideo = media.find((m) => m.type === "video") ?? null;
+
     const eventMatch = content.match(EVENT_LINK);
     const { error } = await supabase.from("circle_posts").insert({
       circle_id: circleId,
       user_id: meId,
       content: content.trim() || null,
-      image_url: imageUrl,
-      video_url: videoUrl,
+      image_url: media[0]?.type === "image" ? media[0].url : (firstImage?.url ?? null),
+      video_url: media[0]?.type === "video" ? media[0].url : (firstVideo?.url ?? null),
+      media: media.length > 0 ? media : null,
       event_id: eventMatch ? eventMatch[1] : null,
     });
     if (error) toast.error(error.message);
     else {
       setContent("");
-      setMediaFile(null);
+      setPicked([]);
       await load();
     }
     setPosting(false);
@@ -311,58 +343,26 @@ export default function CircleFeed({
                 className="w-full resize-none border-0 bg-transparent p-0 text-[17px] leading-snug text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0"
               />
 
-              {previewUrl && (
-                <div className="relative mt-2 overflow-hidden rounded-2xl border border-gray-100">
-                  {mediaFile?.type.startsWith("video/") ? (
-                    <video
-                      src={previewUrl}
-                      controls
-                      playsInline
-                      className="max-h-72 w-full bg-black object-contain"
-                    />
-                  ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={previewUrl} alt="" className="max-h-72 w-full object-cover" />
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setMediaFile(null)}
-                    aria-label="Remove attachment"
-                    className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-black/65 text-white backdrop-blur transition hover:bg-black/80"
-                  >
-                    ✕
-                  </button>
-                </div>
-              )}
+              <div className="mt-2.5">
+                <MediaPicker
+                  value={picked}
+                  onChange={setPicked}
+                  max={10}
+                  maxBytes={MAX_VIDEO_BYTES}
+                  disabled={posting}
+                  label="Photos or video"
+                />
+              </div>
 
               <div className="mt-2 flex items-center justify-between border-t border-gray-50 pt-2">
-                {/* Labelled, not bare glyphs — an icon-only control here left
-                    people unable to find how to attach anything at all. */}
-                <div className="flex items-center gap-1">
-                  <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-bold text-brand transition hover:bg-brand/10">
-                    <LineIcon name="image" size={18} />
-                    Photo
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => setMediaFile(e.target.files?.[0] ?? null)}
-                      className="sr-only"
-                    />
-                  </label>
-                  <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-bold text-brand transition hover:bg-brand/10">
-                    <LineIcon name="video" size={18} />
-                    Video
-                    <input
-                      type="file"
-                      accept="video/*"
-                      onChange={(e) => setMediaFile(e.target.files?.[0] ?? null)}
-                      className="sr-only"
-                    />
-                  </label>
-                </div>
+                <p className="text-[12.5px] text-gray-400">
+                  {picked.length > 1
+                    ? `${picked.length} items, swipeable`
+                    : "Add up to 10"}
+                </p>
                 <button
                   type="submit"
-                  disabled={posting || (!content.trim() && !mediaFile)}
+                  disabled={posting || (!content.trim() && picked.length === 0)}
                   className="btn-primary rounded-full px-5 py-2 text-sm disabled:opacity-40"
                 >
                   {posting ? "Posting…" : "Post"}
@@ -528,6 +528,14 @@ function PostCard({
     content: src.content,
     image: src.image_url,
     video: src.video_url,
+    // Several items under one post, in order.
+    //
+    // `media` arrives with migration-carousel-media.sql and is null on every
+    // post written before it, which is all of them. So the fallback rebuilds
+    // a one-item list from image_url/video_url, and an old post renders
+    // exactly as it did. The columns also still hold the FIRST item of a new
+    // post, so anything else reading this table keeps working.
+    media: postMedia(src),
     created_at: src.created_at,
   };
   const handle = shown.name.toLowerCase().replace(/[^a-z0-9]+/g, "");
@@ -642,7 +650,17 @@ function PostCard({
             </p>
           )}
 
-          {shown.image && (
+          {shown.media.length > 1 ? (
+            <div className="mt-2.5 overflow-hidden rounded-2xl border border-gray-100 dark:border-white/10">
+              <MediaCarousel
+                items={shown.media}
+                rounded="rounded-none"
+                className="[&_img]:max-h-[30rem] [&_video]:max-h-[30rem]"
+              />
+            </div>
+          ) : null}
+
+          {shown.media.length <= 1 && shown.image && (
             // The timeline keeps its crop so rows stay uniform; the whole
             // picture lives one tap away. Cropped and unopenable meant a tall
             // photo could only ever be seen as a slice of itself.
@@ -654,7 +672,7 @@ function PostCard({
             />
           )}
 
-          {shown.video && (
+          {shown.media.length <= 1 && shown.video && (
             // The expand control sits beside the video rather than on it. A
             // tap-anywhere-to-expand video fights its own play button, so
             // inline playback stays exactly as it was and the full-screen
