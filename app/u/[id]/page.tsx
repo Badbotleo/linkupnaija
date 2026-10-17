@@ -256,7 +256,14 @@ export default async function PublicProfilePage({
             alt={profile.name ? `${profile.name}'s cover photo` : "Cover photo"}
             caption={profile.name}
             className="h-full w-full object-cover"
-            triggerClassName="block h-full w-full"
+            /* min-w-0 and overflow-hidden are load-bearing.
+               A button sizes to its content's min-content width, and a wide
+               banner at h-full has a min-content width of height times
+               aspect ratio: an 80px tall strip of a 2000x220 photo wants
+               717px. w-full cannot beat that on its own, so the button grew
+               past the viewport and took the whole page with it, which is
+               the dark band down the right of the profile. */
+            triggerClassName="block h-full w-full min-w-0 overflow-hidden"
           />
         ) : (
           <div className="h-full w-full bg-gradient-to-r from-brand/25 via-brand/10 to-transparent" />

@@ -134,7 +134,12 @@ export default async function ProfilePage({
         )}
         {badges.length > 0 && (
           <div className="mt-2">
-            <HostBadges badges={badges} />
+            {/* Three, the same cap as the public profile.
+                I capped /u/[id] and left this one, so the owner still met
+                five chips wrapping onto two rows in three colours under
+                their own name. Your own profile and the one strangers see
+                should not disagree about how many badges fit. */}
+            <HostBadges badges={badges} max={3} />
           </div>
         )}
 
