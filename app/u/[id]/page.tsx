@@ -18,6 +18,7 @@ import HostBadges from "@/components/host/HostBadges";
 import FriendsGoing from "@/components/feed/FriendsGoing";
 import BrandIcon from "@/components/ui/BrandIcon";
 import AvatarLightbox from "@/components/profile/AvatarLightbox";
+import ImageLightbox from "@/components/ui/ImageLightbox";
 import { computeBadges } from "@/lib/hostBadges";
 import { formatEventDate } from "@/lib/format";
 import type { UserProfile, HostStats } from "@/lib/types";
@@ -244,8 +245,19 @@ export default async function PublicProfilePage({
           they have set one; without one it is a tint rather than a slab. */}
       <div className="h-20 w-full sm:h-28">
         {profile.banner_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={profile.banner_url} alt="" className="h-full w-full object-cover" />
+          /* Tappable, like the avatar right underneath it.
+             The banner was a bare img while the 96px avatar four lines down
+             opened in a lightbox, so the bigger picture was the one you
+             could not look at. It is cropped to a 80px strip here, which
+             means a photo somebody chose is only ever seen as a slice of
+             itself unless it opens. */
+          <ImageLightbox
+            src={profile.banner_url}
+            alt={profile.name ? `${profile.name}'s cover photo` : "Cover photo"}
+            caption={profile.name}
+            className="h-full w-full object-cover"
+            triggerClassName="block h-full w-full"
+          />
         ) : (
           <div className="h-full w-full bg-gradient-to-r from-brand/25 via-brand/10 to-transparent" />
         )}
