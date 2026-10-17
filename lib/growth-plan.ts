@@ -118,10 +118,66 @@ export const MILESTONES: Milestone[] = [
  * Judged in Lagos time, because a plan written in Abuja should not roll over
  * an hour early.
  */
-export function currentMilestone(now = new Date()): Milestone {
+export function currentMilestone(
+  now = new Date(),
+  /**
+   * Measured values, keyed the way METRICS keys them. Pass them and the plan
+   * stops advancing on the calendar alone.
+   */
+  actual?: Record<string, number>
+): Milestone {
   const today = now.toLocaleDateString("en-CA", { timeZone: "Africa/Lagos" });
-  return MILESTONES.find((m) => m.due >= today) ?? MILESTONES[MILESTONES.length - 1];
+  const byDate =
+    MILESTONES.find((m) => m.due >= today) ?? MILESTONES[MILESTONES.length - 1];
+
+  if (!actual) return byDate;
+
+  // A DATE DOES NOT CLEAR A MILESTONE. WORK DOES.
+  //
+  // This used to return whichever milestone the calendar was pointing at, so
+  // 1 October moved the page from Month 3 to Month 6 whether or not a single
+  // Month 3 target had been met, and the targets you missed quietly stopped
+  // being asked about. A plan that advances on its own measures the year, not
+  // the company.
+  //
+  // So the current milestone is the FIRST one still unmet, and you stay on it
+  // past its due date until every measurable target on it is hit. The date is
+  // still what the page counts down to and what it calls overdue; it is no
+  // longer what decides which goal you are on.
+  //
+  // Instagram followers are excluded because nothing can measure them from
+  // here, and a target nobody can verify would park the whole plan on Month 3
+  // forever.
+  const firstUnmet = MILESTONES.find((m) =>
+    MEASURABLE_KEYS.some((k) => (actual[k] ?? 0) < (m[k] as number))
+  );
+
+  // Everything met: the calendar is the only thing left to go on.
+  if (!firstUnmet) return byDate;
+
+  // Never run ahead of the date either. Hitting Month 3 in week two does not
+  // make Month 6 the goal that week, and the plan is a floor, not a race.
+  return MILESTONES.indexOf(firstUnmet) < MILESTONES.indexOf(byDate)
+    ? firstUnmet
+    : byDate;
 }
+
+/**
+ * The milestone targets anything here can actually check.
+ *
+ * instagramFollowers is deliberately absent: the database has no way of
+ * knowing it, so including it would hold the plan on its first milestone for
+ * ever. The growth page already shows it with its target and no verdict for
+ * the same reason.
+ */
+export const MEASURABLE_KEYS = [
+  "mau",
+  "revenue",
+  "eventsPerMonth",
+  "activeHosts",
+  "proSubscribers",
+  "cities",
+] as const satisfies readonly (keyof Omit<Milestone, "label" | "due">)[];
 
 /** The one before it, so the page can show what was and was not met. */
 export function previousMilestone(now = new Date()): Milestone | null {

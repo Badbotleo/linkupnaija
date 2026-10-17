@@ -487,7 +487,11 @@ export default async function AdminGrowthPage() {
     },
   ].filter((t) => t.n > 0);
 
-  const target = currentMilestone();
+  // Measured values in, so the milestone is the first one still UNMET rather
+  // than whichever one the calendar is pointing at. Before this, 1 October
+  // moved the page off Month 3 whether or not anything on it had been hit,
+  // and the misses stopped being asked about.
+  const target = currentMilestone(new Date(), actual);
   const passed = previousMilestone();
   const daysLeft = Math.ceil(
     (new Date(`${target.due}T23:59:59`).getTime() - Date.now()) / DAY
