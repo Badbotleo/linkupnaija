@@ -13,7 +13,7 @@ interface ChatMessage {
 // paddy", "share a ride with your paddy". Naming the assistant after it makes
 // it part of LinkUpNaija rather than a generic bot bolted onto the corner.
 const GREETING =
-  "How far? 👋 I'm Paddy, your plug on LinkUpNaija. Tell me the vibe you're chasing, ask how anything here works, or let me help you write your event.";
+  "How far? I'm Paddy, your plug on LinkUpNaija. Tell me the vibe you're chasing, ask how anything here works, or let me help you write your event.";
 
 // Starters, so nobody has to guess what it can do.
 const PROMPTS = [
@@ -193,7 +193,10 @@ export default function ChatWidget() {
           type="button"
           onClick={() => setOpen(false)}
           aria-label="Close chat"
-          className="fixed bottom-20 right-4 z-50 grid h-11 w-11 place-items-center rounded-full bg-brand text-white shadow-lg shadow-brand/25 transition hover:bg-brand-600 active:scale-95 lg:bottom-5 lg:right-5"
+          /* Hidden on a phone, where the sheet fills the screen and has its
+             own close control in the header. Two close buttons on one view,
+             one of them floating over the conversation, is clutter. */
+          className="fixed bottom-20 right-4 z-50 hidden h-11 w-11 place-items-center rounded-full bg-brand text-white shadow-lg shadow-brand/25 transition hover:bg-brand-600 active:scale-95 sm:grid lg:bottom-5 lg:right-5"
         >
           <CloseIcon />
         </button>
@@ -201,12 +204,20 @@ export default function ChatWidget() {
 
       {/* Panel */}
       <div
-        className={`fixed bottom-24 right-5 z-50 flex w-[400px] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl transition-[transform,opacity] duration-200 ${
+        /* A SHEET ON A PHONE, A PANEL ON A DESKTOP.
+           It was a 400px box pinned to the bottom-right corner on every
+           screen, which is the shape of a vendor support widget, and this
+           is not one: Paddy is ours and the support behind it is answered
+           in-house. On a phone that box left most of the screen showing the
+           page underneath, so a conversation happened in a letterbox. It
+           rises to a full sheet below sm and keeps the corner panel above
+           it, where a corner panel is right. */
+        className={`fixed z-50 flex flex-col overflow-hidden bg-white shadow-2xl transition-[transform,opacity] duration-200 dark:bg-[#141418] inset-x-0 bottom-0 top-0 h-[100dvh] rounded-none sm:inset-auto sm:h-[500px] sm:max-h-[calc(100vh-8rem)] sm:bottom-24 sm:right-5 sm:top-auto sm:w-[400px] sm:max-w-[calc(100vw-2.5rem)] sm:rounded-2xl sm:border sm:border-gray-100 sm:dark:border-white/10 ${
           open
             ? "pointer-events-auto translate-y-0 opacity-100"
             : "pointer-events-none translate-y-4 opacity-0"
         }`}
-        style={{ height: "500px", maxHeight: "calc(100vh - 8rem)" }}
+        data-paddy-panel
         role="dialog"
         aria-label="Paddy, the LinkUpNaija assistant"
         aria-hidden={!open}
@@ -249,7 +260,7 @@ export default function ChatWidget() {
         {/* Thread */}
         <div
           ref={threadRef}
-          className="flex-1 space-y-3 overflow-y-auto bg-gray-50 px-3 py-4"
+          className="flex-1 space-y-3 overflow-y-auto bg-[#FAFAFC] px-3 py-4 dark:bg-[#0E0E12]"
         >
           <AssistantBubble>{renderContent(GREETING)}</AssistantBubble>
 
