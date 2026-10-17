@@ -5,6 +5,7 @@ import RateVenuePrompt from "@/components/venues/RateVenuePrompt";
 import ThingsToDo from "@/components/home/ThingsToDo";
 import FeedCard from "./FeedCard";
 import SignupUnit from "./SignupUnit";
+import PeopleYouMet from "./PeopleYouMet";
 import { categoryPhoto } from "@/lib/category-photos";
 import type { FeedUnit } from "@/lib/feed";
 
@@ -64,6 +65,18 @@ export default function FeedColumn({
                 state={state}
               />
             );
+
+          case "people":
+            // Needs a signed-in viewer to insert a connection as. The unit is
+            // only ever built for one, but the column is shared with the
+            // logged-out feed, so this stays honest about it.
+            return userId ? (
+              <PeopleYouMet
+                key="people"
+                people={unit.people}
+                meId={userId}
+              />
+            ) : null;
 
           case "rate":
             return userId ? (

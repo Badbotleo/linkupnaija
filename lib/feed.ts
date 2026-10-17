@@ -43,8 +43,19 @@ export interface FeedEvent {
   organiser_name: string | null;
 }
 
+export interface MetPerson {
+  id: string;
+  name: string | null;
+  avatar_url: string | null;
+  /** One night you were both at, for the second line. */
+  sharedTitle: string;
+  /** How many you have shared. Ranks them. */
+  shared: number;
+}
+
 export type FeedUnit =
   | { kind: "signup"; variant: "first" | "second" }
+  | { kind: "people"; people: MetPerson[] }
   | {
       kind: "event";
       event: FeedEvent;
@@ -315,8 +326,11 @@ export async function buildFeed(
       .limit(6),
     supabase
       .from("connections")
-      .select("requester_id, receiver_id")
-      .eq("status", "accepted")
+      // Status comes back rather than being filtered out. Accepted rows give
+      // the friend signal; every row, whatever its status, has to be
+      // excluded from "people you met", because suggesting somebody you
+      // already asked is worse than suggesting nobody.
+      .select("requester_id, receiver_id, status")
       .or(`requester_id.eq.${userId},receiver_id.eq.${userId}`),
     // One query for the whole column. 60 is more than the platform currently
     // holds, so in practice this is every upcoming event, which is the point:
@@ -352,9 +366,19 @@ export async function buildFeed(
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 3);
 
-  const friendIds = (
-    (connRows ?? []) as { requester_id: string; receiver_id: string }[]
-  ).map((c) => (c.requester_id === userId ? c.receiver_id : c.requester_id));
+  const allConns = (connRows ?? []) as {
+    requester_id: string;
+    receiver_id: string;
+    status: string;
+  }[];
+  const other = (c: { requester_id: string; receiver_id: string }) =>
+    c.requester_id === userId ? c.receiver_id : c.requester_id;
+
+  const friendIds = allConns
+    .filter((c) => c.status === "accepted")
+    .map(other);
+  /** Anybody already connected, asked, or asking. Never suggested. */
+  const spokenFor = new Set(allConns.map(other));
 
   // event_id -> the friends going to it.
   const friendsByEvent = new Map<string, FriendUser[]>();
@@ -470,6 +494,85 @@ export async function buildFeed(
   const venue =
     venuePool.find((v) => state && v.state === state) ?? venuePool[0] ?? null;
 
+  // PEOPLE YOU WERE IN A ROOM WITH.
+  //
+  // This exists on /friends already and almost nobody opens /friends. The
+  // platform's bottleneck is that members have no connections, which leaves
+  // the friend row on every card, the faces on every circle and half the
+  // ranking of this feed with nothing to draw. A suggestion behind a tab
+  // does not fix that; a suggestion in the feed might.
+  //
+  // Built from accepted RSVPs on both sides, so every name here is somebody
+  // who was actually at the same link-up. Ranked by how many you have
+  // shared, so the person you keep running into comes first.
+  let metPeople: MetPerson[] = [];
+  {
+    const myEventIds = Array.from(mineSeen);
+    const attendedIds = (
+      (rsvpRows ?? []) as unknown as { events: FeedEvent | null }[]
+    )
+      .map((r) => r.events?.id)
+      .filter(Boolean) as string[];
+    const pool = Array.from(new Set([...myEventIds, ...attendedIds]));
+
+    if (pool.length > 0) {
+      const { data: others } = await supabase
+        .from("rsvps")
+        .select("user_id, event_id")
+        .eq("status", "accepted")
+        .in("event_id", pool)
+        .neq("user_id", userId);
+
+      const tally = new Map<string, { n: number; eventId: string }>();
+      for (const r of (others ?? []) as {
+        user_id: string;
+        event_id: string;
+      }[]) {
+        if (spokenFor.has(r.user_id)) continue;
+        const cur = tally.get(r.user_id);
+        if (cur) cur.n += 1;
+        else tally.set(r.user_id, { n: 1, eventId: r.event_id });
+      }
+
+      const top = Array.from(tally.entries())
+        .sort((a, b) => b[1].n - a[1].n)
+        .slice(0, 3);
+
+      if (top.length > 0) {
+        const ids = top.map(([id]) => id);
+        const eventIds = Array.from(new Set(top.map(([, v]) => v.eventId)));
+        const [{ data: users }, { data: evs }] = await Promise.all([
+          supabase
+            .from("users")
+            .select("id, name, avatar_url")
+            .in("id", ids),
+          supabase.from("events").select("id, title").in("id", eventIds),
+        ]);
+        const byUser = new Map(
+          ((users ?? []) as { id: string; name: string | null; avatar_url: string | null }[]).map(
+            (u) => [u.id, u]
+          )
+        );
+        const byEvent = new Map(
+          ((evs ?? []) as { id: string; title: string }[]).map((e) => [e.id, e.title])
+        );
+        metPeople = top
+          .map(([id, v]) => {
+            const u = byUser.get(id);
+            if (!u) return null;
+            return {
+              id,
+              name: u.name,
+              avatar_url: u.avatar_url,
+              sharedTitle: byEvent.get(v.eventId) ?? "a link-up",
+              shared: v.n,
+            } satisfies MetPerson;
+          })
+          .filter((p): p is MetPerson => !!p);
+      }
+    }
+  }
+
   const recaps = await getRecapsFor(state, 12);
 
   // Assembly. Stories first because they are the only moving thing we own,
@@ -496,9 +599,14 @@ export async function buildFeed(
   } else {
     scored.forEach((s, i) => {
       units.push({ kind: "event", event: s.event, friends: s.friends, reason: s.reason, mine: null });
-      if (i === 1) units.push({ kind: "rate" });
-      if (i === 4 && circle) units.push({ kind: "circle", circle });
-      if (i === 7 && venue) units.push({ kind: "venue", venue });
+      // People first, and high. Connections are what the friend row, the
+      // circle faces and half of this ranking are all waiting on, so the one
+      // unit that creates them outranks the chore and the two suggestions.
+      if (i === 1 && metPeople.length > 0)
+        units.push({ kind: "people", people: metPeople });
+      if (i === 3) units.push({ kind: "rate" });
+      if (i === 5 && circle) units.push({ kind: "circle", circle });
+      if (i === 8 && venue) units.push({ kind: "venue", venue });
     });
     units.push({ kind: "ideas" });
   }
