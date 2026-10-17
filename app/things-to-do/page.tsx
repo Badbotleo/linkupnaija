@@ -109,6 +109,8 @@ export default async function ThingsToDoPage() {
                 liveCount: idea.liveCount,
                 liveHref: idea.liveHref,
                 hideLabel: idea.hideLabel,
+                credit: idea.credit,
+                creditUrl: idea.creditUrl,
               }))}
             />
           </div>

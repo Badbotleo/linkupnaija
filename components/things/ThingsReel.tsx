@@ -42,6 +42,10 @@ export interface ReelIdea {
   liveHref?: string;
   /** The artwork already carries its own wording; do not caption it. */
   hideLabel?: boolean;
+  /** Who shot it. */
+  credit?: string | null;
+  /** Their page, where they gave one. */
+  creditUrl?: string | null;
 }
 
 /** Breathing room between the button and the bottom nav. */
@@ -152,6 +156,30 @@ export default function ThingsReel({ ideas }: { ideas: ReelIdea[] }) {
                     <span className="line-clamp-1">{idea.place}</span>
                   </p>
                 </>
+              )}
+
+              {/* CREDIT THE PERSON WHOSE FOOTAGE THIS IS.
+                  The page showed none at all, and credit_url has been in
+                  the table since the uploader was built and was read by
+                  nothing anywhere in the app: a link to the creator existed
+                  in the database and reached no screen. A shelf of other
+                  people's work with no name on it is the kind of thing that
+                  loses you the next creator. */}
+              {idea.credit && (
+                <p className="mt-1.5 text-[12px] text-white/55">
+                  {idea.creditUrl ? (
+                    <a
+                      href={idea.creditUrl}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      className="underline underline-offset-2 hover:text-white"
+                    >
+                      {idea.credit}
+                    </a>
+                  ) : (
+                    idea.credit
+                  )}
+                </p>
               )}
 
               {/* Two doors, carried over from the grid this replaced.

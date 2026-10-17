@@ -67,9 +67,23 @@ export default async function ThingsToDo({ state }: { state?: string | null }) {
                   </p>
                 </>
               )}
+              {/* A name, and their page where they gave one. It was a bare
+                  label behind a clapperboard or camera emoji, and the link
+                  the uploader collects was read by nothing. */}
               {idea.credit && (
-                <p className="mt-1 truncate text-[10px] text-white/45">
-                  {idea.mediaType === "video" ? "🎬" : "📷"} {idea.credit}
+                <p className="mt-1 truncate text-[10px] text-white/55">
+                  {idea.creditUrl ? (
+                    <a
+                      href={idea.creditUrl}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      className="underline underline-offset-2 hover:text-white"
+                    >
+                      {idea.credit}
+                    </a>
+                  ) : (
+                    idea.credit
+                  )}
                 </p>
               )}
               {/* Two doors. "Host it" alone is a big ask for someone just
