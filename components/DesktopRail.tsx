@@ -29,7 +29,10 @@ const MAIN = [
   { href: "/things-to-do", label: "Things to do", icon: "sparkles" },
   { href: "/venues", label: "Venues", icon: "pin" },
   { href: "/rides", label: "Rides", icon: "car" },
-  { href: "/drive", label: "Drive with us", icon: "car" },
+  // "Drive with us" is gone. It pointed at /drive, which has only ever
+  // redirected to /rides?tab=drive, so the rail listed the same destination
+  // twice, with the same icon, one line apart. Listing your vehicle is a tab
+  // inside Rides and is reachable there.
   { href: "/circles", label: "Circles", icon: "circles" },
 ];
 

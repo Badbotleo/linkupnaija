@@ -494,19 +494,8 @@ function Card({
                     </span>
                   ))}
                 </span>
-                <span className="truncate text-xs font-semibold text-gray-500">
-                  {memberProof(circle.member_count) ??
-                    `${circle.member_count} member${circle.member_count === 1 ? "" : "s"}`}
-                </span>
               </span>
-            ) : (
-              memberProof(circle.member_count) && (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-gray-500">
-                  <LineIcon name="users" size={13} className="text-gray-400" />
-                  {memberProof(circle.member_count)}
-                </span>
-              )
-            )}
+            ) : null}
             {/* The one line that separates a community from a listing. A
                 green dot next to "Active today" is the whole reason to tap
                 this card rather than the one below it. */}

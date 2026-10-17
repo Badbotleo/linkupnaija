@@ -38,7 +38,16 @@ interface Row {
   poster_url: string | null;
   state: string | null;
   credit: string | null;
-  event: { id: string; title: string; date: string } | null;
+  // cover_image_url rides along on the way in so a recap with no poster of
+  // its own can fall back to the flyer of the night it came from. It is not
+  // on Recap, because nothing downstream needs it once posterUrl is
+  // resolved.
+  event: {
+    id: string;
+    title: string;
+    date: string;
+    cover_image_url: string | null;
+  } | null;
 }
 
 const getRecaps = unstable_cache(
@@ -50,7 +59,7 @@ const getRecaps = unstable_cache(
     const { data, error } = await supabase
       .from("event_recaps")
       .select(
-        "id, title, media_url, media_type, poster_url, state, credit, event:events(id, title, date)"
+        "id, title, media_url, media_type, poster_url, state, credit, event:events(id, title, date, cover_image_url)"
       )
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
@@ -70,7 +79,22 @@ const getRecaps = unstable_cache(
         title: isRealText(r.title) ? r.title : null,
         mediaUrl: r.media_url!,
         mediaType: r.media_type === "image" ? "image" : "video",
-        posterUrl: isRealText(r.poster_url, 8) ? r.poster_url : null,
+        // THE EVENT'S FLYER IS THE FALLBACK POSTER.
+        //
+        // Eleven of the thirteen recaps have no poster of their own, because
+        // posters are captured at upload and most of these predate that. A
+        // clip with no poster paints black until enough video has arrived to
+        // show a frame, and on a Nigerian connection that is a shelf of
+        // black rectangles that reads as broken rather than as loading.
+        //
+        // The flyer is the next best thing and is always there: it is the
+        // artwork of the same night, already on the event, already cached by
+        // anyone who has seen that event anywhere else in the app.
+        posterUrl: isRealText(r.poster_url, 8)
+          ? r.poster_url
+          : isRealText(r.event?.cover_image_url, 8)
+            ? r.event!.cover_image_url!
+            : null,
         state: r.state,
         credit: isRealText(r.credit) ? r.credit : null,
         event: r.event ?? null,

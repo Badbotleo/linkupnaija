@@ -5,7 +5,6 @@ import RateVenuePrompt from "@/components/venues/RateVenuePrompt";
 import ThingsToDo from "@/components/home/ThingsToDo";
 import FeedCard from "./FeedCard";
 import SignupUnit from "./SignupUnit";
-import { memberProof } from "@/lib/social-proof";
 import { categoryPhoto } from "@/lib/category-photos";
 import type { FeedUnit } from "@/lib/feed";
 
@@ -95,7 +94,7 @@ export default function FeedColumn({
                     {unit.circle.name}
                   </p>
                   <p className="truncate text-[13px] text-gray-500">
-                    {[memberProof(unit.circle.member_count), unit.circle.state]
+                    {[unit.circle.category, unit.circle.state]
                       .filter(Boolean)
                       .join(" · ") || "New circle"}
                   </p>

@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import EventCover from "@/components/EventCover";
 import Avatar from "@/components/Avatar";
-import { memberProof } from "@/lib/social-proof";
 import JoinCircleButton from "@/components/circles/JoinCircleButton";
 import CircleFeed from "@/components/circles/CircleFeed";
 import CircleArt from "@/components/circles/CircleArt";
@@ -89,11 +88,7 @@ export default async function CirclePage({ params }: { params: { id: string } })
     <div>
       <AppHeader
         title={circle.name}
-        subtitle={
-          [memberProof(circle.member_count), circle.state]
-            .filter(Boolean)
-            .join(" · ") || undefined
-        }
+        subtitle={circle.state || undefined}
         back
       />
       <div className="container-page py-5">
@@ -197,9 +192,7 @@ export default async function CirclePage({ params }: { params: { id: string } })
               </span>
             ))}
           </div>
-          <span className="text-sm text-gray-500">
-            {memberProof(circle.member_count) ?? "Members"}
-          </span>
+          <span className="text-sm text-gray-500">Members</span>
         </div>
       )}
 
