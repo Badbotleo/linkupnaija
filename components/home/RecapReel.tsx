@@ -177,6 +177,27 @@ function ReelsPlayer({
   const [muted, setMuted] = useState(false);
   const [paused, setPaused] = useState(false);
 
+  /**
+   * THE PORTAL IS NOT IN THE DOM ON THE FIRST RENDER.
+   *
+   * This component returns null until `mounted` flips, so everything below
+   * that reads scroller.current runs once against nothing, bails out, and
+   * never runs again, because none of their dependencies ever change. The
+   * flag was declared two hundred lines further down, after all of them,
+   * which is what hid it.
+   *
+   * It broke the two things people actually noticed. The scroll-to-tapped
+   * clip never happened, so the player always opened on the first clip
+   * whichever card you tapped. And the IntersectionObserver was never
+   * created, so `current` never moved: scrolling showed later slides with no
+   * src attached, while the first clip carried on playing underneath. Sound
+   * from one video, picture from none, which is exactly what it looked like.
+   *
+   * Every effect that touches the portal now waits for this.
+   */
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   // Jump to the tapped clip.
   //
   // This used to compute `startAt * el.clientHeight`, which ran before layout
@@ -188,7 +209,7 @@ function ReelsPlayer({
     const el = scroller.current;
     const target = el?.querySelector<HTMLElement>(`[data-index="${startAt}"]`);
     target?.scrollIntoView({ block: "start" });
-  }, [startAt]);
+  }, [startAt, mounted]);
 
   // Lock the page behind the overlay — otherwise the feed scrolls underneath.
   useEffect(() => {
@@ -224,7 +245,7 @@ function ReelsPlayer({
     );
     el.querySelectorAll("[data-index]").forEach((n) => io.observe(n));
     return () => io.disconnect();
-  }, [recaps.length]);
+  }, [recaps.length, mounted]);
 
   // Everything playing on the page behind us is now covered by a black
   // overlay, so it's audio and battery spent on nothing. Paused for as long
@@ -238,7 +259,9 @@ function ReelsPlayer({
     return () => {
       behind.forEach((v) => v.play().catch(() => {}));
     };
-  }, []);
+    // Before the portal existed, root was null, so "every video not inside
+    // the player" meant every video on the page including the player's own.
+  }, [mounted]);
 
   /**
    * Start the current clip, with sound if the browser allows it.
@@ -282,8 +305,6 @@ function ReelsPlayer({
   // the page, and any ancestor with a transform or filter traps it in that
   // stacking context — which is why the navbar and bottom nav kept drawing
   // over a z-[9999] overlay. Mounted on body there is no ancestor to trap it.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
   if (!mounted) return null;
 
   return createPortal(
