@@ -11,7 +11,13 @@ interface StoryEvent {
 export default function EventsStories({ events }: { events: StoryEvent[] }) {
   if (events.length === 0) return null;
   return (
-    <div className="-mx-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+    /* no-scrollbar, like every other horizontal rail in the app.
+       This was the one scroller that did not have it, so the native
+       scrollbar drew a grey line under the stories row on every platform
+       that paints one. Nothing else in the product shows a scrollbar, which
+       is exactly what made this one read as a stray line rather than as a
+       control. */
+    <div className="no-scrollbar -mx-4 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
       <div className="flex gap-3">
         {/* A size smaller on phones. The rail is a browse-more affordance, and
             every pixel it takes comes straight off the reel underneath it,

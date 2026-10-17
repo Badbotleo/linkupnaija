@@ -122,36 +122,63 @@ export default function FeedColumn({
 
           case "venue":
             return (
-              <Link
-                key={`venue-${unit.venue.id}`}
-                href="/venues"
-                className="group flex items-center gap-3 rounded-2xl bg-white p-3 shadow-[var(--e1)] dark:bg-white/[0.04]"
+              <section
+                key="venues"
+                className="overflow-hidden rounded-2xl bg-white py-3 shadow-[var(--e1)] dark:bg-white/[0.04]"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={unit.venue.image_url ?? "/venues/restaurants.jpg"}
-                  alt=""
-                  className="h-14 w-14 shrink-0 rounded-xl object-cover"
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-[#A07A2C]">
-                    Reserve through us
-                  </p>
-                  <p className="mt-0.5 truncate font-bold text-gray-900 group-hover:text-brand">
-                    {unit.venue.name}
-                  </p>
-                  <p className="truncate text-[13px] text-gray-500">
-                    {[unit.venue.category, unit.venue.state]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </p>
+                <div className="flex items-end justify-between gap-3 px-4">
+                  <div className="min-w-0">
+                    <h2 className="text-[13px] font-bold uppercase tracking-[0.12em] text-[#A07A2C]">
+                      Reserve through us
+                    </h2>
+                    <p className="mt-0.5 text-[13px] text-gray-500">
+                      Somewhere to put the night
+                    </p>
+                  </div>
+                  <Link
+                    href="/venues"
+                    className="shrink-0 whitespace-nowrap text-sm font-bold text-brand hover:underline"
+                  >
+                    All venues
+                  </Link>
                 </div>
-                <LineIcon
-                  name="chevronRight"
-                  size={16}
-                  className="shrink-0 text-gray-400"
-                />
-              </Link>
+
+                {/* The venues ARE the argument, so they are the unit.
+                    This was one venue in a 56px thumbnail with a chevron,
+                    which is a button wearing a card's clothes: it said
+                    "reserve through us" and showed almost nothing you could
+                    want to reserve. Swiped, the same gesture as the stories
+                    row directly above it. */}
+                <div className="no-scrollbar mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1">
+                  {unit.venues.map((v) => (
+                    <Link
+                      key={v.id}
+                      href={`/venues/${v.id}`}
+                      className="group w-[62vw] max-w-[230px] shrink-0 snap-start sm:w-[230px]"
+                    >
+                      <div className="relative h-[150px] overflow-hidden rounded-2xl shadow-card transition duration-200 group-hover:-translate-y-0.5">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={v.image_url ?? "/venues/restaurants.jpg"}
+                          alt=""
+                          loading="lazy"
+                          className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent" />
+                        <div className="absolute inset-x-0 bottom-0 p-3 text-white">
+                          <p className="truncate text-[15px] font-extrabold leading-tight">
+                            {v.name}
+                          </p>
+                          <p className="mt-0.5 truncate text-[12px] text-white/75">
+                            {[v.category, v.state].filter(Boolean).join(" · ")}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                  <span aria-hidden className="w-1 shrink-0" />
+                </div>
+              </section>
             );
 
           case "ideas":

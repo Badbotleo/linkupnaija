@@ -68,7 +68,7 @@ export type FeedUnit =
     }
   | { kind: "stories"; recaps: Recap[] }
   | { kind: "circle"; circle: FeedCircle }
-  | { kind: "venue"; venue: FeedVenue }
+  | { kind: "venue"; venues: FeedVenue[] }
   | { kind: "ideas" }
   | { kind: "rate" };
 
@@ -490,9 +490,21 @@ export async function buildFeed(
   const circle =
     circlePool.find((c) => state && c.state === state) ?? circlePool[0] ?? null;
 
+  // SEVERAL, NOT ONE.
+  //
+  // This unit was a single venue in a 56px thumbnail with a chevron, which
+  // is a button wearing a card's clothes: it said "reserve through us" and
+  // showed almost nothing you could want to reserve. The venues are the
+  // argument, so the unit carries a swipeable row of them, nearest state
+  // first and featured within that.
   const venuePool = (venueRows ?? []) as FeedVenue[];
-  const venue =
-    venuePool.find((v) => state && v.state === state) ?? venuePool[0] ?? null;
+  const venues = [...venuePool]
+    .sort((a, b) => {
+      const sa = state && a.state === state ? 0 : 1;
+      const sb = state && b.state === state ? 0 : 1;
+      return sa - sb;
+    })
+    .slice(0, 8);
 
   // PEOPLE YOU WERE IN A ROOM WITH.
   //
@@ -606,7 +618,8 @@ export async function buildFeed(
         units.push({ kind: "people", people: metPeople });
       if (i === 3) units.push({ kind: "rate" });
       if (i === 5 && circle) units.push({ kind: "circle", circle });
-      if (i === 8 && venue) units.push({ kind: "venue", venue });
+      if (i === 8 && venues.length > 0)
+        units.push({ kind: "venue", venues });
     });
     units.push({ kind: "ideas" });
   }
