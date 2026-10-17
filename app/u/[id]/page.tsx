@@ -353,7 +353,14 @@ export default async function PublicProfilePage({
 
         {badges.length > 0 && (
           <div className="mt-2">
-            <HostBadges badges={badges} />
+            {/* Three, not five.
+                A host who has earned everything showed LinkUpNaija Elite,
+                Top Host, Verified Host, Safety Champion and Quick Responder
+                as five chips wrapping onto two rows in three different
+                colours, directly under the name. A wall of badges says less
+                than three does: the reader stops reading them. computeBadges
+                already returns them in order of weight. */}
+            <HostBadges badges={badges} max={3} />
           </div>
         )}
 
@@ -379,24 +386,27 @@ export default async function PublicProfilePage({
             in the heading, a badge row, and a scorecard further down. Same
             facts, one place, in the order somebody weighs them. */}
         <dl className="mt-4 divide-y divide-gray-200/70 rounded-2xl bg-white px-4 shadow-[var(--e1)] dark:divide-white/10 dark:bg-white/[0.04]">
-          <Fact
-            icon="check"
-            tone={profile.phone_verified ? "green" : "muted"}
-            // "Phone number", not "Phone": the badge row directly above can
-            // read "Verified Host", which is a hosting badge and nothing to do
-            // with a phone. Side by side, a bare "Phone not verified" looked
-            // like the page contradicting itself.
-            label={
-              profile.phone_verified
-                ? "Phone number confirmed"
-                : "Phone number not confirmed"
-            }
-            sub={
-              profile.phone_verified
-                ? "We texted a code and they entered it"
-                : "Nobody has confirmed this number"
-            }
-          />
+          {/* Only when it is true.
+              Unverified, this row led the list with "Phone number not
+              confirmed" over "Nobody has confirmed this number", so the
+              first thing anybody read about a person was an absence, stated
+              twice. The rest of this product already refuses to do that:
+              memberProof, subscriberProof and attendanceProof all return
+              nothing rather than announce a zero. A confirmed number is
+              worth saying; an unconfirmed one is the default and says
+              nothing about them.
+
+              "Phone number", not "Phone", because the badges above can read
+              "Verified Host", which is a hosting badge and nothing to do
+              with a phone. */}
+          {profile.phone_verified && (
+            <Fact
+              icon="check"
+              tone="green"
+              label="Phone number confirmed"
+              sub="We texted a code and they entered it"
+            />
+          )}
           <Fact
             icon="calendar"
             tone="muted"

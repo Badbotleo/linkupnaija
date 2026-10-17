@@ -339,8 +339,15 @@ export default function RideHailer({
         </div>
       )}
 
-      {/* Map — the screen leads with where you are, not with a form */}
-      <div className="relative h-[38vh] min-h-[240px] w-full overflow-hidden sm:h-[44vh] sm:rounded-3xl">
+      {/* Map — the screen leads with where you are, not with a form.
+          38vh was a strip: on a 812px phone that is 308px of map under a
+          header, with the form taking the rest, so the thing the screen is
+          about got less room than the thing you fill in afterwards. Snapchat
+          and every ride app give the map the screen and float the controls
+          over it, and the sheet below already overlaps by 20px, so the
+          pattern was half built. 62vh is 500px of map on that same phone,
+          and the sheet still starts above the fold so nothing is hidden. */}
+      <div className="relative h-[62vh] min-h-[320px] w-full overflow-hidden sm:h-[64vh] sm:rounded-3xl">
         <RideMap from={from} to={to} center={from ?? DEFAULT_CENTER} />
 
         <button

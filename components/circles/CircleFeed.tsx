@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/image";
 import MediaCarousel, { type MediaItem } from "@/components/media/MediaCarousel";
 import MediaPicker, { type PickedFile } from "@/components/media/MediaPicker";
+import { capturePoster } from "@/lib/video-poster";
 import ImageLightbox from "@/components/ui/ImageLightbox";
 import { SITE_ORIGIN } from "@/lib/qr";
 import { formatEventDate, formatEventTime, timeAgo } from "@/lib/format";
@@ -48,12 +49,13 @@ function postMedia(src: {
     const out = (src.media as unknown[])
       .map((m) => {
         if (!m || typeof m !== "object") return null;
-        const o = m as { url?: unknown; type?: unknown };
+        const o = m as { url?: unknown; type?: unknown; poster?: unknown };
         if (typeof o.url !== "string" || !o.url) return null;
         return {
           url: o.url,
           type: o.type === "video" ? "video" : "image",
-        } satisfies MediaItem;
+          poster: typeof o.poster === "string" ? o.poster : null,
+        } as MediaItem;
       })
       .filter((m): m is MediaItem => !!m);
     if (out.length > 0) return out;
@@ -213,10 +215,39 @@ export default function CircleFeed({
           return;
         }
 
+        const url = supabase.storage.from("event-covers").getPublicUrl(path)
+          .data.publicUrl;
+
+        // A STILL FOR EVERY CLIP, grabbed while the file is still in memory:
+        // no CORS to negotiate and no second download. A video with no
+        // poster paints a black rectangle with a play button until enough
+        // of the file has arrived, and on iOS it stays black. Failing to
+        // get one is not an upload failure; the clip still works, it just
+        // starts black.
+        let poster: string | null = null;
+        if (isVideo) {
+          const frame = await capturePoster(item.file);
+          if (frame) {
+            const pPath = `${path.replace(/\.[^.]+$/, "")}-poster.jpg`;
+            const up = await supabase.storage
+              .from("event-covers")
+              .upload(pPath, frame, {
+                contentType: "image/jpeg",
+                upsert: true,
+                cacheControl: "31536000",
+              });
+            if (!up.error) {
+              poster = supabase.storage
+                .from("event-covers")
+                .getPublicUrl(pPath).data.publicUrl;
+            }
+          }
+        }
+
         media.push({
-          url: supabase.storage.from("event-covers").getPublicUrl(path).data
-            .publicUrl,
+          url,
           type: isVideo ? "video" : "image",
+          ...(poster ? { poster } : {}),
         });
       } catch (err) {
         // Without this the promise rejected and the form stayed on
@@ -598,8 +629,17 @@ function PostCard({
               href={`/u/${src.user_id}`}
               className="flex min-w-0 items-center gap-1 hover:underline"
             >
+              {/* The NAME wins the width.
+                  Both of these carried truncate inside one min-w-0 row, so
+                  flexbox split the space and clipped both: "Patience Na..."
+                  next to "@patiencena...", with neither readable and the
+                  handle merely the name again in lower case. The name
+                  truncates; the handle is hidden on a phone, where there is
+                  no room for it, and capped above that. */}
               <span className="truncate font-bold text-gray-900">{shown.name}</span>
-              <span className="truncate text-gray-500">@{handle}</span>
+              <span className="hidden max-w-[8rem] shrink-0 truncate text-gray-500 sm:inline">
+                @{handle}
+              </span>
             </Link>
             <span className="text-gray-400">·</span>
             <time
@@ -680,6 +720,7 @@ function PostCard({
             <div className="relative mt-2.5">
               <video
                 src={shown.video}
+                poster={shown.media[0]?.poster ?? undefined}
                 controls
                 playsInline
                 preload="metadata"

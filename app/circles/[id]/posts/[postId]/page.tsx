@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 import { createClient } from "@/lib/supabase/server";
@@ -93,11 +92,13 @@ export default async function CirclePostPage({
 
   return (
     <div className="container-page max-w-2xl py-4">
-      <AppHeader
-        title="Post"
-        back
-        meta={[{ icon: "users", label: circle.name, href: `/circles/${circle.id}` }]}
-      />
+      {/* The circle leads, not the word "Post".
+          This page named the circle three times: a meta pill under the
+          header, the post itself, and a "Back to X" line at the bottom,
+          while the header said "Post", which is the one thing the reader
+          can already see. The back arrow goes to the circle, so the pill
+          and the footer line were both saying what it does. */}
+      <AppHeader title={circle.name} subtitle={<>Post</>} back />
 
       <div className="mt-4">
         <CircleFeed
@@ -109,11 +110,6 @@ export default async function CirclePostPage({
         />
       </div>
 
-      <p className="mt-4 text-center text-sm text-gray-500">
-        <Link href={`/circles/${circle.id}`} className="font-semibold text-brand hover:underline">
-          Back to {circle.name}
-        </Link>
-      </p>
     </div>
   );
 }
