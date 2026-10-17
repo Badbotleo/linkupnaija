@@ -51,10 +51,15 @@ export default async function ThingsToDoPage() {
     <div>
       <AppHeader
         title="Things to do this week"
+        /* A fact, not a restatement of the title.
+           It read "Ideas for linking up around FCT - Abuja" under "Things
+           to do this week", which is the title again in longer words. The
+           count and the place are the two things the title does not
+           already say. */
         subtitle={
           state
-            ? `Ideas for linking up around ${state}`
-            : "Ideas for linking up with your people"
+            ? `${ideas.length} around ${state.replace(/^FCT\s*-\s*/, "")}`
+            : `${ideas.length} ideas near you`
         }
         back
         action={
@@ -64,17 +69,7 @@ export default async function ThingsToDoPage() {
         }
       />
 
-      <div className="container-page py-3">
-        {/* One line above a full-screen reel, not a paragraph. The reel is the
-            page now, and every pixel spent explaining it is a pixel of
-            photograph nobody sees. */}
-        {/* Gone on a short phone. At 640px tall the header and this line
-            together take 250px, and every one of them comes out of the
-            photograph. The reel explains itself; the hint is a nicety. */}
-        <p className="text-sm leading-relaxed text-gray-600 [@media(max-height:700px)]:hidden">
-          Tap one and the host form opens filled in.
-        </p>
-
+      <div className="container-page py-2">
         {ideas.length === 0 ? (
           <div className="mt-6 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-14 text-center">
             <StateIcon name="calendar" tone="quiet" size={48} />
