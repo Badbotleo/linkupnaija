@@ -31,6 +31,21 @@ export default function FeedCard({
 }) {
   const price = event.price ?? 0;
 
+  /**
+   * A night that has already happened cannot be bought a ticket for.
+   *
+   * This card replaced the reel on /events, and "Been and gone" is one of
+   * that page's tabs, so every finished event on it was offering "Get a
+   * ticket" with a ticket icon. The event page has guarded this since
+   * fe930e5; the card did not, because when it was written it had never
+   * been shown a past event.
+   *
+   * Compared as plain YYYY-MM-DD strings, which is how the column is
+   * stored. Parsing to Date here would introduce a timezone where there was
+   * not one: an event is on its date in Lagos, not at an instant.
+   */
+  const isOver = event.date < new Date().toISOString().slice(0, 10);
+
   return (
     <article className="overflow-hidden rounded-2xl bg-white shadow-[var(--e1)] dark:bg-white/[0.04]">
       {/* The reason line. Meta hides its ranking behind "Suggested for you";
@@ -77,7 +92,7 @@ export default function FeedCard({
               Hosting
             </span>
           )}
-          {price > 0 && (
+          {price > 0 && !isOver && (
             <span className="absolute right-3 top-3 rounded-full bg-black/70 px-2.5 py-1 text-[12px] font-extrabold tabular-nums text-white backdrop-blur">
               {formatNaira(price)}
             </span>
@@ -117,30 +132,34 @@ export default function FeedCard({
           address past the card edge. */}
       <div className="mt-3 flex items-center gap-1 border-t border-gray-100 px-3 py-2 dark:border-white/10">
         <Link
-          href={`/events/${event.id}`}
+          href={isOver ? `/events/${event.id}#gallery` : `/events/${event.id}`}
           className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-2 text-[13.5px] font-bold text-gray-700 transition hover:bg-gray-50 dark:hover:bg-white/5"
         >
           {/* The icon follows the label. It was a calendar under every one
               of them, so "Get a ticket" came with a date picker. */}
           <LineIcon
             name={
-              mine === "hosting"
-                ? "mic"
-                : price > 0
-                  ? "ticket"
-                  : mine === "going"
-                    ? "check"
-                    : "calendar"
+              isOver
+                ? "camera"
+                : mine === "hosting"
+                  ? "mic"
+                  : price > 0
+                    ? "ticket"
+                    : mine === "going"
+                      ? "check"
+                      : "calendar"
             }
             size={15}
           />
-          {mine === "hosting"
-            ? "Your event"
-            : mine === "going"
-              ? "Your ticket"
-              : price > 0
-                ? "Get a ticket"
-                : "Join this"}
+          {isOver
+            ? "See how it went"
+            : mine === "hosting"
+              ? "Your event"
+              : mine === "going"
+                ? "Your ticket"
+                : price > 0
+                  ? "Get a ticket"
+                  : "Join this"}
         </Link>
         <span aria-hidden className="h-5 w-px shrink-0 bg-gray-100 dark:bg-white/10" />
         <a
