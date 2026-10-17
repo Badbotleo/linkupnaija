@@ -569,11 +569,26 @@ export default function RideHailer({
           aria-label="Contact phone"
         />
 
+        {/* PINNED, NOT BURIED.
+            This button sits after the route inputs, the vehicle chips, the
+            paddy picker and a phone field, which is several hundred pixels
+            of sheet. Giving the map the screen pushed it off the bottom
+            entirely, so the ride page had a beautiful map and no visible way
+            to book anything. Shrinking the map back would fix the symptom
+            and lose the point.
+
+            So on a phone it is a bar at the bottom of the screen, always
+            reachable however far down the sheet you are. The offset is the
+            one StickyJoinBar already proved against the bottom nav: 53px
+            plus the safe area, because a fixed element at bottom-0 sits
+            UNDER that nav. Static and inline from sm up, where the whole
+            sheet fits and a floating bar would be furniture. */}
+        <div className="fixed inset-x-0 bottom-[calc(53px_+_env(safe-area-inset-bottom))] z-30 border-t border-gray-100 bg-white/95 px-4 py-3 backdrop-blur-xl sm:static sm:z-auto sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none dark:border-white/10 dark:bg-black/85 sm:dark:bg-transparent">
         <button
           type="button"
           onClick={request}
           disabled={!ready || requesting}
-          className="btn-primary mt-4 w-full rounded-full py-3.5 text-base disabled:opacity-40"
+          className="btn-primary w-full rounded-full py-3.5 text-base disabled:opacity-40 sm:mt-4"
         >
           {requesting
             ? "Requesting…"
@@ -581,10 +596,13 @@ export default function RideHailer({
               ? `Request ${vehicle.label} · ${naira(estimateFare(vehicle, km))}${paddies.size ? ` · ${naira(Math.ceil(estimateFare(vehicle, km) / (paddies.size + 1)))} each` : ""}`
               : "Set pick-up and destination"}
         </button>
+        </div>
 
-        <p className="mt-2 text-center text-[11px] leading-relaxed text-gray-500">
+        {/* Clears the pinned bar on a phone so the last field is not hidden
+            behind it. Nothing to clear once the bar goes static. */}
+        <p className="mt-2 pb-24 text-center text-[11px] leading-relaxed text-gray-500 sm:pb-0">
           Fares are estimates. A vetted partner confirms the final price before
-          anything is charged — nothing is paid here.
+          anything is charged, nothing is paid here.
         </p>
       </div>
 
