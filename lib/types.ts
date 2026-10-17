@@ -324,7 +324,9 @@ export interface CirclePostComment {
   author: { name: string | null; avatar_url: string | null } | null;
 }
 
-export type SeriesFrequency = "weekly" | "biweekly" | "monthly";
+// monthly_nth is "the same weekday position each month", which is how a
+// host says "every last Friday". Plain monthly stays "the same day number".
+export type SeriesFrequency = "weekly" | "biweekly" | "monthly" | "monthly_nth";
 
 export interface EventSeries {
   id: string;

@@ -7,7 +7,7 @@ import { compressImage } from "@/lib/image";
 import Link from "next/link";
 import { EVENT_CATEGORIES, NIGERIAN_STATES } from "@/lib/constants";
 import LineIcon from "@/components/ui/LineIcon";
-import { FREQUENCY_OPTIONS, nextDates } from "@/lib/series";
+import { frequencyOptionsFor, nextDates } from "@/lib/series";
 import { formatEventDate } from "@/lib/format";
 import { validateLocation, MAX_LOCATION_LENGTH } from "@/lib/content-guards";
 import { detectLeaks, LEAK_LABELS } from "@/lib/external-links";
@@ -1292,8 +1292,8 @@ export default function HostForm({
               Make this a recurring series
             </span>
             <span className="block text-xs text-gray-500">
-              We&apos;ll create the first 3 events automatically based on your
-              frequency.
+              We&apos;ll create the first 3 dates now and you can add more
+              later.
             </span>
           </span>
         </label>
@@ -1314,23 +1314,55 @@ export default function HostForm({
               />
             </div>
             <div>
-              <span className="label">Frequency</span>
-              <div className="grid grid-cols-3 gap-2">
-                {FREQUENCY_OPTIONS.map((o) => (
+              <span className="label">How often</span>
+              {/* WRITTEN OUT FROM THE DATE THEY PICKED.
+                  This was three chips reading "Weekly", "Every 2 weeks" and
+                  "Monthly", side by side in a narrow grid. A host who runs
+                  something on the last Friday of the month had no way to say
+                  so: "Monthly" meant the same day NUMBER, so a series
+                  starting Friday 30 October landed on a Monday, then a
+                  Wednesday, then a Saturday.
+
+                  The options are generated from the chosen date now and
+                  spelled out, so the host reads "Monthly on the last Friday"
+                  instead of guessing what "Monthly" does. Stacked rather
+                  than in a three-column grid, because the labels are
+                  sentences and sentences do not fit in a third of a phone. */}
+              <div className="flex flex-col gap-2">
+                {frequencyOptionsFor(form.date).map((o) => (
                   <button
                     key={o.value}
                     type="button"
                     onClick={() => setFrequency(o.value)}
-                    className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${
+                    aria-pressed={frequency === o.value}
+                    className={`flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left text-sm font-semibold transition ${
                       frequency === o.value
                         ? "border-brand bg-brand-50 text-brand"
                         : "border-gray-200 bg-white text-gray-600 hover:border-brand/40"
                     }`}
                   >
+                    <span
+                      aria-hidden
+                      className={`grid h-4 w-4 shrink-0 place-items-center rounded-full border-2 ${
+                        frequency === o.value
+                          ? "border-brand"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      {frequency === o.value && (
+                        <span className="h-2 w-2 rounded-full bg-brand" />
+                      )}
+                    </span>
                     {o.label}
                   </button>
                 ))}
               </div>
+              {!form.date && (
+                <p className="mt-1.5 text-xs text-gray-500">
+                  Pick the first date above and these will say exactly which
+                  days they mean.
+                </p>
+              )}
             </div>
             <div>
               <label htmlFor="seriesDescription" className="label">
@@ -1347,11 +1379,23 @@ export default function HostForm({
               />
             </div>
             {seriesDates.length > 0 && (
+              /* The preview is the proof, so it names the weekday. "27 Nov"
+                 does not tell a host whether the rule they picked is the one
+                 they meant; "Fri 27 Nov" does, at a glance, three times. */
               <div className="rounded-lg bg-brand-50 px-3 py-2.5 text-sm text-brand">
-                <p className="font-semibold">First 3 events:</p>
-                <p className="mt-0.5 text-brand/80">
-                  {seriesDates.map((d) => formatEventDate(d)).join("  ·  ")}
-                </p>
+                <p className="font-semibold">These three get created now:</p>
+                <ul className="mt-1 space-y-0.5 text-brand/85">
+                  {seriesDates.map((d) => (
+                    <li key={d}>
+                      {new Date(`${d}T00:00:00`).toLocaleDateString("en-GB", {
+                        weekday: "long",
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
           </div>

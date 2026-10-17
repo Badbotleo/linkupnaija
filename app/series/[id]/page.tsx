@@ -6,7 +6,7 @@ import EventCover from "@/components/EventCover";
 import Avatar from "@/components/Avatar";
 import SeriesSubscribeButton from "@/components/series/SeriesSubscribeButton";
 import { formatEventDate, formatEventTime } from "@/lib/format";
-import { frequencyLabel } from "@/lib/series";
+import { describeFrequency } from "@/lib/series";
 import type { EventRow, EventSeries, SeriesFrequency } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -71,6 +71,11 @@ export default async function SeriesPage({
     EventRow,
     "id" | "title" | "category" | "state" | "location" | "date" | "time" | "cover_image_url"
   >[];
+  // The earliest event in the series is what its cadence is described
+  // against: "the last Friday" is only meaningful relative to a real date.
+  const firstDate = events.length
+    ? events.reduce((a, b) => (a.date <= b.date ? a : b)).date
+    : null;
   const today = new Date().toISOString().slice(0, 10);
   const upcoming = events.filter((e) => e.date >= today);
   const past = events.filter((e) => e.date < today);
@@ -115,7 +120,13 @@ export default async function SeriesPage({
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand">
-              {frequencyLabel(series.frequency as SeriesFrequency)} series
+              {/* Described from the series' own first date, so a saved
+                  series reads "Monthly on the last Friday" rather than the
+                  bare word the host chose it by. */}
+              {describeFrequency(
+                series.frequency as SeriesFrequency,
+                firstDate
+              )}
             </span>
             {series.state && (
               <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600">
