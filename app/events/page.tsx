@@ -712,7 +712,11 @@ export default async function EventsPage({
                           ? "Today"
                           : days === 1
                             ? "Tomorrow"
-                            : `${days} days away${e.state ? ` in ${e.state}` : ""}`
+                            // No place here. The action row carries the venue
+                            // and its state, so "6 days away in FCT - Abuja"
+                            // above "Kubwa" below was the same question
+                            // answered twice, at two different zoom levels.
+                            : `${days} days away`
                 }
                 mine={null}
               />

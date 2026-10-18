@@ -55,8 +55,14 @@ export default function FeedCard({
           Suppressed when friends are going, because then the reason IS the
           friend row further down and printing it twice on one card is just
           noise. Faces win, so the faces keep it. */}
-      {friends.length === 0 && (
-        <div className="flex items-center gap-2 px-4 pt-3.5">
+      {/* WHAT IT IS, OPPOSITE WHEN IT IS.
+          The category chip sat at the very bottom, under the ticket button
+          and the address, which is after the decision rather than before
+          it. What kind of night this is belongs beside how soon it is: the
+          two facts somebody scans a card for, on one line, before the
+          artwork. */}
+      <div className="flex items-center justify-between gap-2 px-4 pt-3.5">
+        <span className="flex min-w-0 items-center gap-2">
           {/* A calendar, because every reason that reaches this line is about
               when: "Today", "15 days away in Lagos", "You said yes". The
               sparkle that used to sit here appeared on every card in the
@@ -71,14 +77,15 @@ export default function FeedCard({
               mine ? "font-bold text-gray-900" : "font-medium text-gray-500"
             }`}
           >
-            {reason}
+            {friends.length > 0 ? formatEventDate(event.date) : reason}
           </p>
-        </div>
-      )}
+        </span>
+        <CategoryBadge category={event.category} className="shrink-0" />
+      </div>
 
       <Link
         href={`/events/${event.id}`}
-        className={`group block ${friends.length === 0 ? "mt-3" : "pt-3.5"}`}
+        className="group mt-3 block"
       >
         <div className="relative">
           <EventCover
@@ -103,8 +110,19 @@ export default function FeedCard({
           <h3 className="text-[19px] font-extrabold leading-tight tracking-[-0.02em] text-gray-900 group-hover:text-brand">
             {event.title}
           </h3>
+          {/* No year on an event in the current year. Every card read
+              "Sun, 18 Oct 2026" and every event on the platform is 2026, so
+              the year was four characters of noise on every row. */}
           <p className="mt-1 text-[13.5px] text-gray-500">
-            {formatEventDate(event.date)}
+            {new Date(`${event.date}T00:00:00`).toLocaleDateString("en-NG", {
+              weekday: "short",
+              day: "numeric",
+              month: "short",
+              ...(new Date(`${event.date}T00:00:00`).getFullYear() !==
+              new Date().getFullYear()
+                ? { year: "numeric" }
+                : {}),
+            })}
             {event.time ? ` · ${formatEventTime(event.time)}` : ""}
           </p>
           {/* A listing is somebody else's night. Saying whose, on the card,
@@ -121,8 +139,11 @@ export default function FeedCard({
       </Link>
 
       {friends.length > 0 && (
-        <div className="px-4 pt-3">
-          <FriendsGoing friends={friends} line={reason} />
+        <div className="flex items-center justify-between gap-2 px-4 pt-3.5">
+          <span className="min-w-0 flex-1">
+            <FriendsGoing friends={friends} line={reason} />
+          </span>
+          <CategoryBadge category={event.category} className="shrink-0" />
         </div>
       )}
 
@@ -169,24 +190,23 @@ export default function FeedCard({
           className="flex min-w-0 flex-1 items-center gap-1.5 rounded-xl px-3 py-2 text-[13.5px] font-bold text-gray-700 transition hover:bg-gray-50 dark:hover:bg-white/5"
         >
           <LineIcon name="pin" size={15} className="shrink-0" />
-          <span className="min-w-0 truncate">{event.location}</span>
+          {/* Venue AND state together, so the card says where exactly once.
+              The top line used to carry "in FCT - Abuja" while this said
+              "Kubwa", which is two different answers to the same question on
+              one card. The FCT prefix is stripped the way the rest of the
+              app strips it. */}
+          <span className="min-w-0 truncate">
+            {(() => {
+              const place = event.state?.replace(/^FCT\s*-\s*/, "").trim();
+              return place &&
+                !event.location.toLowerCase().includes(place.toLowerCase())
+                ? `${event.location}, ${place}`
+                : event.location;
+            })()}
+          </span>
         </a>
       </div>
 
-      {/* OUR OWN SET, NOT A LINE ICON.
-          This drew categoryIcon(), which falls back to a sparkle for any
-          category it has no glyph for. Twelve of the twenty-two categories
-          actually in use fall back, Party and Networking among them, so most
-          cards wore the same little star and the chip told you nothing.
-
-          CATEGORY_STYLES has a hand-picked emoji for every one of them, in
-          its own colour, including the drawn Nigerian flag for Cultural Day.
-          That is the set, and CategoryBadge is what draws it. The emoji
-          sweep earlier was about decoration stuck on headings and empty
-          states; this is content. */}
-      <div className="px-4 pb-3.5">
-        <CategoryBadge category={event.category} />
-      </div>
     </article>
   );
 }

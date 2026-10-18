@@ -235,16 +235,19 @@ export async function buildVisitorFeed(
     sorted.forEach((event, i) => {
       const days = daysUntil(event.date);
       const inState = !!state && event.state === state;
+      // WHEN only. The card's action row carries the venue and its state,
+      // so naming the state here too answered "where" twice at two different
+      // zoom levels: "In FCT - Abuja" above, "Kubwa" below.
       const reason = inState
         ? days <= 0
-          ? `In ${event.state}, today`
+          ? "Today"
           : days === 1
-            ? `In ${event.state}, tomorrow`
-            : `In ${event.state}, ${days} days away`
+            ? "Tomorrow"
+            : `${days} days away`
         : featuredIds.has(event.id)
           ? "Featured this week"
           : event.state
-            ? `In ${event.state}`
+            ? `In ${event.state.replace(/^FCT\s*-\s*/, "")}`
             : "Coming up on LinkUpNaija";
       units.push({ kind: "event", event, friends: [], reason, mine: null });
       // Asked after enough has been shown to be worth keeping, and again at
@@ -449,8 +452,10 @@ export async function buildFeed(
           ? `${event.category} in ${event.state}, your kind of thing`
           : sameState
             ? days <= 1
-              ? `In ${event.state}, ${days <= 0 ? "today" : "tomorrow"}`
-              : `In ${event.state}, ${days} days away`
+              ? days <= 0
+                ? "Today"
+                : "Tomorrow"
+              : `${days} days away`
             : onTaste
               ? `Matches your taste for ${event.category}`
               : featuredIds.has(event.id)
