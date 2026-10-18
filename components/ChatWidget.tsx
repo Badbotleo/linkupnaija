@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, Fragment } from "react";
 import LiveSupport from "./support/LiveSupport";
+import PaddyMap from "./PaddyMap";
 import { LogoMark } from "./Logo";
 
 interface ChatMessage {
@@ -25,11 +26,17 @@ const GREETING =
   "How far? I'm Paddy. Tell me what you're in the mood for and where you are, and I'll find you something.";
 
 // Starters, so nobody has to guess what it can do.
-const PROMPTS = [
-  "What's happening this weekend?",
-  "Find me a chill spot in Abuja",
-  "How do I host an event?",
-  "Help me write my event description",
+//
+// TWO STRINGS, NOT ONE. The chip used to be the question, so the question's
+// length set the chip's width: four pills of four different widths, each
+// claiming its own line, stacked like a ragged ladder on top of a tidy grid.
+// Now the chip carries a short label on the same two-column grid as the map
+// below it, and the model still receives the whole question.
+const PROMPTS: { chip: string; ask: string }[] = [
+  { chip: "This weekend", ask: "What's happening this weekend?" },
+  { chip: "A chill spot", ask: "Find me a chill spot near me" },
+  { chip: "How to host", ask: "How do I host an event?" },
+  { chip: "Write my event", ask: "Help me write my event description" },
 ];
 
 /**
@@ -274,18 +281,27 @@ export default function ChatWidget() {
           <AssistantBubble>{renderContent(GREETING)}</AssistantBubble>
 
           {messages.length === 0 && (
-            <div className="flex flex-wrap gap-1.5 pl-9">
-              {PROMPTS.map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => ask(p)}
-                  className="rounded-full border border-brand/25 bg-white px-3 py-1.5 text-[12px] font-semibold text-brand transition hover:border-brand hover:bg-brand-50"
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
+            <>
+              {/* Things to ASK first, because this is a chat. */}
+              <div className="grid grid-cols-2 gap-2 pl-9">
+                {PROMPTS.map((p) => (
+                  <button
+                    key={p.chip}
+                    type="button"
+                    onClick={() => ask(p.ask)}
+                    className="truncate rounded-full border border-brand/25 bg-white px-3 py-2 text-[12.5px] font-semibold text-brand transition hover:border-brand hover:bg-brand-50 dark:bg-white/[0.06]"
+                  >
+                    {p.chip}
+                  </button>
+                ))}
+              </div>
+
+              {/* Then the map, for somebody who opened this without a
+                  question. Closes the panel on the way out, so they are not
+                  left with a chat window floating over the page they asked
+                  to see. */}
+              <PaddyMap onPick={() => setOpen(false)} />
+            </>
           )}
 
           {messages.map((m, i) =>

@@ -51,7 +51,7 @@ export default async function HomePage({
       : feed.total;
 
     return (
-      <div className="container-page max-w-[600px] space-y-3 pb-28 pt-5 lg:pb-14">
+      <div className="container-page max-w-[600px] space-y-3 pb-10 pt-5 lg:pb-6">
         <header>
           <h1 className="text-[27px] font-extrabold leading-[1.1] tracking-[-0.03em] text-gray-900 sm:text-[32px]">
             <span className="text-brand">{total}</span> link-up
@@ -109,7 +109,7 @@ export default async function HomePage({
   ]);
 
   return (
-    <div className="container-page max-w-[600px] space-y-3 pb-28 pt-4 lg:pb-14">
+    <div className="container-page max-w-[600px] space-y-3 pb-10 pt-4 lg:pb-6">
       <Composer
         userId={user.id}
         avatarUrl={me?.avatar_url ?? null}

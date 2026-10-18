@@ -28,7 +28,12 @@ export default function Footer() {
     /* An app doesn't end in a sitemap. On phones the bottom bar already
        carries navigation, so this is a quiet sign-off; on desktop the left
        rail carries it, so the links stay collapsed there too. */
-    <footer className="mt-12 border-t border-gray-100 dark:border-white/10 pb-20 lg:pb-0">
+    /* mt-6, not mt-12. The 48px here stacked on top of whatever bottom
+       padding the page already had, and several pages carry pb-28 to clear
+       the bottom nav, so the run-up to the footer was 160px of nothing. The
+       border-t does the separating; the margin only has to stop the rule
+       touching the content. */
+    <footer className="mt-6 border-t border-gray-100 dark:border-white/10 pb-20 lg:pb-0">
       <div className="container-page py-7">
         <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
           <Link href="/" className="flex items-center gap-2">
