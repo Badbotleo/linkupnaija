@@ -12,8 +12,17 @@ interface ChatMessage {
 // "Paddy" is what the product already calls a close friend — "bring your
 // paddy", "share a ride with your paddy". Naming the assistant after it makes
 // it part of LinkUpNaija rather than a generic bot bolted onto the corner.
+/**
+ * Short on purpose, and it asks something.
+ *
+ * The old one invited "ask how anything here works", which is an invitation
+ * to a capability dump, and that is exactly what came back: a bulleted menu
+ * of seven features, each behind an emoji and a slash path, which reads like
+ * a sitemap rather than a friend. A greeting that ends in a question gets a
+ * conversation; one that lists services gets a brochure.
+ */
 const GREETING =
-  "How far? I'm Paddy, your plug on LinkUpNaija. Tell me the vibe you're chasing, ask how anything here works, or let me help you write your event.";
+  "How far? I'm Paddy. Tell me what you're in the mood for and where you are, and I'll find you something.";
 
 // Starters, so nobody has to guess what it can do.
 const PROMPTS = [
