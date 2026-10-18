@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import LineIcon from "@/components/ui/LineIcon";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/image";
 import { toast } from "@/lib/toast";
@@ -109,7 +110,7 @@ export default function ProfilePhotos({
                      on top of, or deleting a photo would open it instead. */
                   className="absolute right-1.5 top-1.5 z-10 grid h-7 w-7 place-items-center rounded-full bg-black/50 text-white opacity-0 transition group-hover:opacity-100"
                 >
-                  ✕
+                  <LineIcon name="x" size={16} />
                 </button>
               )}
             </div>

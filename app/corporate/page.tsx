@@ -1,4 +1,5 @@
 import CorporateInquiryForm from "@/components/corporate/CorporateInquiryForm";
+import LineIcon from "@/components/ui/LineIcon";
 
 export const metadata = {
   title: "For Business · Corporate Events",
@@ -97,7 +98,7 @@ export default function CorporatePage() {
               <ul className="mt-5 flex-1 space-y-2.5">
                 {plan.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-sm text-gray-600">
-                    <span className="text-brand" aria-hidden>✓</span>
+                    <LineIcon name="check" size={15} className="shrink-0 text-brand" />
                     {f}
                   </li>
                 ))}

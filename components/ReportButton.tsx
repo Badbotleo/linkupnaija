@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import LineIcon from "@/components/ui/LineIcon";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "@/lib/toast";
 import StateIcon from "@/components/ui/StateIcon";
@@ -77,7 +78,7 @@ export default function ReportButton({
           "inline-flex items-center gap-1 text-xs font-medium text-gray-400 transition hover:text-red-500"
         }
       >
-        <span aria-hidden>⚑</span> {label}
+        <LineIcon name="flag" size={14} className="mr-1 inline align-[-2px]" />{label}
       </button>
 
       {open && (

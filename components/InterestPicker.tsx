@@ -1,6 +1,7 @@
 "use client";
 
 import { INTEREST_GROUPS, MIN_INTERESTS } from "@/lib/constants";
+import LineIcon from "@/components/ui/LineIcon";
 
 // Substack/Tinder-style interest chips, grouped and multi-select.
 // Controlled: parent owns the `selected` array.
@@ -58,7 +59,7 @@ export default function InterestPicker({
                   >
                     <span aria-hidden>{i.emoji}</span>
                     {i.label}
-                    {active && <span aria-hidden className="ml-0.5">✓</span>}
+                    {active && <LineIcon name="check" size={13} className="ml-0.5 inline align-[-1px]" />}
                   </button>
                 );
               })}

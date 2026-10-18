@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import LineIcon from "@/components/ui/LineIcon";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -54,7 +55,7 @@ export default function FeatureButton({
   if (alreadyFeatured) {
     return (
       <div className="rounded-xl bg-gradient-to-r from-amber-50 to-yellow-50 px-4 py-3 text-center text-sm font-semibold text-amber-700">
-        ★ Your event is boosted
+        <LineIcon name="star" size={14} filled className="mr-1 inline align-[-2px]" />Your event is boosted
       </div>
     );
   }
@@ -107,7 +108,7 @@ export default function FeatureButton({
           user_id: user.id,
           event_id: eventId,
           message:
-            "Your event has been boosted 🚀 It's now featured for 48 hours",
+            "Your event has been boosted. It's now featured for 48 hours",
         });
         router.refresh();
       }
@@ -146,7 +147,7 @@ export default function FeatureButton({
       >
         {loading
           ? "Processing…"
-          : `★ Boost this event for 48 hours · ${formatNaira(FEATURE_PRICE)}`}
+          : `Boost this event for 48 hours · ${formatNaira(FEATURE_PRICE)}`}
       </button>
       <p className="mt-1.5 text-center text-xs text-gray-400">
         Boosted events show at the top of the feed.

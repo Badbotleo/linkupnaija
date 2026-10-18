@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import LineIcon from "@/components/ui/LineIcon";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "@/lib/toast";
 import { checkNigerianPhone } from "@/lib/phone";
@@ -24,7 +25,7 @@ export default function PhoneVerify({
   if (verified) {
     return (
       <div className="flex items-center gap-2 rounded-xl border border-naija-200 bg-naija-50 px-4 py-3">
-        <span className="text-lg" aria-hidden>✅</span>
+        <LineIcon name="check" size={18} className="text-naija" />
         <p className="text-sm font-semibold text-naija-700">
           Your phone number is verified
         </p>

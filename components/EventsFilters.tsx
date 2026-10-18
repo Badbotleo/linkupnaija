@@ -271,7 +271,7 @@ function VibeSearch({
     <form onSubmit={run}>
       <div className="flex items-center gap-2 rounded-2xl border border-brand/25 bg-gradient-to-r from-brand-50 via-white to-naija-50 p-1.5 pl-3.5 focus-within:border-brand">
         <span aria-hidden className="text-base">
-          ✨
+          <LineIcon name="sparkles" size={16} />
         </span>
         <input
           value={q}

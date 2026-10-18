@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import LineIcon from "@/components/ui/LineIcon";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import Avatar from "./Avatar";
@@ -143,7 +144,7 @@ export default function AttendeeProfileModal({
             aria-label="Close"
             className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
           >
-            ✕
+            <LineIcon name="x" size={16} />
           </button>
         </div>
 

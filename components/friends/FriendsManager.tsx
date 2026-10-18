@@ -294,7 +294,7 @@ export default function FriendsManager({
           aria-label={`Remove ${user.name ?? "this person"} as a friend`}
           className="rounded-full px-2 py-1.5 text-sm font-semibold text-naija-600 transition hover:bg-gray-100 hover:text-gray-600"
         >
-          ✓ Friends
+          <LineIcon name="check" size={14} className="mr-1 inline align-[-2px]" />Friends
         </button>
       );
     }

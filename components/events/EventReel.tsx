@@ -206,7 +206,7 @@ export default function EventReel({
           className={`${slideHeight} flex snap-start flex-col items-center justify-center gap-4 bg-gradient-to-b from-gray-900 to-black px-8 text-center`}
         >
           <p className="text-4xl" aria-hidden>
-            🎉
+            <LineIcon name="sparkles" size={22} />
           </p>
           <h3 className="text-xl font-bold text-white">
             {past ? "That's the story so far" : "That's everything coming up"}

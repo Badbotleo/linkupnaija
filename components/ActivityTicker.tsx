@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import LineIcon from "@/components/ui/LineIcon";
 import { createClient } from "@/lib/supabase/client";
 
 const KEY = "activity_ticker_dismissed";
@@ -66,7 +67,7 @@ export default function ActivityTicker() {
             eventId: r.events.id,
             text: `${r.users.name} just joined ${r.events.title}${
               r.events.state ? ` in ${r.events.state}` : ""
-            } 🎉`,
+            }`,
           });
         }
       }
@@ -76,7 +77,7 @@ export default function ActivityTicker() {
             eventId: e.id,
             text: `${e.host.name} just hosted ${e.title}${
               e.state ? ` in ${e.state}` : ""
-            } 📚`,
+            }`,
           });
         }
         const accepted = (e.rsvps ?? []).filter(
@@ -89,7 +90,7 @@ export default function ActivityTicker() {
             ? e.max_attendees - accepted
             : 10 - accepted;
           if (left > 0)
-            msgs.push({ eventId: e.id, text: `⚡ ${left} spots left for ${e.title}` });
+            msgs.push({ eventId: e.id, text: `${left} spots left for ${e.title}` });
         }
       }
       // shuffle for variety
@@ -177,7 +178,7 @@ export default function ActivityTicker() {
           aria-label="Dismiss activity feed"
           className="pointer-events-auto shrink-0 px-1 text-[11px] text-white/50 transition hover:text-white"
         >
-          ✕
+          <LineIcon name="x" size={16} />
         </button>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import LineIcon from "@/components/ui/LineIcon";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import MessageThread from "./MessageThread";
@@ -76,7 +77,7 @@ export default function MessageButton({
                   onClick={() => setOpen(false)}
                   className="rounded-full bg-[#FFFFFF]/90 px-3 py-1 text-sm font-semibold text-[#374151] shadow-sm hover:bg-[#FFFFFF]"
                 >
-                  ✕ Close
+                  <LineIcon name="x" size={14} className="mr-1 inline align-[-2px]" />Close
                 </button>
               </div>
               <MessageThread

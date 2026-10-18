@@ -73,7 +73,7 @@ function ToastCard({
         aria-label="Dismiss"
         className="absolute right-2 top-2 rounded p-1 text-gray-400 hover:text-gray-700"
       >
-        ✕
+        <LineIcon name="x" size={16} />
       </button>
       <div
         className={`absolute bottom-0 left-0 h-1 ${s.bar}`}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import LineIcon from "@/components/ui/LineIcon";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -131,7 +132,7 @@ export default function MobileNav({
                   aria-label="Close menu"
                   className="grid h-9 w-9 place-items-center rounded-full bg-gray-200 text-gray-600"
                 >
-                  ✕
+                  <LineIcon name="x" size={16} />
                 </button>
               </div>
 

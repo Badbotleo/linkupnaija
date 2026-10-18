@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import LineIcon from "@/components/ui/LineIcon";
 import { LogoMark } from "./Logo";
 
 const KEY = "install_banner_dismissed_at";
@@ -116,7 +117,7 @@ export default function InstallAppBanner() {
             aria-label="Dismiss install banner"
             className="shrink-0 text-gray-400 transition hover:text-gray-600 dark:hover:text-white"
           >
-            ✕
+            <LineIcon name="x" size={16} />
           </button>
         </div>
       </div>
@@ -156,7 +157,7 @@ export default function InstallAppBanner() {
                   aria-hidden
                   className="mx-0.5 inline-grid h-6 w-6 place-items-center rounded-md bg-brand-50 align-middle text-sm text-brand"
                 >
-                  ⬆
+                  <LineIcon name="chevronRight" size={14} className="inline -rotate-90 align-[-2px]" />
                 </span>{" "}
                 in your browser toolbar
               </IosStep>
@@ -166,12 +167,12 @@ export default function InstallAppBanner() {
                   aria-hidden
                   className="mx-0.5 inline-grid h-6 w-6 place-items-center rounded-md bg-brand-50 align-middle text-sm text-brand"
                 >
-                  ➕
+                  <LineIcon name="x" size={14} className="inline rotate-45 align-[-2px]" />
                 </span>
               </IosStep>
               <IosStep n={3}>
                 Tap <strong>Add</strong>, and the app appears on your home screen
-                🎉
+                
               </IosStep>
             </ol>
             <button

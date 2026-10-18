@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import LineIcon from "@/components/ui/LineIcon";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -110,7 +111,7 @@ export default function AddFriendButton({
   }
 
   /**
-   * Unfriend. "✓ Friends" was a full stop: you could take back a request you
+   * Unfriend. "<LineIcon name="check" size={14} className="mr-1 inline align-[-2px]" />Friends" was a full stop: you could take back a request you
    * had sent, but once somebody accepted there was no way out of it from
    * anywhere on the site.
    *
@@ -204,7 +205,7 @@ export default function AddFriendButton({
         aria-label="Remove friend"
         className="flex-1 rounded-full bg-naija-50 py-2 text-center text-sm font-semibold text-naija-600 transition hover:bg-gray-100 hover:text-gray-600"
       >
-        ✓ Friends
+        <LineIcon name="check" size={14} className="mr-1 inline align-[-2px]" />Friends
       </button>
     );
   }

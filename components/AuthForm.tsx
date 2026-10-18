@@ -186,13 +186,13 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
     <form onSubmit={handleSubmit} className="space-y-4">
       {justVerified && (
         <p className="rounded-lg bg-naija-50 px-3 py-2 text-sm font-medium text-naija-700">
-          ✅ Email verified! Please log in.
+          Email verified. Please log in.
         </p>
       )}
 
       {inApp && (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800">
-          ⚠️ Google sign-in doesn&apos;t work inside this app&apos;s browser. Tap
+          Google sign-in doesn&apos;t work inside this app&apos;s browser. Tap
           the menu (⋯) and choose <strong>Open in browser</strong> (Chrome or
           Safari), or use email below.
         </p>
@@ -220,7 +220,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
           onClick={() => setOtpMode((v) => !v)}
           className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
         >
-          ✉️ Email me a sign-in code
+          Email me a sign-in code
         </button>
       ) : null}
 

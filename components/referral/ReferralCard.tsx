@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import LineIcon from "@/components/ui/LineIcon";
 import { formatNaira } from "@/lib/paystack";
 import { SITE_ORIGIN } from "@/lib/qr";
 import { toast } from "@/lib/toast";
@@ -37,7 +38,7 @@ export default function ReferralCard({
   return (
     <div className="surface p-6">
       <div className="flex items-center gap-2">
-        <span className="text-2xl">🎁</span>
+        <LineIcon name="gift" size={24} className="text-brand" />
         <h2 className="text-lg font-bold text-gray-900">Invite &amp; earn ₦600</h2>
       </div>
       <p className="mt-1 text-sm text-gray-600">

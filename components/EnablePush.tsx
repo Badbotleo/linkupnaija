@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import LineIcon from "@/components/ui/LineIcon";
 import { enablePush, pushStatus } from "@/lib/push";
 import { toast } from "@/lib/toast";
 
@@ -36,7 +37,7 @@ export default function EnablePush() {
   return (
     <div className="mb-5 flex flex-col gap-3 rounded-2xl border border-brand/20 bg-brand-50 px-5 py-4 sm:flex-row sm:items-center">
       <span className="text-2xl" aria-hidden>
-        🔔
+        <LineIcon name="bell" size={20} />
       </span>
       <div className="flex-1">
         <p className="font-bold text-gray-900">Never miss a link-up</p>

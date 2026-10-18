@@ -1,4 +1,6 @@
-// Compact host-rating display, e.g. "⭐ 4.8 · 12 reviews".
+import LineIcon from "@/components/ui/LineIcon";
+
+// Compact host-rating display, e.g. "4.8 · 12 reviews" behind a drawn star.
 export default function RatingSummary({
   avg,
   count,
@@ -19,9 +21,7 @@ export default function RatingSummary({
     <span
       className={`inline-flex items-center gap-1 text-xs font-semibold text-gray-700 ${className}`}
     >
-      <span className="text-amber-500" aria-hidden>
-        ★
-      </span>
+      <LineIcon name="star" size={13} filled className="text-amber-500" />
       {Number(avg).toFixed(1)}
       <span className="font-normal text-gray-400">
         · {count} review{count === 1 ? "" : "s"}

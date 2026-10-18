@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import LineIcon from "@/components/ui/LineIcon";
 import { createClient } from "@/lib/supabase/client";
 import { NIGERIAN_STATES } from "@/lib/constants";
 import { toast } from "@/lib/toast";
@@ -85,7 +86,7 @@ export default function OpportunityModal({
             aria-label="Close"
             className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
           >
-            ✕
+            <LineIcon name="x" size={16} />
           </button>
         </div>
 

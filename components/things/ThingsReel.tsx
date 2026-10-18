@@ -228,7 +228,7 @@ export default function ThingsReel({ ideas }: { ideas: ReelIdea[] }) {
           className={`${fallback} flex snap-start flex-col items-center justify-center gap-4 bg-gradient-to-b from-gray-900 to-black px-8 text-center`}
         >
           <p className="text-4xl" aria-hidden>
-            📍
+            <LineIcon name="pin" size={14} />
           </p>
           <h2 className="text-xl font-bold text-white">
             That&apos;s everywhere we know about

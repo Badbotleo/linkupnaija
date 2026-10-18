@@ -284,7 +284,7 @@ export default function VenuesReel({
           className={`${fallback} flex snap-start flex-col items-center justify-center gap-4 bg-gradient-to-b from-gray-900 to-black px-8 text-center`}
         >
           <p className="text-4xl" aria-hidden>
-            🍽️
+            <LineIcon name="utensils" size={22} />
           </p>
           <h2 className="text-xl font-bold text-white">
             That&apos;s every spot we can book here

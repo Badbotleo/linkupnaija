@@ -26,7 +26,8 @@ type Promo = {
   eyebrow: string;
   title: string;
   body: string;
-  emoji: string;
+  /** A LineIcon name. Was a typed emoji. */
+  icon: string;
   /** Flat field + the ink that reads on it. */
   bg: string;
   ink: string;
@@ -40,7 +41,7 @@ const PROMOS: Promo[] = [
     eyebrow: "Invite & earn",
     title: "BRING A FRIEND, GET ₦600",
     body: "Every friend who joins and shows up earns you ₦600. Cash out at ₦3,000.",
-    emoji: "💸",
+    icon: "gift",
     bg: "bg-[#534AB7]",
     ink: "text-[#FAC775]",
     sub: "text-white/85",
@@ -57,7 +58,7 @@ const PROMOS: Promo[] = [
     // event up the feed. Saying both in four words beats picking a side.
     title: "SKIP THE QUEUE. TOP THE FEED.",
     body: "Ask to join a day early, boost your own link-ups to the front, and carry the gold badge.",
-    emoji: "🏅",
+    icon: "trophy",
     bg: "bg-[#1A1040]",
     ink: "text-[#FAC775]",
     sub: "text-white/80",
@@ -68,7 +69,7 @@ const PROMOS: Promo[] = [
     eyebrow: "Host a link-up",
     title: "THE NIGHT YOU WANT MIGHT NOT EXIST YET",
     body: "Listing is free and takes a couple of minutes. You approve every guest.",
-    emoji: "🎤",
+    icon: "mic",
     bg: "bg-[#008753]",
     ink: "text-white",
     sub: "text-white/85",
@@ -106,7 +107,7 @@ export default function PromoCarousel() {
 
           <div className="mt-6 flex items-end justify-between">
             <span className="text-[44px] leading-none" aria-hidden>
-              {p.emoji}
+              <LineIcon name={p.icon} size={20} />
             </span>
             <span
               className={`grid h-11 w-11 shrink-0 place-items-center rounded-full text-[20px] font-bold transition-transform duration-200 group-hover:translate-x-0.5 ${p.arrow}`}

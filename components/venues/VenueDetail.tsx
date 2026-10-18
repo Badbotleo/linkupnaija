@@ -90,7 +90,9 @@ export default function VenueDetail({
         </span>
         {venue.stars ? (
           <span className="text-sm font-semibold text-amber-500">
-            {"★".repeat(Math.min(5, Math.round(venue.stars)))}
+            {Array.from({ length: Math.min(5, Math.round(venue.stars)) }).map((_, i) => (
+                <LineIcon key={i} name="star" size={13} filled />
+              ))}
           </span>
         ) : null}
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import LineIcon from "@/components/ui/LineIcon";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { formatEventDate } from "@/lib/format";
@@ -102,7 +103,7 @@ export default function SharePlansButton({
                   aria-label="Close"
                   className="rounded-lg p-1 text-gray-400 hover:bg-gray-100"
                 >
-                  ✕
+                  <LineIcon name="x" size={16} />
                 </button>
               </div>
               <p className="mt-1 text-sm text-gray-500">

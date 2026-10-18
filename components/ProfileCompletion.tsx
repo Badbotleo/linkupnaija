@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import LineIcon from "@/components/ui/LineIcon";
 import Link from "next/link";
 
 export interface CompletionItem {
@@ -86,7 +87,7 @@ export default function ProfileCompletion({
                   className="inline-flex items-center gap-1 rounded-full bg-naija-50 px-2.5 py-1 text-xs font-semibold text-naija-700"
                 >
                   <span className="animate-bounce-in" aria-hidden>
-                    ✓
+                    <LineIcon name="check" size={13} />
                   </span>
                   {item.label}
                 </span>

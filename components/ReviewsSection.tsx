@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import LineIcon from "@/components/ui/LineIcon";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
@@ -11,9 +12,22 @@ import type { ReviewWithReviewer } from "@/lib/types";
 
 function Stars({ value }: { value: number }) {
   return (
-    <span className="text-amber-500" aria-label={`${value} out of 5`}>
-      {"★".repeat(value)}
-      <span className="text-gray-300">{"★".repeat(5 - value)}</span>
+    /* Drawn, not typed. A repeated star character renders in whatever the
+       device decides, at a different weight and colour on every phone,
+       beside a product drawn in one line style. */
+    <span
+      className="inline-flex items-center gap-0.5"
+      aria-label={`${value} out of 5`}
+    >
+      {[1, 2, 3, 4, 5].map((n) => (
+        <LineIcon
+          key={n}
+          name="star"
+          size={13}
+          filled={n <= value}
+          className={n <= value ? "text-amber-500" : "text-gray-300"}
+        />
+      ))}
     </span>
   );
 }
@@ -88,7 +102,7 @@ export default function ReviewsSection({
         <h2 className="text-lg font-bold text-gray-900">Host reviews</h2>
         {hostCount > 0 && (
           <span className="inline-flex items-center gap-1 text-sm font-semibold text-gray-700">
-            <span className="text-amber-500">★</span>
+            <LineIcon name="star" size={14} filled className="text-amber-500" />
             {Number(hostAvg).toFixed(1)}
             <span className="font-normal text-gray-400">
               ({hostCount} review{hostCount === 1 ? "" : "s"})
@@ -119,7 +133,7 @@ export default function ReviewsSection({
                   (hover || rating) >= n ? "text-amber-500" : "text-gray-300"
                 }
               >
-                ★
+                <LineIcon name="star" size={24} filled />
               </button>
             ))}
           </div>
@@ -162,7 +176,7 @@ export default function ReviewsSection({
 
           {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
           {done && (
-            <p className="mt-2 text-sm text-naija-700">Thanks for your review! 🙏</p>
+            <p className="mt-2 text-sm text-naija-700">Thanks for your review.</p>
           )}
           <button
             type="submit"

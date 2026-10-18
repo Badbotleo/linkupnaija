@@ -381,7 +381,7 @@ function Lightbox({
           {index + 1} / {photos.length}
         </span>
         <button type="button" onClick={onClose} aria-label="Close" className="text-2xl">
-          ✕
+          <LineIcon name="x" size={16} />
         </button>
       </div>
 

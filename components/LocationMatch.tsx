@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import LineIcon from "@/components/ui/LineIcon";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { NIGERIAN_STATES } from "@/lib/constants";
@@ -102,7 +103,7 @@ export default function LocationMatch({ intro = false }: { intro?: boolean }) {
      * the strip keeps a single action.
      */
     <div className="flex items-center gap-3 rounded-2xl border border-brand/20 bg-brand-50/50 p-3.5 dark:border-brand/30 dark:bg-brand/10">
-      <span className="text-2xl">📍</span>
+      <LineIcon name="pin" size={22} className="text-brand" />
       <div className="min-w-0 flex-1">
         <p className="text-sm font-bold text-gray-900 dark:text-white">
           {intro ? "Real link-ups near you" : "See events near you"}
@@ -117,7 +118,7 @@ export default function LocationMatch({ intro = false }: { intro?: boolean }) {
         {busy ? "…" : "Use location"}
       </button>
       <button type="button" onClick={dismiss} aria-label="Dismiss" className="shrink-0 text-gray-400 hover:text-gray-600">
-        ✕
+        <LineIcon name="x" size={16} />
       </button>
     </div>
   );

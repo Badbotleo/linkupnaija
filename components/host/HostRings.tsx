@@ -89,7 +89,7 @@ export default function HostRings({
   else if (stats.attendance_rate < 80)
     tips.push("Send reminders before events to boost attendance.");
   if (stats.avg_response_time_hours != null && stats.avg_response_time_hours > 2)
-    tips.push("Approve requests faster to earn the ⚡ Quick Responder badge.");
+    tips.push("Approve requests faster to earn the Quick Responder badge.");
   if (stats.safety_score != null && stats.safety_score < 90)
     tips.push("Prioritise safety so more guests feel comfortable.");
 

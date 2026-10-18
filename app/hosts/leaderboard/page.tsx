@@ -1,4 +1,5 @@
 import AppHeader from "@/components/AppHeader";
+import LineIcon from "@/components/ui/LineIcon";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Avatar from "@/components/Avatar";
@@ -97,7 +98,7 @@ export default async function LeaderboardPage({
             )}
           </p>
           <p className="text-xs text-gray-500">
-            <span className="text-amber-500">★</span> {Number(r.average_rating).toFixed(1)} · {r.total_events} events
+            <LineIcon name="star" size={13} filled className="inline align-[-1px] text-amber-500" /> {Number(r.average_rating).toFixed(1)} · {r.total_events} events
             {r.host!.state ? ` · ${r.host!.state}` : ""}
           </p>
           {badges.length > 0 && (
