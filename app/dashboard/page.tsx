@@ -10,6 +10,7 @@ import DashboardTabs from "@/components/dashboard/DashboardTabs";
 import ProfileCard from "@/components/ProfileCard";
 import ProfileCompletion from "@/components/ProfileCompletion";
 import PayoutRequest from "@/components/PayoutRequest";
+import HostEarnings from "@/components/dashboard/HostEarnings";
 import CategoryBadge from "@/components/CategoryBadge";
 import EventCover from "@/components/EventCover";
 import WalletCard from "@/components/wallet/WalletCard";
@@ -275,6 +276,7 @@ export default async function DashboardPage() {
   // leave a host who just sold ten tickets with nowhere to see the money, and
   // a figure they cannot find is a support message.
   const paidEvents = allHosting.filter((e) => e.price > 0);
+  let payoutRowsForHost: { event_id: string | null; status: string; amount: number | null }[] = [];
   let payoutCards: {
     eventId: string;
     eventTitle: string;
@@ -295,8 +297,10 @@ export default async function DashboardPage() {
         .select("event_id, amount, platform_fee, fee_on_top")
         .in("event_id", paidIds),
       supabase
+        // amount, so the dashboard can say what has actually landed rather
+        // than only what is still owed.
         .from("payouts")
-        .select("event_id, status")
+        .select("event_id, status, amount")
         .eq("host_id", user.id),
       supabase
         .from("rsvps")
@@ -313,8 +317,10 @@ export default async function DashboardPage() {
     const payouts = (payoutRows ?? []) as {
       event_id: string | null;
       status: string;
+      amount: number | null;
     }[];
     const paidRsvps = (paidRsvpRows ?? []) as { event_id: string }[];
+    payoutRowsForHost = payouts;
 
     payoutCards = paidEvents
       .map((e) => {
@@ -410,6 +416,22 @@ export default async function DashboardPage() {
   );
   const claimable = payoutCards.filter((c) => c.status === null && c.due > 0);
   const claimableTotal = claimable.reduce((n, c) => n + c.due, 0);
+
+  // WHAT HOSTING HAS PAID THEM, in one number.
+  //
+  // Every figure here was already on this page, split across payout cards in
+  // section six. One payout has ever been made on this platform and five
+  // hosts have ever come back for a second month; the machinery was never
+  // the problem, the absence of a number a host could point at was.
+  const hostingToday = new Date().toISOString().slice(0, 10);
+  const earnedLifetime = payoutCards.reduce((n, c) => n + c.due, 0);
+  const earnedUpcoming = payoutCards
+    .filter((c) => c.eventDate >= hostingToday)
+    .reduce((n, c) => n + c.due, 0);
+  // Only what actually left our account, not what was merely requested.
+  const earnedPaidOut = payoutRowsForHost
+    .filter((r) => r.status === "paid")
+    .reduce((n, r) => n + (r.amount ?? 0), 0);
 
   const needsYou: {
     icon: string;
@@ -551,6 +573,22 @@ export default async function DashboardPage() {
           </div>
         </section>
       )}
+
+      {/* 1.5 - WHAT HOSTING HAS PAID YOU.
+          High on purpose. Every figure in it already existed, split across
+          payout cards in section six of eight, so no host ever saw what
+          hosting had earned them in one place. One payout has been made on
+          this platform in its whole life and five hosts have ever come back
+          for a second month: the machinery was never missing, the number
+          was. Renders only for somebody who has actually sold a ticket. */}
+      <HostEarnings
+        claimable={claimableTotal}
+        upcoming={earnedUpcoming}
+        paidOut={earnedPaidOut}
+        lifetime={earnedLifetime}
+        eventsWithSales={payoutCards.filter((c) => c.due > 0).length}
+        hasPayoutDetails={!!p?.payout_account_number}
+      />
 
       {/* 2 - NEXT UP. One card, the next thing in the diary. */}
       {nextUp && (

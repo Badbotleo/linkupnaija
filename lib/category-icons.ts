@@ -17,8 +17,50 @@ import { PATHS } from "@/components/ui/LineIcon";
  * a different job.
  */
 export const CATEGORY_ICON: Record<string, keyof typeof PATHS> = {
+  // THE THIRTY THAT HAD NO GLYPH.
+  //
+  // Anything absent here fell through to "sparkles", so Party, Networking,
+  // Cultural Day, Outdoor, Festival and twenty-five others all wore the
+  // same little star and the chip told you nothing about the event. Party
+  // itself was mapped to the fallback by name, which is why it was the
+  // first one anybody noticed.
+  //
+  // These are drawn glyphs, which is the point: CATEGORY_STYLES still
+  // carries a keyboard emoji per category, and those render at a different
+  // weight and colour on every device next to a product drawn in one line
+  // style.
+  "Bonfire / Outdoor Party": "tree",
+  "Rave / Electronic / Themed Night": "volume",
+  "Religious / Faith-based Gatherings": "building",
+  "Faith Gathering": "building",
+  "Picnic": "tree",
+  "Cinema": "video",
+  "Theatre / Drama": "video",
+  "Yoga": "heart",
+  "Meditation": "heart",
+  "Spa Day": "heart",
+  "Networking": "users",
+  "Mentorship": "users",
+  "Vacation": "sun",
+  "Outdoor": "sun",
+  "Adventure Park": "mountain",
+  "Study Abroad": "send",
+  "Skill Training": "key",
+  "Coding / Tech Class": "zap",
+  "Wine / Cocktail Night": "glass",
+  "Wine Tasting": "glass",
+  "Street Food Tour": "utensils",
+  "Trivia Night": "chat",
+  "Fashion Meetup": "bag",
+  "Fashion Pop-up": "bag",
+  "Fashion Show": "bag",
+  "Cultural Day": "flag",
+  "Family Fun Day": "home",
+  "Kids Event": "home",
+  "Entertainment": "play",
+  "Go-Karting": "car",
   // The home page chip row.
-  Party: "sparkles",
+  Party: "music",
   "Game Night": "gamepad",
   "Beach Day": "wave",
   Concert: "mic",
