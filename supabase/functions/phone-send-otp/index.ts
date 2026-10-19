@@ -13,16 +13,32 @@ const RESEND_COOLDOWN_SEC = 45;
 
 Deno.serve(async (req) => {
   const authHeader = req.headers.get("Authorization") ?? "";
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  // TWO CLIENTS. Handing the caller's JWT to a client built with the service
+  // role key does not give you a service-role client with a user attached:
+  // PostgREST reads the Authorization header to pick the role, so every query
+  // it made ran as `authenticated`. phone_verifications has RLS on with no
+  // policies, so the upsert below was refused with 42501 and this function
+  // returned 500 on every single call. It has never stored a code.
+  //
+  // That went unnoticed because OTP_TEST_MODE was on, and in test mode the
+  // code is handed straight back to the caller — so the flow appeared to
+  // work while nothing was being saved, and verifying then answered "Request
+  // a code first" forever. The missing TERMII_API_KEY was never the problem.
+  //
+  // `caller` works out who is asking. `db` does the reading and writing, with
+  // no Authorization override, and is genuinely service role.
+  const caller = createClient(url, serviceKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
+  const db = createClient(url, serviceKey);
 
   // Resolve the caller from their JWT.
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await caller.auth.getUser();
   if (!user) return json({ error: "not authenticated" }, 401);
 
   let body: { phone?: string } = {};
@@ -37,7 +53,7 @@ Deno.serve(async (req) => {
   }
 
   // Cooldown to prevent spamming.
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from("phone_verifications")
     .select("last_sent_at")
     .eq("user_id", user.id)
@@ -55,7 +71,7 @@ Deno.serve(async (req) => {
   // If this write fails we must NOT send an SMS: the person would receive a
   // code that was never stored, and verifying it would answer "Request a code
   // first" forever. Previously the error was discarded.
-  const { error: storeErr } = await supabase.from("phone_verifications").upsert(
+  const { error: storeErr } = await db.from("phone_verifications").upsert(
     { user_id: user.id, phone, code, expires_at: expires, attempts: 0, last_sent_at: new Date().toISOString() },
     { onConflict: "user_id" }
   );
@@ -67,13 +83,24 @@ Deno.serve(async (req) => {
   // Test mode: skip the SMS provider and return the code so the full flow can
   // be exercised without a Termii account. Gate with OTP_TEST_MODE=true; remove
   // it (and set TERMII_API_KEY) before real launch.
-  if (Deno.env.get("OTP_TEST_MODE") === "true") {
+  if (testModeAllowed(url)) {
     return json({ sent: true, test_code: code });
   }
 
   const apiKey = Deno.env.get("TERMII_API_KEY");
   if (!apiKey) {
-    return json({ error: "SMS not configured. Set TERMII_API_KEY." }, 500);
+    // Said in the member's terms, not ours. This used to answer "SMS not
+    // configured. Set TERMII_API_KEY." — an instruction to an engineer,
+    // shown to whoever tapped a button asking us to text them, naming a
+    // secret along the way.
+    //
+    // The stored code is cleared first. Leaving it would mean the next
+    // attempt hits the resend cooldown for a message that was never sent.
+    await db.from("phone_verifications").delete().eq("user_id", user.id);
+    return json(
+      { error: "We can't send text messages right now. Verify by email instead." },
+      503
+    );
   }
 
   const res = await fetch("https://api.ng.termii.com/api/sms/send", {
@@ -108,4 +135,25 @@ Deno.serve(async (req) => {
 
 function json(b: unknown, status = 200): Response {
   return new Response(JSON.stringify(b), { status, headers: { "Content-Type": "application/json" } });
+}
+
+/**
+ * Test mode, and why it cannot be switched on in production.
+ *
+ * OTP_TEST_MODE returns the code to the caller instead of sending it, which
+ * makes verification bypassable by anyone who can read a response body. It
+ * was set to "true" on the live project, where it did two kinds of damage:
+ * it handed out codes, and it hid the fact that the upsert beneath it had
+ * been failing since the day this function was written. The flow looked fine
+ * while nothing was being stored.
+ *
+ * So the flag is no longer enough on its own. A hosted Supabase project is
+ * always reached over https at its own domain; a local stack is http, on
+ * localhost, 127.0.0.1 or kong. Test mode is honoured only there, so setting
+ * the flag on production from now on does nothing at all.
+ */
+function testModeAllowed(projectUrl: string): boolean {
+  if (Deno.env.get("OTP_TEST_MODE") !== "true") return false;
+  return /^http:\/\//.test(projectUrl) ||
+    /(localhost|127\.0\.0\.1|\bkong\b|host\.docker\.internal)/.test(projectUrl);
 }

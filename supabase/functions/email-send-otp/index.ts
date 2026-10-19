@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
 
   // Test mode, matching the SMS function: exercise the whole flow with no
   // mail provider. Gate with OTP_TEST_MODE=true.
-  if (Deno.env.get("OTP_TEST_MODE") === "true") {
+  if (testModeAllowed(url)) {
     return json({ sent: true, email: mask(email), test_code: code });
   }
 
@@ -163,4 +163,25 @@ function json(b: unknown, status = 200): Response {
     status,
     headers: { "Content-Type": "application/json" },
   });
+}
+
+/**
+ * Test mode, and why it cannot be switched on in production.
+ *
+ * OTP_TEST_MODE returns the code to the caller instead of sending it, which
+ * makes verification bypassable by anyone who can read a response body. It
+ * was set to "true" on the live project, where it did two kinds of damage:
+ * it handed out codes, and it hid the fact that the upsert beneath it had
+ * been failing since the day this function was written. The flow looked fine
+ * while nothing was being stored.
+ *
+ * So the flag is no longer enough on its own. A hosted Supabase project is
+ * always reached over https at its own domain; a local stack is http, on
+ * localhost, 127.0.0.1 or kong. Test mode is honoured only there, so setting
+ * the flag on production from now on does nothing at all.
+ */
+function testModeAllowed(projectUrl: string): boolean {
+  if (Deno.env.get("OTP_TEST_MODE") !== "true") return false;
+  return /^http:\/\//.test(projectUrl) ||
+    /(localhost|127\.0\.0\.1|\bkong\b|host\.docker\.internal)/.test(projectUrl);
 }

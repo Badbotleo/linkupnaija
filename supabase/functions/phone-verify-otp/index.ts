@@ -9,15 +9,21 @@ const MAX_ATTEMPTS = 5;
 
 Deno.serve(async (req) => {
   const authHeader = req.headers.get("Authorization") ?? "";
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  // See the long note in phone-send-otp. Short version: a service-role client
+  // carrying the caller's Authorization header queries as `authenticated`,
+  // not as service role, so RLS applies and every read and write here was
+  // refused. `caller` identifies the user; `db` does the work.
+  const caller = createClient(url, serviceKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
+  const db = createClient(url, serviceKey);
 
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await caller.auth.getUser();
   if (!user) return json({ error: "not authenticated" }, 401);
 
   let body: { code?: string } = {};
@@ -28,7 +34,7 @@ Deno.serve(async (req) => {
   }
   const code = (body.code ?? "").trim();
 
-  const { data: row, error: readErr } = await supabase
+  const { data: row, error: readErr } = await db
     .from("phone_verifications")
     .select("phone, code, expires_at, attempts")
     .eq("user_id", user.id)
@@ -47,7 +53,7 @@ Deno.serve(async (req) => {
     return json({ error: "That code expired. Request a new one." }, 400);
 
   if (code !== row.code) {
-    await supabase
+    await db
       .from("phone_verifications")
       .update({ attempts: row.attempts + 1 })
       .eq("user_id", user.id);
@@ -59,7 +65,7 @@ Deno.serve(async (req) => {
   // still deleted the OTP row and returned verified:true — the person was told
   // they were verified, no badge appeared, and the code was gone so they had
   // to start over with no idea why.
-  const { error: saveErr } = await supabase
+  const { error: saveErr } = await db
     .from("users")
     .update({ phone: row.phone, phone_verified: true, phone_verified_at: new Date().toISOString() })
     .eq("id", user.id);
@@ -69,7 +75,7 @@ Deno.serve(async (req) => {
     return json({ error: "Couldn't save that. Please try again." }, 500);
   }
 
-  await supabase.from("phone_verifications").delete().eq("user_id", user.id);
+  await db.from("phone_verifications").delete().eq("user_id", user.id);
   return json({ verified: true });
 });
 
