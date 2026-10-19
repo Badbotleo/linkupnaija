@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
+import EmailVerify from "@/components/EmailVerify";
 import PhoneVerify from "@/components/PhoneVerify";
 import SafetySettings from "@/components/safety/SafetySettings";
 import { createClient } from "@/lib/supabase/server";
@@ -24,7 +25,9 @@ export default async function SafetySettingsPage() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("phone, phone_verified, emergency_contact_name, emergency_contact_phone")
+    .select(
+      "phone, phone_verified, email_verified, emergency_contact_name, emergency_contact_phone"
+    )
     .eq("id", user.id)
     .single();
 
@@ -36,6 +39,14 @@ export default async function SafetySettingsPage() {
         back
       />
       <div className="container-page max-w-[640px] space-y-5 py-4">
+        {/* Email first, because it is the one that gates a payout. The phone
+            check sits under it as the trust badge it has always been: good
+            to have, not standing between anybody and their money. */}
+        <EmailVerify
+          email={user.email ?? null}
+          alreadyVerified={!!profile?.email_verified}
+          reason="This is what we check before a payout leaves the platform."
+        />
         <PhoneVerify
           initialPhone={profile?.phone ?? null}
           alreadyVerified={!!profile?.phone_verified}

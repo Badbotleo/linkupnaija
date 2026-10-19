@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
+import EmailVerify from "@/components/EmailVerify";
 import { formatNaira } from "@/lib/paystack";
 
 /**
@@ -36,9 +37,11 @@ export default function PayoutRequest({
   platformFee,
   due,
   unrecorded = 0,
+  feeOnTop = false,
   status,
   eventDate,
-  phoneVerified = true,
+  emailVerified = true,
+  email = null,
 }: {
   hostId: string;
   eventId: string;
@@ -48,6 +51,12 @@ export default function PayoutRequest({
   due: number;
   /** Guests who paid but whose transaction never landed. */
   unrecorded?: number;
+  /**
+   * True when the guests paid our fee on top of the ticket, so nothing was
+   * deducted from the host. Passed in rather than guessed from the figures,
+   * because `due === collected` is also true of a sale with no fee at all.
+   */
+  feeOnTop?: boolean;
   status: string | null;
   /**
    * The link-up's date, YYYY-MM-DD.
@@ -62,19 +71,31 @@ export default function PayoutRequest({
   /**
    * Gate for money leaving the platform.
    *
-   * Verification is deliberately NOT asked for at signup — most members never
-   * touch a payout, and an SMS per signup is a bill for nothing. It's asked
-   * for here, where a real number is the difference between paying a host and
-   * paying whoever typed their name.
+   * EMAIL, NOT SMS. This used to read phone_verified. The SMS code is billed
+   * to us and filtered by the Nigerian networks before it reaches a number on
+   * the DND list, so hosts were shown a condition with no button and no way
+   * to satisfy it, and their money stayed on the platform. A gate nobody can
+   * pass is an outage, not a control.
+   *
+   * An email code is a weaker proof and we know it: it shows the person
+   * asking can read the account's inbox, which is close to what signing in
+   * already showed. It is worth keeping because a session stolen on its own
+   * still cannot move money, and because the controls that actually protect a
+   * payout are elsewhere and unchanged — the event must have happened, a
+   * human approves every payout, and Paystack resolves the bank account
+   * before any transfer goes out.
    *
    * Defaults true so an existing caller that hasn't been updated can't
    * accidentally lock hosts out of their own money.
    */
-  phoneVerified?: boolean;
+  emailVerified?: boolean;
+  /** The address the code would go to, shown so nobody guesses. */
+  email?: string | null;
 }) {
   const router = useRouter();
   const supabase = createClient();
   const [current, setCurrent] = useState<string | null>(status);
+  const [verified, setVerified] = useState(emailVerified);
   // Nigeria is UTC+1 with no DST, so the host's own date is the one that
   // counts. Requestable from the day after.
   const lagosToday = new Date(Date.now() + 60 * 60 * 1000)
@@ -87,12 +108,6 @@ export default function PayoutRequest({
   async function request() {
     if (!eventIsOver) {
       setError("You can request this the day after the link-up has happened.");
-      return;
-    }
-    if (!phoneVerified) {
-      setError(
-        "Verify your phone number before requesting a payout. We need a real number to reach you about the transfer."
-      );
       return;
     }
     setLoading(true);
@@ -116,10 +131,19 @@ export default function PayoutRequest({
     <div className="surface p-4">
       <p className="font-bold text-gray-900">{eventTitle}</p>
       <dl className="mt-2 grid grid-cols-3 gap-2 text-center text-sm">
+        {/* THE THREE NUMBERS HAVE TO SUBTRACT.
+            The card read "Collected N6,000 · Fee (9%) N540 · You get N6,000"
+            and looked like it had forgotten to take the fee off. Every figure
+            was right: that sale charged the fee ON TOP, so the guest paid
+            N6,540, we kept N540, the host gets all N6,000. The labels were
+            describing a deduction that had not happened. Now the left-hand
+            cell is whatever the right-hand two subtract from. */}
         <div>
-          <dt className="text-xs text-gray-400">Collected</dt>
+          <dt className="text-xs text-gray-400">
+            {feeOnTop ? "Guests paid" : "Collected"}
+          </dt>
           <dd className="font-semibold text-gray-900">
-            {formatNaira(collected)}
+            {formatNaira(feeOnTop ? collected + platformFee : collected)}
           </dd>
         </div>
         <div>
@@ -128,7 +152,10 @@ export default function PayoutRequest({
               contradict the figure printed beneath it. */}
           <dt className="text-xs text-gray-400">
             {collected > 0
-              ? `Fee (${Math.round((platformFee / collected) * 100)}%)`
+              ? `Fee (${Math.round(
+                  (platformFee / (feeOnTop ? collected + platformFee : collected)) *
+                    100
+                )}%)`
               : "Fee"}
           </dt>
           <dd className="font-semibold text-gray-900">
@@ -189,6 +216,17 @@ export default function PayoutRequest({
                 "We are looking at this one. Email support@linkupnaija.com if you need an update."}
             </p>
           </>
+        ) : eventIsOver && !verified ? (
+          /* The check, here, rather than a sentence pointing at a settings
+             page. This used to render as red text saying to go and verify a
+             phone number, with no link and no button: a host read an
+             instruction, had nowhere to tap, and their money stayed put. */
+          <EmailVerify
+            email={email}
+            alreadyVerified={false}
+            reason="One code to your inbox, then you can request this payout."
+            onVerified={() => setVerified(true)}
+          />
         ) : (
           <>
             <button

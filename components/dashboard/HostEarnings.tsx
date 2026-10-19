@@ -67,7 +67,12 @@ export default function HostEarnings({
       <div className="mt-4 grid grid-cols-3 divide-x divide-white/10 border-t border-white/10">
         <Figure label="Yours now" value={claimable} bright={claimable > 0} />
         <Figure label="Still coming" value={upcoming} />
-        <Figure label="Paid out" value={paidOut} />
+        {/* "Paid out" was a total with nothing behind it. A host who wanted
+            to know which payouts made it up had to scroll the dashboard
+            hunting for the event card that still carried the status pill. */}
+        <Link href="/dashboard/payouts" className="block transition hover:bg-white/5">
+          <Figure label="Paid out" value={paidOut} chevron />
+        </Link>
       </div>
 
       {/* One action, and only when there is a reason for it. */}
@@ -99,10 +104,13 @@ function Figure({
   label,
   value,
   bright = false,
+  chevron = false,
 }: {
   label: string;
   value: number;
   bright?: boolean;
+  /** Marks the one cell that goes somewhere, so it is not a secret. */
+  chevron?: boolean;
 }) {
   return (
     <div className="px-3 py-3.5 text-center">
@@ -113,8 +121,9 @@ function Figure({
       >
         {formatNaira(value)}
       </p>
-      <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-white/45">
+      <p className="mt-0.5 flex items-center justify-center gap-0.5 text-[11px] font-semibold uppercase tracking-wide text-white/45">
         {label}
+        {chevron && <LineIcon name="chevronRight" size={11} />}
       </p>
     </div>
   );

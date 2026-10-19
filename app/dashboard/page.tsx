@@ -164,6 +164,12 @@ export default async function DashboardPage() {
   }
 
   const walletTx = (walletTxRaw ?? []) as WalletTransaction[];
+  // Derived from the rows already fetched rather than queried again. One
+  // open request at a time is enforced in the database, so the first match
+  // is the only one.
+  const pendingWithdrawal =
+    walletTx.find((t) => t.reference === "withdrawal" && t.status === "pending")
+      ?.amount ?? null;
   const referralRows = (referralRaw ?? []) as unknown as {
     reward_amount: number;
     status: string;
@@ -284,6 +290,7 @@ export default async function DashboardPage() {
     platformFee: number;
     due: number;
     unrecorded: number;
+    feeOnTop: boolean;
     status: string | null;
     /** The day after the link-up. Until then the money is not earned. */
     eventDate: string;
@@ -350,6 +357,10 @@ export default async function DashboardPage() {
             0
           ),
           unrecorded: unrecorded > 0 ? unrecorded : 0,
+          // Every sale, not most of them. A single legacy row on an otherwise
+          // fee-on-top event means something WAS deducted, and labelling the
+          // card as though nothing had been is the lie we just fixed.
+          feeOnTop: evTx.length > 0 && evTx.every((t) => !!t.fee_on_top),
           status: payouts.find((p) => p.event_id === e.id)?.status ?? null,
           eventDate: e.date,
         };
@@ -931,7 +942,9 @@ export default async function DashboardPage() {
                 unrecorded={c.unrecorded}
                 platformFee={c.platformFee}
                 due={c.due}
-                phoneVerified={!!profile?.phone_verified}
+                feeOnTop={c.feeOnTop}
+                emailVerified={!!profile?.email_verified}
+                email={user.email ?? null}
                 eventDate={c.eventDate}
                 status={c.status}
               />
@@ -944,7 +957,11 @@ export default async function DashboardPage() {
           subject, stacked apart. */}
       <SectionLabel>Money</SectionLabel>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <WalletCard balance={p?.wallet_balance ?? 0} transactions={walletTx} />
+        <WalletCard
+          balance={p?.wallet_balance ?? 0}
+          transactions={walletTx}
+          pendingWithdrawal={pendingWithdrawal}
+        />
         <ReferralCard
           referralCode={p?.referral_code ?? null}
           referralCount={referralCount}
