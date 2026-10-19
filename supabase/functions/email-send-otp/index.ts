@@ -31,15 +31,33 @@ const RESEND_COOLDOWN_SEC = 45;
 
 Deno.serve(async (req) => {
   const authHeader = req.headers.get("Authorization") ?? "";
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  // TWO CLIENTS, AND THE DIFFERENCE IS THE WHOLE BUG.
+  //
+  // Handing the caller's JWT to a client built with the service role key does
+  // NOT give you a service-role client with a user attached. PostgREST reads
+  // the Authorization header to decide the role, so every query that client
+  // makes runs as `authenticated` — service role in name only. Both OTP
+  // tables have RLS on with no policies, so every write was refused: 42501,
+  // the function returned 500, and the browser showed "Couldn't send code".
+  //
+  // This is why the SMS flow never worked either. phone-send-otp is built the
+  // same way and its upsert has been failing the same way, which is what
+  // OTP_TEST_MODE was hiding: in test mode nobody noticed the code was never
+  // being stored, because it was handed straight back to the caller.
+  //
+  // So: `caller` resolves who is asking, and nothing else. `db` does the
+  // writing, with no Authorization override, and is genuinely service role.
+  const caller = createClient(url, serviceKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
+  const db = createClient(url, serviceKey);
 
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await caller.auth.getUser();
   if (!user) return json({ error: "not authenticated" }, 401);
 
   const email = (user.email ?? "").trim();
@@ -51,7 +69,7 @@ Deno.serve(async (req) => {
   }
 
   // Cooldown, so a held-down button is not a mailing list.
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from("email_verifications")
     .select("last_sent_at")
     .eq("user_id", user.id)
@@ -77,7 +95,7 @@ Deno.serve(async (req) => {
   // Store before sending. A code that was mailed but never written verifies
   // nothing and answers "Request a code first" forever, which is the bug the
   // SMS function had to be fixed for.
-  const { error: storeErr } = await supabase.from("email_verifications").upsert(
+  const { error: storeErr } = await db.from("email_verifications").upsert(
     {
       user_id: user.id,
       email,
@@ -99,7 +117,7 @@ Deno.serve(async (req) => {
     return json({ sent: true, email: mask(email), test_code: code });
   }
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from("users")
     .select("name")
     .eq("id", user.id)

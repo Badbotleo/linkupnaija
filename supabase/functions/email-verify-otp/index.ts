@@ -9,15 +9,21 @@ const MAX_ATTEMPTS = 5;
 
 Deno.serve(async (req) => {
   const authHeader = req.headers.get("Authorization") ?? "";
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  // See the long note in email-send-otp. Short version: a service-role client
+  // carrying the caller's Authorization header queries as `authenticated`,
+  // not as service role, so RLS applies and every write to the OTP table is
+  // refused. `caller` identifies the user; `db` does the work.
+  const caller = createClient(url, serviceKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
+  const db = createClient(url, serviceKey);
 
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await caller.auth.getUser();
   if (!user) return json({ error: "not authenticated" }, 401);
 
   let body: { code?: string } = {};
@@ -28,7 +34,7 @@ Deno.serve(async (req) => {
   }
   const code = (body.code ?? "").trim();
 
-  const { data: row, error: readErr } = await supabase
+  const { data: row, error: readErr } = await db
     .from("email_verifications")
     .select("email, code, expires_at, attempts")
     .eq("user_id", user.id)
@@ -50,7 +56,7 @@ Deno.serve(async (req) => {
   // mismatch means the email changed between sending and verifying, and the
   // code proves ownership of an inbox this account no longer uses.
   if (row.email !== (user.email ?? "")) {
-    await supabase.from("email_verifications").delete().eq("user_id", user.id);
+    await db.from("email_verifications").delete().eq("user_id", user.id);
     return json(
       { error: "Your email changed. Request a new code." },
       400
@@ -58,7 +64,7 @@ Deno.serve(async (req) => {
   }
 
   if (code !== row.code) {
-    await supabase
+    await db
       .from("email_verifications")
       .update({ attempts: row.attempts + 1 })
       .eq("user_id", user.id);
@@ -68,7 +74,7 @@ Deno.serve(async (req) => {
   // The write that actually verifies them. Unchecked, a failure here would
   // still clear the OTP row and report success: told they were verified, no
   // flag set, and the code gone so they start over with no idea why.
-  const { error: saveErr } = await supabase
+  const { error: saveErr } = await db
     .from("users")
     .update({ email_verified: true, email_verified_at: new Date().toISOString() })
     .eq("id", user.id);
@@ -78,7 +84,7 @@ Deno.serve(async (req) => {
     return json({ error: "Couldn't save that. Please try again." }, 500);
   }
 
-  await supabase.from("email_verifications").delete().eq("user_id", user.id);
+  await db.from("email_verifications").delete().eq("user_id", user.id);
   return json({ verified: true });
 });
 

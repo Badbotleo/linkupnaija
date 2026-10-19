@@ -21,6 +21,37 @@ import { toast } from "@/lib/toast";
  * session could point the code at itself, and the only thing this proves is
  * that whoever is asking can read the account's mail.
  */
+/**
+ * Why a call failed, in the function's own words, or null if it did not.
+ *
+ * supabase-js only fills `data` on a 2xx. On anything else `data` is null and
+ * the message you wrote sits unread inside the Response hanging off the
+ * error, so `data?.error ?? "Couldn't send code."` printed the fallback for
+ * every failure there is. Expired, rate-limited, misconfigured and refused
+ * all looked identical, which is exactly how a permission error on the OTP
+ * table went unnoticed long enough to reach a member.
+ */
+async function reasonFor(
+  data: unknown,
+  error: unknown,
+  fallback = "Couldn't send code."
+): Promise<string | null> {
+  const inBody = (data as { error?: string } | null)?.error;
+  if (inBody) return inBody;
+  if (!error) return null;
+  // FunctionsHttpError carries the raw Response on `context`.
+  const ctx = (error as { context?: Response }).context;
+  if (ctx && typeof ctx.json === "function") {
+    try {
+      const body = (await ctx.clone().json()) as { error?: string };
+      if (body?.error) return body.error;
+    } catch {
+      /* not JSON; fall through to the generic message */
+    }
+  }
+  return (error as { message?: string }).message || fallback;
+}
+
 export default function EmailVerify({
   email,
   alreadyVerified,
@@ -61,8 +92,9 @@ export default function EmailVerify({
     setBusy(true);
     const { data, error } = await supabase.functions.invoke("email-send-otp");
     setBusy(false);
-    if (error || (data as { error?: string })?.error) {
-      toast.error((data as { error?: string })?.error ?? "Couldn't send code.");
+    const failed = await reasonFor(data, error);
+    if (failed) {
+      toast.error(failed);
       return;
     }
     const testCode = (data as { test_code?: string })?.test_code;
@@ -81,8 +113,9 @@ export default function EmailVerify({
       body: { code },
     });
     setBusy(false);
-    if (error || (data as { error?: string })?.error) {
-      toast.error((data as { error?: string })?.error ?? "Couldn't verify.");
+    const failed = await reasonFor(data, error, "Couldn't verify.");
+    if (failed) {
+      toast.error(failed);
       return;
     }
     setVerified(true);
