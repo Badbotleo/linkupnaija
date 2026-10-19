@@ -38,6 +38,9 @@ export interface UserProfile {
   warning_count: number;
   interests: string[];
   phone_verified: boolean;
+  /** Set by the email OTP flow, which is what gates a payout. */
+  email_verified: boolean;
+  email_verified_at: string | null;
   created_at: string;
 }
 
@@ -76,6 +79,12 @@ export interface WalletTransaction {
   type: "credit" | "debit";
   reason: string | null;
   reference: string | null;
+  /**
+   * Only withdrawals carry one. A referral credit is not pending anything,
+   * so the column is null on every other kind of row.
+   */
+  status: "pending" | "paid" | "declined" | null;
+  settled_at: string | null;
   created_at: string;
 }
 

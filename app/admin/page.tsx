@@ -24,6 +24,9 @@ import AdminIdChecks from "@/components/admin/AdminIdChecks";
 import AdminVenueClaims from "@/components/admin/AdminVenueClaims";
 import AdminMembers from "@/components/admin/AdminMembers";
 import AdminPayouts from "@/components/admin/AdminPayouts";
+import AdminWithdrawals, {
+  type WithdrawalRow,
+} from "@/components/admin/AdminWithdrawals";
 import AdminWalletCredit from "@/components/admin/AdminWalletCredit";
 import AdminTournament from "@/components/admin/AdminTournament";
 import AdminOpportunities from "@/components/admin/AdminOpportunities";
@@ -88,6 +91,7 @@ export default async function AdminPage() {
     { data: expiredRows },
     { data: allUsers },
     { data: payoutRows },
+    { data: withdrawalRows },
     { data: tournamentRows },
     { data: opportunityRows },
     { data: circleRows },
@@ -132,6 +136,18 @@ export default async function AdminPage() {
       )
       .in("status", ["pending", "approved"])
       .order("created_at", { ascending: false }),
+    // Referral withdrawals. A separate queue from the one above, because it
+    // is a separate kind of debt: that one is ticket money owed to a host,
+    // this is referral credit owed to a member. Nothing read these rows at
+    // all until now, so every request ever made was still sitting here.
+    supabase
+      .from("wallet_transactions")
+      .select(
+        "id, amount, created_at, users:users!wallet_transactions_user_id_fkey(name, email, payout_bank, payout_account_number)"
+      )
+      .eq("reference", "withdrawal")
+      .eq("status", "pending")
+      .order("created_at", { ascending: true }),
     supabase
       .from("tournament_registrations")
       .select("*")
@@ -173,6 +189,7 @@ export default async function AdminPage() {
       .gte("created_at", `${lagosToday.slice(0, 7)}-01T00:00:00`),
   ]);
 
+  const withdrawals = (withdrawalRows ?? []) as unknown as WithdrawalRow[];
   const tournamentRegs = (tournamentRows ?? []) as TournamentRegistration[];
   const opportunities = (opportunityRows ?? []) as unknown as Opportunity[];
 
@@ -512,6 +529,7 @@ export default async function AdminPage() {
           { id: "instagram", label: "Post to Instagram", emoji: "📸", group: "Content" },
           { id: "tournament", label: "FC26 Tournament", emoji: "🎮", group: "Content" },
           { id: "payouts", label: "Payout requests", emoji: "💸", group: "Money", badge: payouts.length },
+          { id: "withdrawals", label: "Referral withdrawals", emoji: "🏧", group: "Money", badge: withdrawals.length },
           { id: "wallet", label: "Credit a wallet", emoji: "💰", group: "Money" },
           { id: "members", label: "All members", emoji: "👥", group: "People" },
           { id: "pro", label: "Premium members", emoji: "⭐", group: "People" },
@@ -634,6 +652,10 @@ export default async function AdminPage() {
               initialPayouts={payouts}
               attendance={Object.fromEntries(payoutAttendance)}
             />
+        </div>
+
+        <div key="withdrawals">
+<AdminWithdrawals initial={withdrawals} />
         </div>
 
         <div key="wallet">

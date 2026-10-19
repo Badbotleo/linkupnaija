@@ -17,9 +17,21 @@ const MIN_WITHDRAWAL = 3000;
 export default function WalletCard({
   balance,
   transactions,
+  pendingWithdrawal = null,
 }: {
   balance: number;
   transactions: WalletTransaction[];
+  /**
+   * An amount already requested and not yet settled, if there is one.
+   *
+   * Requesting a withdrawal debited the balance and then said nothing more.
+   * From the member's side the number simply dropped and the Withdraw button
+   * went quiet, which reads as money going missing. Two people waited a
+   * month on exactly that, and one of them asked again through support
+   * because there was nothing on this card to suggest the first request
+   * still existed.
+   */
+  pendingWithdrawal?: number | null;
 }) {
   const router = useRouter();
   const supabase = createClient();
@@ -61,17 +73,43 @@ export default function WalletCard({
       >
         <p className="text-sm font-medium text-white/80">LinkUpNaija Wallet</p>
         <p className="mt-1 text-3xl font-extrabold">{formatNaira(balance)}</p>
-        <button
-          type="button"
-          onClick={withdraw}
-          disabled={busy || balance < MIN_WITHDRAWAL}
-          className="mt-4 rounded-xl bg-white/15 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/25 disabled:opacity-50"
-        >
-          {busy ? "…" : "Withdraw"}
-        </button>
-        <p className="mt-2 text-xs text-white/60">
-          Minimum withdrawal {formatNaira(MIN_WITHDRAWAL)}.
-        </p>
+        {pendingWithdrawal ? (
+          /* An open request, stated. The database refuses a second one while
+             this is outstanding, so offering the button here would only be a
+             way to collect an error message. */
+          <div className="mt-4 rounded-xl bg-white/15 px-3.5 py-3">
+            <p className="text-sm font-bold">
+              {formatNaira(pendingWithdrawal)} on its way
+            </p>
+            <p className="mt-0.5 text-xs text-white/70">
+              Requested and queued. We transfer to the bank details on your
+              profile, and you will get a notification when it has gone.
+            </p>
+          </div>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={withdraw}
+              disabled={busy || balance < MIN_WITHDRAWAL}
+              className="mt-4 rounded-xl bg-white/15 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/25 disabled:opacity-50"
+            >
+              {busy ? "…" : "Withdraw"}
+            </button>
+            {/* How far off, not just the rule. "Minimum N3,000" next to a
+                greyed-out button makes somebody work out the gap themselves,
+                and the gap is the only part they can act on. */}
+            <p className="mt-2 text-xs text-white/60">
+              {balance < MIN_WITHDRAWAL
+                ? `${formatNaira(
+                    MIN_WITHDRAWAL - balance
+                  )} more to reach the ${formatNaira(
+                    MIN_WITHDRAWAL
+                  )} minimum.`
+                : `Minimum withdrawal ${formatNaira(MIN_WITHDRAWAL)}.`}
+            </p>
+          </>
+        )}
       </div>
 
       {/* History */}
