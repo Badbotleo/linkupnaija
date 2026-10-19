@@ -376,13 +376,21 @@ export default function HostForm({
       /min_attendees|end_time|auto_confirm|auto_chat|requests_open_at/.test(msg) &&
       /column/i.test(msg);
 
-    // The host page checks may_host() before showing this form, but the policy
-    // is what actually enforces it and somebody can arrive here with a stale
-    // tab. Postgres says "new row violates row-level security policy", which
-    // tells a host nothing about what to do next.
+    // Postgres says "new row violates row-level security policy", which tells
+    // a host nothing about what to do next.
+    //
+    // It used to say to go and verify a phone number, which was a guess, and
+    // a wrong one: the insert policy on events is `auth.uid() = host_id` and
+    // nothing else, there is no may_host() function, and hosting has never
+    // been gated on a phone at all. So the one thing this message named as
+    // the fix could not have been the cause, and after the SMS card came off
+    // the profile it pointed at a page that no longer had one.
+    //
+    // What a policy failure here actually means is that the session is not
+    // the host it claims to be, and the honest answer is to sign in again.
     const friendly = (msg?: string | null) =>
       msg && /row-level security/i.test(msg)
-        ? "Verify your phone number before hosting. Add it in your profile, then try again."
+        ? "We couldn't confirm your account for this. Sign out, sign back in and try again, or email support@linkupnaija.com."
         : (msg ?? "Something went wrong. Please try again.");
 
     // Recurring series: create the series + its first 3 events.

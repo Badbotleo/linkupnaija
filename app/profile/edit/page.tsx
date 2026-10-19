@@ -85,7 +85,7 @@ export default async function SettingsPage() {
     supabase
       .from("users")
       .select(
-        "name, state, bio, avatar_url, phone, phone_verified, payout_bank, payout_account_number, emergency_contact_name"
+        "name, state, bio, avatar_url, phone, email_verified, payout_bank, payout_account_number, emergency_contact_name"
       )
       .eq("id", user.id)
       .single(),
@@ -102,7 +102,7 @@ export default async function SettingsPage() {
     bio: string | null;
     avatar_url: string | null;
     phone: string | null;
-    phone_verified: boolean | null;
+    email_verified: boolean | null;
     payout_bank: string | null;
     payout_account_number: string | null;
     emergency_contact_name: string | null;
@@ -132,13 +132,13 @@ export default async function SettingsPage() {
           <Row
             href="/profile/edit/safety"
             icon="shield"
-            label="Phone and safety"
+            label="Verification and safety"
             value={
-              p?.phone_verified
+              p?.email_verified
                 ? `Verified${p?.emergency_contact_name ? " · emergency contact set" : ""}`
-                : "Phone not verified"
+                : "Not verified yet"
             }
-            warn={!p?.phone_verified}
+            warn={!p?.email_verified}
           />
         </Group>
 
