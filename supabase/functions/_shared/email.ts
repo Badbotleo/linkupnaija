@@ -214,17 +214,36 @@ export function welcomeEmailHtml(opts: {
   });
 }
 
-/** Send one email through Resend. Returns true on success. */
-export async function sendEmail(opts: {
+export interface SendResult {
+  ok: boolean;
+  /** Resend's HTTP status, or 0 when we never got that far. */
+  status: number;
+  /**
+   * True when Resend refused because of a sending limit rather than anything
+   * wrong with the message: daily quota (429 daily_quota_exceeded) or rate
+   * limit. Worth separating, because "try again" is false advice for a quota
+   * and correct advice for almost everything else.
+   */
+  limited: boolean;
+}
+
+/**
+ * Send one email through Resend, with the reason when it fails.
+ *
+ * `sendEmail` below still returns a plain boolean, because a dozen callers
+ * test it for truthiness and an object would be truthy even on failure. Only
+ * the callers that need to explain themselves use this one.
+ */
+export async function sendEmailDetailed(opts: {
   to: string;
   subject: string;
   html: string;
   from?: string;
-}): Promise<boolean> {
+}): Promise<SendResult> {
   const resendKey = Deno.env.get("RESEND_API_KEY");
   if (!resendKey) {
     console.error("RESEND_API_KEY not set");
-    return false;
+    return { ok: false, status: 0, limited: false };
   }
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -239,8 +258,23 @@ export async function sendEmail(opts: {
       html: opts.html,
     }),
   });
-  if (!res.ok) {
-    console.error("Resend error", res.status, await res.text());
-  }
-  return res.ok;
+  if (res.ok) return { ok: true, status: res.status, limited: false };
+
+  const detail = await res.text();
+  console.error("Resend error", res.status, detail);
+  return {
+    ok: false,
+    status: res.status,
+    limited: res.status === 429 || /quota|rate.?limit/i.test(detail),
+  };
+}
+
+/** Send one email through Resend. Returns true on success. */
+export async function sendEmail(opts: {
+  to: string;
+  subject: string;
+  html: string;
+  from?: string;
+}): Promise<boolean> {
+  return (await sendEmailDetailed(opts)).ok;
 }

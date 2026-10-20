@@ -18,11 +18,12 @@
 // session redirect the code to the attacker's inbox and verify itself.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders, preflight } from "../_shared/cors.ts";
 import {
   emailLayout,
   heading,
   paragraph,
-  sendEmail,
+  sendEmailDetailed,
   firstName,
 } from "../_shared/email.ts";
 
@@ -30,6 +31,21 @@ const OTP_TTL_MIN = 10;
 const RESEND_COOLDOWN_SEC = 45;
 
 Deno.serve(async (req) => {
+  // Before any work: the browser asks permission, and it asks without
+  // credentials. Answering late is the same as not answering.
+  const pre = preflight(req);
+  if (pre) return pre;
+
+  const cors = corsHeaders(req);
+  // Defined here, not at module scope, because every reply needs the
+  // headers for THIS request's origin. A 401 or a 500 without them is
+  // still a blocked response as far as the browser is concerned.
+  const json = (b: unknown, status = 200): Response =>
+    new Response(JSON.stringify(b), {
+      status,
+      headers: { "Content-Type": "application/json", ...cors },
+    });
+
   const authHeader = req.headers.get("Authorization") ?? "";
   const url = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -123,7 +139,7 @@ Deno.serve(async (req) => {
     .eq("id", user.id)
     .maybeSingle();
 
-  const sent = await sendEmail({
+  const sent = await sendEmailDetailed({
     to: email,
     subject: `${code} is your LinkUpNaija code`,
     html: emailLayout({
@@ -146,7 +162,26 @@ Deno.serve(async (req) => {
     }),
   });
 
-  if (!sent) return json({ error: "Couldn't send the code. Try again." }, 502);
+  if (!sent.ok) {
+    // The code was stored before the send, so a failed send leaves a row
+    // that nobody can ever use and that holds the resend cooldown against
+    // the next attempt. Clear it: there is no code out there to protect.
+    await db.from("email_verifications").delete().eq("user_id", user.id);
+
+    // "Try again" is false advice when the account is out of quota for the
+    // day, and following it is the only thing the member can do. Say which
+    // kind of failure it is.
+    if (sent.limited) {
+      return json(
+        {
+          error:
+            "We've hit our email limit for today, so the code can't go out right now. Email support@linkupnaija.com and we'll sort your payout by hand.",
+        },
+        503
+      );
+    }
+    return json({ error: "Couldn't send the code. Please try again." }, 502);
+  }
   return json({ sent: true, email: mask(email) });
 });
 
@@ -158,12 +193,6 @@ function mask(email: string): string {
   return `${shown}@${domain}`;
 }
 
-function json(b: unknown, status = 200): Response {
-  return new Response(JSON.stringify(b), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
-}
 
 /**
  * Test mode, and why it cannot be switched on in production.

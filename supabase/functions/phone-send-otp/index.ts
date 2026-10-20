@@ -7,11 +7,27 @@
 // Deploy: supabase functions deploy phone-send-otp
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders, preflight } from "../_shared/cors.ts";
 
 const OTP_TTL_MIN = 10;
 const RESEND_COOLDOWN_SEC = 45;
 
 Deno.serve(async (req) => {
+  // Before any work: the browser asks permission, and it asks without
+  // credentials. Answering late is the same as not answering.
+  const pre = preflight(req);
+  if (pre) return pre;
+
+  const cors = corsHeaders(req);
+  // Defined here, not at module scope, because every reply needs the
+  // headers for THIS request's origin. A 401 or a 500 without them is
+  // still a blocked response as far as the browser is concerned.
+  const json = (b: unknown, status = 200): Response =>
+    new Response(JSON.stringify(b), {
+      status,
+      headers: { "Content-Type": "application/json", ...cors },
+    });
+
   const authHeader = req.headers.get("Authorization") ?? "";
   const url = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -133,9 +149,6 @@ Deno.serve(async (req) => {
   return json({ sent: true });
 });
 
-function json(b: unknown, status = 200): Response {
-  return new Response(JSON.stringify(b), { status, headers: { "Content-Type": "application/json" } });
-}
 
 /**
  * Test mode, and why it cannot be switched on in production.
