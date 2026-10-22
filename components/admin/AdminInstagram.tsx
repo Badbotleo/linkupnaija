@@ -231,6 +231,81 @@ export default function AdminInstagram() {
         </div>
       </div>
 
+      {/* The explainer carousel, which is the post for somebody who has just
+          landed on the account and does not know what this is.
+
+          Six slides, downloaded in order and posted as one carousel. Every
+          figure on them is read from the database at render time, so the post
+          cannot drift from the product and nobody has to remember to update
+          it: the counts, the cities, the event names and the median ticket
+          price are whatever they are this week. */}
+      <div className="rounded-2xl border border-gray-200 bg-white p-4">
+        <p className="text-sm font-bold text-gray-900">
+          What LinkUpNaija is &middot; 6-slide carousel
+        </p>
+        <p className="mt-0.5 text-xs text-gray-500">
+          Download all six in order, then post as one carousel. The numbers are
+          live, so it is worth re-downloading rather than reposting an old one.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {[
+            { v: "hook", label: "1 · The number" },
+            { v: "cities", label: "2 · Cities" },
+            { v: "names", label: "3 · Real names" },
+            { v: "who", label: "4 · Who's going" },
+            { v: "host", label: "5 · If you host" },
+            { v: "close", label: "6 · Close" },
+          ].map((s, i) => (
+            <a
+              key={s.v}
+              href={`/api/ig-card/what?v=${s.v}`}
+              target="_blank"
+              rel="noreferrer"
+              download={`linkupnaija-what-${i + 1}-${s.v}.png`}
+              className="rounded-full bg-gray-900 px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-brand"
+            >
+              {s.label}
+            </a>
+          ))}
+          <button
+            type="button"
+            onClick={() => {
+              // NO COUNTS AND NO EVENT NAMES IN HERE, deliberately. Slide one
+              // already carries the number at poster size and slide three the
+              // names, and both are read live at render time. Repeating either
+              // in a fixed caption gives them a second place to go stale, and
+              // a caption that says 48 under an image that says 52 is worse
+              // than one that never mentioned it. The slides carry what
+              // changes; the caption carries what does not.
+              //
+              // The first line is the hook, because Instagram cuts the caption
+              // at roughly 125 characters and everything after it is a tap
+              // nobody owes us.
+              const text =
+                "Nobody wants to be the only one who came.\n\n" +
+                "So on LinkUpNaija you see who else is going before you pay. " +
+                "That is the whole idea.\n\n" +
+                "Every link-up in here was posted by the person actually " +
+                "running it. Nothing scraped, nothing invented.\n\n" +
+                "And if you host: you keep the ticket price. All of it. Our " +
+                "fee goes on top and the guest pays it, not you. Money lands " +
+                "after the night, and you see exactly who paid.\n\n" +
+                "Free to look. An account is only for joining.\n\n" +
+                "linkupnaija.com\n\n" +
+                "#LinkUpNaija #AbujaEvents #LagosEvents #ThingsToDoInAbuja " +
+                "#ThingsToDoInLagos #NaijaEvents #AbujaSocial #LagosSocial";
+              navigator.clipboard
+                .writeText(text)
+                .then(() => setCopied("what"))
+                .catch(() => setError("Couldn't reach the clipboard."));
+            }}
+            className="rounded-full border border-gray-300 px-3.5 py-1.5 text-xs font-bold text-gray-700 transition hover:border-brand hover:text-brand"
+          >
+            {copied === "what" ? "Caption copied" : "Copy caption"}
+          </button>
+        </div>
+      </div>
+
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}
