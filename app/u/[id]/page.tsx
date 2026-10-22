@@ -66,9 +66,9 @@ export default async function PublicProfilePage({
    * them rather than taking the page down with them.
    */
   const PUBLIC_PROFILE =
-    "id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, profile_completed, rating_avg, rating_count, created_at, is_pro, pro_expires_at, awarded_badges, revoked_badges, banner_url, phone_verified, last_seen_at";
+    "id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, profile_completed, rating_avg, rating_count, created_at, is_pro, pro_expires_at, awarded_badges, revoked_badges, banner_url, phone_verified, last_seen_at, profile_visibility";
   const PUBLIC_PROFILE_MINIMAL =
-    "id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, profile_completed, rating_avg, rating_count, created_at";
+    "id, name, state, avatar_url, bio, instagram_url, twitter_url, facebook_url, profile_completed, rating_avg, rating_count, created_at, profile_visibility";
 
   let { data: p, error: profileError } = await supabase
     .from("users")
@@ -105,6 +105,70 @@ export default async function PublicProfilePage({
           <StateIcon name="shield" tone="bad" size={48} />
           <p className="mt-3 font-semibold text-gray-900">You&apos;ve blocked this user.</p>
           <Link href="/events" className="btn-outline mt-6">Back to link-ups</Link>
+        </div>
+      );
+    }
+  }
+
+  /**
+   * A private profile, seen by somebody who has not been let in.
+   *
+   * The check is a database function rather than a comparison here, so the
+   * same rule answers for every caller and one page cannot drift from
+   * another. Self, an admin and an accepted connection pass; pending does
+   * not, because 125 of the 148 connection rows on this platform are
+   * pending and counting an unanswered request as consent would make the
+   * setting meaningless.
+   *
+   * WHAT STILL SHOWS: the name, the photo, the state, and a way to ask. Not
+   * an error and not a locked door, because this person has done nothing
+   * wrong and the viewer may be somebody they would happily accept. What is
+   * withheld is the part they never put in front of strangers: the bio, the
+   * socials, the rating, the badges, who they know, what they are going to,
+   * and when they were last online.
+   */
+  if (profile.profile_visibility === "private") {
+    const { data: allowed, error: gateError } = await supabase.rpc(
+      "may_see_profile",
+      { p_target: params.id }
+    );
+    // `!== true`, not `=== false`. A check that errors returns null, and
+    // treating null as permission means any hiccup in the RPC quietly
+    // publishes every private profile on the platform. The failure mode of a
+    // privacy control has to be showing too little.
+    if (allowed !== true) {
+      if (gateError) {
+        console.error("may_see_profile failed", gateError.message);
+      }
+      return (
+        <div className="container-page max-w-2xl py-14 text-center">
+          <div className="flex justify-center">
+            <Avatar name={profile.name} url={profile.avatar_url} size="lg" />
+          </div>
+          <h1 className="mt-4 text-[24px] font-extrabold tracking-[-0.02em] text-gray-900 dark:text-white">
+            {profile.name ?? "This member"}
+          </h1>
+          {profile.state && (
+            <p className="mt-1 text-[14.5px] text-gray-500">{profile.state}</p>
+          )}
+
+          <div className="mx-auto mt-6 max-w-sm rounded-2xl bg-gray-50 px-5 py-6 dark:bg-white/[0.04]">
+            <StateIcon name="lock" tone="quiet" size={34} />
+            <p className="mt-3 font-bold text-gray-900 dark:text-white">
+              This profile is private
+            </p>
+            <p className="mt-1 text-[14px] leading-snug text-gray-500">
+              Connect with {(profile.name ?? "them").split(" ")[0]} and they will decide
+              whether to share the rest.
+            </p>
+            <div className="mt-4 flex justify-center">
+              <AddFriendButton targetId={params.id} isLoggedIn={!!user} />
+            </div>
+          </div>
+
+          <Link href="/events" className="btn-outline mt-7">
+            Back to link-ups
+          </Link>
         </div>
       );
     }

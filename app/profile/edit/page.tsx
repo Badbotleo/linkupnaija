@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 import LineIcon from "@/components/ui/LineIcon";
+import ProfileVisibility from "@/components/profile/ProfileVisibility";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -81,11 +82,12 @@ export default async function SettingsPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?redirect=/profile/edit");
 
-  const [{ data: profile }, { data: emailPrefs }] = await Promise.all([
+  const [{ data: profile }, { data: emailPrefs }, { data: friends }] =
+    await Promise.all([
     supabase
       .from("users")
       .select(
-        "name, state, bio, avatar_url, phone, email_verified, payout_bank, payout_account_number, emergency_contact_name"
+        "name, state, bio, avatar_url, phone, email_verified, payout_bank, payout_account_number, emergency_contact_name, profile_visibility"
       )
       .eq("id", user.id)
       .single(),
@@ -94,7 +96,12 @@ export default async function SettingsPage() {
       .select("weekly_digest_enabled")
       .eq("user_id", user.id)
       .maybeSingle(),
+    // Via the RPC, because RLS on connections only exposes rows the viewer
+    // is part of. "Connections only" means nothing without the number.
+    supabase.rpc("friend_count", { uid: user.id }),
   ]);
+
+  const friendCount = Number(friends ?? 0);
 
   const p = profile as {
     name: string | null;
@@ -103,6 +110,7 @@ export default async function SettingsPage() {
     avatar_url: string | null;
     phone: string | null;
     email_verified: boolean | null;
+    profile_visibility: "public" | "private" | null;
     payout_bank: string | null;
     payout_account_number: string | null;
     emergency_contact_name: string | null;
@@ -140,6 +148,18 @@ export default async function SettingsPage() {
             }
             warn={!p?.email_verified}
           />
+        </Group>
+
+        <Group title="Who can see you">
+          {/* Its own section rather than a row in Account, because this is a
+              safety control and burying it two taps deep is how somebody who
+              wanted it never finds it. */}
+          <div className="px-1 py-1">
+            <ProfileVisibility
+              initial={p?.profile_visibility === "private" ? "private" : "public"}
+              friendCount={friendCount}
+            />
+          </div>
         </Group>
 
         <Group title="Money">

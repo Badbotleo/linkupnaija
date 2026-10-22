@@ -38,6 +38,11 @@ export interface UserProfile {
   warning_count: number;
   interests: string[];
   phone_verified: boolean;
+  /**
+   * 'public' or 'private'. Private withholds everything a stranger never
+   * had a reason to see; an accepted connection sees the lot.
+   */
+  profile_visibility: "public" | "private";
   /** Set by the email OTP flow, which is what gates a payout. */
   email_verified: boolean;
   email_verified_at: string | null;
