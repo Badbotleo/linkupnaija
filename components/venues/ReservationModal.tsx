@@ -9,13 +9,33 @@ import { EVENT_CATEGORIES } from "@/lib/constants";
 import { toast } from "@/lib/toast";
 import type { Venue } from "@/lib/overpass";
 import StateIcon from "@/components/ui/StateIcon";
+import type { BookingOption } from "./BookingTerms";
+import { formatNaira } from "@/lib/paystack";
 
 export default function ReservationModal({
   venue,
+  options = [],
   isLoggedIn,
   onClose,
 }: {
-  venue: Pick<Venue, "id" | "name" | "address" | "lat" | "lng">;
+  /**
+   * Coordinates are nullable here, unlike on the OSM `Venue` this started
+   * from. An onboarded venue we have not pinned yet has none, and the
+   * caller was substituting 0 to satisfy the old type, which wrote a point
+   * in the Atlantic onto the reservation as the venue's location.
+   */
+  venue: Omit<Pick<Venue, "id" | "name" | "address" | "lat" | "lng">, "lat" | "lng"> & {
+    lat: number | null;
+    lng: number | null;
+  };
+  /**
+   * The venue's published booking options, if it has any.
+   *
+   * Asked here rather than settled later by email. A request that does not
+   * say which option the group is taking is one the venue has to answer with
+   * a policy, which is exactly the exchange that soured the Luna booking.
+   */
+  options?: BookingOption[];
   isLoggedIn: boolean;
   onClose: () => void;
 }) {
@@ -28,6 +48,7 @@ export default function ReservationModal({
     event_type: "",
     special_requests: "",
     contact_phone: "",
+    chosen_option: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,13 +96,25 @@ export default function ReservationModal({
       contact_phone: form.contact_phone.trim() || null,
     };
 
+    // The chosen option, and what it is worth, carried on the row. Sent as a
+    // second attempt rather than in `base` for the same reason venue_id is:
+    // a column that has not landed yet must not take the whole booking down.
+    const picked = options.find((o) => o.label === form.chosen_option);
+    const withChoice = picked
+      ? {
+          ...base,
+          chosen_option: picked.label,
+          quoted_amount: picked.amount ?? null,
+        }
+      : base;
+
     // venue_id lands with migration-venue-reviews.sql. Until that runs the
     // column doesn't exist and including it would fail the whole insert —
     // so fall back to booking without it rather than blocking bookings.
     let { error } = await supabase
       .from("reservations")
-      .insert({ ...base, venue_id: partnerId });
-    if (error && /venue_id/.test(error.message)) {
+      .insert({ ...withChoice, venue_id: partnerId });
+    if (error && /venue_id|chosen_option|quoted_amount/.test(error.message)) {
       ({ error } = await supabase.from("reservations").insert(base));
     }
 
@@ -147,6 +180,71 @@ export default function ReservationModal({
           </div>
         ) : (
           <form onSubmit={submit} className="mt-5 space-y-4">
+            {/* FIRST, because it is the question the venue would otherwise
+                ask in a reply. Picking it here turns a policy email into a
+                line on the request, and gives the confirmation an amount
+                that was agreed rather than invented. */}
+            {options.length > 0 && (
+              <div>
+                <span className="label">How you want to book</span>
+                <div className="mt-1 space-y-2">
+                  {options.map((o) => {
+                    const on = form.chosen_option === o.label;
+                    return (
+                      <button
+                        key={o.label}
+                        type="button"
+                        onClick={() => update("chosen_option", on ? "" : o.label)}
+                        /* The selected fill needs its own dark value. The
+                           rest of this modal uses light classes that the
+                           global dark rules repaint, but bg-brand-50 is a
+                           pale lavender that stays pale, so the chosen row
+                           ended up light-on-light and the detail line under
+                           it was barely readable. */
+                        className={`flex w-full gap-3 rounded-xl border px-3.5 py-3 text-left transition ${
+                          on
+                            ? "border-brand bg-brand-50/60 dark:bg-brand/20"
+                            : "border-gray-200 hover:border-brand/40 dark:border-white/15"
+                        }`}
+                      >
+                        <span
+                          className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 ${
+                            on
+                              ? "border-brand bg-brand"
+                              : "border-gray-300 dark:border-white/30"
+                          }`}
+                        >
+                          {on && (
+                            <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                          )}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="flex flex-wrap items-baseline gap-x-2">
+                            <span className="text-[14.5px] font-bold text-gray-900 dark:text-white">
+                              {o.label}
+                            </span>
+                            {typeof o.amount === "number" && o.amount > 0 && (
+                              <span className="text-[14px] font-extrabold tabular-nums text-brand">
+                                {formatNaira(o.amount)}
+                              </span>
+                            )}
+                          </span>
+                          {o.detail && (
+                            <span className="mt-0.5 block text-[13px] leading-snug text-gray-600 dark:text-white/70">
+                              {o.detail}
+                            </span>
+                          )}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="mt-1.5 text-xs text-gray-500">
+                  Not sure yet? Leave it and we will work it out with them.
+                </p>
+              </div>
+            )}
+
             <div>
               <label className="label" htmlFor="event_name">
                 Event name

@@ -75,7 +75,7 @@ export default async function VenuePage({
     const { data: venue } = await supabase
       .from("venues")
       .select(
-        "id, name, category, address, state, description, phone, website, price_range, rating, rating_count, opening_hours, image_url, gallery_urls, lat, lng"
+        "id, name, category, address, state, description, phone, website, price_range, rating, rating_count, opening_hours, image_url, gallery_urls, lat, lng, capacity, accepts_reservations, booking_options, booking_notice_days, booking_note"
       )
       .eq("id", params.id)
       .eq("is_active", true)

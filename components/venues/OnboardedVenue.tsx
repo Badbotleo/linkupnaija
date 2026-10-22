@@ -5,6 +5,7 @@ import Link from "next/link";
 import LineIcon from "../ui/LineIcon";
 import VenueArt from "./VenueArt";
 import ReservationModal from "./ReservationModal";
+import BookingTerms, { parseBookingOptions } from "./BookingTerms";
 import ClaimVenue from "./ClaimVenue";
 
 /**
@@ -38,6 +39,13 @@ export interface OnboardedVenueData {
   gallery_urls: string[];
   lat: number | null;
   lng: number | null;
+  capacity: number | null;
+  /** Some venues take no group bookings at all. */
+  accepts_reservations: boolean | null;
+  /** Raw jsonb. Parsed defensively, because an owner edits it. */
+  booking_options: unknown;
+  booking_notice_days: number | null;
+  booking_note: string | null;
 }
 
 export default function OnboardedVenue({
@@ -53,6 +61,9 @@ export default function OnboardedVenue({
   claimStatus: string | null;
   claimedByAnother: boolean;
 }) {
+  // Parsed once, and used both to print the terms and to offer the same
+  // options inside the request form, so the two can never disagree.
+  const bookingOptions = parseBookingOptions(venue.booking_options);
   const [reserving, setReserving] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [sent, setSent] = useState(false);
@@ -150,13 +161,36 @@ export default function OnboardedVenue({
         )}
       </dl>
 
-      <button
-        type="button"
-        onClick={() => setReserving(true)}
-        className="btn-primary mt-6 w-full"
-      >
-        Request a reservation
-      </button>
+      {/* ABOVE THE BUTTON, NOT BEHIND IT. The terms are the thing somebody
+          needs in order to decide whether pressing the button is worth it,
+          and a condition discovered after you have introduced yourself reads
+          as a hurdle rather than as information. That is the whole reason
+          this block exists. */}
+      <div className="mt-6">
+        <BookingTerms
+          options={bookingOptions}
+          noticeDays={venue.booking_notice_days}
+          note={venue.booking_note}
+          capacity={venue.capacity}
+        />
+      </div>
+
+      {venue.accepts_reservations === false ? (
+        /* A button that can only lead to "no" is worse than no button. */
+        <p className="mt-4 rounded-2xl bg-gray-50 px-4 py-3.5 text-[14px] text-gray-600 dark:bg-white/[0.04] dark:text-white/70">
+          {venue.name} is not taking group bookings through LinkUpNaija at the
+          moment.
+          {venue.phone ? ` Call them on ${venue.phone} if you want to ask.` : ""}
+        </p>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setReserving(true)}
+          className="btn-primary mt-4 w-full"
+        >
+          Request a reservation
+        </button>
+      )}
 
       {/* --- whose place is this --- */}
       {/* Last on the page on purpose. It is addressed to one person in a
@@ -218,9 +252,14 @@ export default function OnboardedVenue({
             id: `partner-${venue.id}`,
             name: venue.name,
             address: venue.address ?? "",
-            lat: venue.lat ?? 0,
-            lng: venue.lng ?? 0,
+            // NOT `?? 0`. Zero is a real place, in the Atlantic off Ghana,
+            // and it was being written onto the reservation row as the
+            // venue's location for every venue we have not pinned yet. A
+            // missing coordinate should stay missing.
+            lat: venue.lat,
+            lng: venue.lng,
           }}
+          options={bookingOptions}
           isLoggedIn={isLoggedIn}
           onClose={() => setReserving(false)}
         />

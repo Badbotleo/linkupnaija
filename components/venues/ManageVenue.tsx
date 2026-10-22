@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "@/lib/toast";
+import { parseBookingOptions, type BookingOption } from "./BookingTerms";
 import LineIcon from "../ui/LineIcon";
 import type { OnboardedVenueData } from "./OnboardedVenue";
 
@@ -40,7 +41,25 @@ export default function ManageVenue({
     website: venue.website ?? "",
     opening_hours: venue.opening_hours ?? "",
     price_range: venue.price_range ?? "",
+    booking_notice_days: venue.booking_notice_days?.toString() ?? "",
+    booking_note: venue.booking_note ?? "",
   });
+  /**
+   * The booking options, edited as rows rather than as JSON.
+   *
+   * Nobody running a cafe is going to hand-write a jsonb array, and asking
+   * them to is how the column stays empty and the terms stay in an email.
+   */
+  const [options, setOptions] = useState<BookingOption[]>(() =>
+    parseBookingOptions(venue.booking_options)
+  );
+  const [takesBookings, setTakesBookings] = useState(
+    venue.accepts_reservations !== false
+  );
+
+  function setOption(i: number, patch: Partial<BookingOption>) {
+    setOptions((o) => o.map((row, k) => (k === i ? { ...row, ...patch } : row)));
+  }
   const [busy, setBusy] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -111,6 +130,22 @@ export default function ManageVenue({
         website: form.website.trim() || null,
         opening_hours: form.opening_hours.trim() || null,
         price_range: form.price_range.trim() || null,
+        accepts_reservations: takesBookings,
+        // Blank rows dropped on the way out: an option with no label is not
+        // an option, and it would render as an empty numbered bullet on the
+        // public page.
+        booking_options: options
+          .filter((o) => o.label.trim())
+          .map((o) => ({
+            label: o.label.trim(),
+            detail: (o.detail ?? "").trim(),
+            amount:
+              typeof o.amount === "number" && o.amount > 0 ? o.amount : null,
+          })),
+        booking_notice_days: form.booking_notice_days
+          ? Math.max(0, Math.round(Number(form.booking_notice_days)))
+          : null,
+        booking_note: form.booking_note.trim() || null,
       })
       .eq("id", venue.id);
     setSaving(false);
@@ -231,6 +266,127 @@ export default function ManageVenue({
           onChange={(v) => set("price_range", v)}
           placeholder="₦₦ · from ₦5,000 a head"
         />
+      </div>
+
+      {/* --- how a group books --- */}
+      {/* WHY THIS SECTION EXISTS. A book club asked one of our venues for a
+          date and got the house policy back as a reply: pre-order, set menu,
+          or a deposit. Reasonable terms, badly timed, and the booking soured
+          over it. Filled in here, those same terms print on the venue page
+          before anybody writes, and the group picks one on the way in. */}
+      <div className="mt-8 border-t border-gray-100 pt-6 dark:border-white/10">
+        <h3 className="text-[16px] font-extrabold tracking-[-0.01em] text-gray-900 dark:text-white">
+          How a group books
+        </h3>
+        <p className="mt-0.5 text-[13.5px] leading-snug text-gray-500">
+          Whatever you would normally explain in a reply. Put it here and it
+          shows on your page before anyone asks, so nobody is surprised by it
+          later.
+        </p>
+
+        <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl bg-gray-50 px-3.5 py-3 dark:bg-white/[0.04]">
+          <input
+            type="checkbox"
+            checked={takesBookings}
+            onChange={(e) => setTakesBookings(e.target.checked)}
+            className="mt-0.5 h-4 w-4 accent-[var(--brand)]"
+          />
+          <span className="text-[14px] text-gray-700 dark:text-white/80">
+            <span className="font-bold text-gray-900 dark:text-white">
+              We take group bookings
+            </span>
+            <span className="mt-0.5 block text-[13px] text-gray-500">
+              Untick this and the request button comes off your page entirely.
+            </span>
+          </span>
+        </label>
+
+        {takesBookings && (
+          <>
+            <div className="mt-4 space-y-3">
+              {options.map((o, i) => (
+                <div
+                  key={i}
+                  className="rounded-xl border border-gray-200 p-3.5 dark:border-white/10"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-50 text-[12px] font-extrabold text-brand dark:bg-white/[0.08]">
+                      {i + 1}
+                    </span>
+                    <input
+                      value={o.label}
+                      onChange={(e) => setOption(i, { label: e.target.value })}
+                      placeholder="Pre-order"
+                      className="input flex-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOptions((all) => all.filter((_, k) => k !== i))
+                      }
+                      aria-label={`Remove option ${i + 1}`}
+                      className="shrink-0 rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-red-600"
+                    >
+                      <LineIcon name="trash" size={15} />
+                    </button>
+                  </div>
+                  <textarea
+                    value={o.detail}
+                    onChange={(e) => setOption(i, { detail: e.target.value })}
+                    rows={2}
+                    placeholder="Pre-order seven or eight items from the regular menu and pay for them in advance."
+                    className="input mt-2 w-full resize-none"
+                  />
+                  <input
+                    type="number"
+                    min={0}
+                    value={o.amount ?? ""}
+                    onChange={(e) =>
+                      setOption(i, {
+                        amount: e.target.value ? Number(e.target.value) : null,
+                      })
+                    }
+                    placeholder="Amount in ₦, if this one has a set figure"
+                    className="input mt-2 w-full"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() =>
+                setOptions((all) => [
+                  ...all,
+                  { label: "", detail: "", amount: null },
+                ])
+              }
+              className="mt-3 rounded-full border border-dashed border-gray-300 px-4 py-2 text-[13.5px] font-bold text-gray-600 transition hover:border-brand hover:text-brand dark:border-white/20 dark:text-white/70"
+            >
+              Add an option
+            </button>
+
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Field
+                label="Notice you need (days)"
+                value={form.booking_notice_days}
+                onChange={(v) => set("booking_notice_days", v)}
+                placeholder="2"
+              />
+            </div>
+
+            <label className="mt-3 block">
+              <span className="label">Anything else</span>
+              <textarea
+                value={form.booking_note}
+                onChange={(e) => set("booking_note", e.target.value)}
+                rows={3}
+                placeholder="Parking is on the street. Music has to be down by 10pm."
+                className="input mt-1 w-full resize-none"
+              />
+            </label>
+          </>
+        )}
       </div>
 
       {/* --- what is ours --- */}
