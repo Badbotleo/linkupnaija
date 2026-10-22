@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
 import DesktopRail from "@/components/DesktopRail";
 import DeferredWidgets from "@/components/DeferredWidgets";
+import ThemeSync from "@/components/ThemeSync";
 import ScrollProgress from "@/components/ScrollProgress";
 import NavProgress from "@/components/NavProgress";
 import Toaster from "@/components/Toaster";
@@ -151,6 +152,9 @@ export default async function RootLayout({
         />
       </head>
       <body className="flex min-h-screen flex-col">
+        {/* The live half of the theme. The script above resolves it before
+            first paint; this keeps it in step while the app stays open. */}
+        <ThemeSync />
         <ScrollProgress />
         <NavProgress />
         <DesktopRail isLoggedIn={!!user} unread={unread} unreadDms={unreadDms} isAdmin={isAdmin} />

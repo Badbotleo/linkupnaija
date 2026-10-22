@@ -67,6 +67,17 @@ export default function HostForm({
   // Stored bare and printed with the @, so a host who types one does not
   // produce "@@blackboyafrika" everywhere it appears.
   const [organiserIg, setOrganiserIg] = useState("");
+  /**
+   * How to reach them off Instagram.
+   *
+   * A handle was the only contact we ever captured for a listing, so when
+   * the Instagram account was disabled every one of these organisers became
+   * unreachable at once. A listing is a lead; a lead with no phone number is
+   * a poster.
+   */
+  const [organiserEmail, setOrganiserEmail] = useState("");
+  const [organiserPhone, setOrganiserPhone] = useState("");
+  const [sourceUrl, setSourceUrl] = useState("");
   const [coverFile, setCoverFile] = useState<File | null>(null);
   // Extra pictures beyond the cover. Four here plus the cover is the five a
   // host is offered.
@@ -368,6 +379,9 @@ export default function HostForm({
       if (organiserName.trim()) optional.organiser_name = organiserName.trim();
       const handle = organiserIg.trim().replace(/^@+/, "");
       if (handle) optional.organiser_instagram = handle;
+      if (organiserEmail.trim()) optional.organiser_email = organiserEmail.trim();
+      if (organiserPhone.trim()) optional.organiser_phone = organiserPhone.trim();
+      if (sourceUrl.trim()) optional.source_url = sourceUrl.trim();
     }
 
     const withQuorum = { ...baseEvent, ...optional };
@@ -615,6 +629,54 @@ export default function HostForm({
                 </div>
                 <p className="mt-1 text-xs text-gray-500">
                   Tagged when we post this to Instagram.
+                </p>
+              </div>
+
+              {/* AT LEAST ONE OF THESE, OR THEY ARE UNREACHABLE.
+                  A handle was the only thing we ever took down, and the day
+                  our Instagram was disabled all 32 listing organisers became
+                  impossible to contact at the same moment. Whoever adds a
+                  listing saw it somewhere; that is worth a field. */}
+              <div>
+                <label htmlFor="organiser_email" className="label">
+                  Their email
+                </label>
+                <input
+                  id="organiser_email"
+                  type="email"
+                  value={organiserEmail}
+                  onChange={(e) => setOrganiserEmail(e.target.value)}
+                  placeholder="hello@theirdomain.com"
+                  className="input"
+                />
+              </div>
+              <div>
+                <label htmlFor="organiser_phone" className="label">
+                  Their phone or WhatsApp
+                </label>
+                <input
+                  id="organiser_phone"
+                  inputMode="tel"
+                  value={organiserPhone}
+                  onChange={(e) => setOrganiserPhone(e.target.value)}
+                  placeholder="0801 234 5678"
+                  className="input"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label htmlFor="source_url" className="label">
+                  Where you found it
+                </label>
+                <input
+                  id="source_url"
+                  value={sourceUrl}
+                  onChange={(e) => setSourceUrl(e.target.value)}
+                  placeholder="Link to the post, flyer or ticket page"
+                  className="input"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  The trail back to a human. Without it, a listing nobody
+                  remembers adding has no owner.
                 </p>
               </div>
             </div>
