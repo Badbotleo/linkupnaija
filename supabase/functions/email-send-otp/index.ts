@@ -162,6 +162,18 @@ Deno.serve(async (req) => {
     }),
   });
 
+  // Counted AFTER the fact, never before. A verification code is what
+  // stands between a host and their payout, so it does not wait on a budget
+  // check and is never refused one. Telling the ledger afterwards lets the
+  // digest see the day getting fuller and back off, which is the only thing
+  // that needs to react.
+  if (sent.ok) {
+    db.rpc("note_email_sent", { p_count: 1 }).then(
+      () => {},
+      (e: unknown) => console.error("note_email_sent failed", e)
+    );
+  }
+
   if (!sent.ok) {
     // The code was stored before the send, so a failed send leaves a row
     // that nobody can ever use and that holds the resend cooldown against

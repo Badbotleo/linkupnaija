@@ -212,11 +212,47 @@ Deno.serve(async (req) => {
     });
   }
 
-  const batchSize =
+  /**
+   * How many we are allowed to send today, not how many we would like to.
+   *
+   * The resume machinery was already here: collectSent excludes anybody who
+   * has had this week's letter, so a second run picks up where the first
+   * stopped. What was missing is that the batch size was a guess (300) with
+   * no relation to the provider's limit, so on a free tier capped at 100 a
+   * day the job sent 100, took a 429 on the hundred-and-first, and recorded
+   * 200 failures.
+   *
+   * claim_email_budget returns what is actually left after reserving room
+   * for verification codes, which must never lose a race with a newsletter.
+   * Zero is a normal answer: stop, say so, and the cron picks it up
+   * tomorrow.
+   */
+  const wanted =
     typeof body.batch === "number" && body.batch > 0
       ? Math.min(body.batch, 500)
-      : DEFAULT_BATCH;
-  const batch = eligible.slice(0, batchSize);
+      : Math.min(eligible.length, DEFAULT_BATCH);
+
+  const { data: grantedRaw, error: budgetErr } = await supabase.rpc(
+    "claim_email_budget",
+    { p_want: wanted, p_bulk: true }
+  );
+  // A budget we cannot read is not a licence to send: a failed claim means
+  // we have no idea what is left, and guessing is how the cap gets blown.
+  if (budgetErr) {
+    console.error("claim_email_budget failed", budgetErr.message);
+    return json({ error: "Could not reserve a send budget.", sent: 0 }, 503);
+  }
+  const granted = Number(grantedRaw ?? 0);
+  if (granted <= 0) {
+    return json({
+      week: `${year}-W${week}`,
+      sent: 0,
+      remaining: eligible.length,
+      note: "Daily send budget is used up. The rest go out tomorrow.",
+    });
+  }
+
+  const batch = eligible.slice(0, granted);
 
   const today = new Date().toISOString().slice(0, 10);
   let sent = 0;
@@ -281,7 +317,10 @@ Deno.serve(async (req) => {
         sent_at: ok ? now : null,
         status: ok ? "sent" : "failed",
       },
-      { onConflict: "user_id,email_type", ignoreDuplicates: true }
+      // UPDATES on conflict, rather than ignoring. With ignoreDuplicates a
+      // row already marked failed could never be corrected, so a retry sent
+      // the mail and then left the record saying it had not.
+      { onConflict: "user_id,email_type", ignoreDuplicates: false }
     );
 
     await sleep(SEND_SPACING_MS);
@@ -312,10 +351,21 @@ async function collectSent(
   const ids = new Set<string>();
   const PAGE = 1000;
   for (let offset = 0; ; offset += PAGE) {
+    /**
+     * Only the ones that actually landed, or were deliberately skipped.
+     *
+     * This counted every row whatever its status, so a send that FAILED was
+     * recorded as done and never tried again. Across four weeks that is 332
+     * members quietly dropped: 93 this week alone, which is the shape of a
+     * daily cap being hit halfway through the list. A failure is the one
+     * case that most deserves a retry, and it was the one case guaranteed
+     * not to get one.
+     */
     const { data, error } = await supabase
       .from("scheduled_emails")
       .select("user_id")
       .eq("email_type", emailType)
+      .in("status", ["sent", "skipped"])
       .range(offset, offset + PAGE - 1);
     if (error || !data?.length) break;
     for (const r of data) ids.add(r.user_id as string);
