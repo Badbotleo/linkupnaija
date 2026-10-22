@@ -35,14 +35,25 @@ export default function BookingTerms({
   noticeDays,
   note,
   capacity,
+  minSpend,
+  freeEventsOk,
 }: {
   options: BookingOption[];
   noticeDays: number | null;
   note: string | null;
   capacity: number | null;
+  /** A threshold, not a choice, and always one figure. */
+  minSpend: number | null;
+  /** null means nobody has asked them yet, which is said out loud. */
+  freeEventsOk: boolean | null;
 }) {
   const hasAny =
-    options.length > 0 || !!noticeDays || !!note || !!capacity;
+    options.length > 0 ||
+    !!noticeDays ||
+    !!note ||
+    !!capacity ||
+    !!minSpend ||
+    freeEventsOk !== null;
   if (!hasAny) return null;
 
   return (
@@ -55,6 +66,38 @@ export default function BookingTerms({
           Booking this place
         </h2>
       </div>
+
+      {/* MINIMUM SPEND IS NOT ONE OF THE OPTIONS. It applies whichever one
+          you pick, so it sits above them where a threshold belongs. A free
+          event cannot promise a spend at all, which is the single fact that
+          decided the book club booking and the one nobody had written
+          down. */}
+      {(minSpend || freeEventsOk !== null) && (
+        <div className="mt-3 space-y-2">
+          {!!minSpend && (
+            <div className="flex items-baseline justify-between gap-3 rounded-xl bg-amber-50 px-3.5 py-3 dark:bg-amber-500/10">
+              <span className="text-[14px] font-bold text-amber-900 dark:text-amber-200">
+                Minimum spend for a group
+              </span>
+              <span className="shrink-0 text-[15px] font-extrabold tabular-nums text-amber-900 dark:text-amber-200">
+                {formatNaira(minSpend)}
+              </span>
+            </div>
+          )}
+          {freeEventsOk === true && (
+            <p className="flex items-start gap-2 rounded-xl bg-naija-50 px-3.5 py-3 text-[13.5px] leading-snug text-naija-800 dark:bg-naija-500/10 dark:text-naija-200">
+              <LineIcon name="check" size={15} className="mt-0.5 shrink-0" />
+              Happy to host a free event with no guaranteed spend.
+            </p>
+          )}
+          {freeEventsOk === false && (
+            <p className="flex items-start gap-2 rounded-xl bg-gray-100 px-3.5 py-3 text-[13.5px] leading-snug text-gray-700 dark:bg-white/[0.06] dark:text-white/75">
+              <LineIcon name="x" size={15} className="mt-0.5 shrink-0" />
+              They do not take free events with no guaranteed spend.
+            </p>
+          )}
+        </div>
+      )}
 
       {options.length > 0 && (
         <>

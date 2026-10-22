@@ -46,6 +46,8 @@ export interface OnboardedVenueData {
   booking_options: unknown;
   booking_notice_days: number | null;
   booking_note: string | null;
+  min_spend: number | null;
+  free_events_ok: boolean | null;
 }
 
 export default function OnboardedVenue({
@@ -172,6 +174,8 @@ export default function OnboardedVenue({
           noticeDays={venue.booking_notice_days}
           note={venue.booking_note}
           capacity={venue.capacity}
+          minSpend={venue.min_spend}
+          freeEventsOk={venue.free_events_ok}
         />
       </div>
 

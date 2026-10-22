@@ -22,6 +22,11 @@ export interface VenueRow {
   rating: number | null;
   opening_hours: string | null;
   capacity: number | null;
+  /** One figure, never a range. See migration-venue-min-spend.sql. */
+  min_spend: number | null;
+  /** null = nobody has asked them yet. */
+  free_events_ok: boolean | null;
+  booking_notice_days: number | null;
   is_featured: boolean;
   is_active: boolean;
 }
@@ -39,6 +44,9 @@ const BLANK: Omit<VenueRow, "id"> = {
   rating: null,
   opening_hours: "",
   capacity: null,
+  min_spend: null,
+  free_events_ok: null,
+  booking_notice_days: null,
   is_featured: false,
   is_active: true,
 };
@@ -107,6 +115,9 @@ export default function AdminVenues({ adminId }: { adminId: string }) {
       rating: editing.rating ?? null,
       opening_hours: editing.opening_hours || null,
       capacity: editing.capacity ?? null,
+      min_spend: editing.min_spend ?? null,
+      free_events_ok: editing.free_events_ok ?? null,
+      booking_notice_days: editing.booking_notice_days ?? null,
       is_featured: !!editing.is_featured,
       is_active: editing.is_active !== false,
     };
@@ -302,6 +313,78 @@ export default function AdminVenues({ adminId }: { adminId: string }) {
               placeholder="Capacity"
               className={field}
             />
+          </div>
+
+          {/* WHAT A GROUP HAS TO AGREE TO.
+              Here rather than only on the owner's screen, because not one of
+              the 305 venues has been claimed: a field only an owner can fill
+              is a field nobody fills. These are the answers we take down on
+              the phone when we onboard somebody, and the two below are the
+              ones whose absence cost a host her flyer. */}
+          <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/60 p-3">
+            <p className="text-xs font-bold uppercase tracking-wide text-amber-800">
+              What a group has to agree to
+            </p>
+            <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <input
+                type="number"
+                min={0}
+                value={editing.min_spend ?? ""}
+                onChange={(e) =>
+                  setEditing({
+                    ...editing,
+                    min_spend: e.target.value ? Number(e.target.value) : null,
+                  })
+                }
+                placeholder="Minimum spend (₦), one figure"
+                className={field}
+              />
+              <input
+                type="number"
+                min={0}
+                value={editing.booking_notice_days ?? ""}
+                onChange={(e) =>
+                  setEditing({
+                    ...editing,
+                    booking_notice_days: e.target.value
+                      ? Number(e.target.value)
+                      : null,
+                  })
+                }
+                placeholder="Notice needed (days)"
+                className={field}
+              />
+            </div>
+            <label className="mt-2 block">
+              <span className="text-xs font-semibold text-amber-800">
+                Takes a free event with no guaranteed spend?
+              </span>
+              <select
+                value={
+                  editing.free_events_ok === null ||
+                  editing.free_events_ok === undefined
+                    ? ""
+                    : editing.free_events_ok
+                      ? "yes"
+                      : "no"
+                }
+                onChange={(e) =>
+                  setEditing({
+                    ...editing,
+                    free_events_ok:
+                      e.target.value === "" ? null : e.target.value === "yes",
+                  })
+                }
+                className={field}
+              >
+                {/* The blank is "not asked", and it is the honest default for
+                    304 of these. It renders on the venue page as a gap rather
+                    than as a yes. */}
+                <option value="">Not asked yet</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </label>
           </div>
 
           <textarea
