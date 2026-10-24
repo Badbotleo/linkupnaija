@@ -1,0 +1,149 @@
+# Build the iOS app and send it to TestFlight.
+#
+# WHY THIS EXISTS. The Mac this project is developed on is a 2017 MacBook Pro,
+# which tops out at macOS 13 Ventura, which tops out at Xcode 15.2. Apple has
+# required Xcode 26 and the iOS 26 SDK for every App Store upload since April
+# 2026, and a 2017 model cannot run a macOS new enough to install it. The
+# machine is not behind; it is finished. A hosted runner is the way to build
+# iOS without buying hardware.
+#
+# Android is unaffected and still builds locally.
+#
+# RUNS ON DEMAND, NOT ON EVERY PUSH. macOS minutes are billed at ten times the
+# Linux rate, and the app loads its pages from www.linkupnaija.com, so an
+# ordinary site change reaches every installed app on deploy with no rebuild
+# at all. A new binary is only needed when the native shell itself changes:
+# a plugin, capacitor.config.ts, the icons, or a version bump.
+
+name: iOS → TestFlight
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: "CFBundleVersion. Must be higher than the last upload."
+        required: true
+        type: string
+
+jobs:
+  build:
+    # macos-15 carries Xcode 26. Pinned rather than macos-latest: an image
+    # rolling forward underneath a signing setup is a failure that arrives
+    # on a day nobody changed anything.
+    runs-on: macos-15
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      # Only the Capacitor CLI and plugins are needed; the site is not built
+      # here because nothing from it is bundled.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Select Xcode 26
+        run: sudo xcode-select -s /Applications/Xcode_26.app
+
+      - name: Sync Capacitor
+        run: npx cap sync ios
+
+      - name: Install CocoaPods
+        working-directory: ios/App
+        run: pod install --repo-update
+
+      # The App Store Connect API key, written where xcodebuild and altool
+      # both look for it. A key rather than an Apple ID and password: an
+      # account with 2FA cannot be scripted, and an app-specific password is
+      # a long-lived secret with far more reach than this needs.
+      - name: Write the App Store Connect key
+        env:
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+        run: |
+          mkdir -p ~/private_keys
+          echo "$ASC_KEY_P8" | base64 --decode > ~/private_keys/AuthKey_${ASC_KEY_ID}.p8
+          chmod 600 ~/private_keys/AuthKey_${ASC_KEY_ID}.p8
+
+      - name: Set the build number
+        working-directory: ios/App
+        run: |
+          /usr/libexec/PlistBuddy -c \
+            "Set :CFBundleVersion ${{ inputs.build_number }}" App/Info.plist
+
+      # -allowProvisioningUpdates lets Xcode create and download the profile
+      # itself using the API key, so no certificate or mobileprovision has to
+      # be committed, exported, or kept in sync by hand.
+      - name: Archive
+        working-directory: ios/App
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/private_keys/AuthKey_${ASC_KEY_ID}.p8 \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            archive
+
+      - name: Export the ipa
+        working-directory: ios/App
+        env:
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>teamID</key><string>${TEAM_ID}</string>
+            <key>uploadSymbols</key><true/>
+            <key>destination</key><string>export</string>
+          </dict>
+          </plist>
+          PLIST
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/private_keys/AuthKey_${ASC_KEY_ID}.p8 \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+
+      - name: Upload to TestFlight
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          xcrun altool --upload-app -f "$RUNNER_TEMP/export/App.ipa" \
+            -t ios \
+            --apiKey "$ASC_KEY_ID" \
+            --apiIssuer "$ASC_ISSUER_ID"
+
+      # Kept whatever happens: when a build fails at signing the log in here
+      # says which profile Xcode wanted, and the run page does not.
+      - name: Keep the logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-logs
+          path: |
+            ${{ runner.temp }}/export
+            ~/Library/Logs/gym
+          if-no-files-found: ignore
+          retention-days: 7
