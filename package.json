@@ -7,10 +7,22 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "check:queries": "node scripts/check-queries.mjs"
+    "check:queries": "node scripts/check-queries.mjs",
+    "app:sync": "cap sync",
+    "app:android": "cap open android",
+    "app:ios": "cap sync ios && cap open ios"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.105.0",
+    "@capacitor/android": "^6.2.2",
+    "@capacitor/app": "^6.0.3",
+    "@capacitor/browser": "^6.0.6",
+    "@capacitor/core": "^6.2.2",
+    "@capacitor/ios": "^6.2.2",
+    "@capacitor/push-notifications": "^6.0.5",
+    "@capacitor/share": "^6.0.4",
+    "@capacitor/splash-screen": "^6.0.4",
+    "@capacitor/status-bar": "^6.0.3",
     "@next/third-parties": "^14.2.35",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",
@@ -26,6 +38,7 @@
     "react-leaflet": "^4.2.1"
   },
   "devDependencies": {
+    "@capacitor/cli": "^6.2.2",
     "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^20.16.10",
     "@types/qrcode": "^1.5.6",

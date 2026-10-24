@@ -39,3 +39,21 @@ next-env.d.ts
 # Supabase CLI local state
 supabase/.temp/
 .env*
+
+# Capacitor native builds
+#
+# The android/ and ios/ project folders ARE committed: they carry the
+# manifest, the entitlements and the signing config, and regenerating them
+# would silently drop the App Links and push setup. Only build output and
+# machine-local paths are ignored.
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+android/app/release/
+android/app/google-services.json
+ios/App/Pods/
+ios/App/build/
+ios/App/App/GoogleService-Info.plist
+*.keystore
+*.jks
