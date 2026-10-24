@@ -71,7 +71,10 @@ const config: CapacitorConfig = {
       // than on a timer, so a slow Nigerian connection shows the splash
       // instead of a white rectangle.
       launchAutoHide: false,
-      backgroundColor: "#1A1040",
+      // #121212, matching the mark's own field in app/icon.tsx. Any other
+      // value puts a dark square on a slightly different dark background
+      // and the seam is visible on an OLED phone.
+      backgroundColor: "#121212",
       androidSplashResourceName: "splash",
       showSpinner: false,
     },

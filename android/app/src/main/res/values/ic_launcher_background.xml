@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#FFFFFF</color>
+    <!-- Matches the backgroundColor in app/icon.tsx. White left a bright ring
+         around the masked foreground on every launcher that crops to a
+         circle. -->
+    <color name="ic_launcher_background">#121212</color>
 </resources>
