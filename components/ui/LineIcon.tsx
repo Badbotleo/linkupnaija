@@ -44,6 +44,13 @@ export const PATHS: Record<string, string> = {
   trash: "M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6M10 11v6M14 11v6",
   image:
     "M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM8.5 11.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM22 15l-5-5L7 19",
+  // Document upload. The tray with an arrow rising out of it, not the cloud:
+  // these files go to us, not to anything the rider would call "the cloud".
+  upload: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 9l5-5 5 5M12 4v12",
+  // A page with lines, for a PDF in an attachment list. Distinct from `image`
+  // so a glance down the list says which is which.
+  "file-text":
+    "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM14 2v6h6M9 13h6M9 17h6",
   check: "M20 6 9 17l-5-5",
   // The set had no close mark, so every dismiss button fell back to a ✕
   // character — which is a glyph, so it sat on the text baseline and never

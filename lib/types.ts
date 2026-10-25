@@ -152,6 +152,59 @@ export interface Opportunity {
   created_at: string;
 }
 
+/** A transport company: a business with a login, a fleet and a payout split. */
+export interface Operator {
+  id: string;
+  user_id: string | null;
+  business_name: string;
+  contact_name: string | null;
+  phone: string | null;
+  email: string | null;
+  state: string | null;
+  city: string | null;
+  rc_number: string | null;
+  tin: string | null;
+  subaccount_code: string | null;
+  payout_bank: string | null;
+  payout_account_number: string | null;
+  payout_account_name: string | null;
+  commission_percent: number;
+  status: "pending" | "approved" | "rejected" | "suspended";
+  admin_notes: string | null;
+  documents: OperatorDocument[];
+  approved_at: string | null;
+  created_at: string;
+}
+
+export type VehicleClassKey = "Sedan" | "SUV" | "Bus" | "Luxury";
+
+/** A car belonging to the company rather than to one driver. */
+export interface OperatorVehicle {
+  id: string;
+  operator_id: string;
+  make: string | null;
+  model: string | null;
+  colour: string | null;
+  year: number | null;
+  plate_number: string;
+  seats: number;
+  vehicle_class: VehicleClassKey;
+  photo_url: string | null;
+  insurance_expiry: string | null;
+  roadworthiness_expiry: string | null;
+  licence_expiry: string | null;
+  status: "active" | "inactive" | "grounded";
+  created_at: string;
+}
+
+/** A document an operator uploaded with their application. */
+export interface OperatorDocument {
+  name: string;
+  path: string;
+  size: number;
+  type: string;
+}
+
 export interface Message {
   id: string;
   sender_id: string;

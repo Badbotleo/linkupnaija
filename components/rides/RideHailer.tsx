@@ -7,6 +7,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { geocode, distanceKm, DEFAULT_CENTER } from "@/lib/overpass";
 import { VEHICLE_CLASSES, estimateFare, estimateMinutes, naira, type VehicleClass } from "@/lib/fares";
+import { payWithPaystack } from "@/lib/paystack";
 import { formatEventDate } from "@/lib/format";
 import { toast } from "@/lib/toast";
 import LineIcon from "@/components/ui/LineIcon";
@@ -38,6 +39,13 @@ interface Invite {
   } | null;
 }
 
+interface RideOperator {
+  id: string;
+  business_name: string;
+  commission_percent: number;
+  subaccount_code: string | null;
+}
+
 interface Ride {
   id: string;
   pickup: string;
@@ -49,14 +57,26 @@ interface Ride {
   quoted_price: number | null;
   estimated_fare: number | null;
   admin_notes: string | null;
+  payment_status: string;
+  rider_total: number | null;
+  operator: RideOperator | null;
 }
 
 const STATUS: Record<string, { label: string; cls: string }> = {
-  pending: { label: "Finding a driver", cls: "bg-amber-100 text-amber-700" },
-  confirmed: { label: "Driver confirmed", cls: "bg-naija-100 text-naija-700" },
+  pending: { label: "Finding you a car", cls: "bg-amber-100 text-amber-700" },
+  confirmed: { label: "Car confirmed", cls: "bg-naija-100 text-naija-700" },
   declined: { label: "Declined", cls: "bg-red-100 text-red-600" },
+  cancelled: { label: "Cancelled", cls: "bg-gray-100 text-gray-600" },
   completed: { label: "Completed", cls: "bg-gray-100 text-gray-600" },
 };
+
+/** The booking fee a rider pays on top, when no operator rate is known yet. */
+const DEFAULT_FEE_PERCENT = 5;
+
+/** What the rider actually pays: the operator's fare plus our fee on top. */
+function bookingFee(fare: number, percent = DEFAULT_FEE_PERCENT): number {
+  return Math.ceil((fare * percent) / 100);
+}
 
 export default function RideHailer({
   meId,
@@ -85,6 +105,9 @@ export default function RideHailer({
   const [phone, setPhone] = useState(myPhone ?? "");
   const [requesting, setRequesting] = useState(false);
   const [rides, setRides] = useState<Ride[]>([]);
+  const [payingId, setPayingId] = useState<string | null>(null);
+  const [confirmCancel, setConfirmCancel] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
   // Paddies to bring along — the fare splits across whoever comes.
   const [friends, setFriends] = useState<Friend[]>([]);
@@ -95,19 +118,78 @@ export default function RideHailer({
   const km = from && to ? distanceKm(from.lat, from.lng, to.lat, to.lng) : 0;
   const ready = !!from && !!to;
 
+  const BASE_COLS =
+    "id, pickup, dropoff, ride_date, ride_time, vehicle_type, status, quoted_price, estimated_fare, admin_notes";
+
   const load = useCallback(async () => {
-    const { data } = await supabase
+    // The operator join and the payment columns only exist once the operators
+    // migration has run. If the app ships first, a hard failure here would
+    // empty every rider's history with nothing on screen explaining it, so
+    // fall back to the columns that have always been there.
+    const full = await supabase
       .from("ride_requests")
-      .select("id, pickup, dropoff, ride_date, ride_time, vehicle_type, status, quoted_price, estimated_fare, admin_notes")
+      .select(
+        `${BASE_COLS}, payment_status, rider_total, operator:operators_public(id, business_name, commission_percent, subaccount_code)`
+      )
       .eq("user_id", meId)
       .order("created_at", { ascending: false })
       .limit(10);
-    setRides((data ?? []) as Ride[]);
+
+    if (!full.error) {
+      setRides((full.data ?? []) as unknown as Ride[]);
+      return;
+    }
+
+    const basic = await supabase
+      .from("ride_requests")
+      .select(BASE_COLS)
+      .eq("user_id", meId)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (basic.error) {
+      console.error("[rides] could not load rides", basic.error);
+      return;
+    }
+    setRides(
+      (basic.data ?? []).map((r) => ({
+        ...(r as Record<string, unknown>),
+        payment_status: "unpaid",
+        rider_total: null,
+        operator: null,
+      })) as unknown as Ride[]
+    );
   }, [meId, supabase]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  // A quote arrives from the operator minutes after the request, and the rider
+  // is sitting on this screen waiting for it. Without this they would have to
+  // guess when to pull to refresh, which is the difference between a ride app
+  // and a form that emails you.
+  useEffect(() => {
+    const channel = supabase
+      .channel(`rides:${meId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "ride_requests",
+          filter: `user_id=eq.${meId}`,
+        },
+        () => {
+          load();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [meId, supabase, load]);
 
   // Resolve the destination handed over from an event page.
   useEffect(() => {
@@ -171,14 +253,24 @@ export default function RideHailer({
   }, [meId, supabase]);
 
   // Resolve a typed address to a point, debounced so we don't hammer Nominatim.
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  //
+  // A timer EACH. One shared timer meant typing the destination cancelled the
+  // pick-up's pending lookup, so filling both fields quickly left the pick-up
+  // unresolved and every fare stuck on a dash, with nothing on screen saying
+  // why. Found by filling the form fast, which is how people actually fill it.
+  const timers = useRef<{
+    from: ReturnType<typeof setTimeout> | null;
+    to: ReturnType<typeof setTimeout> | null;
+  }>({ from: null, to: null });
+
   function resolve(which: "from" | "to", text: string) {
-    if (timer.current) clearTimeout(timer.current);
+    const pending = timers.current[which];
+    if (pending) clearTimeout(pending);
     if (text.trim().length < 3) {
       which === "from" ? setFrom(null) : setTo(null);
       return;
     }
-    timer.current = setTimeout(async () => {
+    timers.current[which] = setTimeout(async () => {
       setLocating(which);
       const p = await geocode(text.trim());
       setLocating(null);
@@ -272,9 +364,22 @@ export default function RideHailer({
     setRequesting(false);
   }
 
+  /**
+   * Cancelling marks the ride cancelled rather than deleting it.
+   *
+   * A delete took the row away from the operator who was mid-quote and left no
+   * trace that the trip was ever asked for. It would also strand a payment: a
+   * paid ride whose row has gone is money with nothing to refund against.
+   */
   async function cancel(id: string) {
-    if (!confirm("Cancel this ride?")) return;
-    const { error } = await supabase.from("ride_requests").delete().eq("id", id);
+    setCancelling(true);
+    const { error } = await supabase
+      .from("ride_requests")
+      .update({ status: "cancelled" })
+      .eq("id", id)
+      .eq("user_id", meId);
+    setCancelling(false);
+    setConfirmCancel(null);
     if (error) toast.error(error.message);
     else {
       toast.success("Ride cancelled");
@@ -282,7 +387,61 @@ export default function RideHailer({
     }
   }
 
-  const active = rides.find((r) => r.status === "pending" || r.status === "confirmed");
+  /** Pay the operator's quote. Paystack splits it as it is collected: the
+   *  fare to their subaccount, our booking fee to us. */
+  async function payForRide(ride: Ride) {
+    if (!ride.quoted_price) return;
+    const fare = ride.quoted_price;
+    const percent = ride.operator?.commission_percent ?? DEFAULT_FEE_PERCENT;
+    const fee = bookingFee(fare, percent);
+
+    setPayingId(ride.id);
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const result = await payWithPaystack({
+        email: user?.email ?? "",
+        amountNaira: fare + fee,
+        metadata: { purpose: "ride", rideId: ride.id, userId: meId },
+        subaccount: ride.operator?.subaccount_code ?? undefined,
+        platformFeeNaira: fee,
+      });
+
+      if (!result) return; // popup closed without paying
+
+      // Never mark it paid from the browser. The server asks Paystack what
+      // actually happened before a naira is recorded anywhere.
+      const res = await fetch("/api/rides/confirm-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rideId: ride.id, reference: result.reference }),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        toast.error(data.error || "We could not confirm that payment.");
+        return;
+      }
+      toast.success(data.warning ? data.warning : "Paid. Your driver is on the way.");
+      await load();
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Payment could not be started."
+      );
+    } finally {
+      setPayingId(null);
+    }
+  }
+
+  const active = rides.find(
+    (r) => r.status === "pending" || r.status === "confirmed"
+  );
+
+  /** What the rider will actually be charged for the class they picked. */
+  const estimate = ready ? estimateFare(vehicle, km) : 0;
+  const estimateTotal = estimate + bookingFee(estimate);
 
   return (
     <div>
@@ -291,7 +450,7 @@ export default function RideHailer({
           requesting
             ? "Requesting…"
             : ready
-              ? `Request ${vehicle.label} · ${naira(estimateFare(vehicle, km))}`
+              ? `Request ${vehicle.label} · about ${naira(estimateTotal)}`
               : "Set pick-up and destination"
         }
         disabled={!ready || requesting}
@@ -447,12 +606,21 @@ export default function RideHailer({
                   {v.seats} · {v.etaMins} min
                 </p>
                 <p className="mt-1 text-sm font-black tabular-nums text-gray-900">
-                  {ready ? naira(estimateFare(v, km)) : "—"}
+                  {ready
+                    ? naira(estimateFare(v, km) + bookingFee(estimateFare(v, km)))
+                    : "—"}
                 </p>
               </button>
             );
           })}
         </div>
+
+        {ready && (
+          <p className="mt-2 text-[11px] text-gray-500">
+            Prices include the {DEFAULT_FEE_PERCENT}% booking fee. The partner
+            confirms the exact fare before you pay.
+          </p>
+        )}
 
         {/* When */}
         <div className="mt-4 flex gap-2">
@@ -510,7 +678,7 @@ export default function RideHailer({
               </span>
               <span className="block text-xs text-gray-500">
                 {paddies.size > 0
-                  ? `${paddies.size} coming · split ${ready ? naira(Math.ceil(estimateFare(vehicle, km) / (paddies.size + 1))) : "—"} each`
+                  ? `${paddies.size} coming · split ${ready ? naira(Math.ceil(estimateTotal / (paddies.size + 1))) : "—"} each`
                   : "Split the fare with friends"}
               </span>
             </span>
@@ -590,55 +758,158 @@ export default function RideHailer({
           {requesting
             ? "Requesting…"
             : ready
-              ? `Request ${vehicle.label} · ${naira(estimateFare(vehicle, km))}${paddies.size ? ` · ${naira(Math.ceil(estimateFare(vehicle, km) / (paddies.size + 1)))} each` : ""}`
+              ? `Request ${vehicle.label} · about ${naira(estimateTotal)}${paddies.size ? ` · ${naira(Math.ceil(estimateTotal / (paddies.size + 1)))} each` : ""}`
               : "Set pick-up and destination"}
         </button>
 
         {/* Clears the pinned bar on a phone so the last field is not hidden
             behind it. Nothing to clear once the bar goes static. */}
         <p className="mt-2 pb-28 text-center text-[11px] leading-relaxed text-gray-500 sm:pb-0">
-          Fares are estimates. A vetted partner confirms the final price before
-          anything is charged, nothing is paid here.
+          Fares are estimates. A vetted partner confirms the real price first,
+          then you pay here with a {DEFAULT_FEE_PERCENT}% booking fee on top.
+          Nothing is charged until you have seen the final figure.
         </p>
       </div>
 
-      {/* Active ride */}
+      {/* Active ride: the screen the rider actually sits on while they wait */}
       {active && (
         <div className="container-page mt-5 max-w-2xl px-0">
-          <div className="rounded-2xl border border-brand/25 bg-brand-50 p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="truncate font-bold text-gray-900">
-                  {active.pickup} → {active.dropoff}
+          <div className="overflow-hidden rounded-2xl border border-brand/25 bg-white">
+            <div className="bg-brand-50 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate font-bold text-gray-900">
+                    {active.pickup} → {active.dropoff}
+                  </p>
+                  <p className="mt-0.5 text-sm text-gray-600">
+                    {active.vehicle_type}
+                    {active.operator ? ` · ${active.operator.business_name}` : ""}
+                  </p>
+                  {active.admin_notes && (
+                    <p className="mt-1 text-sm text-gray-600">{active.admin_notes}</p>
+                  )}
+                </div>
+                <span
+                  aria-live="polite"
+                  className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${
+                    (STATUS[active.status] ?? STATUS.pending).cls
+                  }`}
+                >
+                  {(STATUS[active.status] ?? STATUS.pending).label}
+                </span>
+              </div>
+
+              {active.status === "pending" && (
+                <p className="mt-3 flex items-center gap-2 text-xs text-gray-600">
+                  <span
+                    aria-hidden
+                    className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500"
+                  />
+                  We are matching you with a partner. This page updates itself,
+                  no need to refresh.
                 </p>
-                <p className="mt-0.5 text-sm text-gray-600">
-                  {active.vehicle_type} ·{" "}
-                  {active.quoted_price != null
-                    ? `Fare ${naira(active.quoted_price)}`
-                    : active.estimated_fare != null
-                      ? `Est. ${naira(active.estimated_fare)}`
-                      : ""}
+              )}
+            </div>
+
+            {/* The quote. Every naira named before anything is charged. */}
+            {active.quoted_price != null && active.payment_status !== "paid" && (
+              <div className="border-t border-brand/15 p-4">
+                <dl className="space-y-1.5 text-sm">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="text-gray-600">
+                      Fare{active.operator ? ` to ${active.operator.business_name}` : ""}
+                    </dt>
+                    <dd className="font-bold tabular-nums text-gray-900">
+                      {naira(active.quoted_price)}
+                    </dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="text-gray-600">
+                      Booking fee (
+                      {active.operator?.commission_percent ?? DEFAULT_FEE_PERCENT}%)
+                    </dt>
+                    <dd className="font-bold tabular-nums text-gray-900">
+                      {naira(
+                        bookingFee(
+                          active.quoted_price,
+                          active.operator?.commission_percent ?? DEFAULT_FEE_PERCENT
+                        )
+                      )}
+                    </dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-3 border-t border-gray-100 pt-1.5">
+                    <dt className="font-bold text-gray-900">You pay</dt>
+                    <dd className="text-lg font-black tabular-nums text-gray-900">
+                      {naira(
+                        active.quoted_price +
+                          bookingFee(
+                            active.quoted_price,
+                            active.operator?.commission_percent ?? DEFAULT_FEE_PERCENT
+                          )
+                      )}
+                    </dd>
+                  </div>
+                </dl>
+
+                <button
+                  type="button"
+                  onClick={() => payForRide(active)}
+                  disabled={payingId === active.id}
+                  className="btn-primary mt-3 w-full rounded-full py-3 disabled:opacity-40"
+                >
+                  {payingId === active.id ? "Opening payment…" : "Pay and confirm"}
+                </button>
+                <p className="mt-2 text-center text-[11px] text-gray-500">
+                  The driver is paid directly. We never hold your fare.
                 </p>
-                {active.admin_notes && (
-                  <p className="mt-1 text-sm text-gray-600">{active.admin_notes}</p>
+              </div>
+            )}
+
+            {active.payment_status === "paid" && (
+              <div className="flex items-center gap-2.5 border-t border-naija-200 bg-naija-50 p-4">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-naija-600 text-white">
+                  <LineIcon name="check" size={16} />
+                </span>
+                <p className="text-sm font-bold text-gray-900">
+                  Paid{active.rider_total != null ? ` · ${naira(active.rider_total)}` : ""}
+                  <span className="block text-xs font-normal text-gray-600">
+                    Your driver has been notified.
+                  </span>
+                </p>
+              </div>
+            )}
+
+            {(active.status === "pending" || active.payment_status !== "paid") && (
+              <div className="border-t border-gray-100 px-4 py-3">
+                {confirmCancel === active.id ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="mr-auto text-sm text-gray-700">Cancel this ride?</p>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmCancel(null)}
+                      className="btn border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50"
+                    >
+                      Keep it
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => cancel(active.id)}
+                      disabled={cancelling}
+                      className="btn bg-red-600 px-3 py-1.5 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-50"
+                    >
+                      {cancelling ? "Cancelling…" : "Yes, cancel"}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmCancel(active.id)}
+                    className="text-sm font-semibold text-gray-500 transition hover:text-red-600"
+                  >
+                    Cancel ride
+                  </button>
                 )}
               </div>
-              <span
-                className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${
-                  (STATUS[active.status] ?? STATUS.pending).cls
-                }`}
-              >
-                {(STATUS[active.status] ?? STATUS.pending).label}
-              </span>
-            </div>
-            {active.status === "pending" && (
-              <button
-                type="button"
-                onClick={() => cancel(active.id)}
-                className="mt-3 text-sm font-semibold text-gray-500 transition hover:text-red-600"
-              >
-                Cancel ride
-              </button>
             )}
           </div>
         </div>
@@ -682,7 +953,10 @@ export default function RideHailer({
 
       <p className="mt-6 text-center text-sm text-gray-500">
         Run a car-hire business?{" "}
-        <Link href="/opportunities" className="font-bold text-brand hover:underline">
+        <Link
+          href="/rides?tab=drive"
+          className="font-bold text-brand hover:underline"
+        >
           List your vehicles
         </Link>
       </p>
