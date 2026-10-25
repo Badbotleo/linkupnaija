@@ -1,10 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import LineIcon from "@/components/ui/LineIcon";
 import { createClient } from "@/lib/supabase/client";
 
 const KEY = "activity_ticker_dismissed";
+
+/**
+ * Event titles run long ("EMGC Study in Malaysia Expo with IDP Nigeria"), and
+ * at this card's width a full one overruns two lines and gets sliced mid-word
+ * by the clamp. Cutting it here puts the break under our control and keeps the
+ * part that carries the meaning: the name, and enough title to recognise it.
+ */
+function short(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max - 1);
+  const space = cut.lastIndexOf(" ");
+  return (space > max * 0.6 ? cut.slice(0, space) : cut).trimEnd() + "\u2026";
+}
 
 interface RsvpRow {
   users: { name: string | null } | null;
@@ -23,7 +37,10 @@ interface EventRow {
 // when an admin deletes that event.
 interface TickerMessage {
   eventId: string | null;
-  text: string;
+  /** The person or number the line is about, set in bold. */
+  who: string;
+  /** The rest of the sentence. */
+  rest: string;
 }
 
 export default function ActivityTicker() {
@@ -31,6 +48,7 @@ export default function ActivityTicker() {
   const [messages, setMessages] = useState<TickerMessage[]>([]);
   const [index, setIndex] = useState(0);
   const [show, setShow] = useState(false);
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     try {
@@ -65,9 +83,8 @@ export default function ActivityTicker() {
         if (r.users?.name && r.events?.title) {
           msgs.push({
             eventId: r.events.id,
-            text: `${r.users.name} just joined ${r.events.title}${
-              r.events.state ? ` in ${r.events.state}` : ""
-            }`,
+            who: short(r.users.name, 22),
+            rest: `joined ${short(r.events.title, 40)}`,
           });
         }
       }
@@ -75,9 +92,8 @@ export default function ActivityTicker() {
         if (e.host?.name && e.title) {
           msgs.push({
             eventId: e.id,
-            text: `${e.host.name} just hosted ${e.title}${
-              e.state ? ` in ${e.state}` : ""
-            }`,
+            who: short(e.host.name, 22),
+            rest: `is hosting ${short(e.title, 38)}`,
           });
         }
         const accepted = (e.rsvps ?? []).filter(
@@ -90,7 +106,11 @@ export default function ActivityTicker() {
             ? e.max_attendees - accepted
             : 10 - accepted;
           if (left > 0)
-            msgs.push({ eventId: e.id, text: `${left} spots left for ${e.title}` });
+            msgs.push({
+              eventId: e.id,
+              who: `${left} ${left === 1 ? "spot" : "spots"} left`,
+              rest: `for ${short(e.title, 42)}`,
+            });
         }
       }
       // shuffle for variety
@@ -129,14 +149,16 @@ export default function ActivityTicker() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Hold while someone is reading or reaching for it. A card that changes
+  // under the thumb is a card nobody can tap.
   useEffect(() => {
-    if (!show || messages.length < 2) return;
+    if (!show || paused || messages.length < 2) return;
     const id = setInterval(
       () => setIndex((i) => (i + 1) % messages.length),
-      4000
+      5200
     );
     return () => clearInterval(id);
-  }, [show, messages.length]);
+  }, [show, paused, messages.length]);
 
   function dismiss() {
     setShow(false);
@@ -152,35 +174,84 @@ export default function ActivityTicker() {
   // Clamp: the list can shrink under us when events are deleted live.
   const current = messages[index % messages.length];
 
+  const body = (
+    <>
+      <span className="relative mt-[3px] flex h-1.5 w-1.5 shrink-0">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-naija-400 opacity-75 motion-reduce:animate-none" />
+        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-naija" />
+      </span>
+      <span
+        key={index}
+        className="animate-fade-in-up line-clamp-2 flex-1 text-[#DAD8F0] motion-reduce:animate-none"
+      >
+        <span className="font-bold text-white">{current.who}</span>{" "}
+        {current.rest}
+      </span>
+    </>
+  );
+
   return (
     <div
-      className="pointer-events-none fixed bottom-[8.5rem] right-3 z-30 w-[min(15rem,calc(100vw-5.5rem))] sm:right-5 sm:w-[19rem] lg:bottom-24"
+      className="pointer-events-none fixed bottom-[8.5rem] right-3 z-30 w-[min(17rem,calc(100vw-1.5rem))] sm:right-5 sm:w-[20rem] lg:bottom-24"
       role="status"
       aria-live="polite"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
     >
       <div
-        className="flex items-center gap-1.5 rounded-full border border-brand/30 px-3 py-1.5 text-xs text-white shadow-lg"
+        className="pointer-events-auto relative overflow-hidden rounded-2xl border border-brand/30 text-xs shadow-lg"
         style={{ backgroundColor: "#121212" }}
       >
-        <span className="relative flex h-1.5 w-1.5 shrink-0">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-naija-400 opacity-75" />
-          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-naija" />
-        </span>
-        <span
-          key={index}
-          className="animate-fade-in-up flex-1 truncate text-[#DAD8F0]"
-        >
-          {current.text}
-        </span>
+        {/* The whole card is the target. Social proof that cannot be acted on
+            is decoration: this one goes to the thing it is boasting about. */}
+        {current.eventId ? (
+          <Link
+            href={`/events/${current.eventId}`}
+            onClick={dismiss}
+            className="flex items-start gap-2 py-2 pl-3 pr-9 transition hover:bg-white/5"
+          >
+            {body}
+          </Link>
+        ) : (
+          <div className="flex items-start gap-2 py-2 pl-3 pr-9">{body}</div>
+        )}
+
         <button
           type="button"
           onClick={dismiss}
           aria-label="Dismiss activity feed"
-          className="pointer-events-auto shrink-0 px-1 text-[11px] text-white/50 transition hover:text-white"
+          className="absolute right-0 top-0 grid h-9 w-9 place-items-center text-white/45 transition hover:text-white"
         >
-          <LineIcon name="x" size={16} />
+          <LineIcon name="x" size={14} />
         </button>
+
+        {/* How long until it changes, so it does not feel arbitrary. */}
+        {messages.length > 1 && (
+          <span
+            key={`bar-${index}-${paused}`}
+            aria-hidden
+            className={`absolute bottom-0 left-0 h-[2px] bg-brand/60 motion-reduce:animate-none motion-reduce:w-0 ${
+              paused ? "" : "ticker-progress"
+            }`}
+          />
+        )}
       </div>
+
+      <style jsx global>{`
+        .ticker-progress {
+          animation: ticker-progress 5.2s linear forwards;
+        }
+        @keyframes ticker-progress {
+          from {
+            width: 0%;
+          }
+          to {
+            width: 100%;
+          }
+        }
+      `}</style>
     </div>
   );
 }
