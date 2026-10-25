@@ -7,7 +7,10 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.2.1'
+        // AGP 8.9.1 is the MINIMUM for compileSdk 36, which Play now requires for
+        // new apps. Capacitor scaffolded 8.2.1, which tops out at compileSdk 34
+        // and fails the build with a message that does not name the real cause.
+        classpath 'com.android.tools.build:gradle:8.9.1'
         classpath 'com.google.gms:google-services:4.4.0'
 
         // NOTE: Do not place your application dependencies here; they belong
