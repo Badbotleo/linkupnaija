@@ -46,6 +46,19 @@ interface RideOperator {
   subaccount_code: string | null;
 }
 
+/** The safe columns only. The ID number and document never leave the table. */
+interface RideDriver {
+  id: string;
+  full_name: string;
+  photo_url: string | null;
+  vehicle_make: string | null;
+  vehicle_model: string | null;
+  vehicle_colour: string | null;
+  plate_number: string | null;
+  rating: number | null;
+  trips_completed: number;
+}
+
 interface Ride {
   id: string;
   pickup: string;
@@ -59,6 +72,8 @@ interface Ride {
   admin_notes: string | null;
   payment_status: string;
   rider_total: number | null;
+  driver_id: string | null;
+  completed_at: string | null;
   operator: RideOperator | null;
 }
 
@@ -106,6 +121,11 @@ export default function RideHailer({
   const [requesting, setRequesting] = useState(false);
   const [rides, setRides] = useState<Ride[]>([]);
   const [payingId, setPayingId] = useState<string | null>(null);
+  const [drivers, setDrivers] = useState<Record<string, RideDriver>>({});
+  const [rated, setRated] = useState<Set<string>>(new Set());
+  const [ratingFor, setRatingFor] = useState<string | null>(null);
+  const [stars, setStars] = useState(0);
+  const [savingRating, setSavingRating] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
 
@@ -119,7 +139,44 @@ export default function RideHailer({
   const ready = !!from && !!to;
 
   const BASE_COLS =
-    "id, pickup, dropoff, ride_date, ride_time, vehicle_type, status, quoted_price, estimated_fare, admin_notes";
+    "id, pickup, dropoff, ride_date, ride_time, vehicle_type, status, quoted_price, estimated_fare, admin_notes, driver_id, completed_at";
+
+  /**
+   * The drivers on these rides, and which trips this rider has already rated.
+   *
+   * Fetched separately rather than joined: `public_drivers` is a view, and
+   * PostgREST cannot infer a foreign key to a view, so a nested select would
+   * come back empty without saying why.
+   */
+  const loadTripPeople = useCallback(
+    async (rows: Ride[]) => {
+      const ids = Array.from(
+        new Set(rows.map((r) => r.driver_id).filter((v): v is string => !!v))
+      );
+      if (ids.length) {
+        const { data } = await supabase
+          .from("public_drivers")
+          .select(
+            "id, full_name, photo_url, vehicle_make, vehicle_model, vehicle_colour, plate_number, rating, trips_completed"
+          )
+          .in("id", ids);
+        const map: Record<string, RideDriver> = {};
+        for (const d of (data ?? []) as RideDriver[]) map[d.id] = d;
+        setDrivers(map);
+      }
+
+      const done = rows.filter((r) => r.completed_at).map((r) => r.id);
+      if (done.length) {
+        const { data } = await supabase
+          .from("driver_ratings")
+          .select("ride_id")
+          .eq("rider_id", meId)
+          .in("ride_id", done);
+        setRated(new Set((data ?? []).map((r) => r.ride_id as string)));
+      }
+    },
+    [meId, supabase]
+  );
 
   const load = useCallback(async () => {
     // The operator join and the payment columns only exist once the operators
@@ -136,7 +193,9 @@ export default function RideHailer({
       .limit(10);
 
     if (!full.error) {
-      setRides((full.data ?? []) as unknown as Ride[]);
+      const rows = (full.data ?? []) as unknown as Ride[];
+      setRides(rows);
+      await loadTripPeople(rows);
       return;
     }
 
@@ -151,15 +210,15 @@ export default function RideHailer({
       console.error("[rides] could not load rides", basic.error);
       return;
     }
-    setRides(
-      (basic.data ?? []).map((r) => ({
-        ...(r as Record<string, unknown>),
-        payment_status: "unpaid",
-        rider_total: null,
-        operator: null,
-      })) as unknown as Ride[]
-    );
-  }, [meId, supabase]);
+    const rows = (basic.data ?? []).map((r) => ({
+      ...(r as Record<string, unknown>),
+      payment_status: "unpaid",
+      rider_total: null,
+      operator: null,
+    })) as unknown as Ride[];
+    setRides(rows);
+    await loadTripPeople(rows);
+  }, [meId, supabase, loadTripPeople]);
 
   useEffect(() => {
     load();
@@ -385,6 +444,39 @@ export default function RideHailer({
       toast.success("Ride cancelled");
       await load();
     }
+  }
+
+  /**
+   * Rate the driver on a trip you took.
+   *
+   * The database has allowed this since the ratings migration and no screen
+   * ever offered it, so in four months not one rating exists. The policy
+   * already checks the ride was yours, names this driver, and is completed;
+   * this only has to ask.
+   */
+  async function rate(ride: Ride, value: number) {
+    if (!ride.driver_id) return;
+    setSavingRating(true);
+    const { error } = await supabase.from("driver_ratings").insert({
+      driver_id: ride.driver_id,
+      rider_id: meId,
+      ride_id: ride.id,
+      rating: value,
+    });
+    setSavingRating(false);
+    if (error) {
+      toast.error(
+        error.code === "23505"
+          ? "You have already rated this trip."
+          : error.message
+      );
+      return;
+    }
+    setRated((prev) => new Set(prev).add(ride.id));
+    setRatingFor(null);
+    setStars(0);
+    toast.success("Thanks. That helps the next rider.");
+    await load();
   }
 
   /** Pay the operator's quote. Paystack splits it as it is collected: the
@@ -865,6 +957,49 @@ export default function RideHailer({
               </div>
             )}
 
+            {/* Who is collecting you. The single most useful thing on this
+                screen, and for a woman leaving a venue at 1am it is the
+                reason the product exists. */}
+            {active.driver_id && drivers[active.driver_id] && (
+              <div className="flex items-center gap-3 border-t border-brand/15 p-4">
+                <Avatar
+                  name={drivers[active.driver_id].full_name}
+                  url={drivers[active.driver_id].photo_url}
+                  size="lg"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-bold text-gray-900">
+                    {drivers[active.driver_id].full_name}
+                  </p>
+                  <p className="truncate text-sm text-gray-600">
+                    {[
+                      drivers[active.driver_id].vehicle_colour,
+                      drivers[active.driver_id].vehicle_make,
+                      drivers[active.driver_id].vehicle_model,
+                    ]
+                      .filter(Boolean)
+                      .join(" ") || active.vehicle_type}
+                  </p>
+                  <p className="mt-1 flex items-center gap-2 text-xs text-gray-500">
+                    {drivers[active.driver_id].rating != null && (
+                      <span className="inline-flex items-center gap-1 font-bold text-gray-700">
+                        <LineIcon name="star" size={12} />
+                        {drivers[active.driver_id].rating}
+                      </span>
+                    )}
+                    <span>
+                      {drivers[active.driver_id].trips_completed} trips
+                    </span>
+                  </p>
+                </div>
+                {drivers[active.driver_id].plate_number && (
+                  <span className="shrink-0 rounded-lg border-2 border-gray-900 px-2.5 py-1 font-mono text-sm font-black tracking-wider text-gray-900">
+                    {drivers[active.driver_id].plate_number}
+                  </span>
+                )}
+              </div>
+            )}
+
             {active.payment_status === "paid" && (
               <div className="flex items-center gap-2.5 border-t border-naija-200 bg-naija-50 p-4">
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-naija-600 text-white">
@@ -914,6 +1049,64 @@ export default function RideHailer({
           </div>
         </div>
       )}
+
+      {/* A finished trip you have not rated yet. Asked once, on the screen
+          you are already on, rather than in an email nobody opens. */}
+      {rides
+        .filter(
+          (r) => r.completed_at && r.driver_id && !rated.has(r.id)
+        )
+        .slice(0, 1)
+        .map((r) => {
+          const d = r.driver_id ? drivers[r.driver_id] : null;
+          return (
+            <div className="container-page mt-5 max-w-2xl px-0" key={r.id}>
+              <div className="rounded-2xl border border-gray-200 bg-white p-4">
+                <p className="font-bold text-gray-900">
+                  How was your trip{d ? ` with ${d.full_name}` : ""}?
+                </p>
+                <p className="mt-0.5 truncate text-sm text-gray-500">
+                  {r.pickup} to {r.dropoff}
+                </p>
+
+                <div className="mt-3 flex items-center gap-1.5">
+                  {[1, 2, 3, 4, 5].map((n) => {
+                    const on = (ratingFor === r.id ? stars : 0) >= n;
+                    return (
+                      <button
+                        key={n}
+                        type="button"
+                        aria-label={`${n} star${n === 1 ? "" : "s"}`}
+                        onClick={() => {
+                          setRatingFor(r.id);
+                          setStars(n);
+                        }}
+                        className={`grid h-10 w-10 place-items-center rounded-full transition ${
+                          on
+                            ? "bg-amber-100 text-amber-500"
+                            : "bg-gray-100 text-gray-300 hover:text-gray-400"
+                        }`}
+                      >
+                        <LineIcon name="star" size={19} />
+                      </button>
+                    );
+                  })}
+
+                  {ratingFor === r.id && stars > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => rate(r, stars)}
+                      disabled={savingRating}
+                      className="btn-primary ml-auto rounded-full px-4 py-2 text-sm disabled:opacity-40"
+                    >
+                      {savingRating ? "Sending…" : "Send"}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
 
       {/* History */}
       {rides.filter((r) => r.id !== active?.id).length > 0 && (
