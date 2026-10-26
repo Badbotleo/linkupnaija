@@ -20,7 +20,19 @@ interface RideRow {
   status: string;
   quoted_price: number | null;
   created_at: string;
+  driver_id: string | null;
+  operator_id: string | null;
   rider: { name: string | null; email: string | null } | null;
+}
+
+/** Approved drivers only, from the view that withholds the ID document. */
+interface DriverOption {
+  id: string;
+  full_name: string;
+  vehicle_make: string | null;
+  vehicle_model: string | null;
+  vehicle_colour: string | null;
+  plate_number: string | null;
 }
 
 export default function AdminRides() {
@@ -30,6 +42,8 @@ export default function AdminRides() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [fare, setFare] = useState<Record<string, string>>({});
   const [reason, setReason] = useState<Record<string, string>>({});
+  const [drivers, setDrivers] = useState<DriverOption[]>([]);
+  const [pickDriver, setPickDriver] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     const { data } = await supabase
@@ -46,6 +60,38 @@ export default function AdminRides() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Who is available to be put on a ride. Until one of these is chosen the
+  // rider's screen has no driver card to show, which is the one thing the
+  // rides product promises.
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("public_drivers")
+        .select("id, full_name, vehicle_make, vehicle_model, vehicle_colour, plate_number")
+        .order("full_name");
+      setDrivers((data ?? []) as DriverOption[]);
+    })();
+  }, [supabase]);
+
+  /** Put a named driver on the ride, so the rider knows who is coming. */
+  async function assign(r: RideRow, driverId: string) {
+    setBusyId(r.id);
+    const { error } = await supabase
+      .from("ride_requests")
+      .update({ driver_id: driverId || null })
+      .eq("id", r.id);
+    setBusyId(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    const d = drivers.find((x) => x.id === driverId);
+    toast.success(d ? `${d.full_name} assigned` : "Driver cleared");
+    setRides((rows) =>
+      rows.map((x) => (x.id === r.id ? { ...x, driver_id: driverId || null } : x))
+    );
+  }
 
   async function decide(r: RideRow, status: "confirmed" | "declined" | "completed") {
     setBusyId(r.id);
@@ -131,6 +177,41 @@ export default function AdminRides() {
             >
               {r.status}
             </span>
+          </div>
+
+          {/* Who is collecting them. A confirmed ride with no driver shows
+              the rider a price and nobody's face, which is the gap this
+              screen exists to close. */}
+          <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl bg-gray-50 px-3 py-2">
+            <label className="text-sm font-semibold text-gray-700" htmlFor={`drv-${r.id}`}>
+              Driver
+            </label>
+            <select
+              id={`drv-${r.id}`}
+              value={pickDriver[r.id] ?? r.driver_id ?? ""}
+              onChange={(e) => {
+                setPickDriver({ ...pickDriver, [r.id]: e.target.value });
+                assign(r, e.target.value);
+              }}
+              disabled={busyId === r.id || drivers.length === 0}
+              className="input h-9 flex-1 cursor-pointer text-sm disabled:opacity-50"
+            >
+              <option value="">Nobody assigned</option>
+              {drivers.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.full_name}
+                  {d.plate_number ? ` — ${d.plate_number}` : ""}
+                  {d.vehicle_colour || d.vehicle_make
+                    ? ` (${[d.vehicle_colour, d.vehicle_make, d.vehicle_model].filter(Boolean).join(" ")})`
+                    : ""}
+                </option>
+              ))}
+            </select>
+            {drivers.length === 0 && (
+              <span className="text-xs text-amber-700">
+                No approved drivers yet — approve one in Driver applications
+              </span>
+            )}
           </div>
 
           {r.status === "pending" ? (
