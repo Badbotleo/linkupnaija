@@ -16,8 +16,33 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // Release signing, read from a file that is never committed.
+    //
+    // Play will not take an unsigned bundle, and the key that signs the first
+    // upload is the key that has to sign every update: lose it and the listing
+    // cannot be updated at all, only replaced under a new package name. So the
+    // keystore lives outside the repo, its passwords live in
+    // android/keystore.properties (gitignored), and the build simply skips
+    // signing when that file is absent, which is what CI and a fresh clone see.
+    signingConfigs {
+        release {
+            def props = new Properties()
+            def f = rootProject.file('keystore.properties')
+            if (f.exists()) {
+                f.withInputStream { props.load(it) }
+                storeFile file(props['storeFile'])
+                storePassword props['storePassword']
+                keyAlias props['keyAlias']
+                keyPassword props['keyPassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (rootProject.file('keystore.properties').exists()) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
