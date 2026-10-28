@@ -58,3 +58,12 @@ ios/App/App/GoogleService-Info.plist
 *.keystore
 *.jks
 android/keystore.properties
+
+# Signed build artefacts. This repository is public: a release bundle does not
+# belong in it, and at 3.3MB each they would bloat every clone forever.
+*.aab
+*.apk
+
+# Fundraising material. Carries the ask, the proposed terms and the valuation,
+# which are nobody's business but ours and the people we hand it to.
+LinkUpNaija-call-sheet.pdf

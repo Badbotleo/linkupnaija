@@ -202,6 +202,15 @@ export default async function SettingsPage() {
             label="Invite and earn"
             value="₦600 a friend, cash out at ₦3,000"
           />
+          {/* Google Play requires account deletion to be reachable from inside
+              the app, not only from the website, so this row is not optional. */}
+          <Row
+            href="/delete-account"
+            icon="trash"
+            label="Delete your account"
+            value="Removes your personal data for good"
+            warn
+          />
         </Group>
 
         <p className="mt-6 px-1 text-center text-[12px] text-gray-400">

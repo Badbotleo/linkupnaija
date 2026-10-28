@@ -51,6 +51,16 @@ const config: CapacitorConfig = {
      * unlabelled webview is both a trust problem and a rejection risk.
      */
     allowNavigation: ["www.linkupnaija.com", "linkupnaija.com"],
+
+    /**
+     * What loads when the site cannot be reached.
+     *
+     * Without this the WebView falls back to Chrome's own
+     * ERR_INTERNET_DISCONNECTED page, which carries Google's branding, our URL,
+     * and no way back. capacitor-shell/index.html is bundled for exactly this
+     * and was doing nothing until it was named here.
+     */
+    errorPath: "index.html",
   },
 
   android: {
