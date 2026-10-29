@@ -16,7 +16,11 @@ export default async function ThingsToDo({ state }: { state?: string | null }) {
   // titleless card on its own account — a blank card on the home page is the
   // exact failure this shelf had, and it shouldn't depend on one caller
   // getting it right.
-  const ideas = (await buildIdeas(state, { limit: 8 })).filter((i) =>
+  // 20, not 8. There are 43 active things to do and 17 of them are videos, so
+  // 8 was showing under a fifth of the shelf. The reel lazy-loads — three
+  // cards mount with a src and the rest fetch as they scroll into view — so a
+  // longer shelf costs no more data until somebody actually swipes.
+  const ideas = (await buildIdeas(state, { limit: 20 })).filter((i) =>
     isRealText(i.title)
   );
   if (ideas.length === 0) return null;
