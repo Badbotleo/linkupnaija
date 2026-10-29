@@ -7,8 +7,13 @@ android {
         applicationId "com.linkupnaija.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "1.0.1"
+        // 4, not 3. Version code 3 was uploaded to Play once and then its
+        // release was discarded, which burns the number permanently: Play
+        // refuses it on upload and no longer offers the bundle under "Add
+        // from library". The app code is byte-for-byte what 3 was built from,
+        // so this is the same build with a number Play will accept.
+        versionCode 4
+        versionName "1.0.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

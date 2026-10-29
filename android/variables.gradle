@@ -1,5 +1,8 @@
 ext {
-    minSdkVersion = 22
+    // 24, not Capacitor's default 22, because Play Automatic Protection
+    // refuses a bundle below 24. That costs us Android 5.1 and 6.0, phones
+    // whose WebView is too old to render the site properly in any case.
+    minSdkVersion = 24
     compileSdkVersion = 36
     targetSdkVersion = 36
     androidxActivityVersion = '1.8.0'
