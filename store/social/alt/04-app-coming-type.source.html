@@ -1,0 +1,109 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+/*
+ * SECOND BUILD. The posted version was a photograph of the product: a phone
+ * running the real app, with the copy over a scrim. This one drops the device
+ * entirely and draws the sentence instead, as two calendar tiles.
+ *
+ * "You found out on Monday. It happened on Saturday." is a sequence, and a
+ * sequence wants two objects, not one. The struck Saturday and the ringed
+ * Monday say the whole thing before a word is read, which the phone never did
+ * — the phone proved the app is real, which is a different job.
+ *
+ * SO USE THEM TOGETHER. This is the better opening frame; the posted one is
+ * the better second frame. As a carousel, this post is slide one and the
+ * phone in posted/04-app-coming.png is slide two.
+ *
+ * Still no Google Play badge. The badge may only be used once the listing is
+ * live and the listing is in closed testing, so the pill carries the words and
+ * not the mark. Naming Google Play in plain text like this is allowed; the
+ * mark is not, and nor is anything that looks like the badge.
+ */
+html, body { width: 1080px; height: 1080px; }
+.stage { padding: 84px 96px 84px; }
+
+.bloom {
+  position: absolute; width: 1100px; height: 880px; left: 20px; top: -300px;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(83,74,183,0.50) 0%, rgba(83,74,183,0.13) 46%, rgba(83,74,183,0) 70%);
+}
+
+h1 { font-size: 84px; margin-top: 50px; letter-spacing: -2.8px; }
+
+/* The tiles are deliberately oversized. At 290 tall they left 166px of dead
+   black between the paragraph and the footer, which on a square post reads as
+   a layout that ran out of things to say rather than as breathing room. */
+.tiles { display: flex; gap: 40px; margin-top: 62px; }
+.tile {
+  flex: 1; border-radius: 28px; padding: 36px 36px 32px;
+  display: flex; flex-direction: column; min-height: 400px;
+}
+.tile .dow { font-size: 26px; font-weight: 800; letter-spacing: 4.2px; }
+.tile .day { font-size: 152px; font-weight: 800; letter-spacing: -6px; line-height: 1; margin-top: 10px; }
+.tile .cap { margin-top: auto; font-size: 26px; font-weight: 700; }
+
+/* The one that already happened: paper, and struck through, because it is
+   gone rather than merely earlier. */
+.tile.gone { background: #FBF8F2; color: #14121E; }
+.tile.gone .dow { color: #827C97; }
+.tile.gone .day { text-decoration: line-through; text-decoration-thickness: 9px; text-decoration-color: #D7493F; }
+.tile.gone .cap { color: #6D6881; }
+
+/* The one you are standing in: outlined rather than filled, with the day
+   ringed. Nothing is inside it, which is the point. */
+.tile.now { border: 2px solid rgba(255,255,255,0.26); background: rgba(255,255,255,0.04); }
+.tile.now .dow { color: #FAC775; }
+.tile.now .day { color: #FBFBF8; }
+.tile.now .cap { color: #CFCCE6; }
+
+.sub { font-size: 27px; margin-top: 46px; max-width: 760px; }
+
+.actions { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 34px; }
+.pill {
+  display: inline-flex; align-items: center;
+  padding: 17px 30px; border-radius: 999px;
+  background: rgba(250,199,117,0.14); border: 1px solid rgba(250,199,117,0.44);
+  font-size: 25px; font-weight: 700; color: #FAC775; letter-spacing: -0.2px;
+}
+</style></head><body class="field-dark">
+<div class="bloom"></div>
+<div class="stage">
+
+  <div><span class="eyebrow"><span class="dot"></span>The app</span></div>
+
+  <h1>You found out<br>on <span class="accent">Monday<span class="pd">.</span></span></h1>
+
+  <div class="tiles">
+    <div class="tile gone">
+      <div class="dow">SAT</div>
+      <div class="day">25</div>
+      <div class="cap">It happened</div>
+    </div>
+    <div class="tile now">
+      <div class="dow">MON</div>
+      <div class="day">27</div>
+      <div class="cap">You saw the pictures</div>
+    </div>
+  </div>
+
+  <p class="sub">The app puts what is on near you in your hand, and tells you
+  when somebody you know is going.</p>
+
+  <div class="actions">
+    <span class="pill">Coming soon to Google Play</span>
+    <span class="lockup">
+      <svg viewBox="0 0 48 48" width="56" height="56" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" fill="#534AB7"/><circle cx="24" cy="24" r="17.6" fill="#3C3489"/>
+        <circle cx="24" cy="17.4" r="5.1" fill="#AFA9EC"/><path d="M17.3 32v-2.4a6.7 6.7 0 0 1 13.4 0V32z" fill="#AFA9EC"/>
+        <circle cx="13.9" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M7.9 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+        <circle cx="34.1" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M28.1 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+      </svg>
+      <span class="wordmark" style="font-size:28px">Link<span style="color:#7C72DC">Up</span>Naija</span>
+    </span>
+  </div>
+
+</div>
+<div class="grain"></div>
+</body></html>

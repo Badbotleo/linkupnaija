@@ -1,0 +1,136 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+/*
+ * THE ROOM, SET. Post 2, photographed.
+ *
+ * photos/venue-setup.jpg is from Pexels (commercial use permitted, no
+ * attribution required): white plastic chairs in rows on grass, a stage with
+ * speakers and truss behind them, canopies at the edge, one person still
+ * setting up. Nobody has arrived.
+ *
+ * It replaced a bright garden-wedding venue that read as a destination
+ * wedding rather than as a Lagos event, which is the wrong audience entirely.
+ * White plastic chairs on grass in front of a rented sound rig is what this
+ * product's hosts actually book, and it is recognisable at thumbnail size.
+ *
+ * It is the right picture for this argument because the argument is about
+ * labour. The pain in "you did the work, they took a cut" is not the party,
+ * it is the hours before it, and an empty room somebody has just finished
+ * setting out is those hours. A photograph of a party in full swing would
+ * have said the opposite thing.
+ *
+ * It is also the only DAYLIGHT post in the set, which is what keeps six posts
+ * from reading as one.
+ *
+ * The numbers come from lib/pricing.ts: BUYER_FEE_PERCENT is 9 and it is
+ * added ON TOP of the host's price rather than taken out of it. If that
+ * constant changes, this post is wrong and must be re-rendered.
+ */
+html, body { width: 1080px; height: 1080px; }
+
+.shot { position: absolute; inset: 0; overflow: hidden; }
+/* The frame is 1600x1067, so a square crop already shows the FULL height and
+   only trims the sides. object-position on the Y axis therefore does nothing
+   at all, which cost a render: at 72% the chairs were still at the foot of
+   the frame, where the scrim covers them, and the post became a photograph of
+   a hedge. The lift has to be done with a scale and a translate. */
+.shot img {
+  width: 100%; height: 100%; object-fit: cover; object-position: 54% 50%;
+  display: block;
+  transform: scale(1.5) translateY(-13%);
+  filter: brightness(1.02) saturate(1.14) contrast(1.06);
+}
+/* Warmed rather than cooled. This is the one post shot in daylight and the
+   grade should say afternoon, not midnight. */
+.grade {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(186deg, rgba(250,199,117,0.3) 0%, rgba(214,160,60,0.1) 46%, rgba(83,74,183,0.16) 100%);
+  mix-blend-mode: soft-light;
+}
+/* Paper rather than black, because the type below sits on the cream field. */
+.scrim {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to top,
+    #F3EFE6 30%, rgba(243,239,230,0.95) 42%, rgba(243,239,230,0.55) 54%, rgba(243,239,230,0) 72%);
+}
+
+.stage { padding: 54px 96px 84px; }
+.top { position: relative; }
+.body { margin-top: auto; position: relative; }
+
+/* On a light post the card has the opposite problem to the night ones: it
+   must be DARKER than the photograph to separate from it, not lighter. */
+.card {
+  /* The light problem inverts on this one. It is the only daylight post, the
+     card is dark on a bright photograph, and the sun is high and slightly
+     left. So the card's top-left catches a sheen, its lower right falls
+     away, and the shadow is short and hard rather than long and soft,
+     because midday light does not cast long shadows. */
+  position: absolute; right: 0; top: -304px; width: 418px;
+  background: #16132C; color: #FBF8F2; border-radius: 18px; overflow: hidden;
+  transform: perspective(1500px) rotateY(7deg) rotateX(2deg) rotate(-2.2deg);
+  transform-origin: 70% 50%;
+  box-shadow:
+    18px 30px 48px -18px rgba(26,20,8,0.62),
+    6px 10px 18px -6px rgba(40,30,12,0.5),
+    0 0 0 1px rgba(255,255,255,0.1);
+}
+.card::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(104deg,
+    rgba(255,245,220,0.16) 0%, rgba(255,245,220,0.03) 30%,
+    rgba(0,0,0,0.12) 66%, rgba(0,0,0,0.3) 100%);
+}
+.card .row { display: flex; align-items: baseline; justify-content: space-between; padding: 17px 28px; }
+.card .row .k { font-size: 23px; font-weight: 700; }
+.card .row .v { font-size: 37px; font-weight: 800; letter-spacing: -1.2px; }
+.card .row.fee { border-top: 1px solid rgba(255,255,255,0.14); border-bottom: 1px solid rgba(255,255,255,0.14); }
+.card .row.fee .k { font-size: 20px; color: #A9A2DC; font-weight: 600; }
+.card .row.fee .v { font-size: 23px; color: #A9A2DC; }
+.card .row.get .v { color: #FAC775; }
+.card .cap { background: #FAC775; color: #14121E; }
+
+/* Two short lines instead of three long ones, so this can run bigger. */
+h1 { font-size: 96px; margin-top: 14px; letter-spacing: -3.4px; }
+.sub { font-size: 27px; margin-top: 22px; max-width: 780px; }
+.foot { margin-top: 26px; }
+</style></head><body class="field-cream">
+
+<div class="shot"><img src="photos/venue-setup.jpg" alt=""></div>
+<div class="grade"></div>
+<div class="scrim"></div>
+
+<div class="stage">
+  <div class="top"><span class="eyebrow pill">For hosts</span></div>
+
+  <div class="body">
+    <div class="card">
+      <div class="row"><span class="k">Your ticket price</span><span class="v">₦10,000</span></div>
+      <div class="row fee"><span class="k">Booking fee 9% · the buyer pays this</span><span class="v">₦900</span></div>
+      <div class="row get"><span class="k">You get</span><span class="v">₦10,000</span></div>
+      <div class="cap">YOU KEEP ALL OF IT</div>
+    </div>
+
+    <h1>Your money<br><span class="accent">complete<span class="pd">.</span></span></h1>
+
+    <p class="sub">The buyer pays the booking fee, not you. Whatever you put
+    on your flyer is what enters your account.</p>
+
+    <div class="foot">
+      <span class="lockup">
+        <svg viewBox="0 0 48 48" width="56" height="56" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="24" cy="24" r="22" fill="#534AB7"/><circle cx="24" cy="24" r="17.6" fill="#3C3489"/>
+          <circle cx="24" cy="17.4" r="5.1" fill="#AFA9EC"/><path d="M17.3 32v-2.4a6.7 6.7 0 0 1 13.4 0V32z" fill="#AFA9EC"/>
+          <circle cx="13.9" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M7.9 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+          <circle cx="34.1" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M28.1 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+        </svg>
+        <span class="wordmark">Link<span style="color:#534AB7">Up</span>Naija</span>
+      </span>
+      <span class="handle">List your event free</span>
+    </div>
+  </div>
+</div>
+<div class="grain"></div>
+</body></html>

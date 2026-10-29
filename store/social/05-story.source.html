@@ -1,0 +1,136 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+/*
+ * THE THREAD. The vertical cut, for WhatsApp Status and Stories.
+ *
+ * THIS ONE HAS NO SCENE AND NO PERSON IN IT, on purpose. It is the post that
+ * breaks the set's run of night illustrations: flat purple, no drawing, no
+ * silhouette, no lit phone held by anybody. After five posts of rooms and
+ * streets, a wall of chat bubbles is the thing that does not look like the
+ * last one.
+ *
+ * It also happens to be the most honest form for this particular pain. The
+ * plan did not die somewhere you could photograph. It died in a thread, at
+ * about six in the evening, when four people said "I'm down if others are"
+ * and nobody went first. The last bubble is a typing indicator that never
+ * resolves, and the gap under it is the whole story.
+ *
+ * Real text in HTML rather than drawn in SVG, so the bubbles are crisp at
+ * any size and the copy can be changed without redrawing anything.
+ */
+html, body { width: 1080px; height: 1920px; }
+.stage { padding: 300px 92px 340px; }
+.top { display: flex; align-items: center; justify-content: space-between; }
+
+/* PHOTOGRAPHED BEHIND, not instead of.
+ *
+ * photos/phone-thread.jpg is from Pexels (commercial use permitted, no
+ * attribution required): a hand holding a phone in a dark room with a
+ * messaging app open on it. It sits UNDER the bubbles rather than replacing
+ * them, because the thread is the argument and a photograph of a thread is
+ * not legible at story size.
+ *
+ * Pushed very dark on purpose. The job of the picture here is to put the
+ * reader in a dim room at the end of a Saturday; the job of the bubbles is to
+ * be read. If you can see the photograph clearly, it is too bright. */
+.shot { position: absolute; inset: 0; overflow: hidden; }
+.shot img {
+  width: 100%; height: 100%; object-fit: cover; object-position: 58% 50%;
+  display: block; filter: brightness(0.56) saturate(0.72) blur(2px);
+}
+/* Heavier than it looks like it needs to be. At 0.82 the phone and its
+   keyboard were half legible behind the headline and read as an artefact
+   rather than as a dim room. The photograph's only job here is to stop the
+   field being flat; the bubbles are what must be read. */
+.sheen {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(60,52,137,0.93) 0%, rgba(44,37,110,0.9) 46%, rgba(30,25,82,0.95) 100%),
+    radial-gradient(900px 760px at 88% 10%, rgba(175,169,236,0.26) 0%, rgba(175,169,236,0) 62%);
+}
+
+.thread { margin-top: 36px; display: flex; flex-direction: column; gap: 18px; }
+.b {
+  max-width: 640px; padding: 22px 30px; border-radius: 26px;
+  font-size: 32px; font-weight: 600; line-height: 1.26;
+}
+/* Theirs, on the left. */
+.b.them { background: #FBFBF8; color: #14121E; border-bottom-left-radius: 8px; align-self: flex-start; }
+/* Yours, on the right, in the green everybody's thread is. */
+.b.you { background: #2E6F56; color: #F1FBF5; border-bottom-right-radius: 8px; align-self: flex-end; }
+.b .who { display: block; font-size: 22px; font-weight: 800; color: #8E86C4; margin-bottom: 6px; }
+
+/* The one that never finished. Three dots and then the rest of the night. */
+.typing {
+  align-self: flex-start; background: rgba(251,251,248,0.16);
+  padding: 26px 34px; border-radius: 26px; border-bottom-left-radius: 8px;
+  display: flex; gap: 14px;
+}
+.typing i { width: 15px; height: 15px; border-radius: 50%; background: #CFCCE6; display: block; }
+.typing i:nth-child(2) { opacity: 0.6; }
+.typing i:nth-child(3) { opacity: 0.32; }
+
+.gap {
+  margin-top: 30px; text-align: center;
+  font-size: 23px; font-weight: 700; letter-spacing: 3px; color: #A9A2DC;
+}
+
+.bottom { margin-top: auto; }
+h1 { font-size: 100px; margin-top: 46px; letter-spacing: -3.6px; }
+.sub { font-size: 32px; margin-top: 30px; max-width: 840px; }
+
+.cta {
+  margin-top: 46px; display: inline-flex; align-items: center; gap: 20px;
+  padding: 26px 44px; border-radius: 999px; background: #FBFBF8; color: #0B0B0F;
+  font-size: 35px; font-weight: 800; letter-spacing: -0.8px;
+}
+.stage { position: relative; }
+</style></head><body class="field-purple">
+<div class="shot"><img src="photos/phone-thread.jpg" alt=""></div>
+<div class="sheen"></div>
+<div class="stage">
+
+  <div class="top">
+    <span class="lockup">
+      <svg viewBox="0 0 48 48" width="60" height="60" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" fill="#FBFBF8"/><circle cx="24" cy="24" r="17.6" fill="#3C3489"/>
+        <circle cx="24" cy="17.4" r="5.1" fill="#AFA9EC"/><path d="M17.3 32v-2.4a6.7 6.7 0 0 1 13.4 0V32z" fill="#AFA9EC"/>
+        <circle cx="13.9" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M7.9 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+        <circle cx="34.1" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M28.1 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+      </svg>
+      <span class="wordmark" style="font-size:32px">Link<span style="color:#AFA9EC">Up</span>Naija</span>
+    </span>
+    <span class="handle" style="font-size:23px;color:#C5BFEC">Events · Tickets · Rides</span>
+  </div>
+
+  <div class="thread">
+    <div class="b them"><span class="who">Tolu</span>Who's going to the thing on Saturday?</div>
+    <div class="b you">I'm down if others are</div>
+    <div class="b them"><span class="who">Amaka</span>Same o. Let's see who else</div>
+    <div class="b them"><span class="who">Kelechi</span>Count me in maybe</div>
+    <div class="typing"><i></i><i></i><i></i></div>
+  </div>
+  <div class="gap">AND THAT WAS SATURDAY</div>
+
+  <div class="bottom">
+    <h1>Everybody said<br>maybe<span class="pd">.</span> <span class="accent">Nobody<br>went<span class="pd">.</span></span></h1>
+
+    <p class="sub">Someone has to say yes first. Here you can see who
+    already did.</p>
+
+    <span class="cta">
+      <svg viewBox="0 0 48 48" width="42" height="42" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" fill="#534AB7"/><circle cx="24" cy="24" r="17.6" fill="#3C3489"/>
+        <circle cx="24" cy="17.4" r="5.1" fill="#AFA9EC"/><path d="M17.3 32v-2.4a6.7 6.7 0 0 1 13.4 0V32z" fill="#AFA9EC"/>
+        <circle cx="13.9" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M7.9 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+        <circle cx="34.1" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M28.1 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+      </svg>
+      linkupnaija.com
+    </span>
+  </div>
+
+</div>
+<div class="grain"></div>
+</body></html>

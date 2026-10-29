@@ -1,0 +1,165 @@
+/*
+ * The shared skin for the social set.
+ *
+ * WHAT IS SHARED AND WHAT IS NOT. The first version of these posts shared
+ * everything: one dark field, one pair of blooms, one left-aligned stack of
+ * eyebrow, headline, paragraph, object, footer. Five of them in a row read as
+ * one template filled in five times, which is the opposite of what a set is
+ * supposed to do.
+ *
+ * So the constants are now only the things that carry the brand: Plus Jakarta
+ * Sans at 800, the mark, the gold, and the grain. The field colour, the
+ * composition, the alignment and the hero object change in every post. A
+ * viewer should recognise the fifth post as ours without having seen the
+ * first four laid beside it.
+ *
+ * Colourways are classes on <body>. Everything downstream reads the custom
+ * properties, so a post changes field by changing one class.
+ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+.field-dark {
+  --bg: #0B0B0F; --ink: #FBFBF8; --muted: #CFCCE6; --dim: #8E8AA8;
+  --accent: #FAC775; --hair: rgba(255,255,255,0.10);
+}
+.field-cream {
+  /* Warm paper, not white. Pure white against a feed of saturated flyers
+     glares; this sits back and lets the black type do the work. */
+  --bg: #F3EFE6; --ink: #14121E; --muted: #4A4560; --dim: #827C97;
+  --accent: #534AB7; --hair: rgba(20,18,30,0.16);
+}
+.field-purple {
+  --bg: #3C3489; --ink: #FBFBF8; --muted: #DEDBF4; --dim: #A9A2DC;
+  --accent: #FAC775; --hair: rgba(255,255,255,0.20);
+}
+/* The gold that is an accent everywhere else, used as the whole field. It is
+   the loudest post in the set on purpose: it carries the one message that is
+   about effort rather than feeling, and it has to interrupt rather than move
+   anybody. The accent inverts to brand purple, since gold on gold is nothing. */
+.field-gold {
+  --bg: #FAC775; --ink: #14121E; --muted: #574A2A; --dim: #8A7640;
+  --accent: #534AB7; --hair: rgba(20,18,30,0.22);
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, Arial, sans-serif;
+  /* The naira sign is missing from some weights of Plus Jakarta Sans and the
+     browser substitutes it per glyph from this stack rather than failing. */
+  background: var(--bg);
+  color: var(--ink);
+  overflow: hidden;
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Grain, drawn in the page rather than imported, so each post is one file and
+   the gradients beneath it do not band on a phone screen. */
+.grain {
+  position: absolute; inset: 0; pointer-events: none;
+  opacity: 0.15; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.field-cream .grain { opacity: 0.30; mix-blend-mode: multiply; }
+.field-gold .grain { opacity: 0.22; mix-blend-mode: multiply; }
+
+.stage { position: relative; height: 100%; display: flex; flex-direction: column; }
+
+h1 { font-weight: 800; letter-spacing: -3.2px; line-height: 1.0; }
+
+/* Plus Jakarta Sans sets its full stop and comma in a wide advance. At body
+   size nobody notices; at 110px it leaves a hole before the mark, and a hole
+   before a full stop is the clearest tell that a headline was typed into a
+   box rather than set. These pull them back. */
+h1 .pd { margin-left: -0.13em; }
+h1 .cm { margin: 0 -0.075em; }
+
+.sub { color: var(--muted); line-height: 1.38; font-weight: 400; }
+.accent { color: var(--accent); }
+
+/* The pivot. Every headline in this set names a loss the reader has already
+   had; this is the small label that turns the post from a complaint into an
+   offer, and it sits on the evidence rather than in the paragraph. Kept quiet
+   on purpose: the headline is the emotion, this is just the hinge. */
+.fix {
+  font-size: 20px; font-weight: 700; letter-spacing: 3.2px;
+  text-transform: uppercase; color: var(--dim);
+}
+
+/* The eyebrow has two forms on purpose. The dot form suits the dark fields;
+   the pill form suits cream, where a 9px gold dot disappears. */
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 14px;
+  font-size: 21px; font-weight: 700; letter-spacing: 3.4px; text-transform: uppercase;
+  color: var(--accent);
+}
+.eyebrow .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
+.eyebrow.pill {
+  gap: 0; padding: 12px 24px; border-radius: 999px;
+  background: var(--accent); color: #FBFBF8; letter-spacing: 3px; font-size: 19px;
+}
+.eyebrow.pill .dot { display: none; }
+
+/* ILLUSTRATED POSTS.
+ *
+ * Six of these carry a drawn night scene instead of a type composition,
+ * because the moments they are about (standing outside at 1am, an emptied
+ * hall, a dead group chat) are things a reader has physically been in, and a
+ * sentence about a feeling is weaker than a picture of it.
+ *
+ * The art is SVG, drawn here, never photographed. A stock photo is somebody
+ * else's licence and somebody else's city, and a recognisable face on a post
+ * about getting home safely makes a claim about a real person. A silhouette
+ * also lets the reader be the person in the frame, which is the whole point.
+ *
+ * WHAT THESE SHARE IS A CRAFT, NOT A RECIPE. An earlier pass wrote the
+ * grammar down as "one cool dark field, one warm light source, a silhouetted
+ * figure, a lit phone, a paper card on the right" and then applied it to six
+ * posts in a row. Every one of them was a better drawing than the type
+ * version it replaced, and together they were worse: six night scenes with
+ * the same light, the same black figure holding the same phone, and the
+ * headline in the same corner. A picture does not rescue a template, it
+ * disguises it for about one scroll.
+ *
+ * So the rule is that no two posts may share all three of TIME OF DAY,
+ * DISTANCE FROM THE SUBJECT, and WHETHER THERE IS A PERSON IN FRAME. Night
+ * wide interior, day interior, night wide exterior, morning close interior,
+ * no person at all, no scene at all. Those read before any of the words do.
+ *
+ * What genuinely carries over is technique: limbs are round-capped STROKES
+ * set outside a narrow torso (filled outlines merge into the body and the
+ * figure reads as a bollard), a seated figure needs the furniture drawn in
+ * front of its lap to read as seated, and dark objects on dark fields need a
+ * rim light or they disappear.
+ */
+.scene { position: absolute; inset: 0 0 auto 0; width: 100%; }
+.scene svg { display: block; width: 100%; height: 100%; }
+
+/* Marries the drawing to the field under it. Without it the illustration ends
+   on a hard horizontal line and reads as a pasted image. Each post sets its
+   own top and height: start it below the figure's feet or it dissolves the
+   person the post is about. */
+.fade { position: absolute; left: 0; right: 0; pointer-events: none; }
+
+/* The evidence, on paper, floating in the scene where a notification would
+   be. Soft shadow on purpose: a tight dark one under a rotated card prints as
+   a grey trapezoid and reads as a rendering fault. */
+.card {
+  position: absolute; background: #FBF8F2; color: #14121E;
+  border-radius: 18px; overflow: hidden;
+  box-shadow: 0 26px 70px -20px rgba(0,0,0,0.62), 0 0 0 1px rgba(255,255,255,0.18);
+}
+.card .cap {
+  background: #14121E; color: #FAC775; font-size: 15px; font-weight: 800;
+  letter-spacing: 2.4px; padding: 10px 0; text-align: center;
+}
+
+/* The footer lockup is the one element that never moves between posts, and it
+   is the only part a viewer is meant to recognise before they read anything.
+   Its POSITION varies; its contents do not. */
+.lockup { display: flex; align-items: center; gap: 22px; }
+.wordmark { font-size: 30px; font-weight: 800; letter-spacing: -0.8px; }
+.handle { font-size: 26px; font-weight: 600; color: var(--dim); letter-spacing: -0.3px; }
+.foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 34px; border-top: 1px solid var(--hair);
+}

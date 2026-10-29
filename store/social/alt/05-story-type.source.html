@@ -1,0 +1,103 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+/*
+ * The vertical cut, for WhatsApp Status and Stories.
+ *
+ * Padding is 300px at the top and 340px at the bottom rather than the 92px
+ * the square posts use, because Instagram and WhatsApp both draw their own
+ * chrome over those bands. Anything inside them is covered by a profile
+ * picture or a reply box on a real phone, which is how most story graphics
+ * lose their call to action.
+ *
+ * Bottom-weighted on purpose: a story is held with one thumb near the foot of
+ * the screen, so the call to action belongs where the thumb already is. The
+ * field is a single long ramp from black into brand purple, which is neither
+ * of the flat fields the square posts use.
+ */
+html, body { width: 1080px; height: 1920px; }
+body { background: linear-gradient(176deg, #0B0B0F 24%, #241F56 62%, #3C3489 100%); }
+
+.bloom {
+  position: absolute; width: 1100px; height: 1100px; border-radius: 50%;
+  top: -420px; right: -340px; pointer-events: none;
+  background: radial-gradient(circle, rgba(83,74,183,0.55) 0%, rgba(83,74,183,0.14) 45%, rgba(83,74,183,0) 70%);
+}
+
+.stage { padding: 300px 92px 340px; }
+.top { display: flex; align-items: center; justify-content: space-between; }
+.bottom { margin-top: auto; }
+
+/* The stack sits above the headline here, where in the square post it sits
+   below it. Same evidence, different order, so the two do not read as crops
+   of one another. */
+.stack { display: flex; }
+/* The ring and the overflow chip are translucent, not a fixed colour. The
+   field here is a gradient, so a solid ring picked for one point on it shows
+   as a dark halo everywhere else. */
+.av {
+  width: 112px; height: 112px; border-radius: 50%; margin-left: -32px;
+  display: grid; place-items: center; font-size: 42px; font-weight: 800;
+  border: 6px solid rgba(8,6,24,0.42); color: #14121E; letter-spacing: -1px;
+}
+.av:first-child { margin-left: 0; }
+.av.more { background: rgba(251,251,248,0.17); color: #FBFBF8; font-size: 31px; }
+
+h1 { font-size: 126px; margin-top: 50px; letter-spacing: -4.4px; }
+.sub { font-size: 34px; margin-top: 36px; max-width: 840px; }
+.stack + .fix { display: block; margin-top: 26px; font-size: 22px; }
+
+.cta {
+  margin-top: 70px;
+  display: inline-flex; align-items: center; gap: 20px;
+  padding: 30px 48px; border-radius: 999px; background: #FBFBF8; color: #0B0B0F;
+  font-size: 37px; font-weight: 800; letter-spacing: -0.8px;
+}
+</style></head><body class="field-dark">
+<div class="bloom"></div>
+<div class="stage">
+
+  <div class="top">
+    <span class="lockup">
+      <svg viewBox="0 0 48 48" width="64" height="64" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" fill="#534AB7"/><circle cx="24" cy="24" r="17.6" fill="#3C3489"/>
+        <circle cx="24" cy="17.4" r="5.1" fill="#AFA9EC"/><path d="M17.3 32v-2.4a6.7 6.7 0 0 1 13.4 0V32z" fill="#AFA9EC"/>
+        <circle cx="13.9" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M7.9 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+        <circle cx="34.1" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M28.1 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+      </svg>
+      <span class="wordmark" style="font-size:34px">Link<span style="color:#7C72DC">Up</span>Naija</span>
+    </span>
+    <span class="handle" style="font-size:24px">Events · Tickets · Rides</span>
+  </div>
+
+  <div class="bottom">
+    <div class="stack">
+      <div class="av" style="background:#FAC775">T</div>
+      <div class="av" style="background:#AFA9EC">A</div>
+      <div class="av" style="background:#6FD9A6">K</div>
+      <div class="av" style="background:#F6A5A5">N</div>
+      <div class="av more">+41</div>
+    </div>
+
+    <span class="fix">7 of them are people you know</span>
+
+    <h1>The plan died<br>in the <span class="accent">group<br>chat<span class="pd">.</span></span></h1>
+
+    <p class="sub">Nobody wanted to be the first to say yes. Here you can see
+    who already did, then book the ticket and the ride in the same place.</p>
+
+    <span class="cta">
+      <svg viewBox="0 0 48 48" width="46" height="46" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" fill="#534AB7"/><circle cx="24" cy="24" r="17.6" fill="#3C3489"/>
+        <circle cx="24" cy="17.4" r="5.1" fill="#AFA9EC"/><path d="M17.3 32v-2.4a6.7 6.7 0 0 1 13.4 0V32z" fill="#AFA9EC"/>
+        <circle cx="13.9" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M7.9 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+        <circle cx="34.1" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M28.1 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+      </svg>
+      linkupnaija.com
+    </span>
+  </div>
+
+</div>
+<div class="grain"></div>
+</body></html>

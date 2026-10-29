@@ -1,0 +1,175 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+/*
+ * SATURDAY NIGHT, ON THE SOFA. The vertical cut, for WhatsApp Status and
+ * Stories, as a scene.
+ *
+ * Everybody wanted to go. Nobody wanted to be the first to say yes, the
+ * thread went quiet around six, and by ten you are horizontal in the dark
+ * with the only light in the room coming off your own phone. That is the
+ * picture, and it is a Saturday rather than a Tuesday, which is what makes it
+ * sting.
+ *
+ * Padding is 300px at the top and 340px at the bottom rather than the 92px a
+ * square uses, because Instagram and WhatsApp draw their own chrome over
+ * those bands. Anything inside them is covered by a profile picture or a
+ * reply box on a real phone, which is how most story graphics lose their call
+ * to action. The scene is allowed to run under the top band, because a
+ * picture survives being partly covered and a sentence does not.
+ */
+html, body { width: 1080px; height: 1920px; }
+/* The whole scene lives ABOVE y=870. Below that is where the bottom text
+   block starts, and the first cut put the sofa and the card straight under
+   the headline. */
+.scene { height: 940px; }
+.fade { top: 620px; height: 320px;
+  background: linear-gradient(to bottom, rgba(11,11,15,0) 0%, rgba(11,11,15,0.55) 46%, #0B0B0F 92%); }
+
+.card { left: 556px; top: 404px; width: 420px; transform: rotate(-2.4deg); padding: 26px 30px 0; }
+.card .n { font-size: 44px; font-weight: 800; letter-spacing: -1.5px; }
+.card .m { font-size: 23px; font-weight: 600; color: #6D6881; margin-top: 2px; }
+.card .av {
+  display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 50%;
+  font-size: 23px; font-weight: 800; color: #14121E; margin: 18px -14px 22px 0;
+  border: 4px solid #FBF8F2;
+}
+
+.stage { padding: 300px 92px 340px; }
+.top { display: flex; align-items: center; justify-content: space-between; position: relative; }
+.bottom { margin-top: auto; position: relative; }
+
+h1 { font-size: 118px; letter-spacing: -4.2px; }
+.sub { font-size: 33px; margin-top: 34px; max-width: 860px; }
+
+.cta {
+  margin-top: 56px; display: inline-flex; align-items: center; gap: 20px;
+  padding: 28px 46px; border-radius: 999px; background: #FBFBF8; color: #0B0B0F;
+  font-size: 36px; font-weight: 800; letter-spacing: -0.8px;
+}
+</style></head><body class="field-dark">
+
+<div class="scene">
+<svg viewBox="0 0 1080 940" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="night" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#08070F"/><stop offset="52%" stop-color="#14112C"/>
+      <stop offset="100%" stop-color="#1E1842"/>
+    </linearGradient>
+    <linearGradient id="outside" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1A1540"/><stop offset="100%" stop-color="#3A2F6B"/>
+    </linearGradient>
+    <radialGradient id="screen">
+      <stop offset="0%" stop-color="#BFD8FF" stop-opacity="0.60"/>
+      <stop offset="38%" stop-color="#8FB4F0" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#8FB4F0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1080" height="940" fill="url(#night)"/>
+
+  <!-- The window. Everybody else's Saturday, happening outside. -->
+  <rect x="660" y="120" width="360" height="360" rx="10" fill="url(#outside)"/>
+  <g fill="#0B0918" opacity="0.85">
+    <rect x="660" y="330" width="92" height="150"/><rect x="766" y="364" width="68" height="116"/>
+    <rect x="848" y="312" width="78" height="168"/><rect x="940" y="366" width="80" height="114"/>
+  </g>
+  <g fill="#FAC775" opacity="0.55">
+    <rect x="678" y="352" width="10" height="14"/><rect x="710" y="388" width="10" height="14"/>
+    <rect x="682" y="428" width="10" height="14"/><rect x="786" y="396" width="10" height="14"/>
+    <rect x="808" y="440" width="10" height="14"/><rect x="866" y="342" width="10" height="14"/>
+    <rect x="896" y="388" width="10" height="14"/><rect x="872" y="444" width="10" height="14"/>
+    <rect x="962" y="398" width="10" height="14"/><rect x="992" y="440" width="10" height="14"/>
+  </g>
+  <rect x="660" y="120" width="360" height="360" rx="10" fill="none" stroke="#120F28" stroke-width="22"/>
+  <rect x="832" y="130" width="12" height="340" fill="#120F28"/>
+
+  <!-- THE SOFA IS DRAWN IN TWO HALVES, WITH THE SITTER BETWEEN THEM.
+       The back goes down first, the figure on top of it, and then the front
+       of the seat over the figure's lap. That occlusion is the only thing
+       that makes a front-on silhouette read as seated. Three earlier cuts
+       drew the whole sofa first and put a complete figure in front of it,
+       and every one of them rendered as somebody standing in a long coat. -->
+  <path d="M-20 940 v-266 q0 -48 54 -48 h700 q54 0 54 48 v266z" fill="#1C1644"/>
+  <path d="M34 626 h700" fill="none" stroke="#C6C0F7" stroke-opacity="0.26" stroke-width="4"/>
+  <path d="M150 626 v94 M470 626 v94" fill="none" stroke="#C6C0F7" stroke-opacity="0.15" stroke-width="4"/>
+  <path d="M636 638 l120 -14 14 88 -120 14z" fill="#2E2663" stroke="#C6C0F7" stroke-opacity="0.22" stroke-width="3"/>
+
+  <!-- The person, SITTING, slumped, knees up, phone held in both hands. The
+       first cut had them lying along the sofa and it rendered as a pile of
+       dark lumps: a reclining figure needs foreshortening that a flat
+       silhouette cannot carry. Seated and front-on reads instantly. -->
+  <g>
+    <circle cx="300" cy="610" r="140" fill="url(#screen)"/>
+    <g fill="#07060E">
+      <!-- head, tipped forward over the screen -->
+      <circle cx="286" cy="474" r="42"/>
+      <rect x="276" y="506" width="26" height="22"/>
+      <!-- torso, slumped back into the sofa -->
+      <path d="M248 528 q42 -20 84 0 l16 136 q-58 20 -116 0z"/>
+      <!-- hips and thighs, running forward along the seat. Everything below
+           726 is covered by the front of the sofa, so there are no shins and
+           no feet to get wrong. -->
+      <path d="M240 660 q56 -20 112 0 l12 84 q-68 18 -136 0z"/>
+    </g>
+    <!-- forearms coming forward to the phone -->
+    <g stroke="#07060E" stroke-width="24" stroke-linecap="round" fill="none">
+      <path d="M252 560 L236 622 L282 638"/>
+      <path d="M330 560 L348 620 L312 638"/>
+    </g>
+    <rect x="276" y="584" width="40" height="66" rx="9" fill="#CFE2FF" transform="rotate(-8 296 617)"/>
+  </g>
+
+  <!-- The front of the seat, drawn OVER the lap. This is the occlusion. -->
+  <path d="M-20 940 v-214 q0 -24 28 -24 h752 q28 0 28 24 v214z" fill="#2A2259"/>
+  <path d="M8 726 h792" fill="none" stroke="#C6C0F7" stroke-opacity="0.32" stroke-width="5"/>
+  <path d="M150 726 v90 M470 726 v90" fill="none" stroke="#C6C0F7" stroke-opacity="0.14" stroke-width="4"/>
+</svg>
+</div>
+<div class="fade"></div>
+
+<div class="card">
+  <div class="n">45 going</div>
+  <div class="m">7 of them you know</div>
+  <div>
+    <span class="av" style="background:#FAC775">T</span><span class="av" style="background:#AFA9EC">A</span><span class="av" style="background:#6FD9A6">K</span><span class="av" style="background:#F6A5A5">N</span><span class="av" style="background:#14121E;color:#FBF8F2;font-size:18px">+41</span>
+  </div>
+  <div class="cap" style="margin:0 -30px">SOMEBODY ALREADY SAID YES</div>
+</div>
+
+<div class="stage">
+
+  <div class="top">
+    <span class="lockup">
+      <svg viewBox="0 0 48 48" width="62" height="62" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" fill="#534AB7"/><circle cx="24" cy="24" r="17.6" fill="#3C3489"/>
+        <circle cx="24" cy="17.4" r="5.1" fill="#AFA9EC"/><path d="M17.3 32v-2.4a6.7 6.7 0 0 1 13.4 0V32z" fill="#AFA9EC"/>
+        <circle cx="13.9" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M7.9 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+        <circle cx="34.1" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M28.1 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+      </svg>
+      <span class="wordmark" style="font-size:33px">Link<span style="color:#7C72DC">Up</span>Naija</span>
+    </span>
+    <span class="handle" style="font-size:24px">Events · Tickets · Rides</span>
+  </div>
+
+  <div class="bottom">
+    <h1>The plan died<br>in the <span class="accent">group<br>chat<span class="pd">.</span></span></h1>
+
+    <p class="sub">Nobody wanted to be the first to say yes. Here you can see
+    who already did.</p>
+
+    <span class="cta">
+      <svg viewBox="0 0 48 48" width="44" height="44" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" fill="#534AB7"/><circle cx="24" cy="24" r="17.6" fill="#3C3489"/>
+        <circle cx="24" cy="17.4" r="5.1" fill="#AFA9EC"/><path d="M17.3 32v-2.4a6.7 6.7 0 0 1 13.4 0V32z" fill="#AFA9EC"/>
+        <circle cx="13.9" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M7.9 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+        <circle cx="34.1" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M28.1 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+      </svg>
+      linkupnaija.com
+    </span>
+  </div>
+
+</div>
+<div class="grain"></div>
+</body></html>

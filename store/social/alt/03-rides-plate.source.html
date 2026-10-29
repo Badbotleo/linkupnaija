@@ -1,0 +1,95 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+/*
+ * SECOND BUILD. The posted version was centred on black with the plate as a
+ * neat 700px card. The plate is the best asset in the set, so it stays, but it
+ * stops being a card sitting on a post and becomes the post: oversized, tilted
+ * and running off both edges, the way a real plate fills your view when you
+ * are checking it against your phone at 1am.
+ *
+ * Purple rather than black, left aligned rather than centred. That makes it
+ * the opposite of the version already in the feed on every axis a thumb reads
+ * before it reads words.
+ *
+ * On the claim: vetting and the plate arriving ahead of the car are what the
+ * rides flow actually does. Do not add a response time to this graphic. We do
+ * not measure one.
+ */
+html, body { width: 1080px; height: 1080px; }
+.stage { padding: 84px 96px 84px; }
+
+.sheen {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(880px 700px at 88% -10%, rgba(175,169,236,0.50) 0%, rgba(175,169,236,0) 62%),
+    radial-gradient(760px 620px at 4% 110%, rgba(22,18,56,0.74) 0%, rgba(22,18,56,0) 64%);
+}
+
+h1 { font-size: 80px; margin-top: 34px; letter-spacing: -2.6px; }
+.sub { font-size: 28px; margin-top: 22px; max-width: 760px; }
+
+/* Full bleed and tilted. The negative margins are what take it past both
+   edges of the canvas; the overflow:hidden on body is what crops it. */
+.plate {
+  margin: 48px -150px 0; background: #FBF8F2; border-radius: 22px;
+  overflow: hidden; transform: rotate(-4deg);
+  box-shadow: 0 50px 100px -30px rgba(10,8,34,0.80), 0 0 0 1px rgba(255,255,255,0.18);
+  text-align: center;
+}
+.plate .band {
+  background: #008753; color: #FBF8F2; font-size: 22px; font-weight: 700;
+  letter-spacing: 4.4px; padding: 11px 0;
+}
+.plate .num {
+  color: #14121E; font-size: 132px; font-weight: 800; letter-spacing: 10px;
+  padding: 20px 0 10px;
+}
+.plate .state {
+  color: #6D6881; font-size: 22px; font-weight: 700;
+  letter-spacing: 4.4px; padding-bottom: 20px;
+}
+
+/* Sits under the tilt, so it needs its own top margin to clear the corner the
+   rotation drops on the left. */
+.wholine { margin-top: 52px; font-size: 26px; font-weight: 600; color: var(--dim); }
+.fix { display: block; margin-top: 10px; }
+
+.foot { margin-top: auto; }
+</style></head><body class="field-purple">
+<div class="sheen"></div>
+<div class="stage">
+
+  <div><span class="eyebrow"><span class="dot"></span>Getting home</span></div>
+
+  <h1>It is 1am<span class="pd">.</span><br>The party <span class="accent">ended<span class="pd">.</span></span></h1>
+
+  <p class="sub">You are not negotiating with a stranger in a car park tonight.
+  Your ride was booked with your ticket.</p>
+
+  <div class="plate">
+    <div class="band">FEDERAL REPUBLIC OF NIGERIA</div>
+    <div class="num">LND 472 KJ</div>
+    <div class="state">LAGOS</div>
+  </div>
+
+  <div class="wholine">Chidi O. · Toyota Corolla, Silver · arriving 1:15am</div>
+  <span class="fix">Sent to you before the car arrives</span>
+
+  <div class="foot">
+    <span class="lockup">
+      <svg viewBox="0 0 48 48" width="58" height="58" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" fill="#FBFBF8"/><circle cx="24" cy="24" r="17.6" fill="#3C3489"/>
+        <circle cx="24" cy="17.4" r="5.1" fill="#AFA9EC"/><path d="M17.3 32v-2.4a6.7 6.7 0 0 1 13.4 0V32z" fill="#AFA9EC"/>
+        <circle cx="13.9" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M7.9 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+        <circle cx="34.1" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M28.1 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+      </svg>
+      <span class="wordmark">Link<span style="color:#AFA9EC">Up</span>Naija</span>
+    </span>
+    <span class="handle" style="color:#C5BFEC">linkupnaija.com</span>
+  </div>
+
+</div>
+<div class="grain"></div>
+</body></html>

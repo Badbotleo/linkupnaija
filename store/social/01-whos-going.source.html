@@ -1,0 +1,152 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+/*
+ * THE WINDOW. Post 1, photographed.
+ *
+ * photos/party-night.jpg is from Pexels (commercial use permitted, no
+ * attribution required): an outdoor night party, people standing around with
+ * drinks, water and boats behind them.
+ *
+ * It is the third picture on this post and the first that is actually a
+ * PARTY. The two before it were a silhouette at a window, which suited the
+ * old headline about staying home, and then a crowd with their hands up,
+ * which is a concert: everybody facing one direction, watching a stage. A
+ * party is people facing each other. That difference is the whole reason
+ * this frame works and those did not.
+ *
+ * It is also a visibly Black crowd at night, which matters on a post aimed
+ * at Lagos. Nobody in it is the subject, so "who else dey go" has no single
+ * answer in the frame, which is the point.
+ *
+ * Graded away from its original green cast, which fought the brand.
+ */
+html, body { width: 1080px; height: 1080px; }
+
+.shot { position: absolute; inset: 0; overflow: hidden; }
+.shot img {
+  /* 2000x1333, so a square crop keeps the full height and trims the sides.
+     Pulled slightly left, where the standing group is densest. */
+  width: 100%; height: 100%; object-fit: cover; object-position: 44% 42%;
+  display: block;
+  /* Hue-rotated off the hard green of the original lighting rig and back
+     toward the brand's violet, then lifted because the scrim takes a lot. */
+  filter: brightness(1.12) saturate(0.92) hue-rotate(-24deg) contrast(1.05);
+}
+/* Graded to the brand's blue-violet so the photograph belongs to this set
+   rather than to a library. soft-light keeps the city lights alive; multiply
+   at this strength would put them out. */
+.grade {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(190deg, rgba(60,52,137,0.5) 0%, rgba(36,31,86,0.2) 52%, rgba(11,11,15,0.1) 100%);
+  mix-blend-mode: soft-light;
+}
+.scrim {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to top,
+    #0B0B0F 26%, rgba(11,11,15,0.94) 38%, rgba(11,11,15,0.5) 52%, rgba(11,11,15,0) 70%);
+}
+
+.stage { padding: 54px 96px 84px; }
+.top { position: relative; }
+.body { margin-top: auto; position: relative; }
+
+/* Same blending rules as the other photo posts: duller than paper, a dark
+   rim rather than a white one, and a wide soft shadow with a little of the
+   scene's colour in it. A bright white card on a photograph is a sticker. */
+.card {
+  /* Lifted clear of the figure. At -300 the card landed exactly on the head
+     and shoulders of the person at the window, which is the subject. */
+  /* Same four rules as the ride card on post 03: real perspective, a light
+     direction that agrees with the photograph, a shadow cast away from that
+     light, and paper that is dimmer than the brightest thing in frame. Here
+     the light is the city outside the window, low and to the left. */
+  position: absolute; right: 0; top: -428px; width: 376px;
+  background: #DDD5C3; color: #14121E; border-radius: 18px; overflow: hidden;
+  padding: 24px 28px 0;
+  transform: perspective(1500px) rotateY(8deg) rotateX(-2deg) rotate(2.4deg);
+  transform-origin: 72% 50%;
+  box-shadow:
+    26px 52px 82px -30px rgba(0,0,0,0.92),
+    9px 17px 32px -13px rgba(14,12,40,0.66),
+    0 0 0 1px rgba(14,12,26,0.5),
+    -1px 0 0 rgba(188,196,236,0.3);
+}
+.card::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(96deg,
+      rgba(255,255,255,0.20) 0%, rgba(255,255,255,0) 24%,
+      rgba(18,14,36,0.16) 58%, rgba(14,10,34,0.46) 100%),
+    linear-gradient(172deg, rgba(40,34,92,0.22) 0%, rgba(14,12,22,0.05) 50%, rgba(214,160,60,0.16) 100%);
+  mix-blend-mode: multiply;
+}
+.card .n { font-size: 43px; font-weight: 800; letter-spacing: -1.5px; }
+.card .m { font-size: 22px; font-weight: 600; color: #6D6881; margin-top: 2px; }
+/* REAL ATTENDEES, from the AITF LinkUp Jollof Party.
+ *
+ * photos/attendees/ holds three profile pictures of people who actually
+ * joined that event, pulled from the public avatars bucket. Two of the five
+ * on that event are not used: one is the default LinkUpNaija placeholder and
+ * one is a distant mirror selfie, and neither reads as a face at 52px.
+ *
+ * THESE ARE IDENTIFIABLE PEOPLE. They uploaded a profile picture to use the
+ * app, which is not the same as agreeing to appear in a paid advertisement.
+ * Permission for that is held outside this repo. If it is ever withdrawn,
+ * swap the files in photos/attendees and re-render; nothing else references
+ * them.
+ *
+ * The counts beside them stay illustrative. The Jollof Party page itself
+ * shows "Interested · 2", so these numbers describe a typical event rather
+ * than that one, and the post must not be used to link straight to it. */
+.card .av {
+  display: inline-grid; place-items: center; width: 52px; height: 52px; border-radius: 50%;
+  font-size: 21px; font-weight: 800; color: #14121E; margin: 16px -13px 20px 0;
+  border: 4px solid #EFE8D8; overflow: hidden; vertical-align: middle;
+}
+.card .av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+h1 { font-size: 82px; margin-top: 14px; letter-spacing: -2.9px; }
+.sub { font-size: 27px; margin-top: 22px; max-width: 740px; }
+.foot { margin-top: 28px; }
+</style></head><body class="field-dark">
+
+<div class="shot"><img src="photos/party-night.jpg" alt=""></div>
+<div class="grade"></div>
+<div class="scrim"></div>
+
+<div class="stage">
+  <div class="top"><span class="eyebrow"><span class="dot"></span>Who is going</span></div>
+
+  <div class="body">
+    <div class="card">
+      <div class="n">45 going</div>
+      <div class="m">7 of them you know</div>
+      <div>
+        <span class="av"><img src="photos/attendees/a1.jpg" alt=""></span><span class="av"><img src="photos/attendees/a2.jpg" alt=""></span><span class="av"><img src="photos/attendees/a3.jpg" alt=""></span><span class="av" style="background:#AFA9EC">K</span><span class="av" style="background:#14121E;color:#EFE8D8;font-size:16px">+41</span>
+      </div>
+      <div class="cap" style="margin:0 -28px">BEFORE YOU BOOK, NOT AFTER</div>
+    </div>
+
+    <h1>Who else <span class="accent">dey go<span class="pd">?</span></span></h1>
+
+    <p class="sub">The one question nobody can answer until it's too late.
+    Now it's on the event page, names and all, before you pay.</p>
+
+    <div class="foot">
+      <span class="lockup">
+        <svg viewBox="0 0 48 48" width="56" height="56" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="24" cy="24" r="22" fill="#534AB7"/><circle cx="24" cy="24" r="17.6" fill="#3C3489"/>
+          <circle cx="24" cy="17.4" r="5.1" fill="#AFA9EC"/><path d="M17.3 32v-2.4a6.7 6.7 0 0 1 13.4 0V32z" fill="#AFA9EC"/>
+          <circle cx="13.9" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M7.9 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+          <circle cx="34.1" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M28.1 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+        </svg>
+        <span class="wordmark" style="font-size:28px">Link<span style="color:#7C72DC">Up</span>Naija</span>
+      </span>
+      <span class="handle">linkupnaija.com</span>
+    </div>
+  </div>
+</div>
+<div class="grain"></div>
+</body></html>

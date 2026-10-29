@@ -1,0 +1,101 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+/*
+ * The rides post. The fear it answers is specific and everybody in Lagos has
+ * it, so the graphic shows the exact thing that settles it: the plate number,
+ * given to you before the car arrives. Not a promise of safety, a detail only
+ * somebody who really booked the car could have.
+ *
+ * The headline is the moment, not the feature. "You get the plate before the
+ * car" is the answer; "It is 1am and the party ended" is the question the
+ * reader is already asking themselves, and it is the one that stops a thumb.
+ * So the order is question, then evidence: the plate now sits BELOW the
+ * headline and reads as the reply to it. Centred, and the only centred post in
+ * the set, which is what keeps it from reading as the others recoloured.
+ */
+html, body { width: 1080px; height: 1080px; }
+.stage { padding: 92px 96px 92px; align-items: center; text-align: center; }
+
+.bloom {
+  position: absolute; width: 1000px; height: 1000px; border-radius: 50%;
+  top: -340px; left: 40px; pointer-events: none;
+  background: radial-gradient(circle, rgba(83,74,183,0.52) 0%, rgba(83,74,183,0.16) 44%, rgba(83,74,183,0) 70%);
+}
+
+/* A real Nigerian plate, drawn rather than photographed, because a stock
+   photo of a number plate belongs to somebody's actual car. */
+.plate {
+  margin-top: 46px; width: 700px; background: #FBF8F2; border-radius: 16px;
+  overflow: hidden; transform: rotate(-1.6deg);
+  box-shadow: 0 40px 80px -28px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.14);
+}
+.plate .band {
+  background: #008753; color: #FBF8F2; font-size: 17px; font-weight: 700;
+  letter-spacing: 3.4px; padding: 8px 0;
+}
+.plate .num {
+  color: #14121E; font-size: 84px; font-weight: 800; letter-spacing: 6px;
+  padding: 16px 0 8px;
+}
+.plate .state {
+  color: #6D6881; font-size: 17px; font-weight: 700; letter-spacing: 3.4px;
+  padding-bottom: 16px;
+}
+
+.wholine { margin-top: 24px; font-size: 26px; font-weight: 600; color: var(--dim); }
+
+h1 { font-size: 86px; margin-top: 42px; letter-spacing: -2.8px; }
+/* Wide enough to hold two lines. At 760 the last word dropped to a third
+   line, which pushed the tick row onto the footer rule. */
+.sub { font-size: 28px; margin-top: 24px; max-width: 880px; }
+.fix { display: block; margin-top: 40px; }
+
+.checks { display: flex; gap: 42px; margin-top: 32px; }
+.checks div { display: flex; align-items: center; gap: 13px; font-size: 24px; font-weight: 600; color: var(--muted); }
+.tick { width: 30px; height: 30px; border-radius: 50%; background: #008753; display: grid; place-items: center; flex: 0 0 auto; }
+
+.foot { margin-top: auto; width: 100%; }
+</style></head><body class="field-dark">
+<div class="bloom"></div>
+<div class="stage">
+
+  <div><span class="eyebrow"><span class="dot"></span>Getting home</span></div>
+
+  <h1>It is 1am<span class="pd">.</span><br>The party <span class="accent">ended<span class="pd">.</span></span></h1>
+
+  <p class="sub">You are not negotiating with a stranger in a car park tonight.
+  Your ride was booked with your ticket.</p>
+
+  <span class="fix">Sent to you before the car arrives</span>
+
+  <div class="plate">
+    <div class="band">FEDERAL REPUBLIC OF NIGERIA</div>
+    <div class="num">LND 472 KJ</div>
+    <div class="state">LAGOS</div>
+  </div>
+  <div class="wholine">Chidi O. · Toyota Corolla, Silver · arriving 1:15am</div>
+
+  <div class="checks">
+    <div><span class="tick"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 8.5l4 4 8-9" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Vetted company</div>
+    <div><span class="tick"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 8.5l4 4 8-9" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Papers checked</div>
+    <div><span class="tick"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 8.5l4 4 8-9" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Rated after</div>
+  </div>
+
+  <div class="foot">
+    <span class="lockup">
+      <svg viewBox="0 0 48 48" width="60" height="60" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" fill="#534AB7"/><circle cx="24" cy="24" r="17.6" fill="#3C3489"/>
+        <circle cx="24" cy="17.4" r="5.1" fill="#AFA9EC"/><path d="M17.3 32v-2.4a6.7 6.7 0 0 1 13.4 0V32z" fill="#AFA9EC"/>
+        <circle cx="13.9" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M7.9 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+        <circle cx="34.1" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M28.1 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+      </svg>
+      <span class="wordmark">Link<span style="color:#7C72DC">Up</span>Naija</span>
+    </span>
+    <span class="handle">linkupnaija.com</span>
+  </div>
+
+</div>
+<div class="grain"></div>
+</body></html>

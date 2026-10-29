@@ -1,0 +1,99 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+/*
+ * The host post. The argument is a receipt, not an adjective, because every
+ * ticketing platform in this market describes itself as low fee and a host
+ * stopped believing the phrase years ago. Two numbers that match is an
+ * argument they can check in four seconds.
+ *
+ * The headline names the loss rather than the policy. "List at ₦10,000. Get
+ * ₦10,000." is the better sentence to read SECOND; the thing that makes a host
+ * stop is the memory of printing a price, doing all the work of filling a room,
+ * and watching the number shrink on the way to their account. That is a
+ * deduction model, which is what this market runs on and what we ourselves ran
+ * on until 1 Sep 2026, so it is said about the practice and not about a named
+ * competitor.
+ *
+ * So the receipt is not a card sitting on the post, it IS the post: a real
+ * ticket stub, perforation and all, on brand purple. Nothing else in the set
+ * is purple and nothing else in the set has a hero object this large.
+ */
+html, body { width: 1080px; height: 1080px; }
+.stage { padding: 88px 92px 92px; }
+
+.sheen {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(900px 700px at 86% -12%, rgba(175,169,236,0.55) 0%, rgba(175,169,236,0) 62%),
+    radial-gradient(760px 620px at 6% 108%, rgba(26,21,64,0.70) 0%, rgba(26,21,64,0) 64%);
+}
+
+/* 72 rather than 86: the lines are long sentences now, not three-word
+   fragments, and at 86 the first one ran past the right margin. */
+h1 { font-size: 72px; margin-top: 32px; letter-spacing: -2.4px; }
+
+/* The stub. Warm white rather than pure, so it reads as paper against the
+   purple instead of as a dialog box. */
+.stub {
+  position: relative; margin-top: 44px; overflow: hidden;
+  background: #FBF8F2; color: #14121E; border-radius: 30px;
+  transform: rotate(-1.2deg);
+  box-shadow: 0 40px 80px -30px rgba(10,8,34,0.70);
+}
+.rows { padding: 40px 52px 26px; }
+.line { display: flex; align-items: baseline; justify-content: space-between; padding: 14px 0; }
+.line .k { font-size: 29px; font-weight: 700; }
+.line .k small { display: block; font-size: 21px; color: #827C97; font-weight: 600; margin-top: 5px; }
+.line .v { font-size: 34px; font-weight: 800; letter-spacing: -0.8px; }
+.line.muted .k, .line.muted .v { color: #6D6881; }
+
+/* A perforation with two bites taken out of the edges. The bites are circles
+   in the field colour, half of each clipped away by the stub's overflow. */
+.perf { position: relative; height: 46px; }
+.perf .dash { position: absolute; left: 70px; right: 70px; top: 50%; border-top: 3px dashed rgba(20,18,30,0.22); }
+.notch { position: absolute; top: 0; width: 46px; height: 46px; border-radius: 50%; background: #3C3489; }
+.notch.l { left: -23px; } .notch.r { right: -23px; }
+
+.total {
+  background: #14121E; padding: 34px 52px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.total .k { font-size: 31px; font-weight: 800; color: #FBF8F2; }
+.total .v { font-size: 62px; font-weight: 800; letter-spacing: -2.2px; color: #FAC775; }
+
+.foot { margin-top: auto; }
+</style></head><body class="field-purple">
+<div class="sheen"></div>
+<div class="stage">
+
+  <div><span class="eyebrow"><span class="dot"></span>For hosts</span></div>
+
+  <h1>You filled the room<span class="pd">.</span><br>Somebody else took<br>a cut of it<span class="pd">.</span> <span class="accent">Not here<span class="pd">.</span></span></h1>
+
+  <div class="stub">
+    <div class="rows">
+      <div class="line"><span class="k">Your ticket price</span><span class="v">₦10,000</span></div>
+      <div class="line muted"><span class="k">Booking fee<small>9%, paid by the buyer</small></span><span class="v">₦900</span></div>
+    </div>
+    <div class="perf"><span class="notch l"></span><span class="notch r"></span><span class="dash"></span></div>
+    <div class="total"><span class="k">You receive</span><span class="v">₦10,000</span></div>
+  </div>
+
+  <div class="foot">
+    <span class="lockup">
+      <svg viewBox="0 0 48 48" width="60" height="60" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" fill="#FBFBF8"/><circle cx="24" cy="24" r="17.6" fill="#3C3489"/>
+        <circle cx="24" cy="17.4" r="5.1" fill="#AFA9EC"/><path d="M17.3 32v-2.4a6.7 6.7 0 0 1 13.4 0V32z" fill="#AFA9EC"/>
+        <circle cx="13.9" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M7.9 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+        <circle cx="34.1" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M28.1 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+      </svg>
+      <span class="wordmark">Link<span style="color:#AFA9EC">Up</span>Naija</span>
+    </span>
+    <span class="handle" style="color:#C5BFEC">List your event free</span>
+  </div>
+
+</div>
+<div class="grain"></div>
+</body></html>

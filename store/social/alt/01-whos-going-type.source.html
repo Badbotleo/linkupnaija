@@ -1,0 +1,101 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+/*
+ * SECOND BUILD. The first version of this post has been published, so this is
+ * not a recolour of it: same claim, same pain, different object entirely. The
+ * posted one is kept in posted/ so the two can be laid side by side.
+ *
+ * The composition is a horizontal split, which nothing else in the set uses.
+ * The top half is black and holds the bad night; the bottom half is paper and
+ * holds the thing that prevents it. The seam between them IS the argument, so
+ * there is no connecting sentence doing that work: you read the loss, you hit
+ * a hard edge, and underneath it is the fix.
+ *
+ * Two fields in one post also means the set's cream is not spent on a layout
+ * anybody has already scrolled past.
+ */
+html, body { width: 1080px; height: 1080px; }
+body { background: #0B0B0F; }
+
+/* The stage is not the usual single column here. */
+.stage { display: block; }
+
+.top {
+  position: relative; height: 616px; background: #0B0B0F; color: #FBFBF8;
+  padding: 84px 96px 0; overflow: hidden;
+}
+.top .bloom {
+  position: absolute; width: 1000px; height: 820px; left: 180px; top: -340px;
+  background: radial-gradient(circle, rgba(83,74,183,0.52) 0%, rgba(83,74,183,0.13) 46%, rgba(83,74,183,0) 70%);
+}
+.top .lockup { position: relative; }
+.top .wordmark { color: #FBFBF8; }
+
+/* Sized by the longest line. "You knew nobody." is 16 characters and has to
+   hold inside an 888px column; at 124 it wrapped and took the headline to
+   four lines. 102 is the largest size at which all three hold. */
+.top h1 { position: relative; font-size: 102px; margin-top: 52px; letter-spacing: -3.8px; }
+.top h1 .accent { color: #FAC775; }
+
+/* Paper, and a real edge rather than a gradient. The join is the hinge of the
+   whole post, so it is allowed to be abrupt. */
+.bot {
+  position: relative; height: 464px; background: #F3EFE6; color: #14121E;
+  padding: 50px 96px 48px; display: flex; flex-direction: column;
+}
+.bot .fix { color: #827C97; }
+.bot .sub { color: #4A4560; font-size: 27px; margin-top: 16px; max-width: 760px; line-height: 1.36; }
+
+.going { margin-top: auto; display: flex; align-items: center; gap: 28px; }
+.stack { display: flex; }
+/* Initials, not stock faces. A fake crowd of stock photography is the exact
+   thing the copy above is promising not to be. */
+.av {
+  width: 104px; height: 104px; border-radius: 50%; margin-left: -29px;
+  display: grid; place-items: center; font-size: 39px; font-weight: 800;
+  border: 6px solid #F3EFE6; color: #14121E; letter-spacing: -1px;
+}
+.av:first-child { margin-left: 0; }
+.av.more { background: #14121E; color: #F3EFE6; font-size: 30px; }
+.going .label { font-size: 29px; font-weight: 600; color: #4A4560; line-height: 1.26; }
+.going .label b { color: #14121E; font-weight: 800; }
+.going .mark { margin-left: auto; text-align: right; font-size: 23px; font-weight: 600; color: #827C97; }
+</style></head><body class="field-cream">
+<div class="stage">
+
+  <div class="top">
+    <div class="bloom"></div>
+    <span class="lockup">
+      <svg viewBox="0 0 48 48" width="58" height="58" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" fill="#534AB7"/><circle cx="24" cy="24" r="17.6" fill="#3C3489"/>
+        <circle cx="24" cy="17.4" r="5.1" fill="#AFA9EC"/><path d="M17.3 32v-2.4a6.7 6.7 0 0 1 13.4 0V32z" fill="#AFA9EC"/>
+        <circle cx="13.9" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M7.9 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+        <circle cx="34.1" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M28.1 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+      </svg>
+      <span class="wordmark" style="font-size:28px">Link<span style="color:#7C72DC">Up</span>Naija</span>
+    </span>
+    <h1>You paid<span class="pd">.</span><br>You showed up<span class="pd">.</span><br><span class="accent">You knew nobody<span class="pd">.</span></span></h1>
+  </div>
+
+  <div class="bot">
+    <span class="fix">What you see before you book</span>
+    <p class="sub">Every event shows who has already said they are going, and
+    which of them you know. You decide before you spend a naira.</p>
+    <div class="going">
+      <div class="stack">
+        <div class="av" style="background:#FAC775">T</div>
+        <div class="av" style="background:#AFA9EC">A</div>
+        <div class="av" style="background:#6FD9A6">K</div>
+        <div class="av" style="background:#F6A5A5">N</div>
+        <div class="av more">+41</div>
+      </div>
+      <div class="label"><b>45 going</b><br>7 you know</div>
+      <div class="mark">linkupnaija.com</div>
+    </div>
+  </div>
+
+</div>
+<div class="grain"></div>
+</body></html>

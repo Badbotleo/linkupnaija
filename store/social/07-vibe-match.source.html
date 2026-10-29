@@ -1,0 +1,114 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+/*
+ * VIBE MATCH. The feature the first six posts ignored, and the only thing in
+ * this product that nobody else in the market has.
+ *
+ * app/api/vibe-match/route.ts turns a sentence like "somewhere chill in Abuja
+ * this weekend" into the category and state filters the events page already
+ * understands. It runs on Claude Haiku, and it is deliberately open to people
+ * who have not signed up, which is exactly why it belongs in an advert: the
+ * thing being advertised can be tried from the ad.
+ *
+ * THE DEMONSTRATION IS THE POST. A search box with a real sentence typed into
+ * it and real filters falling out of it is not an illustration of the
+ * feature, it IS the feature, and it is checkable in two seconds. Nothing
+ * here claims the AI understands anything; it shows one input and one output.
+ *
+ * The route only ever PICKS from our own category and state lists, so a
+ * hallucinated value cannot reach a query string. That is why this graphic is
+ * allowed to show exact filter chips rather than a vague promise.
+ *
+ * Gold, flat, and built upside down: the words at the top, the object at the
+ * foot. No other post in the set is either.
+ */
+html, body { width: 1080px; height: 1080px; }
+.stage { padding: 80px 92px 84px; }
+
+.bloom {
+  position: absolute; width: 1100px; height: 1000px; border-radius: 50%;
+  top: -360px; right: -320px; pointer-events: none;
+  background: radial-gradient(circle, rgba(83,74,183,0.32) 0%, rgba(83,74,183,0.09) 46%, rgba(83,74,183,0) 70%);
+}
+
+h1 { font-size: 88px; margin-top: 30px; letter-spacing: -3.1px; }
+.sub { font-size: 27px; margin-top: 22px; max-width: 760px; }
+
+.demo { margin-top: auto; }
+
+/* The search field, dark on the gold so it reads as a thing you type into
+   rather than part of the background. */
+.bar {
+  display: flex; align-items: center; gap: 20px;
+  background: #14121E; border-radius: 22px; padding: 28px 32px;
+  box-shadow: 0 40px 80px -30px rgba(70,46,8,0.75);
+}
+.bar .ic { width: 34px; height: 34px; flex: 0 0 auto; }
+.bar .q { font-size: 31px; font-weight: 700; color: #FBF8F2; letter-spacing: -0.5px; }
+/* A caret, because a typed sentence sitting still looks like placeholder
+   copy. With it, somebody is mid-thought. */
+.bar .caret { width: 3px; height: 36px; background: #FAC775; margin-left: 2px; }
+
+.arrow { display: flex; justify-content: center; padding: 16px 0 4px; }
+
+.out { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+.chip {
+  display: inline-flex; align-items: center; gap: 11px;
+  background: #FBF8F2; color: #14121E; border: 2px solid rgba(20,18,30,0.5);
+  border-radius: 999px; padding: 16px 26px;
+  font-size: 25px; font-weight: 800; letter-spacing: -0.3px;
+}
+.chip .d { width: 11px; height: 11px; border-radius: 50%; background: #534AB7; }
+.count { margin-left: auto; font-size: 25px; font-weight: 800; color: #4A3A14; }
+
+.foot { margin-top: 34px; border-color: rgba(20,18,30,0.22); }
+</style></head><body class="field-gold">
+<div class="bloom"></div>
+<div class="stage">
+
+  <div><span class="eyebrow pill" style="background:#14121E;color:#FAC775">Things to do</span></div>
+
+  <h1>You don't know<br>what to search<span class="pd">.</span><br><span class="accent">So don't<span class="pd" style="margin-left:0">.</span></span></h1>
+
+  <p class="sub">Just say what you want. Our search works it out.</p>
+
+  <div class="demo">
+    <div class="bar">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#FAC775" stroke-width="2.4" stroke-linecap="round">
+        <circle cx="11" cy="11" r="7"/><path d="M16.5 16.5 L21 21"/>
+      </svg>
+      <span class="q">somewhere chill in Abuja this weekend</span><span class="caret"></span>
+    </div>
+
+    <div class="arrow">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#14121E" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 4 v15 M5.5 12.5 L12 19 l6.5 -6.5"/>
+      </svg>
+    </div>
+
+    <div class="out">
+      <span class="chip"><span class="d"></span>Abuja</span>
+      <span class="chip"><span class="d"></span>Chill</span>
+      <span class="chip"><span class="d"></span>This weekend</span>
+      <span class="count">14 link-ups</span>
+    </div>
+
+    <div class="foot">
+      <span class="lockup">
+        <svg viewBox="0 0 48 48" width="56" height="56" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="24" cy="24" r="22" fill="#534AB7"/><circle cx="24" cy="24" r="17.6" fill="#3C3489"/>
+          <circle cx="24" cy="17.4" r="5.1" fill="#AFA9EC"/><path d="M17.3 32v-2.4a6.7 6.7 0 0 1 13.4 0V32z" fill="#AFA9EC"/>
+          <circle cx="13.9" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M7.9 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+          <circle cx="34.1" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M28.1 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+        </svg>
+        <span class="wordmark">Link<span style="color:#534AB7">Up</span>Naija</span>
+      </span>
+      <span class="handle">No account needed to try it</span>
+    </div>
+  </div>
+
+</div>
+<div class="grain"></div>
+</body></html>

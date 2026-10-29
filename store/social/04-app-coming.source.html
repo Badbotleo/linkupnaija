@@ -1,0 +1,115 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+/*
+ * MONDAY. The launch post, as a photograph.
+ *
+ * photos/lagos-danfo-day.jpg is from Pexels (commercial use permitted, no
+ * attribution required): a yellow danfo pushing through a street market, shot
+ * from above, in flat daylight. It is the right picture for this post for a
+ * boring reason rather than a beautiful one. Every other post in the set is
+ * at night, and this one is about an ordinary Monday, which is what a
+ * weekday street in hard light looks like.
+ *
+ * INVERTED, and the only post in the set built this way: the words come
+ * first and the picture is a hard-edged band along the floor. No fade,
+ * because the type never crosses the image, and a half-faded band anchored to
+ * the bottom just prints a seam across the canvas.
+ *
+ * Still no Google Play badge. The badge may only be used once the listing is
+ * live and the listing is in closed testing. Naming Google Play in plain
+ * words is fine; the mark is not.
+ */
+html, body { width: 1080px; height: 1080px; }
+
+.band { position: absolute; left: 0; right: 0; bottom: 0; height: 604px; overflow: hidden; }
+.band img {
+  width: 100%; height: 100%; object-fit: cover; object-position: 50% 62%;
+  display: block;
+  /* Pulled DOWN rather than up. Left as shot, a daylight frame under a dark
+     headline is a hole punched in the post. */
+  filter: brightness(0.82) saturate(1.1) contrast(1.05);
+}
+/* Graded towards the brand so it belongs to this set rather than to a stock
+   library, and darkened at the top edge so the band meets the field instead
+   of starting with a line. */
+.band .grade {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgba(11,11,15,0.92) 0%, rgba(11,11,15,0.1) 22%, rgba(11,11,15,0) 50%),
+    linear-gradient(200deg, rgba(60,52,137,0.42) 0%, rgba(36,31,86,0.12) 58%, rgba(250,199,117,0.12) 100%);
+}
+
+.stage { padding: 72px 96px 84px; }
+
+h1 { font-size: 80px; margin-top: 26px; letter-spacing: -2.8px; }
+.sub { font-size: 27px; margin-top: 24px; max-width: 760px; }
+
+.actions { display: flex; align-items: center; justify-content: space-between; margin-top: 34px; }
+.pill {
+  display: inline-flex; align-items: center; padding: 16px 28px; border-radius: 999px;
+  background: rgba(250,199,117,0.14); border: 1px solid rgba(250,199,117,0.44);
+  font-size: 24px; font-weight: 700; color: #FAC775; letter-spacing: -0.2px;
+}
+
+/* Same blending rules as the plate card on post 3: duller than paper, a dark
+   rim rather than a white one, and a wide soft shadow carrying a little of
+   the scene's colour. A bright white card on a photograph is a sticker. */
+.card {
+  position: absolute; right: 70px; bottom: 96px; width: 414px;
+  background: #EFE8D8; color: #14121E; border-radius: 18px; overflow: hidden;
+  transform: rotate(2deg);
+  box-shadow:
+    0 50px 90px -34px rgba(0,0,0,0.9),
+    0 18px 40px -18px rgba(30,20,8,0.55),
+    0 0 0 1px rgba(18,14,10,0.42);
+}
+.card::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(176deg,
+    rgba(40,32,88,0.22) 0%, rgba(14,12,22,0.06) 44%, rgba(214,150,52,0.26) 100%);
+  mix-blend-mode: multiply;
+}
+.card .hd { display: flex; align-items: center; gap: 13px; padding: 20px 26px 0; }
+.card .hd .dot { width: 32px; height: 32px; border-radius: 10px; background: #534AB7; }
+.card .hd .t { font-size: 19px; font-weight: 800; letter-spacing: 1.6px; color: #6D6881; }
+.card .n { font-size: 33px; font-weight: 800; letter-spacing: -1.1px; padding: 12px 26px 4px; line-height: 1.16; }
+.card .m { font-size: 21px; font-weight: 600; color: #6D6881; padding: 0 26px 20px; }
+</style></head><body class="field-dark">
+
+<div class="band">
+  <img src="photos/lagos-danfo-day.jpg" alt="">
+  <div class="grade"></div>
+</div>
+
+<div class="card">
+  <div class="hd"><span class="dot"></span><span class="t">LINKUPNAIJA</span></div>
+  <div class="n">7 people you know<br>are going on Saturday</div>
+  <div class="m">Thursday, 6:02pm · tap to see who</div>
+  <div class="cap">THE MESSAGE YOU NEVER GOT</div>
+</div>
+
+<div class="stage">
+  <div><span class="eyebrow"><span class="dot"></span>The app</span></div>
+
+  <h1>You saw the pictures<br>on <span class="accent">Monday<span class="pd">.</span></span></h1>
+
+  <p class="sub">It happened on Saturday. Nobody told you. That's what the
+  app is for.</p>
+
+  <div class="actions">
+    <span class="pill">Coming soon to Google Play</span>
+    <span class="lockup">
+      <svg viewBox="0 0 48 48" width="54" height="54" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" fill="#534AB7"/><circle cx="24" cy="24" r="17.6" fill="#3C3489"/>
+        <circle cx="24" cy="17.4" r="5.1" fill="#AFA9EC"/><path d="M17.3 32v-2.4a6.7 6.7 0 0 1 13.4 0V32z" fill="#AFA9EC"/>
+        <circle cx="13.9" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M7.9 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+        <circle cx="34.1" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M28.1 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+      </svg>
+      <span class="wordmark" style="font-size:27px">Link<span style="color:#7C72DC">Up</span>Naija</span>
+    </span>
+  </div>
+</div>
+<div class="grain"></div>
+</body></html>

@@ -1,0 +1,104 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+/*
+ * The announcement. It shows the real app, not an illustration of one,
+ * because the one thing this post has to beat is the suspicion that "we have
+ * an app" means a bookmark with a logo on it.
+ *
+ * Even the launch post leads with a loss. "Coming to Google Play" is news
+ * about us; "You found out on Monday" is a Tuesday morning the reader has
+ * actually had, scrolling somebody's pictures from a thing they would have
+ * gone to. The Play line moves down to the pill, where it belongs.
+ *
+ * The phone is centred and runs off both the top and the bottom, with the
+ * copy laid over a scrim at the foot. Nothing else in the set is built this
+ * way: the others put the words first and an object beside them, this one is
+ * a photograph of the product with a caption.
+ *
+ * No Google Play badge. The badge may only be used once the listing is live,
+ * and the listing is in closed testing. Putting one here would be both a
+ * brand-guideline breach and a promise the link cannot keep.
+ */
+html, body { width: 1080px; height: 1080px; }
+.stage { padding: 88px 96px 92px; }
+
+.bloom {
+  position: absolute; width: 1200px; height: 900px; left: -60px; top: -300px;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(83,74,183,0.55) 0%, rgba(83,74,183,0.14) 46%, rgba(83,74,183,0) 70%);
+}
+
+/* The whole TOP of the device is on the canvas and only the foot runs off it.
+   An earlier cut bled the phone off both ends, and with a black screenshot on
+   a black field that left no rounded corner and no bezel anywhere: it read as
+   a screenshot pasted onto the post rather than as a phone. The visible top
+   edge is what makes it a device.
+ *
+ * 604 x 1050 is not arbitrary either: minus the 15px bezel it leaves a screen
+ * whose ratio matches shot-events.png, so object-fit has nothing to crop and
+ * the app's own header survives. An approximate size here is what sliced the
+ * word "Events" off an earlier render. */
+.phone {
+  position: absolute; left: 50%; top: 44px; margin-left: -302px;
+  width: 604px; height: 1050px; border-radius: 66px; padding: 15px;
+  background: linear-gradient(150deg,#6C6894 0%,#2A2740 38%,#191729 70%,#514D77 100%);
+  box-shadow: 0 50px 120px -24px rgba(0,0,0,0.95), 0 0 0 1px rgba(255,255,255,0.22);
+}
+.phone .screen { display: block; width: 100%; height: 100%; border-radius: 52px; overflow: hidden; background: #000; }
+.phone .screen img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+
+/* One scrim, at the foot. Its mid stops are deliberately weak: an earlier cut
+   ramped straight from opaque to clear and swallowed the row of event posters,
+   which is the only colour in the post and the only part that shows the app
+   has anything in it. */
+.scrim-foot {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to top,
+    #0B0B0F 29%,
+    rgba(11,11,15,0.96) 44%,
+    rgba(11,11,15,0.38) 53%,
+    rgba(11,11,15,0) 68%);
+}
+
+.tail { margin-top: auto; }
+h1 { font-size: 86px; letter-spacing: -3px; }
+.sub { font-size: 27px; margin-top: 24px; max-width: 660px; }
+
+/* The lockup rides down here beside the pill rather than sitting in a
+   masthead, so the top of the canvas belongs entirely to the phone. */
+.actions { display: flex; align-items: center; justify-content: space-between; margin-top: 32px; }
+.pill {
+  display: inline-flex; align-items: center; gap: 14px;
+  padding: 17px 30px; border-radius: 999px;
+  background: rgba(250,199,117,0.14); border: 1px solid rgba(250,199,117,0.44);
+  font-size: 25px; font-weight: 700; color: #FAC775; letter-spacing: -0.2px;
+}
+</style></head><body class="field-dark">
+<div class="bloom"></div>
+<div class="phone"><span class="screen"><img src="shot-events.png" alt=""></span></div>
+<div class="scrim-foot"></div>
+<div class="stage">
+
+  <div class="tail">
+    <h1>You found out<br>on <span class="accent">Monday<span class="pd">.</span></span></h1>
+    <p class="sub">It happened on Saturday. The app puts what is on near you in
+    your hand, and tells you when somebody you know is going.</p>
+    <div class="actions">
+      <span class="pill">Google Play · in testing</span>
+      <span class="lockup">
+        <svg viewBox="0 0 48 48" width="56" height="56" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="24" cy="24" r="22" fill="#534AB7"/><circle cx="24" cy="24" r="17.6" fill="#3C3489"/>
+          <circle cx="24" cy="17.4" r="5.1" fill="#AFA9EC"/><path d="M17.3 32v-2.4a6.7 6.7 0 0 1 13.4 0V32z" fill="#AFA9EC"/>
+          <circle cx="13.9" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M7.9 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+          <circle cx="34.1" cy="21.6" r="4.5" fill="#FFFFFF"/><path d="M28.1 32v-2a6 6 0 0 1 12 0v2z" fill="#FFFFFF"/>
+        </svg>
+        <span class="wordmark" style="font-size:28px">Link<span style="color:#7C72DC">Up</span>Naija</span>
+      </span>
+    </div>
+  </div>
+
+</div>
+<div class="grain"></div>
+</body></html>
