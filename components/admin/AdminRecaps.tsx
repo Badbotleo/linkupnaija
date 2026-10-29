@@ -6,6 +6,7 @@ import { NIGERIAN_STATES } from "@/lib/constants";
 import { toast } from "@/lib/toast";
 import { isRealText } from "@/lib/content-guards";
 import { capturePoster, probeMedia } from "@/lib/video-poster";
+import { refreshRecaps } from "@/app/admin/recap-actions";
 import LineIcon from "../ui/LineIcon";
 
 /**
@@ -326,6 +327,11 @@ export default function AdminRecaps() {
       }
       return;
     }
+    // The home shelf caches for five minutes and nothing server side knows
+    // this write happened, because it went from this browser straight to
+    // Supabase. Clear the tag or the new recap is invisible there until the
+    // window expires.
+    await refreshRecaps();
     const written = editing.id ? 1 + queue.length : payload.length;
     toast.success(written === 1 ? "Saved" : `Saved ${written} recaps`);
     setEditing(null);
@@ -395,6 +401,9 @@ export default function AdminRecaps() {
       .update({ is_active: !r.is_active })
       .eq("id", r.id);
     if (error) return toast.error(error.message);
+    // Hiding matters more than showing: a recap taken down for a reason
+    // should not keep playing on the home page for another five minutes.
+    await refreshRecaps();
     load();
   }
 
@@ -405,6 +414,7 @@ export default function AdminRecaps() {
       .delete()
       .eq("id", r.id);
     if (error) return toast.error(error.message);
+    await refreshRecaps();
     toast.success("Deleted");
     load();
   }

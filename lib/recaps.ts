@@ -4,6 +4,15 @@ import { isRealText } from "./content-guards";
 import { byProximity } from "./state-proximity";
 
 /**
+ * The cache tag for the home-page recap shelf.
+ *
+ * Exported so the admin's revalidate action and the cache itself cannot drift
+ * apart: a typo in a bare string would fail silently and simply never clear
+ * the cache, which is indistinguishable from the bug this fixes.
+ */
+export const RECAPS_TAG = "event-recaps";
+
+/**
  * Recaps of events that already happened — the public proof this place is alive.
  *
  * A visitor arriving on a young platform has no way to tell whether anything
@@ -100,8 +109,17 @@ const getRecaps = unstable_cache(
         event: r.event ?? null,
       }));
   },
-  ["event-recaps"],
-  { revalidate: 300 }
+  [RECAPS_TAG],
+  // TAGGED AS WELL AS TIMED.
+  //
+  // The 300s window is the floor, not the ceiling: an upload goes straight
+  // from the admin's browser to Supabase, so nothing on the server knows a
+  // new recap exists and the home shelf used to sit on stale data for up to
+  // five minutes with no way to hurry it. Admin writes now call
+  // refreshRecaps(), which revalidates this tag and makes the next request
+  // re-read. The timer stays as a backstop for rows that change by any other
+  // route.
+  { revalidate: 300, tags: [RECAPS_TAG] }
 );
 
 /**

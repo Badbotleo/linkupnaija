@@ -17,7 +17,15 @@ export default async function PastEventsReel({
 }: {
   state?: string | null;
 }) {
-  const recaps = await getRecapsFor(state, 12);
+  // 40, matching the query's own ceiling in lib/recaps.ts, so nothing that
+  // was fetched is silently thrown away before it reaches the shelf.
+  //
+  // This was 12, which throttled the shelf for a cost that no longer exists.
+  // RecapReel mounts only the first three cards with a source and uses an
+  // IntersectionObserver to fetch the rest just before they scroll into view,
+  // so a longer shelf downloads no more than a short one until somebody
+  // actually swipes. The old number predated that and was never revisited.
+  const recaps = await getRecapsFor(state, 40);
   // No recaps yet → render nothing. An empty "this actually happened" shelf
   // would say the opposite of what it exists to say.
   if (recaps.length === 0) return null;
