@@ -35,6 +35,10 @@ export interface ReelIdea {
   category: string;
   image: string;
   mediaType: "image" | "video";
+  /** First frame of a video card, so it does not paint the browser's own
+      media placeholder while it decodes. Absent on images, and on videos
+      uploaded before poster capture existed. */
+  poster?: string | null;
   state: string | null;
   href: string;
   liveCount?: number;
@@ -114,6 +118,10 @@ export default function ThingsReel({ ideas }: { ideas: ReelIdea[] }) {
             <LazyMedia
               src={idea.image}
               kind={idea.mediaType}
+              // Without this a video draws the browser's own media
+              // placeholder until its first frame decodes, which on a slow
+              // connection is a full-screen grey video glyph.
+              poster={idea.poster ?? undefined}
               className="absolute inset-0"
             />
 

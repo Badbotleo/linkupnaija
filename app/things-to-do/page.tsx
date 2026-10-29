@@ -99,6 +99,7 @@ export default async function ThingsToDoPage() {
                 category: idea.category,
                 image: idea.image,
                 mediaType: idea.mediaType,
+                poster: idea.poster,
                 state: idea.state,
                 href: hostHref(idea),
                 liveCount: idea.liveCount,

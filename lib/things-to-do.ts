@@ -24,6 +24,10 @@ export interface Idea {
   place: string;
   category: string;
   image: string;
+  /** First frame of a video card. Optional: image cards have none, and so
+      do videos uploaded before poster capture existed. Without it a video
+      paints the browser's own media placeholder while it decodes. */
+  poster?: string | null;
   state: string | null;
   /** Pre-written event title, so the host form opens part-done. */
   seedTitle: string;
@@ -118,7 +122,7 @@ const getCuratedIdeas = unstable_cache(
     );
     const { data, error } = await supabase
       .from("things_to_do")
-      .select("id, title, place, category, state, seed_title, media_url, media_type, credit, credit_url")
+      .select("id, title, place, category, state, seed_title, media_url, media_type, poster_url, credit, credit_url")
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false })
@@ -138,6 +142,7 @@ const getCuratedIdeas = unstable_cache(
       seed_title: string | null;
       media_url: string | null;
       media_type: string | null;
+      poster_url: string | null;
       credit: string | null;
       credit_url: string | null;
     }[])
@@ -162,6 +167,7 @@ const getCuratedIdeas = unstable_cache(
       category: r.category,
       image: r.media_url ?? "/venues/restaurants.jpg",
       mediaType: r.media_type === "video" ? "video" : "image",
+      poster: isRealText(r.poster_url, 8) ? r.poster_url : null,
       state: r.state,
       seedTitle: isRealText(r.seed_title)
         ? r.seed_title!

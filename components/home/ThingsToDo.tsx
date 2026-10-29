@@ -41,6 +41,7 @@ export default async function ThingsToDo({ state }: { state?: string | null }) {
             <LazyMedia
               src={idea.image}
               kind={idea.mediaType}
+              poster={idea.poster ?? undefined}
               className="absolute inset-0"
             />
             {/* The scrim exists to make the caption readable. With no caption

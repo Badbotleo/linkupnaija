@@ -93,6 +93,20 @@ export default function LazyMedia({
           playsInline
           preload={near ? "metadata" : "none"}
           aria-hidden
+          /* THE BACKGROUND IS NOT DECORATION.
+           *
+           * Things to do has no poster for its videos: things_to_do carries
+           * no poster_url, nothing captures one at upload, and neither reel
+           * passes the poster prop. So between a video getting its src and
+           * decoding its first frame there is nothing to draw, and the
+           * browser fills the hole with its own media placeholder — the
+           * grey video glyph people see on a slow connection.
+           *
+           * A painted background means that window shows a brand-dark card
+           * instead of a broken-looking icon. It treats the symptom; the
+           * actual fix is to capture a poster at upload the way AdminRecaps
+           * already does. */
+          style={{ backgroundColor: "#14121E" }}
           className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (

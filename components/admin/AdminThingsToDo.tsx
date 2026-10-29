@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { EVENT_CATEGORIES, NIGERIAN_STATES } from "@/lib/constants";
 import { toast } from "@/lib/toast";
 import { isRealText } from "@/lib/content-guards";
+import { capturePoster } from "@/lib/video-poster";
 import LineIcon from "../ui/LineIcon";
 
 interface Row {
@@ -16,6 +17,7 @@ interface Row {
   seed_title: string | null;
   media_url: string | null;
   media_type: "image" | "video";
+  poster_url: string | null;
   credit: string | null;
   credit_url: string | null;
   sort_order: number;
@@ -30,6 +32,7 @@ const BLANK: Omit<Row, "id"> = {
   seed_title: "",
   media_url: "",
   media_type: "image",
+  poster_url: "",
   credit: "",
   credit_url: "",
   sort_order: 0,
@@ -104,9 +107,42 @@ export default function AdminThingsToDo() {
       return;
     }
     const { data } = supabase.storage.from("things-to-do").getPublicUrl(path);
+
+    // Grab a still while the original file is still in memory. Doing it here
+    // costs no second download and no CORS negotiation, which is why
+    // AdminRecaps does it at exactly this point too.
+    //
+    // A failure is not an upload failure. The card still works; it just
+    // paints a dark panel for a moment longer instead of its first frame,
+    // which is what every video on this shelf did before posters existed.
+    let poster: string | null = null;
+    if (isVideo) {
+      const frame = await capturePoster(file);
+      if (frame) {
+        const pPath = `${path.replace(/\.[^.]+$/, "")}-poster.jpg`;
+        const up = await supabase.storage
+          .from("things-to-do")
+          .upload(pPath, frame, {
+            contentType: "image/jpeg",
+            upsert: true,
+            cacheControl: "31536000",
+          });
+        if (!up.error)
+          poster = supabase.storage.from("things-to-do").getPublicUrl(pPath)
+            .data.publicUrl;
+      }
+    }
+
     setEditing((e) =>
       e
-        ? { ...e, media_url: data.publicUrl, media_type: isVideo ? "video" : "image" }
+        ? {
+            ...e,
+            media_url: data.publicUrl,
+            media_type: isVideo ? "video" : "image",
+            // Cleared for an image, so replacing a video with a photo does
+            // not leave the old clip's frame behind as a poster.
+            poster_url: poster,
+          }
         : e
     );
     toast.success(isVideo ? "Video uploaded" : "Image uploaded");
@@ -138,6 +174,7 @@ export default function AdminThingsToDo() {
         : title || editing.category,
       media_url: editing.media_url?.trim() || null,
       media_type: editing.media_type,
+      poster_url: editing.poster_url?.trim() || null,
       credit: editing.credit?.trim() || null,
       credit_url: editing.credit_url?.trim() || null,
       sort_order: editing.sort_order,
