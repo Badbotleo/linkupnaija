@@ -224,7 +224,14 @@ export async function buildVisitorFeed(
   // still holds all of them.
   const sorted = ranked.slice(0, VISITOR_PAGE);
 
-  const recaps = await getRecapsFor(state, 12);
+  // 40, matching the ceiling on the query in lib/recaps.ts, so nothing that
+  // was fetched is thrown away before it reaches the shelf.
+  //
+  // This was 12, which predated RecapReel's lazy loading. The reel now mounts
+  // only the first three cards with a src and fetches the rest as they scroll
+  // into view, so a longer shelf costs no more data until somebody actually
+  // swipes. The old number was throttling for a cost that no longer exists.
+  const recaps = await getRecapsFor(state, 40);
 
   const units: FeedUnit[] = [];
   if (recaps.length > 0) units.push({ kind: "stories", recaps });
@@ -590,7 +597,14 @@ export async function buildFeed(
     }
   }
 
-  const recaps = await getRecapsFor(state, 12);
+  // 40, matching the ceiling on the query in lib/recaps.ts, so nothing that
+  // was fetched is thrown away before it reaches the shelf.
+  //
+  // This was 12, which predated RecapReel's lazy loading. The reel now mounts
+  // only the first three cards with a src and fetches the rest as they scroll
+  // into view, so a longer shelf costs no more data until somebody actually
+  // swipes. The old number was throttling for a cost that no longer exists.
+  const recaps = await getRecapsFor(state, 40);
 
   // Assembly. Stories first because they are the only moving thing we own,
   // then yours, then the ranked column with the supporting units dropped in
