@@ -260,8 +260,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
           ) : (
             <>
               <p className="text-xs leading-relaxed text-gray-600">
-                We sent a sign-in code to <strong>{email}</strong>. Enter it
-                below — you never need to open the link.
+                We sent a code to <strong>{email}</strong>.
               </p>
               <div className="mt-2 flex gap-2">
                 <input
