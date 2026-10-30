@@ -9,7 +9,7 @@ import {
   randomNamePlaceholder,
 } from "@/lib/name-placeholder";
 import { NIGERIAN_STATES } from "@/lib/constants";
-import { isInAppBrowser } from "@/lib/webview";
+import { isInAppBrowser, isNativeApp } from "@/lib/webview";
 import { trackSignUp } from "@/lib/analytics";
 
 // Supabase generates the emailed code, and its length is a project-level
@@ -49,13 +49,21 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
   // Google OAuth is blocked inside in-app browsers (Instagram, FB, TikTok…),
   // so warn users who opened the link there.
   const [inApp, setInApp] = useState(false);
-  useEffect(() => setInApp(isInAppBrowser()), []);
+  // Inside our own installed app. Google will not do OAuth in a webview, so
+  // the button is not shown there at all rather than shown and broken.
+  const [native, setNative] = useState(false);
+  useEffect(() => {
+    setInApp(isInAppBrowser());
+    setNative(isNativeApp());
+  }, []);
+  // Everywhere Google cannot actually complete.
+  const googleBlocked = inApp || native;
 
   // Email-code sign-in. The OAuth round trip has to cross accounts.google.com
   // AND the Supabase auth host; some Nigerian mobile networks (MTN especially)
   // break somewhere in that chain. This path is two plain API calls to one
   // host, with no redirect to lose.
-  const [otpMode, setOtpMode] = useState(false);
+  const [otpMode, setOtpMode] = useState(true);
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [otpBusy, setOtpBusy] = useState(false);
@@ -190,47 +198,34 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
         </p>
       )}
 
-      {inApp && (
+      {/* Only shown where Google could have worked. Inside our own app it
+          never can, so there is nothing to explain and nothing to try. */}
+      {inApp && !native && (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800">
           Google sign-in doesn&apos;t work inside this app&apos;s browser. Tap
           the menu (⋯) and choose <strong>Open in browser</strong> (Chrome or
-          Safari), or use email below.
+          Safari), or use the sign-in code above.
         </p>
       )}
 
-      <button
-        type="button"
-        onClick={signInWithGoogle}
-        className="flex w-full items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
-      >
-        <GoogleLogo />
-        Continue with Google
-      </button>
-
-      <p className="text-center text-[12px] italic text-gray-500">
-        You&apos;ll be securely redirected to Google, then brought straight back
-        to LinkUpNaija ✓
-      </p>
-
-      {/* Code sign-in needs no redirect to Google at all — two plain requests,
-          which is what survives a weak mobile connection. */}
-      {!otpSent ? (
-        <button
-          type="button"
-          onClick={() => setOtpMode((v) => !v)}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
-        >
-          Email me a sign-in code
-        </button>
-      ) : null}
-
+      {/* THE CODE IS THE PRIMARY WAY IN, and it opens already expanded.
+          It used to be a grey secondary button that revealed the form only
+          when tapped, under a full-width Google button with a reassuring
+          caption. That is two taps before you can even type your address, so
+          most people never found it — which was the whole problem, because
+          this is the path that actually works everywhere: in-app browsers,
+          our own native shell, and the mobile networks that break somewhere
+          in the OAuth chain. */}
       {otpMode && (
         <div className="rounded-xl border border-brand/25 bg-brand-50 p-3">
           {!otpSent ? (
             <>
-              <p className="text-xs leading-relaxed text-gray-600">
-                Works on any network — we email you a 6-digit code, no Google
-                redirect needed.
+              <p className="text-sm font-bold text-gray-900">
+                Sign in with a code
+              </p>
+              <p className="mt-0.5 text-xs leading-relaxed text-gray-600">
+                No password to remember. We email you a code, you type it in,
+                you&apos;re in. Works on any network.
               </p>
               <div className="mt-2 flex gap-2">
                 <input
@@ -249,7 +244,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
                   disabled={otpBusy || !email.trim()}
                   className="btn-primary shrink-0 px-4 disabled:opacity-50"
                 >
-                  {otpBusy ? "Sending…" : "Send"}
+                  {otpBusy ? "Sending…" : "Send me a code"}
                 </button>
               </div>
             </>
@@ -290,6 +285,31 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
             </>
           )}
         </div>
+      )}
+
+      {/* Google, demoted to second and hidden where it cannot complete.
+          Offering a button that is guaranteed to fail is worse than offering
+          nothing: the person does not conclude "this network blocks Google",
+          they conclude the app is broken. */}
+      {!googleBlocked && (
+        <>
+          <div className="flex items-center gap-3">
+            <span className="h-px flex-1 bg-gray-200" />
+            <span className="text-xs font-medium uppercase text-gray-400">
+              or
+            </span>
+            <span className="h-px flex-1 bg-gray-200" />
+          </div>
+
+          <button
+            type="button"
+            onClick={signInWithGoogle}
+            className="flex w-full items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
+          >
+            <GoogleLogo />
+            Continue with Google
+          </button>
+        </>
       )}
 
       <div className="flex items-center gap-3">
