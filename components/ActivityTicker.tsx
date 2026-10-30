@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import LineIcon from "@/components/ui/LineIcon";
 import { createClient } from "@/lib/supabase/client";
 
@@ -50,7 +51,19 @@ export default function ActivityTicker() {
   const [show, setShow] = useState(false);
   const [paused, setPaused] = useState(false);
 
+  // NOT ON AN EVENT PAGE.
+  //
+  // Everywhere else this floats over browsing, which is cheap. An event page
+  // is the one screen with a decision and a price on it, and the card lands
+  // bottom-right directly over the ticket row — so the thing it covers is
+  // exactly the thing somebody came to read. Proof that other people are
+  // around is worth least on the page where you are already looking at one
+  // specific night.
+  const pathname = usePathname();
+  const onEventPage = (pathname ?? "").startsWith("/events/");
+
   useEffect(() => {
+    if (onEventPage) return;
     try {
       if (sessionStorage.getItem(KEY)) return;
     } catch {
@@ -119,11 +132,21 @@ export default function ActivityTicker() {
         [msgs[i], msgs[j]] = [msgs[j], msgs[i]];
       }
 
-      setMessages(msgs);
-      // Slide in after 3s, then retire. Social proof that never leaves is
-      // just furniture in front of the content.
+      // AT MOST TWO MESSAGES.
+      //
+      // The claim this makes is "other people are here", and it is either
+      // believed on the first card or it is not. Cycling five of them does
+      // not make it five times truer; it just moves in the corner of
+      // somebody's eye for five times as long.
+      setMessages(msgs.slice(0, 2));
+
+      // In after 3s, gone by 11. It used to sit for 24 seconds, which on a
+      // first visit is most of the time anyone spends deciding what this
+      // place is — a long while to have something animating over the page.
+      // Social proof that never leaves is just furniture in front of the
+      // content.
       setTimeout(() => active && setShow(true), 3000);
-      setTimeout(() => active && setShow(false), 3000 + 24_000);
+      setTimeout(() => active && setShow(false), 3000 + 8_000);
     })();
 
     // Live prune: when an event is deleted (e.g. by an admin removing spam),
@@ -147,7 +170,7 @@ export default function ActivityTicker() {
       supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [onEventPage]);
 
   // Hold while someone is reading or reaching for it. A card that changes
   // under the thumb is a card nobody can tap.
