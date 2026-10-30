@@ -64,6 +64,10 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
   // break somewhere in that chain. This path is two plain API calls to one
   // host, with no redirect to lose.
   const [otpMode, setOtpMode] = useState(true);
+  // The password form is collapsed. Code, Google and password stacked open
+  // put three ways in on one screen with two "OR" rules between them, which
+  // is a menu rather than a decision. Most people never want this one.
+  const [showPassword, setShowPassword] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [otpBusy, setOtpBusy] = useState(false);
@@ -227,7 +231,13 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
                 No password to remember. We email you a code, you type it in,
                 you&apos;re in. Works on any network.
               </p>
-              <div className="mt-2 flex gap-2">
+              {/* Stacked, not side by side. On a 375px screen the field and
+                  a button reading "Send me a code" were fighting over the
+                  same row, and the thing that lost was the field — down to
+                  about 150px, enough to show "you@email" and nothing else.
+                  The address is the part people have to read back to check,
+                  so it gets the full width. */}
+              <div className="mt-2.5 space-y-2">
                 <input
                   type="email"
                   value={email}
@@ -235,14 +245,14 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
                   placeholder="you@email.com"
                   inputMode="email"
                   autoComplete="email"
-                  className="input flex-1"
+                  className="input w-full"
                   aria-label="Email for sign-in code"
                 />
                 <button
                   type="button"
                   onClick={sendCode}
                   disabled={otpBusy || !email.trim()}
-                  className="btn-primary shrink-0 px-4 disabled:opacity-50"
+                  className="btn-primary w-full disabled:opacity-50"
                 >
                   {otpBusy ? "Sending…" : "Send me a code"}
                 </button>
@@ -287,6 +297,16 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
         </div>
       )}
 
+      {/* Errors live out here, not inside the password form. sendCode and
+          verifyCode set the same `error` state, so burying it in a collapsed
+          section would mean "that code didn't match" was written somewhere
+          nobody could see. */}
+      {error && (
+        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+          {error}
+        </p>
+      )}
+
       {/* Google, demoted to second and hidden where it cannot complete.
           Offering a button that is guaranteed to fail is worse than offering
           nothing: the person does not conclude "this network blocks Google",
@@ -312,6 +332,18 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
         </>
       )}
 
+      {!showPassword && (
+        <button
+          type="button"
+          onClick={() => setShowPassword(true)}
+          className="w-full text-center text-[13px] font-semibold text-gray-500 underline-offset-2 hover:text-gray-700 hover:underline"
+        >
+          {isSignup ? "Sign up with a password instead" : "Use a password instead"}
+        </button>
+      )}
+
+      {showPassword && (
+      <>
       <div className="flex items-center gap-3">
         <span className="h-px flex-1 bg-gray-200" />
         <span className="text-xs font-medium uppercase text-gray-400">or</span>
@@ -389,12 +421,6 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
         />
       </div>
 
-      {error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
-          {error}
-        </p>
-      )}
-
       <button type="submit" disabled={loading} className="btn-primary w-full">
         {loading
           ? "Please wait…"
@@ -402,6 +428,8 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
             ? "Create account"
             : "Log in"}
       </button>
+      </>
+      )}
 
       {/* Switching between log in and sign up used to be one underlined word
           inside a sentence — a 60px tap target for the second most common
