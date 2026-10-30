@@ -228,8 +228,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
                 Sign in with a code
               </p>
               <p className="mt-0.5 text-xs leading-relaxed text-gray-600">
-                No password to remember. We email you a code, you type it in,
-                you&apos;re in. Works on any network.
+                No password. We&apos;ll email you a code.
               </p>
               {/* Stacked, not side by side. On a 375px screen the field and
                   a button reading "Send me a code" were fighting over the
