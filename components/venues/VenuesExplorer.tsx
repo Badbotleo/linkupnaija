@@ -22,6 +22,9 @@ import { formatPriceRange } from "@/lib/format";
 import { openLabel } from "@/lib/opening-hours";
 import SwipeDeck from "../home/SwipeDeck";
 import VenuesReel, { type ReelVenue } from "./VenuesReel";
+
+/** How many venues the vertical reel carries. See the note where it is used. */
+const REEL_MAX = 12;
 import VenueArt from "./VenueArt";
 import StateIcon from "@/components/ui/StateIcon";
 
@@ -385,7 +388,17 @@ export default function VenuesExplorer({
       isPartner: false,
     }));
 
-    return [...mine, ...theirs];
+    // CAPPED. This is a full-height vertical snap reel sitting in the middle
+    // of a page that scrolls normally, so every slide in it is one screen a
+    // thumb has to get past to reach what is below. At 47 that is not a reel,
+    // it is a wall: you scroll down, land in it, and the page appears to stop
+    // responding. Most of the tail is OpenStreetMap entries with no photo,
+    // which draw generated art, so it was also 40-odd screens of stand-in
+    // graphics.
+    //
+    // Twelve is enough to be worth swiping and short enough to scroll past.
+    // The map and the full list below still hold every one of them.
+    return [...mine, ...theirs].slice(0, REEL_MAX);
   }, [unfeatured, osmOnly, located, center]);
 
   const pinCount = osmOnly.length + located.length;
@@ -728,7 +741,7 @@ export default function VenuesExplorer({
                 More spots
               </h2>
               <p className="mt-0.5 text-[13px] text-gray-500">
-                Scroll through {reelVenues.length} places we can book
+                Swipe a few of the {pinCount} places near you
               </p>
             </div>
           </div>
