@@ -40,6 +40,33 @@ export const ART_PALETTES: [string, string, string][] = [
   ["#2B1B02", "#A16207", "#FDE68A"], // brass
 ];
 
+/**
+ * A narrower set, for surfaces that are OURS rather than somebody else's.
+ *
+ * ART_PALETTES is deliberately wide because a Circle belongs to the people in
+ * it, and fourteen unrelated colourways reads as a community board. A venue
+ * card does not belong to the venue — it is a slot in our product that a
+ * place has not sent a photograph for, and fourteen colourways there reads as
+ * a stock generator. Crimson next to royal blue next to teal says "this came
+ * from a library", which is the one thing a placeholder must not say.
+ *
+ * So these are all drawn from the brand: the purple, the gold, the green in
+ * the flag. Enough variation that two venues in a row are not twins, close
+ * enough that the whole shelf is recognisably one product.
+ */
+export const BRAND_PALETTES: [string, string, string][] = [
+  ["#1A1040", "#534AB7", "#AFA9EC"], // brand night
+  ["#1E0B33", "#6D28D9", "#C4B5FD"], // violet
+  ["#301A03", "#966A16", "#FAC775"], // brand gold
+  ["#06231F", "#008753", "#7FE3B4"], // naija green
+  ["#140F2B", "#3C3489", "#9D95E8"], // deep brand
+  ["#241506", "#B07A1C", "#FFDFA0"], // warm brass
+];
+
+export function artPaletteBrand(seed: string): [string, string, string] {
+  return BRAND_PALETTES[artHash(`${seed}#brand`) % BRAND_PALETTES.length];
+}
+
 /** FNV-1a. Stable across renders and servers, which a random seed is not. */
 export function artHash(s: string): number {
   let h = 2166136261;

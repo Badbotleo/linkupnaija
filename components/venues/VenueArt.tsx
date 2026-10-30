@@ -1,4 +1,4 @@
-import { artHash, artInitials, artPalette } from "@/lib/generated-art";
+import { artHash, artInitials, artPaletteBrand } from "@/lib/generated-art";
 
 /**
  * Cover art for a venue that hasn't given us a photo.
@@ -33,7 +33,12 @@ export default function VenueArt({
   // be listed differently don't come out identical.
   const seed = `${name}::${category}`;
   const h = artHash(seed);
-  const [deep, mid, light] = artPalette(seed);
+  // The brand set, not the wide one. A venue card is a slot in our product
+  // that a place has not sent a photo for; crimson next to royal blue next to
+  // teal reads as a stock generator, which is the one thing a placeholder
+  // must not read as. CircleArt keeps the wide palette — a circle belongs to
+  // the people in it.
+  const [deep, mid, light] = artPaletteBrand(seed);
 
   // The pin sits off-centre. Dead centre reads as a target rather than a map,
   // and these tiles are cropped wide and short so the middle band is all that
@@ -92,14 +97,25 @@ export default function VenueArt({
           strokeLinecap="round"
         />
 
-        {/* The pin. The one element that isn't texture. */}
+        {/* The pin, and the one element here that is ours rather than
+            texture. A generic dot in a generic pin is what every map
+            placeholder on the internet looks like; the three figures are the
+            mark, so the deliberate part of the tile says whose product this
+            is without stamping a logo across somebody's listing. */}
         <g transform={`translate(${px} ${py})`}>
-          <circle r="9" fill={light} fillOpacity="0.16" />
+          <circle r="9.6" fill={light} fillOpacity="0.16" />
           <path
-            d="M0 6 C -4.6 -0.6 -6.4 -3.2 -6.4 -5.6 A 6.4 6.4 0 0 1 6.4 -5.6 C 6.4 -3.2 4.6 -0.6 0 6 Z"
+            d="M0 6.4 C -4.9 -0.6 -6.8 -3.4 -6.8 -6 A 6.8 6.8 0 0 1 6.8 -6 C 6.8 -3.4 4.9 -0.6 0 6.4 Z"
             fill={light}
           />
-          <circle cy="-5.6" r="2.3" fill={deep} />
+          <g transform="translate(0 -6) scale(0.125)" fill={deep}>
+            <circle cx="0" cy="-6.6" r="5.1" />
+            <path d="M-6.7 8v-2.4a6.7 6.7 0 0 1 13.4 0V8z" />
+            <circle cx="-10.1" cy="-2.4" r="4.5" />
+            <path d="M-16.1 8v-2a6 6 0 0 1 12 0v2z" />
+            <circle cx="10.1" cy="-2.4" r="4.5" />
+            <path d="M4.1 8v-2a6 6 0 0 1 12 0v2z" />
+          </g>
         </g>
       </svg>
 

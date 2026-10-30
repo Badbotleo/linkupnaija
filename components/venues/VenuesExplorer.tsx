@@ -22,6 +22,7 @@ import { formatPriceRange } from "@/lib/format";
 import { openLabel } from "@/lib/opening-hours";
 import SwipeDeck from "../home/SwipeDeck";
 import VenuesReel, { type ReelVenue } from "./VenuesReel";
+import StickyHeader from "@/components/StickyHeader";
 
 /** How many venues the vertical reel carries. See the note where it is used. */
 const REEL_MAX = 12;
@@ -403,6 +404,12 @@ export default function VenuesExplorer({
 
   const pinCount = osmOnly.length + located.length;
 
+  // How many there are BEFORE the reel is capped. The subtitle used to say
+  // "scroll through 47", which the cap made untrue, and the first attempt at
+  // a replacement used pinCount — the map pins, which are 0 until the map
+  // data arrives, so it read "0 places near you" on load.
+  const spotCount = unfeatured.length + osmOnly.length;
+
   return (
     <div>
       {/* ---------------------------------------------------------------- */}
@@ -422,10 +429,16 @@ export default function VenuesExplorer({
           underneath the status bar. In the browser that inset is 0 and
           nothing changes; in the installed app it is the height of the
           clock and the signal bars, and without it this bar sticks behind
-          them — the search field and the category chips come to rest under
-          the time. Navbar and BottomNav already do this; this one was
-          missed because it reads fine in a desktop browser. */}
-      <div className="sticky top-[env(safe-area-inset-top)] z-20 -mx-4 bg-[#F7F7F9]/90 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6 lg:top-16 lg:-mx-8 lg:px-8 dark:bg-[#121212]/90">
+          them. Navbar and BottomNav already do this; this one was missed
+          because it reads fine in a desktop browser.
+
+          AND IT HIDES ON THE WAY DOWN. Pinned permanently, the search field
+          and the category chips cost about 110px of a phone screen for the
+          whole page — on top of the bottom nav, which is most of the screen
+          gone to furniture. StickyHeader is the same component the navbar
+          uses, so the two move together instead of one sliding under the
+          other. */}
+      <StickyHeader className="sticky top-[env(safe-area-inset-top)] z-20 -mx-4 bg-[#F7F7F9]/90 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6 lg:top-16 lg:-mx-8 lg:px-8 dark:bg-[#121212]/90">
         <form onSubmit={onSearch} className="flex gap-2">
           <div className="flex min-w-0 flex-1 items-center gap-2 rounded-2xl border border-gray-200 bg-white px-3.5 focus-within:border-brand">
             <LineIcon name="search" size={17} className="shrink-0 text-gray-400" />
@@ -482,7 +495,7 @@ export default function VenuesExplorer({
             </button>
           ))}
         </div>
-      </div>
+      </StickyHeader>
 
       <p className="mt-3 text-sm text-gray-500">
         {loading
@@ -741,7 +754,7 @@ export default function VenuesExplorer({
                 More spots
               </h2>
               <p className="mt-0.5 text-[13px] text-gray-500">
-                Swipe a few of the {pinCount} places near you
+                Swipe a few of the {spotCount} places near you
               </p>
             </div>
           </div>
